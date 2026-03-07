@@ -671,7 +671,7 @@
 
   <!-- ========== KSP FRANCHISE PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://krishinex.com/api/employee/admin/ksp';
+    const API_BASE = 'https://demo.ranx24.com/api/employee/admin/ksp';
     const AUTH_TOKEN = (localStorage.getItem('employeeToken') || '').replace(/["']/g, "").trim();
     const H = {
       'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -1164,7 +1164,7 @@
     async function approveFranchise(id, name) {
       if (!confirm(`Approve KSP Franchise: ${name}?`)) return;
       try {
-        const res = await fetch(`https://krishinex.com/api/employee/admin/approve/${id}`, {
+        const res = await fetch(`https://demo.ranx24.com/api/employee/admin/approve/${id}`, {
           method: 'PUT',
           headers: H
         });
@@ -1181,7 +1181,7 @@
     async function blockFranchise(id, name) {
       if (!confirm(`Block KSP Franchise: ${name}?`)) return;
       try {
-        const res = await fetch(`https://krishinex.com/api/employee/admin/block/${id}`, {
+        const res = await fetch(`https://demo.ranx24.com/api/employee/admin/block/${id}`, {
           method: 'PUT',
           headers: H
         });

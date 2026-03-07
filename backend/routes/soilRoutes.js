@@ -115,7 +115,7 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
         if (reportNote) request.advisoryText = reportNote;
 
         if (req.file) {
-            request.reportUrl = `https://krishinex.com/uploads/${req.file.filename}`;
+            request.reportUrl = `https://demo.ranx24.com/uploads/${req.file.filename}`;
         }
 
         await request.save();

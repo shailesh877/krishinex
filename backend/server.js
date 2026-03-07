@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: ['https://krishinex.com', 'https://backend.krishinex.com', 'http://localhost:3000'],
+    origin: ['https://krishinex.com', 'https://frontenddemo.ranx24.com', 'https://demo.ranx24.com', 'http://localhost:3000'],
     credentials: true
 }));
 app.use(express.json());

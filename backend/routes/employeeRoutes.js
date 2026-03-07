@@ -462,7 +462,7 @@ router.post('/doctor-chats', protect, async (req, res) => {
 router.post('/upload-chat-media', protect, uploadChatMedia.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-        const fileUrl = `https://krishinex.com/uploads/${req.file.filename}`;
+        const fileUrl = `https://demo.ranx24.com/uploads/${req.file.filename}`;
         res.json({ url: fileUrl });
     } catch (e) {
         console.error('Chat media upload error:', e);
@@ -1625,7 +1625,7 @@ router.put('/admin/labour/availability/:id', protect, checkAdmin, async (req, re
 });
 
 // =====================================================================
-// EQUIPMENT RENTAL — ADMIN ROUTES
+// EQUIPMENT RENTAL   ADMIN ROUTES
 // =====================================================================
 
 // @route   GET /api/employee/admin/rental/stats
