@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <img src="images/logo.png" alt="KrishiNex Logo" class="h-10 w-10 object-contain" />
+        <div class="ml-3">
+          <p class="text-sm font-black tracking-tight text-slate-900">KrishiNex</p>
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-cog text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer with Logout -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3 mb-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+        </div>
+        <button onclick="logoutSession()"
+          class="w-full inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-3 py-2 text-xs text-white font-black hover:from-rose-600 hover:to-rose-700 shadow-md transition-all">
+          <i class="fas fa-sign-out-alt mr-2"></i> Logout Session
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-sliders text-slate-700"></i>
+                Settings & Preferences
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Manage commission rates, pricing & account security
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-6 mx-auto w-full max-w-[1200px] pb-8 overflow-y-auto custom-scroll">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- COMMISSION MANAGEMENT -->
+          <section class="rounded-2xl border-2 border-emerald-100 bg-white shadow-xl p-6 flex flex-col">
+            <div class="flex items-center gap-3 mb-6">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-percent text-2xl text-emerald-600"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-black text-slate-900">Commission Rates</h2>
+                <p class="text-xs text-slate-600 font-semibold">Platform percentage on transactions</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 flex-1">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">Equipment Rental (%)</label>
+                  <input type="number" id="comm_equipment"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="5" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">Labour Gig (%)</label>
+                  <input type="number" id="comm_labour"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="5" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">Buyer Trading (%)</label>
+                  <input type="number" id="comm_trading"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="2" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">KSP Franchise (%)</label>
+                  <input type="number" id="comm_ksp"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="4" />
+                </div>
+              </div>
+            </div>
+
+            <button onclick="updateSettings('commissions')"
+              class="mt-8 w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-5 py-3 text-sm font-black text-white hover:from-emerald-700 hover:to-emerald-800 shadow-md hover:shadow-lg transition-all group">
+              <i class="fas fa-save mr-2 group-hover:scale-110 transition-transform"></i> Update Commissions
+            </button>
+          </section>
+
+          <!-- PRICING CONFIGURATION -->
+          <section class="rounded-2xl border-2 border-sky-100 bg-white shadow-xl p-6 flex flex-col">
+            <div class="flex items-center gap-3 mb-6">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-indian-rupee-sign text-2xl text-sky-600"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-black text-slate-900">Pricing & Fees</h2>
+                <p class="text-xs text-slate-600 font-semibold">Service charges and global tax rates</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 flex-1">
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">Base Service Fee (Rs.)</label>
+                <input type="number" id="price_baseFee"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="100" />
+              </div>
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">Tax Rate (GST %)</label>
+                <input type="number" id="price_tax"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="12" />
+              </div>
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">Min. Wallet Recharge (Rs.)</label>
+                <input type="number" id="price_minWallet"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="500" />
+              </div>
+            </div>
+
+            <button onclick="updateSettings('pricing')"
+              class="mt-8 w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 px-5 py-3 text-sm font-black text-white hover:from-sky-700 hover:to-sky-800 shadow-md hover:shadow-lg transition-all group">
+              <i class="fas fa-save mr-2 group-hover:scale-110 transition-transform"></i> Update Pricing
+            </button>
+          </section>
+        </div>
+
+        <!-- PASSWORD CHANGE SECTION -->
+        <section class="rounded-2xl border-2 border-slate-200 bg-white shadow-xl p-8 max-w-2xl mx-auto mt-4">
+          <div class="flex items-center gap-3 mb-6">
+            <div
+              class="h-14 w-14 rounded-2xl bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center shadow-sm">
+              <i class="fas fa-shield-alt text-2xl text-rose-600"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight">Account Security</h2>
+              <p class="text-[13px] text-slate-500 font-bold">Manage your password and active sessions</p>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider">Current Password</label>
+                <div class="relative">
+                  <input type="password" id="currentPassword"
+                    class="w-full h-12 rounded-xl border-2 border-slate-200 px-4 pr-12 text-sm font-bold bg-slate-50 focus:bg-white focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all outline-none"
+                    placeholder="••••••••" />
+                  <button type="button" onclick="togglePassword('currentPassword')"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-eye text-sm"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider">New Password</label>
+                <div class="relative">
+                  <input type="password" id="newPassword"
+                    class="w-full h-12 rounded-xl border-2 border-slate-200 px-4 pr-12 text-sm font-bold bg-slate-50 focus:bg-white focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all outline-none"
+                    placeholder="••••••••" />
+                  <button type="button" onclick="togglePassword('newPassword')"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-eye text-sm"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-[11px] font-black uppercase text-slate-500 tracking-wider">Confirm New Password</label>
+              <div class="relative">
+                <input type="password" id="confirmPassword"
+                  class="w-full h-12 rounded-xl border-2 border-slate-200 px-4 pr-12 text-sm font-bold bg-slate-50 focus:bg-white focus:border-rose-300 focus:ring-4 focus:ring-rose-50 transition-all outline-none"
+                  placeholder="••••••••" />
+                <button type="button" onclick="togglePassword('confirmPassword')"
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                  <i class="fas fa-eye text-sm"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button onclick="changePassword()"
+                class="w-full inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-6 py-4 text-sm font-black text-white hover:from-rose-600 hover:to-rose-700 shadow-lg hover:shadow-rose-200 transition-all active:scale-[0.98]">
+                <i class="fas fa-key mr-2"></i> Update Security Credentials
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Toast -->
+      <div id="toast"
+        class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+        <p id="toastMessage" class="text-sm font-bold"></p>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ========== SETTINGS LOGIC ========== -->
+  <script>
+    const API_BASE = 'https://krishinex.com/api';
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+    async function loadSettings() {
+      try {
+        const response = await fetch(`${API_BASE}/settings`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (!response.ok) throw new Error('Failed to load settings');
+        const data = await response.json();
+
+        // Bind Commissions
+        document.getElementById('comm_equipment').value = data.commissions.equipment;
+        document.getElementById('comm_labour').value = data.commissions.labour;
+        document.getElementById('comm_trading').value = data.commissions.buyerTrading;
+        document.getElementById('comm_ksp').value = data.commissions.ksp;
+
+        // Bind Pricing
+        document.getElementById('price_baseFee').value = data.pricing.baseServiceFee;
+        document.getElementById('price_tax').value = data.pricing.taxRate;
+        document.getElementById('price_minWallet').value = data.pricing.minWalletRecharge;
+
+      } catch (err) {
+        showToast('Error loading settings', 'warning');
+      }
+    }
+
+    async function updateSettings(type) {
+      let payload = {};
+
+      if (type === 'commissions') {
+        payload.commissions = {
+          equipment: parseFloat(document.getElementById('comm_equipment').value),
+          labour: parseFloat(document.getElementById('comm_labour').value),
+          buyerTrading: parseFloat(document.getElementById('comm_trading').value),
+          ksp: parseFloat(document.getElementById('comm_ksp').value)
+        };
+      } else if (type === 'pricing') {
+        payload.pricing = {
+          baseServiceFee: parseFloat(document.getElementById('price_baseFee').value),
+          taxRate: parseFloat(document.getElementById('price_tax').value),
+          minWalletRecharge: parseFloat(document.getElementById('price_minWallet').value)
+        };
+      }
+
+      showToast('Updating settings...', 'info');
+
+      try {
+        const response = await fetch(`${API_BASE}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Update failed');
+        showToast('Settings saved successfully!', 'success');
+      } catch (err) {
+        showToast('Failed to save settings', 'warning');
+      }
+    }
+
+    async function changePassword() {
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return showToast('Please fill all fields', 'warning');
+      }
+
+      if (newPassword !== confirmPassword) {
+        return showToast('Passwords do not match', 'warning');
+      }
+
+      showToast('Updating password...', 'info');
+
+      try {
+        const response = await fetch(`${API_BASE}/settings/password`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Update failed');
+
+        showToast('Password changed successfully!', 'success');
+
+        // Clear inputs
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      } catch (err) {
+        showToast(err.message, 'warning');
+      }
+    }
+
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      let bgColor = 'bg-white';
+      let borderColor = 'border-slate-300';
+      let textColor = 'text-slate-900';
+
+      if (type === 'success') {
+        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
+        borderColor = 'border-emerald-300';
+        textColor = 'text-emerald-900';
+      } else if (type === 'warning') {
+        bgColor = 'bg-gradient-to-r from-amber-50 to-amber-100';
+        borderColor = 'border-amber-300';
+        textColor = 'text-amber-900';
+      } else if (type === 'info') {
+        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
+        borderColor = 'border-sky-300';
+        textColor = 'text-sky-900';
+      }
+
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toastMessage.className = `text-sm font-bold ${textColor}`;
+      toastMessage.textContent = message;
+
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    function logout() {
+      logoutSession();
+    }
+
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+      loadSettings();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+</body>
+
+</html>

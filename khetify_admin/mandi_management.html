@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>KrishiNex Admin – Mandi Rates Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Security Headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- Authentication Check -->
+    <script src="js/auth.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#16A34A',
+                            blue: '#0EA5E9',
+                            mandi: '#98cd06',
+                        },
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
+    <div class="min-h-screen flex">
+        <!-- MOBILE OVERLAY -->
+        <div id="mobile-backdrop"
+            class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+            onclick="toggleSidebar(false)"></div>
+
+        <!-- ========== REUSABLE SIDEBAR ========== -->
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+            <!-- Brand -->
+            <div
+                class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+                <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+                    <img src="images/logo.png" alt="">
+                </div>
+                <div class="ml-3">
+                    <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+                    <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+                <a href="index.html"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+                        <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">Dashboard</span>
+                </a>
+
+                <div class="pt-3">
+                    <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+                </div>
+
+                <a href="ksp_Franchise_managment.html"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+                        <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">KSP Franchise</span>
+                </a>
+
+                <a href="mandi_management.html"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-200 transition-all duration-200">
+                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </span>
+                    <span class="truncate font-black">Mandi Rates</span>
+                </a>
+
+                <a href="buyer_managment.html"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+                        <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+                </a>
+
+                <a href="soil_testing_patner.html"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+                        <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold font-bold">Soil Testing</span>
+                </a>
+
+                <!-- Add other links as needed for consistency -->
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="px-4 py-4 border-t-2 border-slate-200 bg-slate-50 sticky bottom-0 z-10">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg text-white">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Super Admin</p>
+                        <p class="text-xs font-black text-slate-900 truncate">Khetify Admin</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN AREA ========== -->
+        <div class="flex-1 flex flex-col md:ml-64">
+            <!-- Sticky Header -->
+            <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-sm">
+                <div class="flex items-center justify-between px-4 md:px-6 h-16">
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-xl font-black tracking-tight text-slate-900 uppercase">📈 Mandi Rates Management
+                        </h1>
+                    </div>
+                    <div id="connection-status"
+                        class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                        <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span class="text-[10px] font-black text-emerald-700 uppercase tracking-wider">System
+                            Live</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Overflow Container -->
+            <main class="flex-1 p-4 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
+
+                <!-- TOP INFO CARD -->
+                <section
+                    class="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 p-8 text-white shadow-2xl relative overflow-hidden">
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <h2 class="text-3xl font-black mb-2">Update Mandi Prices</h2>
+                            <p class="text-emerald-100 font-semibold opacity-90">Manage daily crop prices for the last 7
+                                days. These will reflect immediately in the mobile app.</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div
+                                class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 min-w-[140px]">
+                                <p
+                                    class="text-[10px] font-black uppercase tracking-widest text-emerald-200 opacity-80 mb-1">
+                                    Crops Tracked</p>
+                                <p class="text-2xl font-black">3 Main</p>
+                            </div>
+                            <div
+                                class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 min-w-[140px]">
+                                <p
+                                    class="text-[10px] font-black uppercase tracking-widest text-emerald-200 opacity-80 mb-1">
+                                    Mandis</p>
+                                <p id="mandi-count" class="text-2xl font-black">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Decorative circle -->
+                    <div
+                        class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 h-64 w-64 rounded-full bg-white/10 blur-3xl">
+                    </div>
+                </section>
+
+                <!-- SELECTION & ENTRY AREA -->
+                <div class="grid lg:grid-cols-12 gap-8">
+                    <!-- Left: Settings -->
+                    <aside class="lg:col-span-4 space-y-6">
+                        <div class="bg-white rounded-3xl border-2 border-slate-200 p-6 shadow-xl sticky top-24">
+                            <h3
+                                class="text-sm font-black text-slate-900 uppercase tracking-wider mb-6 pb-4 border-b-2 border-slate-50 flex items-center gap-2">
+                                <i class="fas fa-sliders text-emerald-600"></i> Settings
+                            </h3>
+
+                            <div class="space-y-5">
+                                <div class="space-y-2">
+                                    <label
+                                        class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Select
+                                        Mandi</label>
+                                    <select id="mandiSelect" onchange="loadMandiPrices()"
+                                        class="w-full h-12 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 text-sm font-black text-slate-800 focus:border-emerald-300 focus:bg-white focus:ring-4 focus:ring-emerald-50 transition-all outline-none">
+                                        <option value="">Loading Mandis...</option>
+                                    </select>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label
+                                        class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Crop
+                                        Type</label>
+                                    <div id="cropOptions" class="grid grid-cols-1 gap-2">
+                                        <!-- Rendered dynamically -->
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 space-y-3">
+                                    <button onclick="openModal('mandiModal')"
+                                        class="w-full py-3 rounded-xl border-2 border-emerald-100 bg-white text-emerald-700 font-black hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 text-xs">
+                                        <i class="fas fa-plus-circle"></i> Add New Mandi
+                                    </button>
+                                    <button onclick="openModal('cropModal')"
+                                        class="w-full py-3 rounded-xl border-2 border-sky-100 bg-white text-sky-700 font-black hover:bg-sky-50 transition-all flex items-center justify-center gap-2 text-xs">
+                                        <i class="fas fa-seedling"></i> Add New Crop
+                                    </button>
+                                </div>
+
+                                <div class="pt-6">
+                                    <button id="saveBtn" onclick="saveAllRates()"
+                                        class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black shadow-lg shadow-emerald-100 hover:shadow-emerald-200 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                                        <i class="fas fa-save"></i> Save All Rates
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Right: Price List -->
+                    <div class="lg:col-span-8">
+                        <div class="bg-white rounded-3xl border-2 border-slate-200 shadow-xl overflow-hidden">
+                            <div
+                                class="px-8 py-6 border-b-2 border-slate-100 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
+                                <div>
+                                    <h3 id="currentSelectionLabel" class="text-lg font-black text-slate-900">Select
+                                        Options</h3>
+                                    <p class="text-xs text-slate-500 font-bold mt-1">Daily prices per Quintal (100 KG)
+                                    </p>
+                                </div>
+                                <div id="last-saved-badge"
+                                    class="hidden px-3 py-1 rounded-lg bg-amber-50 border border-amber-100 text-[10px] font-black text-amber-700 uppercase">
+                                    Changes pending
+                                </div>
+                            </div>
+
+                            <div id="priceEntryList" class="p-8 space-y-4">
+                                <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+                                    <div
+                                        class="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 border-2 border-dashed border-slate-200">
+                                        <i class="fas fa-hand-pointer text-2xl"></i>
+                                    </div>
+                                    <p class="font-black">Select a Mandi and Crop to start</p>
+                                </div>
+                                <!-- Prices go here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ADD MANDI MODAL -->
+    <div id="mandiModal"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-[slideUp_0.3s_ease-out]">
+            <div
+                class="p-6 border-b-2 border-slate-50 bg-gradient-to-r from-emerald-50 to-white flex items-center justify-between">
+                <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Add New Mandi</h3>
+                <button onclick="closeModal('mandiModal')"
+                    class="h-8 w-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-slate-400"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Mandi
+                        Name</label>
+                    <input type="text" id="newMandiName" placeholder="e.g. Lucknow Mandi"
+                        class="w-full h-12 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 text-sm font-black text-slate-800 focus:border-emerald-300 focus:bg-white transition-all outline-none" />
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Location /
+                        Details</label>
+                    <input type="text" id="newMandiLocation" placeholder="e.g. Uttar Pradesh"
+                        class="w-full h-12 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 text-sm font-black text-slate-800 focus:border-emerald-300 focus:bg-white transition-all outline-none" />
+                </div>
+                <button onclick="createMandi()"
+                    class="w-full py-4 rounded-2xl bg-emerald-600 text-white font-black shadow-lg hover:bg-emerald-700 transition-all mt-4">
+                    Create Mandi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CROP MODAL -->
+    <div id="cropModal"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-[slideUp_0.3s_ease-out]">
+            <div
+                class="p-6 border-b-2 border-slate-50 bg-gradient-to-r from-sky-50 to-white flex items-center justify-between">
+                <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Add New Crop</h3>
+                <button onclick="closeModal('cropModal')"
+                    class="h-8 w-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-slate-400"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Crop Name
+                        (English)</label>
+                    <input type="text" id="newCropName" placeholder="e.g. Maize"
+                        class="w-full h-12 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 text-sm font-black text-slate-800 focus:border-sky-300 focus:bg-white transition-all outline-none" />
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Crop Name
+                        (Hindi)</label>
+                    <input type="text" id="newCropHindi" placeholder="e.g. मक्का"
+                        class="w-full h-12 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 text-sm font-black text-slate-800 focus:border-sky-300 focus:bg-white transition-all outline-none" />
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Icon
+                        (Emoji)</label>
+                    <input type="text" id="newCropIcon" placeholder="e.g. 🌽"
+                        class="w-full h-12 rounded-xl border-2 border-slate-100 bg-slate-50 px-4 text-sm font-black text-slate-800 focus:border-sky-300 focus:bg-white transition-all outline-none" />
+                </div>
+                <button onclick="createCrop()"
+                    class="w-full py-4 rounded-2xl bg-sky-600 text-white font-black shadow-lg hover:bg-sky-700 transition-all mt-4">
+                    Create Crop
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-6 right-6 z-[100] hidden">
+        <div
+            class="bg-white rounded-2xl border-2 border-slate-900 px-6 py-4 shadow-2xl flex items-center gap-4 animate-[slideInRight_0.3s_ease-out]">
+            <div id="toastIcon" class="h-10 w-10 rounded-xl flex items-center justify-center text-white">
+                <i class="fas fa-info"></i>
+            </div>
+            <div>
+                <p id="toastTitle" class="text-[10px] font-black uppercase text-slate-400">Notification</p>
+                <p id="toastMessage" class="text-sm font-black text-slate-900">Operation Successful</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://krishinex.com/api';
+        const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+        let CROPS = [];
+        let currentCrop = '';
+        let currentMandiId = '';
+        let mandis = [];
+        let existingPrices = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchCrops();
+            fetchMandis();
+        });
+
+        function toggleSidebar(show) {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-backdrop');
+            if (show === undefined) {
+                const isHidden = sidebar.classList.contains('-translate-x-full');
+                toggleSidebar(isHidden);
+            } else {
+                if (show) {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                }
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        async function fetchCrops() {
+            try {
+                const res = await fetch(`${API_BASE}/mandi/crops`);
+                const data = await res.json();
+                CROPS = data;
+                if (data.length > 0 && !currentCrop) {
+                    currentCrop = data[0].name;
+                }
+                renderCropOptions();
+            } catch (err) {
+                showToast('Failed to fetch crops', 'error');
+            }
+        }
+
+        async function fetchMandis() {
+            try {
+                const res = await fetch(`${API_BASE}/mandi`);
+                const data = await res.json();
+                mandis = data;
+
+                const select = document.getElementById('mandiSelect');
+                select.innerHTML = '<option value="">-- Choose Mandi --</option>';
+                data.forEach(m => {
+                    select.innerHTML += `<option value="${m._id}">${m.name} (${m.location || 'Unknown'})</option>`;
+                });
+
+                document.getElementById('mandi-count').textContent = data.length + ' active';
+            } catch (err) {
+                showToast('Failed to fetch mandis', 'error');
+            }
+        }
+
+        function renderCropOptions() {
+            const container = document.getElementById('cropOptions');
+            container.innerHTML = '';
+            CROPS.forEach(c => {
+                const active = currentCrop === c.name;
+                container.innerHTML += `
+                <button onclick="selectCrop('${c.name}')" 
+                    class="flex items-center justify-between p-4 rounded-2xl border-2 transition-all group ${active ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-black' : 'border-slate-100 bg-slate-50 text-slate-600 font-bold hover:bg-slate-100'}">
+                    <span class="flex items-center gap-3">
+                        <span class="text-xl">${c.icon}</span>
+                        <span>${c.hindiName} <span class="text-[10px] uppercase opacity-50 ml-1">/ ${c.name}</span></span>
+                    </span>
+                    ${active ? '<i class="fas fa-check-circle text-emerald-500"></i>' : ''}
+                </button>
+            `;
+            });
+        }
+
+        function selectCrop(crop) {
+            currentCrop = crop;
+            renderCropOptions();
+            loadMandiPrices();
+        }
+
+        async function loadMandiPrices() {
+            currentMandiId = document.getElementById('mandiSelect').value;
+            if (!currentMandiId) {
+                resetPriceList();
+                return;
+            }
+
+            const mandiName = mandis.find(m => m._id === currentMandiId).name;
+            const cropInfo = CROPS.find(c => c.name === currentCrop);
+            document.getElementById('currentSelectionLabel').textContent = `${cropInfo.icon} ${cropInfo.hindiName} in ${mandiName}`;
+
+            const list = document.getElementById('priceEntryList');
+            list.innerHTML = '<div class="flex justify-center p-12"><div class="h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>';
+
+            try {
+                const res = await fetch(`${API_BASE}/mandi/prices?mandiId=${currentMandiId}&cropName=${currentCrop}`);
+                existingPrices = await res.json();
+                renderPriceEntries();
+            } catch (err) {
+                showToast('Error fetching prices', 'error');
+            }
+        }
+
+        function renderPriceEntries() {
+            const list = document.getElementById('priceEntryList');
+            list.innerHTML = '';
+
+            // Generate last 7 days
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                d.setHours(0, 0, 0, 0);
+                days.push(d);
+            }
+
+            days.forEach((date, i) => {
+                const dateISO = date.toISOString().split('T')[0];
+                const found = existingPrices.find(p => new Date(p.date).toDateString() === date.toDateString());
+                const priceVal = found ? found.price : '';
+
+                let label = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                if (i === 0) label = "Today (" + label + ")";
+                if (i === 1) label = "Yesterday (" + label + ")";
+
+                const isToday = i === 0;
+
+                list.innerHTML += `
+                <div class="group flex flex-col md:flex-row md:items-center justify-between p-6 rounded-2xl border-2 border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/10 transition-all ${isToday ? 'bg-emerald-50/20 border-emerald-100' : ''}">
+                    <div class="flex items-center gap-4 mb-3 md:mb-0">
+                        <div class="h-12 w-12 rounded-xl bg-white border-2 border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-emerald-500 group-hover:border-emerald-200 transition-all shadow-sm">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div>
+                             <p class="text-sm font-black text-slate-800">${label}</p>
+                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${dateISO}</p>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm">₹</span>
+                        <input type="number" data-date="${dateISO}" value="${priceVal}" placeholder="Enter Price"
+                            class="w-full md:w-48 h-12 rounded-xl border-2 border-slate-100 bg-white pl-8 pr-4 text-base font-black text-slate-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 transition-all outline-none" 
+                            oninput="document.getElementById('last-saved-badge').classList.remove('hidden')" />
+                    </div>
+                </div>
+            `;
+            });
+        }
+
+        function resetPriceList() {
+            document.getElementById('currentSelectionLabel').textContent = 'Select Options';
+            document.getElementById('priceEntryList').innerHTML = `
+            <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+                <div class="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center mb-4 border-2 border-dashed border-slate-200">
+                    <i class="fas fa-hand-pointer text-2xl"></i>
+                </div>
+                <p class="font-black">Select a Mandi and Crop to start</p>
+            </div>
+        `;
+        }
+
+        async function saveAllRates() {
+            if (!currentMandiId) {
+                showToast('Please select a Mandi', 'error');
+                return;
+            }
+
+            const inputs = document.querySelectorAll('#priceEntryList input');
+            const prices = [];
+            inputs.forEach(inp => {
+                if (inp.value) {
+                    prices.push({
+                        date: inp.dataset.date,
+                        price: parseFloat(inp.value)
+                    });
+                }
+            });
+
+            if (prices.length === 0) {
+                showToast('Enter at least one price', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('saveBtn');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<div class="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/mandi/bulk-update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify({
+                        mandiId: currentMandiId,
+                        cropName: currentCrop,
+                        prices: prices
+                    })
+                });
+
+                if (res.ok) {
+                    showToast(`Data updated for ${currentCrop} in ${mandis.find(m => m._id === currentMandiId).name}`, 'success');
+                    document.getElementById('last-saved-badge').classList.add('hidden');
+                    loadMandiPrices(); // Refresh state
+                } else {
+                    showToast('Failed to save prices', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            } finally {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        }
+
+        async function createMandi() {
+            const name = document.getElementById('newMandiName').value;
+            const location = document.getElementById('newMandiLocation').value;
+
+            if (!name) return showToast('Name is required', 'error');
+
+            try {
+                const res = await fetch(`${API_BASE}/mandi/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify({ name, location })
+                });
+                if (res.ok) {
+                    showToast('Mandi created successfully', 'success');
+                    closeModal('mandiModal');
+                    fetchMandis();
+                    document.getElementById('newMandiName').value = '';
+                    document.getElementById('newMandiLocation').value = '';
+                } else {
+                    showToast('Failed to create Mandi', 'error');
+                }
+            } catch (err) {
+                showToast('Network Error', 'error');
+            }
+        }
+
+        async function createCrop() {
+            const name = document.getElementById('newCropName').value;
+            const hindiName = document.getElementById('newCropHindi').value;
+            const icon = document.getElementById('newCropIcon').value;
+
+            if (!name || !hindiName) return showToast('Names are required', 'error');
+
+            try {
+                const res = await fetch(`${API_BASE}/mandi/crops`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify({ name, hindiName, icon: icon || '🌾' })
+                });
+                if (res.ok) {
+                    showToast('Crop created successfully', 'success');
+                    closeModal('cropModal');
+                    fetchCrops();
+                    document.getElementById('newCropName').value = '';
+                    document.getElementById('newCropHindi').value = '';
+                    document.getElementById('newCropIcon').value = '';
+                } else {
+                    showToast('Failed to create Crop', 'error');
+                }
+            } catch (err) {
+                showToast('Network Error', 'error');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const title = document.getElementById('toastTitle');
+            const msg = document.getElementById('toastMessage');
+
+            if (type === 'success') {
+                icon.className = 'h-10 w-10 rounded-xl flex items-center justify-center text-white bg-emerald-500';
+                icon.innerHTML = '<i class="fas fa-check"></i>';
+                title.textContent = 'Success';
+            } else if (type === 'error') {
+                icon.className = 'h-10 w-10 rounded-xl flex items-center justify-center text-white bg-rose-500';
+                icon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                title.textContent = 'Error';
+            } else {
+                icon.className = 'h-10 w-10 rounded-xl flex items-center justify-center text-white bg-sky-500';
+                icon.innerHTML = '<i class="fas fa-info"></i>';
+                title.textContent = 'Information';
+            }
+
+            msg.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+
+        function logoutSession() {
+            localStorage.removeItem('employeeToken');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

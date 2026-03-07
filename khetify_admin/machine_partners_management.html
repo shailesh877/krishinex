@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Equipment Rental Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = { theme: { extend: { colors: { brand: { green: '#16A34A', blue: '#0EA5E9' } } } } };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-orange-50 via-slate-50 to-amber-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg"><img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3"><img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 text-orange-700 border-2 border-orange-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 shadow-sm">
+            <i class="fas fa-tractor text-orange-600"></i>
+          </span>
+          <span class="truncate font-black">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-orange-400 hover:bg-orange-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full"></span>
+              </div>
+            </button>
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-tractor text-orange-600"></i> Equipment Rental Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">Bookings, commissions & field
+                executive cash collections</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="exportBookings()"
+              class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs text-white font-black hover:from-orange-600 hover:to-amber-600 shadow-md transition-all">
+              <i class="fas fa-download mr-2"></i> Export CSV
+            </button>
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 transition-all"><i
+                class="far fa-bell text-slate-600"></i></button>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <main class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+          <!-- Providers -->
+          <div
+            class="rounded-2xl border-2 border-orange-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                <i class="fas fa-users text-orange-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-orange-600 font-black">Providers</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-providers">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Partners</p>
+          </div>
+          <!-- Total Machines -->
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-tractor text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">Machines</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-machines">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Listed</p>
+          </div>
+          <!-- Active Bookings -->
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-calendar-check text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Active</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-active">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Live Bookings</p>
+          </div>
+          <!-- Total Revenue -->
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Revenue</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-revenue">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total (Completed)</p>
+          </div>
+          <!-- Platform Commission -->
+          <div
+            class="rounded-2xl border-2 border-blue-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
+                <i class="fas fa-sack-dollar text-blue-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-blue-600 font-black">Commission</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-commission">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Platform (5%)</p>
+          </div>
+          <!-- Cash Pending -->
+          <div
+            class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+                <i class="fas fa-hand-holding-dollar text-rose-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-rose-600 font-black">Pending</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-cash-pending">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Cash Uncollected</p>
+          </div>
+        </section>
+
+        <!-- BOOKINGS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-orange-50/20 to-amber-50/20">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2"><i
+                    class="fas fa-calendar-days text-orange-600"></i> Equipment Bookings & Commission</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">All rental bookings with financial breakdown and
+                  field executive assignment</p>
+              </div>
+              <div class="flex gap-2 flex-wrap">
+                <input id="searchBooking" oninput="filterBookingTable()" placeholder="Search machine / farmer…"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-semibold w-44 focus:border-orange-400 outline-none transition-all" />
+                <select id="statusFilter" onchange="fetchBookings()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold focus:border-orange-400 outline-none">
+                  <option value="all">All Status</option>
+                  <option value="New">New</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-auto custom-scroll" style="max-height:480px">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Booking</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Provider → Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Machine & Duration</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Commission (5%)</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Payout</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Field Exec</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Cash</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookingTableBody">
+                <tr>
+                  <td colspan="10" class="text-center py-8 text-slate-400 font-semibold"><i
+                      class="fas fa-circle-notch fa-spin mr-2"></i>Loading bookings…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- CASH COLLECTIONS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2"><i
+                    class="fas fa-hand-holding-dollar text-purple-600"></i> Field Executive Cash Collections</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">All payments collected by field executives from
+                  completed bookings</p>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-auto custom-scroll" style="max-height:380px">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Booking ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Machine</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Provider</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Commission</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Collected By</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Note</th>
+                </tr>
+              </thead>
+              <tbody id="cashCollectionBody">
+                <tr>
+                  <td colspan="9" class="text-center py-8 text-slate-400 font-semibold"><i
+                      class="fas fa-circle-notch fa-spin mr-2"></i>Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- BOOKING DETAIL MODAL -->
+  <div id="bookingModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target===this)closeModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-lg border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div
+        class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white flex items-center justify-between">
+        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2"><i
+            class="fas fa-tractor text-orange-600"></i> Booking Details</h2>
+        <button onclick="closeModal()"
+          class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"><i
+            class="fas fa-times text-slate-700"></i></button>
+      </div>
+      <div id="modalContent" class="px-6 py-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scroll"></div>
+      <div id="modalActions" class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex flex-wrap gap-2 justify-end">
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN FE MODAL -->
+  <div id="assignModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target===this)closeAssignModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-sm border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 flex items-center justify-between">
+        <h2 class="text-lg font-black text-slate-900">Assign Field Executive</h2>
+        <button onclick="closeAssignModal()"
+          class="h-8 w-8 rounded-lg border-2 border-slate-200 flex items-center justify-center hover:bg-slate-50"><i
+            class="fas fa-times text-slate-600 text-sm"></i></button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <input type="hidden" id="assignBookingId">
+        <div>
+          <label class="text-xs font-black text-slate-700 mb-2 block">Select Field Executive</label>
+          <select id="feSelect"
+            class="w-full h-10 rounded-xl border-2 border-slate-200 bg-white px-3 text-sm font-semibold focus:border-orange-400 outline-none">
+            <option value="">Loading field executives…</option>
+          </select>
+        </div>
+        <button onclick="submitAssign()"
+          class="w-full h-10 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md">
+          <i class="fas fa-check mr-2"></i> Assign
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMsg" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script>
+    const API = 'https://krishinex.com/api/employee';
+    const AUTH = localStorage.getItem('employeeToken');
+    const H = { 'Authorization': `Bearer ${AUTH}`, 'Content-Type': 'application/json' };
+
+    let allBookings = [];
+
+    // ── Sidebar ────────────────────────────────────────────────────────────
+    function toggleSidebar(force) {
+      const sb = document.getElementById('sidebar'), bd = document.getElementById('mobile-backdrop');
+      const open = !sb.classList.contains('-translate-x-full');
+      if (force === false || (open && force === undefined)) { sb.classList.add('-translate-x-full'); bd.classList.add('hidden'); }
+      else { sb.classList.remove('-translate-x-full'); bd.classList.remove('hidden'); }
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function toast(msg, type = 'success') {
+      const t = document.getElementById('toast'), m = document.getElementById('toastMsg');
+      t.className = 'fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]';
+      if (type === 'success') t.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+      else t.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-800');
+      m.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3500);
+    }
+
+    // ── KPI Stats ──────────────────────────────────────────────────────────
+    async function fetchStats() {
+      try {
+        const r = await fetch(`${API}/admin/rental/stats`, { headers: H });
+        const d = await r.json();
+        if (!r.ok) return;
+        document.getElementById('kpi-providers').textContent = d.totalProviders ?? 0;
+        document.getElementById('kpi-machines').textContent = d.totalMachines ?? 0;
+        document.getElementById('kpi-active').textContent = d.activeBookings ?? 0;
+        const rev = d.totalRevenue ?? 0;
+        document.getElementById('kpi-revenue').textContent = rev >= 100000 ? `₹${(rev / 100000).toFixed(1)}L` : `₹${rev.toLocaleString('en-IN')}`;
+        const comm = d.totalCommission ?? 0;
+        document.getElementById('kpi-commission').textContent = comm >= 100000 ? `₹${(comm / 100000).toFixed(1)}L` : `₹${comm.toLocaleString('en-IN')}`;
+        document.getElementById('kpi-cash-pending').textContent = d.cashPending ?? 0;
+      } catch (e) { console.error('Stats error:', e); }
+    }
+
+    // ── Bookings Table ─────────────────────────────────────────────────────
+    async function fetchBookings() {
+      const status = document.getElementById('statusFilter').value;
+      const url = status === 'all' ? `${API}/admin/rental/bookings` : `${API}/admin/rental/bookings?status=${encodeURIComponent(status)}`;
+      const tbody = document.getElementById('bookingTableBody');
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading…</td></tr>`;
+      try {
+        const r = await fetch(url, { headers: H });
+        const d = await r.json();
+        if (!r.ok) { tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-rose-500 font-bold">${d.error || 'Failed to load bookings'}</td></tr>`; return; }
+        allBookings = d.bookings || [];
+        renderBookingTable(allBookings);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-rose-500 font-bold">Network error</td></tr>`;
+      }
+    }
+
+    function renderBookingTable(bookings) {
+      const tbody = document.getElementById('bookingTableBody');
+      if (!bookings.length) { tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-slate-400 font-semibold">No bookings found.</td></tr>`; return; }
+      tbody.innerHTML = '';
+      bookings.forEach(b => {
+        const from = b.fromDate ? new Date(b.fromDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'N/A';
+        const to = b.toDate ? new Date(b.toDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '';
+
+        const statusColors = {
+          'New': 'bg-slate-100 border-slate-300 text-slate-700',
+          'Accepted': 'bg-sky-100 border-sky-300 text-sky-800',
+          'In Progress': 'bg-amber-100 border-amber-300 text-amber-800',
+          'Completed': 'bg-emerald-100 border-emerald-300 text-emerald-900',
+          'Cancelled': 'bg-rose-100 border-rose-300 text-rose-800'
+        };
+        const statusIcons = { 'New': 'fa-circle', 'Accepted': 'fa-thumbs-up', 'In Progress': 'fa-spinner fa-spin', 'Completed': 'fa-circle-check', 'Cancelled': 'fa-ban' };
+        const sc = statusColors[b.status] || 'bg-slate-100 text-slate-700 border-slate-300';
+        const si = statusIcons[b.status] || 'fa-circle';
+
+        const cashBadge = b.cashCollected
+          ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-check mr-0.5"></i>Collected</span>`
+          : (b.status === 'Completed'
+            ? `<button onclick="markCollected('${b._id}')" class="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all"><i class="fas fa-hand-holding-dollar mr-0.5"></i>Collect</button>`
+            : `<span class="text-[9px] text-slate-400">—</span>`);
+
+        const feName = b.assignedFieldExec ? `<span class="text-xs font-semibold text-slate-700">${b.assignedFieldExec.name}</span>` : `<button onclick="openAssign('${b._id}')" class="inline-flex items-center text-[9px] rounded-lg bg-orange-50 border border-orange-200 px-2 py-0.5 text-orange-700 font-bold hover:bg-orange-100 transition-all"><i class="fas fa-plus mr-1"></i>Assign</button>`;
+
+        let actionBtns = `<button onclick="openDetail('${b._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-2.5 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i>View</button>`;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-orange-50/20 transition-colors border-b border-slate-100 booking-row';
+        tr.dataset.search = `${b.machine?.name} ${b.farmer?.name} ${b.provider?.name} ${b.bookingId}`.toLowerCase();
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="font-black text-slate-900 text-xs">${b.bookingId}</div>
+            <div class="text-[10px] text-slate-500">${from}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${b.provider?.name} → ${b.farmer?.name}</div>
+            <div class="text-[10px] text-slate-500">${b.farmer?.phone || ''}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900 text-xs">${b.machine?.name}</div>
+            <div class="text-[10px] text-slate-500">${b.days} day${b.days !== 1 ? 's' : ''} · ${from}–${to}</div>
+          </td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">₹${(b.totalAmount || 0).toLocaleString('en-IN')}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-blue-700">₹${(b.platformCommission || 0).toLocaleString('en-IN')}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">₹${(b.ownerPayout || 0).toLocaleString('en-IN')}</div></td>
+          <td class="px-5 py-4">${feName}</td>
+          <td class="px-5 py-4">${cashBadge}</td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black border-2 ${sc}"><i class="fas ${si} mr-1"></i>${b.status}</span>
+          </td>
+          <td class="px-5 py-4 text-right">${actionBtns}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterBookingTable() {
+      const q = document.getElementById('searchBooking').value.toLowerCase();
+      document.querySelectorAll('.booking-row').forEach(tr => {
+        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+      });
+    }
+
+    // ── Cash Collections ───────────────────────────────────────────────────
+    async function fetchCashCollections() {
+      const tbody = document.getElementById('cashCollectionBody');
+      try {
+        const r = await fetch(`${API}/admin/rental/cash-collections`, { headers: H });
+        const data = await r.json();
+        if (!r.ok || !data.length) {
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400 font-semibold">No cash collections yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = '';
+        data.forEach(c => {
+          const collDate = c.collectedAt ? new Date(c.collectedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '—';
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-purple-50/20 transition-colors border-b border-slate-100';
+          tr.innerHTML = `
+            <td class="px-5 py-4"><div class="font-black text-slate-900 text-xs">${c.bookingId}</div></td>
+            <td class="px-5 py-4 text-xs font-semibold text-slate-900">${c.machine}</td>
+            <td class="px-5 py-4 text-xs font-semibold text-slate-900">${c.provider}</td>
+            <td class="px-5 py-4 text-xs font-semibold text-slate-900">${c.farmer}</td>
+            <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">₹${(c.totalAmount || 0).toLocaleString('en-IN')}</div></td>
+            <td class="px-5 py-4 text-right"><div class="font-black text-blue-700">₹${(c.commission || 0).toLocaleString('en-IN')}</div></td>
+            <td class="px-5 py-4"><span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-700 border border-purple-200"><i class="fas fa-user mr-1"></i>${c.collectedBy}</span></td>
+            <td class="px-5 py-4 text-xs text-slate-600">${collDate}</td>
+            <td class="px-5 py-4 text-xs text-slate-500 max-w-[120px] truncate" title="${c.note}">${c.note || '—'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-bold">Failed to load</td></tr>`;
+      }
+    }
+
+    // ── Mark Cash Collected ────────────────────────────────────────────────
+    async function markCollected(id) {
+      if (!confirm('Mark this booking as cash collected?')) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/bookings/${id}/collect`, { method: 'PUT', headers: H });
+        const d = await r.json();
+        if (r.ok) { toast(d.message || 'Cash marked collected', 'success'); fetchBookings(); fetchStats(); fetchCashCollections(); }
+        else toast(d.error || 'Failed', 'error');
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    // ── Booking Detail Modal ───────────────────────────────────────────────
+    async function openDetail(id) {
+      const booking = allBookings.find(b => b._id === id);
+      if (!booking) return;
+
+      const from = booking.fromDate ? new Date(booking.fromDate).toLocaleDateString('en-IN') : 'N/A';
+      const to = booking.toDate ? new Date(booking.toDate).toLocaleDateString('en-IN') : 'N/A';
+
+      document.getElementById('modalContent').innerHTML = `
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-xl bg-orange-50 border border-orange-200 p-3"><p class="text-[10px] text-orange-600 font-black uppercase">Booking ID</p><p class="font-black text-slate-900 mt-1">${booking.bookingId}</p></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3"><p class="text-[10px] text-slate-500 font-black uppercase">Status</p><p class="font-black text-slate-900 mt-1">${booking.status}</p></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3"><p class="text-[10px] text-slate-500 font-black uppercase">Machine</p><p class="font-black text-slate-900 mt-1">${booking.machine?.name}</p><p class="text-xs text-slate-500">${booking.machine?.village}</p></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3"><p class="text-[10px] text-slate-500 font-black uppercase">Duration</p><p class="font-black text-slate-900 mt-1">${booking.days} day${booking.days !== 1 ? 's' : ''}</p><p class="text-xs text-slate-500">${from} → ${to}</p></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3"><p class="text-[10px] text-slate-500 font-black uppercase">Provider</p><p class="font-black text-slate-900 mt-1">${booking.provider?.name}</p><p class="text-xs text-slate-500">${booking.provider?.phone}</p></div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3"><p class="text-[10px] text-slate-500 font-black uppercase">Farmer</p><p class="font-black text-slate-900 mt-1">${booking.farmer?.name}</p><p class="text-xs text-slate-500">${booking.farmer?.phone}</p></div>
+        </div>
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
+          <p class="text-xs font-black text-emerald-700 mb-2">Financial Breakdown</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-center"><p class="text-[10px] text-slate-500 font-semibold">Total</p><p class="font-black text-slate-900">₹${(booking.totalAmount || 0).toLocaleString('en-IN')}</p></div>
+            <div class="text-center"><p class="text-[10px] text-slate-500 font-semibold">Commission (5%)</p><p class="font-black text-blue-700">₹${(booking.platformCommission || 0).toLocaleString('en-IN')}</p></div>
+            <div class="text-center"><p class="text-[10px] text-slate-500 font-semibold">Provider Payout</p><p class="font-black text-emerald-700">₹${(booking.ownerPayout || 0).toLocaleString('en-IN')}</p></div>
+          </div>
+        </div>
+        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+          <p class="text-[10px] text-slate-500 font-black uppercase mb-1">Field Executive</p>
+          <p class="font-semibold text-slate-900">${booking.assignedFieldExec ? booking.assignedFieldExec.name + ' · ' + booking.assignedFieldExec.phone : 'Not Assigned'}</p>
+        </div>
+        <div class="rounded-xl ${booking.cashCollected ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'} border p-3">
+          <p class="text-[10px] font-black uppercase mb-1 ${booking.cashCollected ? 'text-emerald-600' : 'text-rose-600'}">Cash Collection</p>
+          <p class="font-semibold text-slate-900">${booking.cashCollected ? '✅ Collected by ' + (booking.cashCollectedBy?.name || 'Admin') : '⏳ Pending'}</p>
+          ${booking.cashNote ? `<p class="text-xs text-slate-500 mt-1">${booking.cashNote}</p>` : ''}
+        </div>
+        ${booking.cancelReason ? `<div class="rounded-xl bg-rose-50 border border-rose-200 p-3"><p class="text-[10px] text-rose-600 font-black uppercase">Cancel Reason</p><p class="text-sm text-slate-700 mt-1">${booking.cancelReason}</p></div>` : ''}
+      `;
+
+      // Action buttons
+      const actions = document.getElementById('modalActions');
+      actions.innerHTML = '';
+
+      // Status progression buttons
+      const nextStatuses = { 'New': 'Accepted', 'Accepted': 'In Progress', 'In Progress': 'Completed' };
+      if (nextStatuses[booking.status]) {
+        const next = nextStatuses[booking.status];
+        const btn = document.createElement('button');
+        btn.className = 'inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all';
+        btn.innerHTML = `<i class="fas fa-arrow-right mr-1.5"></i> Mark as ${next}`;
+        btn.onclick = () => updateStatus(id, next);
+        actions.appendChild(btn);
+      }
+
+      if (booking.status !== 'Cancelled' && booking.status !== 'Completed') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'inline-flex items-center rounded-xl bg-rose-50 border-2 border-rose-200 px-4 py-2 text-xs text-rose-700 font-black hover:bg-rose-100 transition-all';
+        cancelBtn.innerHTML = `<i class="fas fa-ban mr-1.5"></i> Cancel Booking`;
+        cancelBtn.onclick = () => { const r = prompt('Reason for cancellation?'); if (r) updateStatus(id, 'Cancelled', r); };
+        actions.appendChild(cancelBtn);
+      }
+
+      if (!booking.assignedFieldExec) {
+        const feBtn = document.createElement('button');
+        feBtn.className = 'inline-flex items-center rounded-xl bg-orange-50 border-2 border-orange-200 px-4 py-2 text-xs text-orange-700 font-black hover:bg-orange-100 transition-all';
+        feBtn.innerHTML = `<i class="fas fa-user-plus mr-1.5"></i> Assign FE`;
+        feBtn.onclick = () => { closeModal(); openAssign(id); };
+        actions.appendChild(feBtn);
+      }
+
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'inline-flex items-center rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-700 font-black hover:bg-slate-200 transition-all';
+      closeBtn.innerHTML = 'Close';
+      closeBtn.onclick = closeModal;
+      actions.appendChild(closeBtn);
+
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('bookingModal').classList.add('hidden'); }
+
+    async function updateStatus(id, status, cancelReason = '') {
+      try {
+        const body = { status };
+        if (cancelReason) body.cancelReason = cancelReason;
+        const r = await fetch(`${API}/admin/rental/bookings/${id}/status`, { method: 'PUT', headers: H, body: JSON.stringify(body) });
+        const d = await r.json();
+        if (r.ok) { toast(d.message || 'Status updated', 'success'); closeModal(); fetchBookings(); fetchStats(); }
+        else toast(d.error || 'Failed', 'error');
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    // ── Assign FE Modal ────────────────────────────────────────────────────
+    async function openAssign(bookingId) {
+      document.getElementById('assignBookingId').value = bookingId;
+      const sel = document.getElementById('feSelect');
+      sel.innerHTML = '<option value="">Loading…</option>';
+      document.getElementById('assignModal').classList.remove('hidden');
+      try {
+        const r = await fetch(`${API}/admin/rental/field-execs`, { headers: H });
+        const fes = await r.json();
+        if (fes.length === 0) { sel.innerHTML = '<option value="">No field executives found</option>'; return; }
+        sel.innerHTML = '<option value="">Select field executive</option>' + fes.map(f => `<option value="${f._id}">${f.name} · ${f.phone}</option>`).join('');
+      } catch (e) { sel.innerHTML = '<option value="">Error loading</option>'; }
+    }
+
+    function closeAssignModal() { document.getElementById('assignModal').classList.add('hidden'); }
+
+    async function submitAssign() {
+      const bookingId = document.getElementById('assignBookingId').value;
+      const fieldExecId = document.getElementById('feSelect').value;
+      if (!fieldExecId) { toast('Please select a field executive', 'error'); return; }
+      try {
+        const r = await fetch(`${API}/admin/rental/bookings/${bookingId}/assign`, { method: 'PUT', headers: H, body: JSON.stringify({ fieldExecId }) });
+        const d = await r.json();
+        if (r.ok) { toast(d.message || 'Assigned successfully', 'success'); closeAssignModal(); fetchBookings(); }
+        else toast(d.error || 'Failed to assign', 'error');
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    // ── CSV Export ─────────────────────────────────────────────────────────
+    async function exportBookings() {
+      toast('Starting download...', 'info');
+
+      // Native download triggered via token parameter so backend can provide Content-Disposition
+      const exportUrl = `${API}/admin/rental/export?token=${AUTH}`;
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = exportUrl;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        toast('CSV export initiated!', 'success');
+      }, 3000);
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchStats();
+      fetchBookings();
+      fetchCashCollections();
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAssignModal(); toggleSidebar(false); } });
+  </script>
+</body>
+
+</html>

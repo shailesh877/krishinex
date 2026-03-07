@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Field Executives</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-cyan-50 via-slate-50 to-blue-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-user-tag text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-cyan-400 hover:bg-cyan-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-user-tag text-cyan-600"></i>
+                Field Executives Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Task assignments, cash collections & performance tracking
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            class="rounded-2xl border-2 border-cyan-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-100 to-cyan-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-users text-2xl text-cyan-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-cyan-600 font-black">Total</span>
+            </div>
+            <p id="totalExecsStat" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-cyan-700 font-bold">Field Executives</p>
+            <div class="mt-3 pt-3 border-t-2 border-cyan-100">
+              <p class="text-[10px] text-slate-600 font-semibold">Active in field</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-clipboard-list text-2xl text-sky-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">Tasks</span>
+            </div>
+            <p id="totalTasksStat" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-sky-700 font-bold">Assigned Tasks</p>
+            <div class="mt-3 pt-3 border-t-2 border-sky-100">
+              <p id="pendingTasksStat" class="text-[10px] text-slate-600 font-semibold">... pending completion</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-purple-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-hand-holding-dollar text-2xl text-purple-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-purple-600 font-black">Cash</span>
+            </div>
+            <p id="totalCashStat" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-purple-700 font-bold">Collections</p>
+            <div class="mt-3 pt-3 border-t-2 border-purple-100">
+              <p id="pendingDepositsStat" class="text-[10px] text-slate-600 font-semibold">... pending deposits</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-check-double text-2xl text-emerald-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-emerald-600 font-black">Completed</span>
+            </div>
+            <p id="completedTasksStat" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-emerald-700 font-bold">Tasks Done</p>
+            <div class="mt-3 pt-3 border-t-2 border-emerald-100">
+              <p class="text-[10px] text-slate-600 font-semibold">This month</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- FIELD EXECUTIVES LIST -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-cyan-50/20 to-sky-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-id-card text-cyan-600"></i>
+                  Field Executives
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Team members, assigned areas & performance
+                </p>
+              </div>
+              <button onclick="openAddExecutiveModal()"
+                class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 px-4 text-xs text-white font-black hover:from-cyan-600 hover:to-sky-600 shadow-md transition-all">
+                <i class="fas fa-plus mr-2"></i> Add Executive
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Executive</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Assigned Area</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Active Tasks</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Completed</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Collections</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="executivesTbody">
+                <!-- Executive 1 -->
+                <tr class="hover:bg-cyan-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
+                        <i class="fas fa-user-tag text-cyan-600"></i>
+                      </div>
+                      <div>
+                        <div class="font-black text-slate-900">Rahul Verma</div>
+                        <div class="text-[10px] text-slate-500 font-medium">ID: FE001</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">98XXX88000</div>
+                    <div class="text-[10px] text-slate-500">rahul@krishinex.com</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Karnal District</div>
+                    <div class="text-[10px] text-slate-500">10 villages</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-sky-700">8</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-emerald-700">45</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-purple-700">₹1.2 L</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="viewExecutive('FE001', 'Rahul Verma')"
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Executive 2 -->
+                <tr class="hover:bg-sky-50/30 transition-colors">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-sky-100 to-blue-100 flex items-center justify-center shadow-sm">
+                        <i class="fas fa-user-tag text-sky-600"></i>
+                      </div>
+                      <div>
+                        <div class="font-black text-slate-900">Priya Singh</div>
+                        <div class="text-[10px] text-slate-500 font-medium">ID: FE002</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">89XXX99000</div>
+                    <div class="text-[10px] text-slate-500">priya@krishinex.com</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Panipat District</div>
+                    <div class="text-[10px] text-slate-500">8 villages</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-sky-700">5</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-emerald-700">38</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-purple-700">₹86,000</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="viewExecutive('FE002', 'Priya Singh')"
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ASSIGNED TASKS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-tasks text-purple-600"></i>
+                  Assigned Tasks & Collections
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Cash collection, KYC verification & farmer visits
+                </p>
+              </div>
+              <button onclick="assignNewTask()"
+                class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-violet-600 shadow-md transition-all">
+                <i class="fas fa-plus mr-2"></i> Assign Task
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Task ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Executive</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Task Type</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Partner/Location</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount (if collection)</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Due Date</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tasksTbody">
+                <!-- Task 1: Collection Pending -->
+                <tr class="hover:bg-amber-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">#TASK-001</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Rahul Verma</div>
+                    <div class="text-[10px] text-slate-500">FE001</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-700 border border-purple-200">
+                      <i class="fas fa-money-bill-wave mr-1"></i> Cash Collection
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Sharma Tractor Service</div>
+                    <div class="text-[10px] text-slate-500">Karnal, HR</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-purple-700">₹48,000</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border-2 border-amber-200">
+                      <i class="fas fa-clock mr-1"></i> Pending
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">14 Jan 2026</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="viewTask('TASK-001')"
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Task 2: KYC Verification Completed -->
+                <tr class="hover:bg-emerald-50/30 transition-colors">
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">#TASK-002</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Priya Singh</div>
+                    <div class="text-[10px] text-slate-500">FE002</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold text-sky-700 border border-sky-200">
+                      <i class="fas fa-shield-check mr-1"></i> KYC Verification
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Farmer: Mohan Lal</div>
+                    <div class="text-[10px] text-slate-500">Panipat, HR</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-slate-400">—</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-900 border-2 border-emerald-300">
+                      <i class="fas fa-circle-check mr-1"></i> Completed
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">10 Jan 2026</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="viewTask('TASK-002')"
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- Add Executive Modal -->
+  <div id="addExecutiveModal"
+    class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
+        <!-- Header -->
+        <div
+          class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-cyan-50/30 to-sky-50/30 flex justify-between items-center">
+          <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <div
+              class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
+              <i class="fas fa-user-plus text-cyan-600"></i>
+            </div>
+            Add New Executive
+          </h3>
+          <button onclick="closeAddExecutiveModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form id="addExecutiveForm" onsubmit="submitAddExecutive(event)" class="p-6">
+          <div class="space-y-4">
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <input type="text" id="execName" required
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="Rahul Verma">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Mobile Number *</label>
+                <input type="tel" id="execPhone" required pattern="[0-9]{10}"
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="9876543210">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                <input type="email" id="execEmail"
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="rahul@krishinex.com">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Executive ID (Optional)</label>
+                <input type="text" id="execCode"
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="FE001">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Assigned Area *</label>
+              <input type="text" id="execArea" required
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                placeholder="E.g., Karnal District">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Temporary Password *</label>
+              <input type="password" id="execPassword" required
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                placeholder="••••••••">
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="mt-8 flex justify-end gap-3 pt-6 border-t-2 border-slate-100">
+            <button type="button" onclick="closeAddExecutiveModal()"
+              class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+              Cancel
+            </button>
+            <button type="submit"
+              class="rounded-xl bg-gradient-to-r from-cyan-500 to-sky-500 px-6 py-2.5 text-sm font-black text-white hover:from-cyan-600 hover:to-sky-600 shadow-md transition-all flex items-center gap-2">
+              <i class="fas fa-check"></i> Save Executive
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assign Task Modal -->
+  <div id="assignTaskModal"
+    class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
+        <!-- Header -->
+        <div
+          class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/30 to-violet-50/30 flex justify-between items-center">
+          <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <div
+              class="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center shadow-sm">
+              <i class="fas fa-tasks text-purple-600"></i>
+            </div>
+            Assign New Task
+          </h3>
+          <button onclick="closeAssignTaskModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form id="assignTaskForm" onsubmit="submitAssignTask(event)" class="p-6">
+          <div class="space-y-4">
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Select Executive *</label>
+              <select id="taskExecutive" required
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all font-semibold bg-white">
+                <option value="">-- Choose Executive --</option>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Task Type *</label>
+                <select id="taskType" required
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all font-semibold bg-white">
+                  <option value="Cash Collection">Cash Collection</option>
+                  <option value="KYC Verification">KYC Verification</option>
+                  <option value="Visit">Farmer/Partner Visit</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Due Date *</label>
+                <input type="date" id="taskDate" required
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all font-semibold text-slate-700">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Partner / Farmer Name *</label>
+              <input type="text" id="taskPartner" required
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                placeholder="Ramesh Kumar">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Location / Village *</label>
+                <input type="text" id="taskLocation" required
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="Karnal">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Amount (If Collection)</label>
+                <input type="number" id="taskAmount" min="0"
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="₹ 0">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Notes / Instructions</label>
+              <textarea id="taskNotes" rows="2"
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold resize-none"
+                placeholder="Check original documents..."></textarea>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="mt-8 flex justify-end gap-3 pt-6 border-t-2 border-slate-100">
+            <button type="button" onclick="closeAssignTaskModal()"
+              class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors">
+              Cancel
+            </button>
+            <button type="submit"
+              class="rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-6 py-2.5 text-sm font-black text-white hover:from-purple-600 hover:to-violet-600 shadow-md transition-all flex items-center gap-2">
+              <i class="fas fa-check"></i> Assign Task
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Task Details Modal -->
+  <div id="viewTaskModal"
+    class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
+        <!-- Header -->
+        <div
+          class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-indigo-50/30 to-blue-50/30 flex justify-between items-center">
+          <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <div
+              class="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center shadow-sm">
+              <i class="fas fa-file-invoice text-indigo-600"></i>
+            </div>
+            Task Details
+          </h3>
+          <button onclick="closeViewTaskModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6">
+          <div class="space-y-4">
+
+            <div class="flex justify-between items-start border-b-2 border-slate-100 pb-4">
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Task ID</p>
+                <p id="vt-taskId" class="text-base font-black text-slate-900 mt-0.5">---</p>
+              </div>
+              <div class="text-right">
+                <span id="vt-status"
+                  class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-slate-50 text-slate-700">
+                  Loading...
+                </span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-b-2 border-slate-100 pb-4">
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Executive Assigned</p>
+                <div class="flex items-center gap-2 mt-1.5">
+                  <i class="fas fa-user-tag text-slate-400"></i>
+                  <p id="vt-executive" class="text-sm font-bold text-slate-900">---</p>
+                </div>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Task Type</p>
+                <p id="vt-type" class="text-sm font-bold text-slate-900 mt-1.5 flex items-center gap-1.5">
+                  <i class="fas fa-tag text-slate-400"></i> ---
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-b-2 border-slate-100 pb-4">
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Farmer / Partner</p>
+                <p id="vt-partner" class="text-sm font-bold text-slate-900 mt-1.5">---</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Location</p>
+                <p id="vt-location" class="text-sm font-bold text-slate-900 mt-1.5">---</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pb-2">
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Amount</p>
+                <p id="vt-amount" class="text-lg font-black text-purple-700 mt-0.5">---</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Due Date</p>
+                <p id="vt-dueDate" class="text-sm font-bold text-slate-900 mt-1.5">---</p>
+              </div>
+            </div>
+
+            <div class="pt-2 rounded-xl bg-slate-50 p-4 border border-slate-100">
+              <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider mb-1">Instructions / Notes</p>
+              <p id="vt-notes" class="text-[13px] font-semibold text-slate-700 italic">No notes provided for this task.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t-2 border-slate-100 bg-slate-50 flex justify-end">
+          <button type="button" onclick="closeViewTaskModal()"
+            class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors">
+            Close Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Executive Details Modal -->
+  <div id="viewExecutiveModal"
+    class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
+
+        <!-- Header -->
+        <div
+          class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-cyan-50/30 to-sky-50/30 flex justify-between items-center">
+          <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <div
+              class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
+              <i class="fas fa-id-card text-cyan-600"></i>
+            </div>
+            Executive Profile
+          </h3>
+          <button onclick="closeViewExecutiveModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-5">
+
+          <!-- Avatar + Name -->
+          <div class="flex items-center gap-4 pb-5 border-b-2 border-slate-100">
+            <div
+              class="h-16 w-16 rounded-2xl bg-gradient-to-br from-cyan-100 to-sky-200 flex items-center justify-center shadow-md text-2xl">
+              <i class="fas fa-user-tag text-cyan-600"></i>
+            </div>
+            <div>
+              <p id="ve-name" class="text-xl font-black text-slate-900">---</p>
+              <p id="ve-id" class="text-xs text-slate-500 font-semibold mt-0.5">ID: ---</p>
+              <span id="ve-status"
+                class="mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200">
+                <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+              </span>
+            </div>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="grid grid-cols-2 gap-4 pb-5 border-b-2 border-slate-100">
+            <div>
+              <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Mobile</p>
+              <div class="flex items-center gap-1.5">
+                <i class="fas fa-phone text-cyan-500 text-xs"></i>
+                <p id="ve-phone" class="text-sm font-bold text-slate-900">---</p>
+              </div>
+            </div>
+            <div>
+              <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Email</p>
+              <div class="flex items-center gap-1.5 overflow-hidden">
+                <i class="fas fa-envelope text-sky-500 text-xs flex-shrink-0"></i>
+                <p id="ve-email" class="text-sm font-bold text-slate-900 truncate">---</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assigned Area -->
+          <div class="pb-5 border-b-2 border-slate-100">
+            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Assigned Area</p>
+            <div class="flex items-center gap-1.5">
+              <i class="fas fa-map-location-dot text-indigo-500 text-xs"></i>
+              <p id="ve-area" class="text-sm font-bold text-slate-900">---</p>
+            </div>
+          </div>
+
+          <!-- Performance Stats -->
+          <div>
+            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-3">Performance</p>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-xl bg-sky-50 border border-sky-100 p-3 text-center">
+                <p id="ve-active" class="text-2xl font-black text-sky-700">0</p>
+                <p class="text-[10px] text-sky-600 font-bold mt-0.5">Active Tasks</p>
+              </div>
+              <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-center">
+                <p id="ve-completed" class="text-2xl font-black text-emerald-700">0</p>
+                <p class="text-[10px] text-emerald-600 font-bold mt-0.5">Completed</p>
+              </div>
+              <div class="rounded-xl bg-purple-50 border border-purple-100 p-3 text-center">
+                <p id="ve-collections" class="text-2xl font-black text-purple-700">₹0</p>
+                <p class="text-[10px] text-purple-600 font-bold mt-0.5">Collections</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t-2 border-slate-100 bg-slate-50 flex justify-end">
+          <button type="button" onclick="closeViewExecutiveModal()"
+            class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors">
+            Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== FIELD EXECUTIVES PAGE SCRIPT ========== -->
+  <script>
+    const API_BASE = 'https://krishinex.com/api';
+    // Note: In development, fallback to a hardcoded admin token if missing from localStorage
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+    if (!AUTH_TOKEN) {
+      console.warn('No Admin authentication token found.');
+    }
+
+    let allExecutives = [];
+    let allTasks = [];
+
+    // Page Load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchDashboardData();
+      fetchExecutives();
+      fetchTasks();
+    });
+
+    // 1. Fetch Dashboard KPIs
+    async function fetchDashboardData() {
+      try {
+        const res = await fetch(`${API_BASE}/field/dashboard`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const stats = await res.json();
+
+        if (res.ok) {
+          document.getElementById('totalExecsStat').textContent = stats.totalExecutives;
+          document.getElementById('totalTasksStat').textContent = stats.assignedTasks;
+          document.getElementById('pendingTasksStat').textContent = `${stats.pendingTasks} pending completion`;
+          document.getElementById('totalCashStat').textContent = `₹${stats.totalCollections.toLocaleString()}`;
+          document.getElementById('pendingDepositsStat').textContent = `${stats.pendingDeposits} pending deposits`;
+          document.getElementById('completedTasksStat').textContent = stats.completedThisMonth;
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard:', err);
+      }
+    }
+
+    // 2. Fetch Executives
+    async function fetchExecutives() {
+      try {
+        const res = await fetch(`${API_BASE}/field/executives`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const execs = await res.json();
+        if (res.ok) {
+          allExecutives = execs;
+          renderExecutivesTable(execs);
+          populateExecutiveDropdown(execs); // For Assign Task Modal
+        }
+      } catch (err) {
+        console.error('Error fetching executives:', err);
+        showToast('Failed to load executives', 'warning');
+      }
+    }
+
+    // Render Executives Table
+    function renderExecutivesTable(execs) {
+      const tbody = document.getElementById('executivesTbody');
+      tbody.innerHTML = '';
+
+      if (execs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-500">No field executives found...</td></tr>`;
+        return;
+      }
+
+      execs.forEach(exec => {
+        // Calculate status badge
+        const badgeClass = exec.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-cyan-50/30 transition-colors border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
+                <i class="fas fa-user-tag text-cyan-600"></i>
+              </div>
+              <div>
+                <div class="font-black text-slate-900">${exec.name}</div>
+                <div class="text-[10px] text-slate-500 font-medium">ID: ${exec.employeeCode || 'N/A'}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${exec.phone}</div>
+            <div class="text-[10px] text-slate-500">${exec.email || 'No email provided'}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${exec.assignedArea}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-sky-700">${exec.activeTasks || 0}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-emerald-700">${exec.completed || 0}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-purple-700">₹${(exec.collections || 0).toLocaleString()}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border ${badgeClass}">
+              <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+            </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <button onclick="viewExecutive('${exec._id}', '${exec.name}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+              <i class="fas fa-eye mr-1"></i> View
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Populate dropdown in Assign Task Modal
+    function populateExecutiveDropdown(execs) {
+      const select = document.getElementById('taskExecutive');
+      select.innerHTML = '<option value="">-- Choose Executive --</option>';
+      execs.forEach(ex => {
+        const opt = document.createElement('option');
+        opt.value = ex._id;
+        opt.textContent = `${ex.name} (${ex.employeeCode || ex.phone})`;
+        select.appendChild(opt);
+      });
+    }
+
+    // 3. Fetch Tasks
+    async function fetchTasks() {
+      try {
+        const res = await fetch(`${API_BASE}/field/tasks`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const tasks = await res.json();
+        if (res.ok) {
+          allTasks = tasks;
+          renderTasksTable(tasks);
+        }
+      } catch (err) {
+        console.error('Error fetching tasks:', err);
+      }
+    }
+
+    // Render Tasks Table
+    function renderTasksTable(tasks) {
+      const tbody = document.getElementById('tasksTbody');
+      tbody.innerHTML = '';
+
+      if (tasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-500">No tasks assigned yet.</td></tr>`;
+        return;
+      }
+
+      tasks.forEach(task => {
+        let typeBadge, statusBadge;
+
+        switch (task.taskType) {
+          case 'Cash Collection': typeBadge = 'bg-purple-50 text-purple-700 border-purple-200'; break;
+          case 'KYC Verification': typeBadge = 'bg-cyan-50 text-cyan-700 border-cyan-200'; break;
+          default: typeBadge = 'bg-slate-50 text-slate-700 border-slate-200';
+        }
+
+        switch (task.status) {
+          case 'Pending': statusBadge = 'bg-amber-50 text-amber-700 border-amber-200'; break;
+          case 'Completed': statusBadge = 'bg-emerald-50 text-emerald-700 border-emerald-200'; break;
+          case 'Cancelled': statusBadge = 'bg-red-50 text-red-700 border-red-200'; break;
+        }
+
+        const formattedDate = new Date(task.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/50 transition-colors border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="px-5 py-4"><div class="font-black text-slate-900">${task.taskId}</div></td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${task.executive?.name || 'Unknown'}</div>
+            <div class="text-[10px] text-slate-500">${task.executive?.employeeCode || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold border ${typeBadge}">
+               ${task.taskType}
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${task.partnerName}</div>
+            <div class="text-[10px] text-slate-500">${task.location}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black ${task.amount > 0 ? 'text-purple-700' : 'text-slate-400'}">
+              ${task.amount > 0 ? '₹' + task.amount.toLocaleString() : '—'}
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border ${statusBadge}">
+              ${task.status}
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${formattedDate !== 'Invalid Date' ? formattedDate : 'No Date'}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <button onclick="viewTask('${task.taskId}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+              <i class="fas fa-eye mr-1"></i> View
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Modal Submissions
+
+    // Add Executive
+    async function submitAddExecutive(e) {
+      e.preventDefault();
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      const payload = {
+        name: document.getElementById('execName').value.trim(),
+        phone: document.getElementById('execPhone').value.trim(),
+        email: document.getElementById('execEmail').value.trim(),
+        employeeCode: document.getElementById('execCode').value.trim(),
+        assignedArea: document.getElementById('execArea').value.trim(),
+        password: document.getElementById('execPassword').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/field/executives/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('Executive added successfully!', 'success');
+          closeAddExecutiveModal();
+          e.target.reset();
+          fetchDashboardData();
+          fetchExecutives();
+        } else {
+          showToast(data.error || 'Failed to add executive', 'warning');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Network error while adding executive', 'warning');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // Assign Task
+    async function submitAssignTask(e) {
+      e.preventDefault();
+
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+      btn.disabled = true;
+
+      const payload = {
+        executiveId: document.getElementById('taskExecutive').value,
+        taskType: document.getElementById('taskType').value,
+        partnerName: document.getElementById('taskPartner').value.trim(),
+        location: document.getElementById('taskLocation').value.trim(),
+        dueDate: document.getElementById('taskDate').value,
+        amount: Number(document.getElementById('taskAmount').value) || 0,
+        notes: document.getElementById('taskNotes').value.trim()
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/field/tasks/assign`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('Task assigned successfully!', 'success');
+          closeAssignTaskModal();
+          e.target.reset();
+          fetchDashboardData();
+          fetchTasks();
+          fetchExecutives(); // Update executive active task count
+        } else {
+          showToast(data.error || 'Failed to assign task', 'warning');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Network error assigning task', 'warning');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // Modal Controls
+    function openAddExecutiveModal() {
+      document.getElementById('addExecutiveModal').classList.remove('hidden');
+    }
+
+    function closeAddExecutiveModal() {
+      document.getElementById('addExecutiveModal').classList.add('hidden');
+    }
+
+    function assignNewTask() {
+      document.getElementById('assignTaskModal').classList.remove('hidden');
+    }
+
+    function closeAssignTaskModal() {
+      document.getElementById('assignTaskModal').classList.add('hidden');
+    }
+
+    function viewExecutive(id, name) {
+      showToast(`View Details for ${name} under construction`, 'info');
+    }
+
+    function viewTask(taskId) {
+      const task = allTasks.find(t => t.taskId === taskId);
+      if (!task) {
+        showToast('Task details not found', 'warning');
+        return;
+      }
+
+      document.getElementById('vt-taskId').textContent = task.taskId;
+      document.getElementById('vt-executive').textContent = task.executive?.name || 'Unknown';
+
+      const typeIcon = task.taskType === 'Cash Collection' ? 'fa-money-bill-wave text-purple-600' :
+        task.taskType === 'KYC Verification' ? 'fa-shield-check text-cyan-600' : 'fa-tag text-slate-400';
+      document.getElementById('vt-type').innerHTML = `<i class="fas ${typeIcon}"></i> ${task.taskType}`;
+
+      document.getElementById('vt-partner').textContent = task.partnerName;
+      document.getElementById('vt-location').textContent = task.location;
+      document.getElementById('vt-amount').textContent = task.amount > 0 ? `₹${task.amount.toLocaleString()}` : '—';
+
+      const formattedDate = new Date(task.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('vt-dueDate').textContent = formattedDate !== 'Invalid Date' ? formattedDate : 'No Date';
+
+      const notesEl = document.getElementById('vt-notes');
+      if (task.notes && task.notes.trim() !== '') {
+        notesEl.textContent = task.notes;
+        notesEl.classList.remove('italic', 'text-slate-500');
+        notesEl.classList.add('text-slate-800');
+      } else {
+        notesEl.textContent = 'No notes provided for this task.';
+        notesEl.classList.add('italic', 'text-slate-500');
+        notesEl.classList.remove('text-slate-800');
+      }
+
+      const statusBadge = document.getElementById('vt-status');
+      if (task.status === 'Completed') {
+        statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200';
+        statusBadge.innerHTML = '<i class="fas fa-circle-check mr-1.5"></i> Completed';
+      } else if (task.status === 'Cancelled') {
+        statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-red-50 text-red-700 border-red-200';
+        statusBadge.innerHTML = '<i class="fas fa-times-circle mr-1.5"></i> Cancelled';
+      } else {
+        statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-amber-50 text-amber-700 border-amber-200';
+        statusBadge.innerHTML = '<i class="fas fa-clock mr-1.5"></i> Pending';
+      }
+
+      document.getElementById('viewTaskModal').classList.remove('hidden');
+    }
+
+    function closeViewTaskModal() {
+      document.getElementById('viewTaskModal').classList.add('hidden');
+    }
+
+    function viewExecutive(id) {
+      const exec = allExecutives.find(e => e._id === id);
+      if (!exec) {
+        showToast('Executive details not found', 'warning');
+        return;
+      }
+
+      document.getElementById('ve-name').textContent = exec.name;
+      document.getElementById('ve-id').textContent = `ID: ${exec.employeeCode || 'N/A'}`;
+      document.getElementById('ve-phone').textContent = exec.phone || '---';
+      document.getElementById('ve-email').textContent = exec.email || 'No email provided';
+      document.getElementById('ve-area').textContent = exec.assignedArea || 'Not Assigned';
+      document.getElementById('ve-active').textContent = exec.activeTasks || 0;
+      document.getElementById('ve-completed').textContent = exec.completed || 0;
+      document.getElementById('ve-collections').textContent = `₹${(exec.collections || 0).toLocaleString()}`;
+
+      const statusEl = document.getElementById('ve-status');
+      if (exec.status === 'approved') {
+        statusEl.className = 'mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200';
+        statusEl.innerHTML = '<i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active';
+      } else {
+        statusEl.className = 'mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-amber-50 text-amber-700 border-amber-200';
+        statusEl.innerHTML = '<i class="fas fa-circle-dot mr-1 text-[8px]"></i> Inactive';
+      }
+
+      document.getElementById('viewExecutiveModal').classList.remove('hidden');
+    }
+
+    function closeViewExecutiveModal() {
+      document.getElementById('viewExecutiveModal').classList.add('hidden');
+    }
+
+    // Show Toast
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      let bgColor = 'bg-white', borderColor = 'border-slate-300', textColor = 'text-slate-900';
+
+      if (type === 'success') {
+        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
+        borderColor = 'border-emerald-300';
+        textColor = 'text-emerald-900';
+      } else if (type === 'warning') {
+        bgColor = 'bg-gradient-to-r from-amber-50 to-amber-100';
+        borderColor = 'border-amber-300';
+        textColor = 'text-amber-900';
+      } else if (type === 'info') {
+        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
+        borderColor = 'border-sky-300';
+        textColor = 'text-sky-900';
+      }
+
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toastMessage.className = `text-sm font-bold ${textColor}`;
+      toastMessage.textContent = message;
+
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+  </script>
+</body>
+
+</html>

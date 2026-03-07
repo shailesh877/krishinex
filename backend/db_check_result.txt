@@ -1,0 +1,11 @@
+Connected to MongoDB
+--- Stats ---
+Total Farmers: 7
+Total Orders: 2
+Total Sell Requests: 2
+Pending Sell Requests: 2
+--- Latest Pending Sell Request ---
+ID: 69ab89f5fe252c7e9f95ed16
+Farmer: Yuvraj Singh 
+Crop: Gehun
+Created At: Sat Mar 07 2026 07:44:13 GMT+0530 (India Standard Time)

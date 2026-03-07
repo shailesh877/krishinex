@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Shop Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-teal-50 via-slate-50 to-emerald-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold uppercase">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 text-teal-700 border-2 border-teal-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 shadow-sm">
+            <i class="fas fa-shopping-cart text-teal-600"></i>
+          </span>
+          <span class="truncate font-black">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <a href="Analytics_Reports.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+          <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Analytics & Reports</span>
+      </a>
+
+      <a href="settings.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+          <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Settings</span>
+      </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-teal-400 hover:bg-teal-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-shopping-cart text-teal-600"></i>
+                Shop Management (E-commerce)
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Shop partners, products catalog, orders & inventory
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div
+            class="rounded-2xl border-2 border-teal-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-100 to-teal-50 flex items-center justify-center">
+                <i class="fas fa-store text-teal-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-teal-600 font-black">Shops</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="total-shops">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Partners</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Active</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="active-shops">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Active</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-box text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Products</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="total-products">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-shopping-bag text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">Orders</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="month-orders">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">This Month</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Revenue</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="month-revenue">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">This Month</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+                <i class="fas fa-triangle-exclamation text-rose-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-rose-600 font-black">Stock</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="low-stock">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Low Stock</p>
+          </div>
+        </section>
+
+        <!-- SHOP PARTNERS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-teal-50/20 to-emerald-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-store-alt text-teal-600"></i>
+                  Shop Partners
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Agri shops with products, inventory & fulfillment
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="shopSearchInput" placeholder="Search Shop/ID..." oninput="filterShops()"
+                  class="h-9 w-48 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs placeholder:text-slate-400 focus:border-teal-400 focus:outline-none focus:ring-4 focus:ring-teal-50 transition-all font-semibold" />
+                <select id="shopStatusFilter" onchange="filterShops()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="All">All Categories</option>
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                <button onclick="exportShops()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 px-4 text-xs text-white font-black hover:from-teal-600 hover:to-emerald-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Shop Name</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Categories</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Products</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Orders</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="shops-table-body">
+                <!-- Dynamically populated via JS -->
+                <tr>
+                  <td colspan="8" class="text-center py-8 text-slate-500 font-bold"><i
+                      class="fas fa-spinner fa-spin mr-2"></i> Loading Shops...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ORDERS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-sky-50/20 to-cyan-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-shopping-basket text-sky-600"></i>
+                  Recent Orders
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Order tracking & fulfillment status
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option>All Status</option>
+                  <option>Pending</option>
+                  <option>Processing</option>
+                  <option>Shipped</option>
+                  <option>Delivered</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 420px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Order ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Shop → Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Products</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Payment</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body">
+                <!-- Dynamically populated via JS -->
+                <tr>
+                  <td colspan="7" class="text-center py-8 text-slate-500 font-bold"><i
+                      class="fas fa-spinner fa-spin mr-2"></i> Loading Orders...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- INVENTORY ALERTS -->
+        <section class="rounded-2xl bg-white border-2 border-rose-200 shadow-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div
+              class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+              <i class="fas fa-triangle-exclamation text-rose-600"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-black text-slate-900">Low Stock Alerts</h2>
+              <p class="text-xs text-slate-600 font-semibold">Products running low across shops</p>
+            </div>
+          </div>
+          <div class="space-y-2" id="low-stock-container">
+            <!-- Dynamically populated -->
+            <p class="text-sm font-semibold text-slate-500 text-center py-4">No low stock alerts right now.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Shop Profile Modal -->
+  <div id="shopProfileModal" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay backdrop -->
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeShopProfile()">
+    </div>
+
+    <!-- Modal content inside a sliding drawer -->
+    <div
+      class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l-2 border-slate-200 animate-[slideInRight_0.3s_ease-out]">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-white via-teal-50/50 to-emerald-50/50 border-b-2 border-slate-200">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm">
+            <i class="fas fa-store text-teal-600 text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900" id="modalShopName">Shop Name</h3>
+            <p class="text-[10px] text-slate-500 font-bold" id="modalShopId">ID: SH001</p>
+          </div>
+        </div>
+        <button onclick="closeShopProfile()"
+          class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center transition-colors">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
+        <!-- Contact block -->
+        <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
+          <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Contact Information</h4>
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                <i class="fas fa-phone"></i>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-bold">Phone</p>
+                <p class="text-sm font-semibold text-slate-900" id="modalShopPhone">-</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-bold">Email</p>
+                <p class="text-sm font-semibold text-slate-900" id="modalShopEmail">-</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+                <i class="fas fa-map-marker-alt"></i>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-bold">Address</p>
+                <p class="text-sm font-semibold text-slate-900" id="modalShopLocation">-</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capability block -->
+        <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
+          <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Shop Metrics</h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-[10px] text-slate-500 font-bold">Listed Products</p>
+              <p class="text-lg font-black text-teal-700" id="modalShopProducts">-</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500 font-bold">Fulfilled Orders</p>
+              <p class="text-lg font-black text-emerald-700" id="modalShopOrders">-</p>
+            </div>
+          </div>
+          <div class="border-t-2 border-slate-200 pt-3 mt-3 space-y-3">
+            <div class="flex justify-between items-center">
+              <p class="text-xs text-slate-600 font-bold">Document</p>
+              <button id="modalViewDocBtn"
+                class="text-xs font-black text-blue-600 hover:text-blue-800 transition-colors hidden"
+                onclick="window.open(this.dataset.url, '_blank')">
+                <i class="fas fa-external-link-alt mr-1"></i> View KYC Document
+              </button>
+              <span id="modalNoDocText" class="text-xs font-bold text-slate-400">Not Uploaded</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <p class="text-xs text-slate-600 font-bold">Status</p>
+              <span id="modalShopStatus" class="text-sm font-black text-emerald-700">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-between items-center">
+        <div class="flex gap-2" id="modalActionButtons">
+          <!-- Dynamically populated based on status -->
+        </div>
+        <button onclick="closeShopProfile()"
+          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== SHOP MANAGEMENT PAGE SCRIPT ========== -->
+  <script>
+    const API_BASE = 'https://krishinex.com/api';
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+    let allShops = [];
+    let allOrders = [];
+
+    window.addEventListener('DOMContentLoaded', function () {
+      console.log('🛒 Shop Management Page Loaded');
+      fetchShopStats();
+      fetchShops();
+      fetchShopOrders();
+    });
+
+    async function fetchShops() {
+      try {
+        if (!AUTH_TOKEN) return;
+        const res = await fetch(`${API_BASE}/employee/admin/shops`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allShops = data;
+          renderShopsTable(data);
+        } else {
+          showToast(data.error || 'Error fetching shops', 'error');
+        }
+      } catch (err) {
+        showToast('Network Error fetching shops', 'error');
+      }
+    }
+
+    async function fetchShopOrders() {
+      try {
+        if (!AUTH_TOKEN) return;
+        const res = await fetch(`${API_BASE}/employee/admin/shop/orders`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allOrders = data;
+          renderOrdersTable(data);
+        } else {
+          showToast(data.error || 'Error fetching orders', 'error');
+        }
+      } catch (err) {
+        showToast('Network Error fetching orders', 'error');
+      }
+    }
+
+    function renderShopsTable(shops) {
+      const tbody = document.getElementById('shops-table-body');
+      tbody.innerHTML = '';
+      if (shops.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-500 font-bold">No shop partners found.</td></tr>`;
+        return;
+      }
+
+      shops.forEach(shop => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-teal-50/30 transition-colors border-b border-slate-100";
+        const isApproved = shop.status === 'approved' || shop.status === 'Active';
+        const cats = shop.categories && shop.categories.length > 0 ? shop.categories.join(', ') : 'Mixed';
+
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm">
+                <i class="fas fa-store text-teal-600"></i>
+              </div>
+              <div>
+                <div class="font-black text-slate-900">${shop.businessName}</div>
+                <div class="text-[10px] text-slate-500 font-medium">ID: #${shop._id.substring(18).toUpperCase()}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${shop.phone}</div>
+            <div class="text-[10px] text-slate-500">${shop.email || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${shop.address || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4 text-center">
+            <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-700 border border-slate-200">
+              ${cats}
+            </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-slate-900">${shop.productsCount}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-teal-700">${shop.totalOrders || 0}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full ${isApproved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'} px-3 py-1 text-[10px] font-black border">
+              <i class="fas ${isApproved ? 'fa-check-circle' : 'fa-clock'} mr-1"></i> ${isApproved ? 'Active' : shop.status}
+            </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <button onclick="viewShop('${shop._id}', '${shop.businessName.replace(/'/g, "\\'")}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+              <i class="fas fa-eye mr-1"></i> View
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('orders-table-body');
+      tbody.innerHTML = '';
+      if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500 font-bold">No orders found.</td></tr>`;
+        return;
+      }
+
+      orders.forEach(order => {
+        const d = new Date(order.createdAt);
+        const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        let statusColor = 'bg-sky-50 text-sky-700 border-sky-200';
+        let statusIcon = 'fa-clock';
+        if (order.status === 'DELIVERED') {
+          statusColor = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+          statusIcon = 'fa-check-double';
+        } else if (order.status === 'IN_PROGRESS' || order.status === 'ACCEPTED') {
+          statusColor = 'bg-sky-50 text-sky-700 border-sky-200';
+          statusIcon = 'fa-truck';
+        } else if (order.status === 'CANCELLED') {
+          statusColor = 'bg-rose-50 text-rose-700 border-rose-200';
+          statusIcon = 'fa-times-circle';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-sky-50/30 transition-colors border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="font-black text-slate-900">#${order._id.substring(18).toUpperCase()}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${order.shopName} → ${order.buyerName}</div>
+            <div class="text-[10px] text-slate-500">${order.buyerLocation || 'No Address'}</div>
+          </td>
+          <td class="px-5 py-4 max-w-[200px] truncate">
+            <div class="text-xs font-semibold text-slate-900 truncate" title="${order.itemsSummary}">${order.itemsSummary || 'Products'}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-slate-900">₹${order.totalAmount || 0}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full bg-slate-50 px-2.5 py-1 text-[10px] font-bold text-slate-700 border border-slate-200">
+              <i class="fas fa-money-bill-wave mr-1"></i> Cash
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full ${statusColor} px-3 py-1 text-[10px] font-black border-2">
+              <i class="fas ${statusIcon} mr-1"></i> ${order.status}
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${dateStr}</div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function fetchShopStats() {
+      try {
+        if (!AUTH_TOKEN) return;
+
+        const res = await fetch(`${API_BASE}/employee/admin/shop/stats`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('total-shops').textContent = (data.totalShops || 0).toLocaleString();
+          document.getElementById('active-shops').textContent = (data.activeShops || 0).toLocaleString();
+          document.getElementById('total-products').textContent = (data.totalProducts || 0).toLocaleString();
+          document.getElementById('month-orders').textContent = (data.thisMonthOrders || 0).toLocaleString();
+
+          let revenueStr = `₹${(data.thisMonthRevenue || 0).toLocaleString()}`;
+          if (data.thisMonthRevenue >= 100000) revenueStr = `₹${(data.thisMonthRevenue / 100000).toFixed(1)} L`;
+          document.getElementById('month-revenue').textContent = revenueStr;
+
+          document.getElementById('low-stock').textContent = (data.lowStockAlerts ? data.lowStockAlerts.length : 0).toLocaleString();
+
+          renderLowStockAlerts(data.lowStockAlerts || []);
+        } else {
+          showToast(data.message || 'Error fetching stats', 'error');
+        }
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+        showToast('Failed to fetch shop stats', 'error');
+      }
+    }
+
+    function renderLowStockAlerts(alerts) {
+      const container = document.getElementById('low-stock-container');
+      if (alerts.length === 0) {
+        container.innerHTML = `<p class="text-sm font-semibold text-slate-500 text-center py-4">No low stock alerts right now.</p>`;
+        return;
+      }
+
+      container.innerHTML = alerts.map(alert => {
+        const isCritical = alert.stock === 0;
+        const color = isCritical ? 'rose' : 'amber';
+        const icon = isCritical ? 'fa-bell' : 'fa-clock';
+        return `
+          <div class="flex items-center justify-between p-3 rounded-lg bg-${color}-50 border border-${color}-200">
+            <div>
+              <p class="text-sm font-bold text-slate-900">${alert.itemName}</p>
+              <p class="text-[10px] text-slate-600">${alert.shopName} - Only ${alert.stock} left</p>
+            </div>
+            <button class="inline-flex items-center rounded-lg bg-${color}-500 px-3 py-1.5 text-xs text-white font-bold hover:bg-${color}-600 transition-all">
+              <i class="fas ${icon} mr-1"></i> Alert Shop
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function viewShop(shopId) {
+      const shop = allShops.find(s => s._id === shopId);
+      if (!shop) return;
+
+      document.getElementById('modalShopName').textContent = shop.businessName;
+      document.getElementById('modalShopId').textContent = 'ID: #' + shop._id.substring(18).toUpperCase();
+      document.getElementById('modalShopPhone').textContent = shop.phone;
+      document.getElementById('modalShopEmail').textContent = shop.email || 'N/A';
+      document.getElementById('modalShopLocation').textContent = shop.address || 'N/A';
+
+      document.getElementById('modalShopProducts').textContent = (shop.productsCount || 0).toLocaleString();
+      document.getElementById('modalShopOrders').textContent = (shop.totalOrders || 0).toLocaleString();
+
+      const docBtn = document.getElementById('modalViewDocBtn');
+      const noDocTxt = document.getElementById('modalNoDocText');
+      if (shop.documentUrl) {
+        docBtn.dataset.url = shop.documentUrl;
+        docBtn.classList.remove('hidden');
+        noDocTxt.classList.add('hidden');
+      } else {
+        docBtn.classList.add('hidden');
+        noDocTxt.classList.remove('hidden');
+      }
+
+      const statusEl = document.getElementById('modalShopStatus');
+      const isApproved = shop.status === 'approved' || shop.status === 'Active';
+      statusEl.textContent = isApproved ? 'Active' : shop.status;
+      statusEl.className = isApproved ? 'text-sm font-black text-emerald-700' : 'text-sm font-black text-amber-700';
+
+      const actionsContainer = document.getElementById('modalActionButtons');
+      actionsContainer.innerHTML = '';
+      if (shop.status === 'pending' || shop.status === 'blocked') {
+        actionsContainer.innerHTML += `<button onclick="approveShop('${shop._id}', '${shop.businessName.replace(/'/g, "\\'")}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-check-circle mr-2"></i> Approve</button>`;
+      }
+      if (shop.status === 'approved' || shop.status === 'Active') {
+        actionsContainer.innerHTML += `<button onclick="blockShop('${shop._id}', '${shop.businessName.replace(/'/g, "\\'")}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-2"></i> Block</button>`;
+      }
+
+      document.getElementById('shopProfileModal').classList.remove('hidden');
+    }
+
+    function closeShopProfile() {
+      document.getElementById('shopProfileModal').classList.add('hidden');
+    }
+
+    async function approveShop(shopId, shopName) {
+      if (!confirm(`Approve ${shopName}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/approve/${shopId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast(`${shopName} approved!`, 'success');
+          closeShopProfile();
+          fetchShops();
+          fetchShopStats();
+        } else showToast('Failed to approve', 'error');
+      } catch (e) { showToast('Network error', 'error'); }
+    }
+
+    async function blockShop(shopId, shopName) {
+      if (!confirm(`Block ${shopName}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/block/${shopId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast(`${shopName} blocked!`, 'success');
+          closeShopProfile();
+          fetchShops();
+          fetchShopStats();
+        } else showToast('Failed to block', 'error');
+      } catch (e) { showToast('Network error', 'error'); }
+    }
+
+    // Filter Logic
+    function filterShops() {
+      const searchTerm = document.getElementById('shopSearchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('shopStatusFilter').value;
+
+      const filtered = allShops.filter(shop => {
+        const shopString = Object.values(shop).join(' ').toLowerCase();
+        const matchesSearch = shopString.includes(searchTerm);
+
+        const isApproved = shop.status === 'approved' || shop.status === 'Active';
+        let matchesStatus = true;
+
+        if (statusFilter === 'Active') matchesStatus = isApproved;
+        if (statusFilter === 'Pending') matchesStatus = !isApproved;
+
+        return matchesSearch && matchesStatus;
+      });
+
+      renderShopsTable(filtered);
+    }
+
+    // Export Logic
+    function exportShops() {
+      const searchTerm = document.getElementById('shopSearchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('shopStatusFilter').value;
+
+      const filtered = allShops.filter(shop => {
+        const shopString = Object.values(shop).join(' ').toLowerCase();
+        const matchesSearch = shopString.includes(searchTerm);
+        const isApproved = shop.status === 'approved' || shop.status === 'Active';
+        let matchesStatus = true;
+        if (statusFilter === 'Active') matchesStatus = isApproved;
+        if (statusFilter === 'Pending') matchesStatus = !isApproved;
+        return matchesSearch && matchesStatus;
+      });
+
+      if (filtered.length === 0) {
+        showToast('No data to export', 'info');
+        return;
+      }
+
+      let csv = 'Shop ID,Shop Name,Phone,Email,Location,Products,Orders,Status,Joined At\n';
+      filtered.forEach(s => {
+        const isApproved = s.status === 'approved' || s.status === 'Active';
+        csv += `${s._id.substring(18).toUpperCase()},"${s.businessName}","${s.phone}","${s.email || ''}","${s.address || ''}",${s.productsCount || 0},${s.totalOrders || 0},${isApproved ? 'Active' : s.status},"${new Date(s.joinedAt).toLocaleDateString()}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'Shop_Partners_Export.csv');
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      let bgColor = 'bg-white';
+      let borderColor = 'border-slate-300';
+      let textColor = 'text-slate-900';
+
+      if (type === 'success') {
+        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
+        borderColor = 'border-emerald-300';
+        textColor = 'text-emerald-900';
+      } else if (type === 'info') {
+        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
+        borderColor = 'border-sky-300';
+        textColor = 'text-sky-900';
+      }
+
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toastMessage.className = `text-sm font-bold ${textColor}`;
+      toastMessage.textContent = message;
+
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Farmers Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <a href="mandi_rates.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold uppercase">Mandi Rates</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-green-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+            <i class="fas fa-seedling text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-seedling text-emerald-600"></i>
+                Farmers & Users Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Manage farmers, wallets, KYC & crop sell requests
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT (PAGE-SPECIFIC) ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-users text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Total</span>
+            </div>
+            <p id="stat-totalFarmers" class="text-2xl font-black text-slate-900">...</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Farmers</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-wallet text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Wallet</span>
+            </div>
+            <p id="stat-walletActive" class="text-2xl font-black text-slate-900">...</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Active</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-slate-200 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center">
+                <i class="fas fa-wallet text-slate-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-slate-600 font-black">Inactive</span>
+            </div>
+            <p id="stat-walletInactive" class="text-2xl font-black text-slate-900">...</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Wallet Off</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-wheat-awn text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">New</span>
+            </div>
+            <p id="stat-newRequests" class="text-2xl font-black text-slate-900">...</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Sell Requests</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-spinner text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Progress</span>
+            </div>
+            <p id="stat-assigned" class="text-2xl font-black text-slate-900">...</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Assigned</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Done</span>
+            </div>
+            <p id="stat-completed" class="text-2xl font-black text-slate-900">...</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Completed</p>
+          </div>
+        </section>
+
+        <!-- CROP SELL REQUESTS TABLE (ADMIN ASSIGNS BUYER) -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-wheat-awn text-emerald-600"></i>
+                  Crop Sell Requests
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Farmer requests - Admin assigns to buyers
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="cropFilter" onchange="filterCropRequests()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold hover:border-slate-300 transition-all">
+                  <option value="all">All Crops</option>
+                  <option value="Wheat">Wheat</option>
+                  <option value="Rice">Rice</option>
+                  <option value="Mustard">Mustard</option>
+                  <option value="Cotton">Cotton</option>
+                  <option value="Maize">Maize</option>
+                  <option value="Soybean">Soybean</option>
+                  <option value="Sugarcane">Sugarcane</option>
+                </select>
+                <select id="cropStatusFilter" onchange="filterCropRequests()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold hover:border-slate-300 transition-all">
+                  <option value="all">All Status</option>
+                  <option value="pending">New / Pending</option>
+                  <option value="accepted">Assigned</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <button onclick="exportCropRequests()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-sky-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCROLLABLE TABLE -->
+          <div class="overflow-auto custom-scroll" style="max-height: 500px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Crop & Qty</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Rate</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Description</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Photos</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="cropRequestsTbody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- USER DETAILS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-users text-emerald-600"></i>
+                  Farmers Database
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  User profiles, KYC status & wallet management
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="userStatusFilter" onchange="filterUsers()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All Status</option>
+                  <option value="approved">Active / Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="rejected">Blocked</option>
+                </select>
+                <input id="userSearchInput" type="text" placeholder="🔍 Search name / phone / location"
+                  oninput="filterUsers()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-64 hover:border-slate-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all outline-none" />
+                <button onclick="exportFarmers()"
+                  class="inline-flex items-center h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+                  <i class="fas fa-download mr-1.5"></i> CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Name</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Wallet</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">KYC</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white" id="usersTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- ASSIGN BUYER MODAL -->
+  <div id="assignModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeAssignModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="sticky top-0 z-10 border-b-2 border-slate-200 px-6 py-5 bg-white/95 backdrop-blur-sm">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+              <i class="fas fa-link text-emerald-600"></i>
+              Assign Buyer to Farmer
+            </h2>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Match by location, crop & quantity</p>
+          </div>
+          <button onclick="closeAssignModal()"
+            class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+            <i class="fas fa-times text-slate-700"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-5 space-y-5">
+        <!-- Farmer Details -->
+        <div class="rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4">
+          <p class="text-xs uppercase tracking-wide text-emerald-700 font-black mb-3 flex items-center gap-2">
+            <i class="fas fa-user-check"></i> Farmer Request
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <p class="text-[10px] text-slate-600 font-semibold mb-1">Farmer</p>
+              <p class="text-sm font-black text-slate-900" id="modalFarmerName">-</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-600 font-semibold mb-1">Location</p>
+              <p class="text-sm font-black text-slate-900" id="modalLocation">-</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-600 font-semibold mb-1">Crop</p>
+              <p class="text-sm font-black text-slate-900" id="modalCrop">-</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-600 font-semibold mb-1">Quantity</p>
+              <p class="text-sm font-black text-emerald-700"><span id="modalQuantity">-</span> Q</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-600 font-semibold mb-1">Rate</p>
+              <p class="text-sm font-black text-emerald-700">₹<span id="modalRate">-</span>/Q</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-600 font-semibold mb-1">Range</p>
+              <p class="text-sm font-black text-sky-700"><span id="modalDistance">-</span> km</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matching Buyers -->
+        <div>
+          <p class="text-xs uppercase tracking-wide text-slate-600 font-black mb-3 flex items-center gap-2">
+            <i class="fas fa-users"></i> Matching Buyers (Location + Crop)
+          </p>
+          <div class="space-y-2 max-h-80 overflow-y-auto custom-scroll" id="buyerMatchList">
+            <p class="text-sm text-slate-400 text-center py-4 italic">Loading available buyers...</p>
+          </div>
+
+          <!-- Selected Buyer -->
+          <div id="selectedBuyerInfo" class="hidden rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs uppercase tracking-wide text-emerald-700 font-black mb-2">
+                  <i class="fas fa-check-circle"></i> Selected Buyer
+                </p>
+                <p id="selectedBuyerName" class="text-base font-black text-slate-900">-</p>
+              </div>
+              <span class="h-10 w-10 rounded-full bg-emerald-200 flex items-center justify-center">
+                <i class="fas fa-check text-emerald-700"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="sticky bottom-0 z-10 border-t-2 border-slate-200 px-6 py-4 bg-white flex gap-3 justify-end">
+          <button onclick="closeAssignModal()"
+            class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-5 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-50 transition-all">
+            Cancel
+          </button>
+          <button id="assignBtn" onclick="assignBuyer()" disabled
+            class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-link mr-2"></i> Assign Buyer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER PROFILE MODAL -->
+    <div id="userProfileModal"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+      onclick="if(event.target === this) closeUserProfile()">
+      <div
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+        <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-emerald-50/30 to-white">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+              <i class="fas fa-user-circle text-emerald-600"></i>
+              Farmer Profile
+            </h2>
+            <button onclick="closeUserProfile()"
+              class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+              <i class="fas fa-times text-slate-700"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="px-6 py-6 space-y-5">
+          <div class="text-center">
+            <div
+              class="inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-green-100 text-5xl mb-4 shadow-xl border-4 border-white">
+              <i class="fas fa-user text-emerald-600"></i>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="profileName">-</p>
+            <p class="text-sm text-slate-500 font-bold mt-2" id="profileId">-</p>
+          </div>
+
+          <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <p class="text-xs text-slate-600 font-bold">Mobile</p>
+                <p class="text-sm font-black text-slate-900" id="profileMobile">-</p>
+              </div>
+              <div class="flex justify-between">
+                <p class="text-xs text-slate-600 font-bold">Location</p>
+                <p class="text-sm font-black text-slate-900" id="profileLocation">-</p>
+              </div>
+              <div class="flex justify-between">
+                <p class="text-xs text-slate-600 font-bold">Status</p>
+                <span id="profileStatus" class="text-sm font-black text-emerald-700">Active</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end">
+          <button onclick="closeUserProfile()"
+            class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHOTO VIEWER MODAL -->
+    <div id="photoModal"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-lg"
+      onclick="closePhotoModal()">
+      <div class="relative animate-[fadeIn_0.3s_ease-out]">
+        <img id="photoModalImg" src="" alt="Crop photo"
+          class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-4 border-white" />
+        <button onclick="closePhotoModal()"
+          class="absolute top-3 right-3 h-11 w-11 rounded-full bg-white/95 flex items-center justify-center shadow-xl hover:bg-white transition-all">
+          <i class="fas fa-times text-slate-900 text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+      class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+      <p id="toastMessage" class="text-sm font-bold"></p>
+    </div>
+
+    <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+    <script>
+      function toggleSidebar(force) {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('mobile-backdrop');
+        const hamburger = document.getElementById('hamburger');
+
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+        if (force === false || (isOpen && force === undefined)) {
+          sidebar.classList.add('-translate-x-full');
+          backdrop.classList.add('hidden');
+          hamburger?.setAttribute('aria-pressed', 'false');
+        } else {
+          sidebar.classList.remove('-translate-x-full');
+          backdrop.classList.remove('hidden');
+          hamburger?.setAttribute('aria-pressed', 'true');
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') toggleSidebar(false);
+      });
+    </script>
+
+    <!-- ========== MAIN PAGE SCRIPT ========== -->
+    <script>
+      let currentRequestId = null;
+      let selectedBuyerId = null;
+      let assignments = {};
+
+      function openAssignModal(orderId, farmerName, location, crop, qty, rate) {
+        currentRequestId = orderId;
+        selectedBuyerId = null;
+        document.getElementById('modalFarmerName').textContent = farmerName;
+        document.getElementById('modalLocation').textContent = location;
+        document.getElementById('modalCrop').textContent = crop;
+        document.getElementById('modalQuantity').textContent = qty;
+        document.getElementById('modalRate').textContent = rate > 0 ? `₹${rate}/Q` : 'N/A';
+        document.getElementById('modalDistance').textContent = '---';
+        document.getElementById('selectedBuyerInfo').classList.add('hidden');
+        document.getElementById('assignBtn').disabled = true;
+
+        // Populate real buyers
+        populateBuyerList();
+
+        document.getElementById('assignModal').classList.remove('hidden');
+      }
+
+      function closeAssignModal() {
+        document.getElementById('assignModal').classList.add('hidden');
+      }
+
+      function selectBuyer(element) {
+        document.querySelectorAll('.buyer-option').forEach(el => {
+          el.classList.remove('border-emerald-300', 'bg-emerald-50');
+        });
+        element.classList.add('border-emerald-300', 'bg-emerald-50');
+
+        const radio = element.querySelector('input[type="radio"]');
+        radio.checked = true;
+        selectedBuyer = radio.value;
+
+        const buyerData = buyerDatabase[selectedBuyer];
+        document.getElementById('selectedBuyerName').textContent = `${buyerData.name} (${buyerData.location})`;
+        document.getElementById('selectedBuyerInfo').classList.remove('hidden');
+        document.getElementById('assignBtn').disabled = false;
+      }
+
+      function assignBuyer() {
+        if (!selectedBuyer) {
+          showToast('Please select a buyer first', 'warning');
+          return;
+        }
+
+        const buyerData = buyerDatabase[selectedBuyer];
+        assignments[currentRequest.id] = {
+          ...currentRequest,
+          buyerId: selectedBuyer,
+          buyerName: buyerData.name,
+          status: 'assigned'
+        };
+        localStorage.setItem('krishinex-assignments', JSON.stringify(assignments));
+
+        updateTableStatus(currentRequest.id, 'assigned', buyerData.name);
+        showToast(`Assigned to ${buyerData.name}`, 'success');
+        closeAssignModal();
+      }
+
+      function updateTableStatus(reqId, status, buyerName) {
+        const row = document.querySelector(`tr[data-req-id="${reqId}"]`);
+        if (!row) return;
+
+        const statusCell = row.querySelector('td:nth-child(7)');
+        if (statusCell) {
+          statusCell.innerHTML = `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span><div class="text-[10px] text-slate-500 font-medium mt-1">Buyer: ${buyerName}</div></div>`;
+        }
+      }
+
+      function viewUserProfile(id, name, mobile, location, status) {
+        document.getElementById('profileName').textContent = name;
+        document.getElementById('profileId').textContent = `Farmer ID: ${id}`;
+        document.getElementById('profileMobile').textContent = mobile;
+        document.getElementById('profileLocation').textContent = location;
+
+        document.getElementById('profileStatus').textContent = status === 'active' ? 'Active' : 'Blocked';
+        document.getElementById('profileStatus').className = status === 'active' ? 'text-sm font-black text-emerald-700' : 'text-sm font-black text-rose-700';
+
+        document.getElementById('userProfileModal').classList.remove('hidden');
+      }
+
+      function closeUserProfile() {
+        document.getElementById('userProfileModal').classList.add('hidden');
+      }
+
+      async function blockUser(userId, userName) {
+        if (!confirm(`Block ${userName}?`)) return;
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/block/${userId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          });
+          if (res.ok) {
+            showToast(`${userName} blocked`, 'info');
+            fetchFarmers();
+          } else {
+            showToast('Failed to block user', 'warning');
+          }
+        } catch (e) {
+          showToast('Network error', 'warning');
+        }
+      }
+
+      function activateWallet(userId) {
+        showToast('Wallet activation request sent', 'success');
+        setTimeout(() => location.reload(), 1500);
+      }
+
+      function viewPhoto(url) {
+        document.getElementById('photoModalImg').src = url;
+        document.getElementById('photoModal').classList.remove('hidden');
+      }
+
+      function closePhotoModal() {
+        document.getElementById('photoModal').classList.add('hidden');
+      }
+
+      function filterUsers() {
+        const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+        const statusFilter = document.getElementById('userStatusFilter').value;
+        const rows = document.querySelectorAll('.user-row');
+
+        rows.forEach(row => {
+          const name = row.dataset.name || '';
+          const location = row.dataset.location || '';
+          const status = row.dataset.status || '';
+
+          const matchesSearch = name.includes(searchTerm) || location.includes(searchTerm);
+          const matchesStatus = statusFilter === 'all' || status === statusFilter;
+
+          row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+      }
+
+      function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        let bgColor = 'bg-white';
+        let borderColor = 'border-slate-300';
+        let textColor = 'text-slate-900';
+
+        if (type === 'success') {
+          bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
+          borderColor = 'border-emerald-300';
+          textColor = 'text-emerald-900';
+        } else if (type === 'warning') {
+          bgColor = 'bg-gradient-to-r from-amber-50 to-amber-100';
+          borderColor = 'border-amber-300';
+          textColor = 'text-amber-900';
+        } else if (type === 'info') {
+          bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
+          borderColor = 'border-sky-300';
+          textColor = 'text-sky-900';
+        }
+
+        toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+        toastMessage.className = `text-sm font-bold ${textColor}`;
+        toastMessage.textContent = message;
+
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3500);
+      }
+
+      // Page Load & Initialization
+
+      // ======= Filter & Export Functions =======
+
+      let allCropRequests = [];
+
+      function filterCropRequests() {
+        const cropVal = document.getElementById('cropFilter')?.value || 'all';
+        const statusVal = document.getElementById('cropStatusFilter')?.value || 'all';
+        const filtered = allCropRequests.filter(req => {
+          const matchCrop = cropVal === 'all' || req.crop === cropVal;
+          const matchStatus = statusVal === 'all' || req.status === statusVal;
+          return matchCrop && matchStatus;
+        });
+        renderCropRequests(filtered);
+      }
+
+      function filterUsers() {
+        const searchTerm = (document.getElementById('userSearchInput')?.value || '').toLowerCase();
+        const statusFilter = document.getElementById('userStatusFilter')?.value || 'all';
+        const rows = document.querySelectorAll('#usersTableBody tr.user-row');
+        rows.forEach(row => {
+          const name = (row.dataset.name || '').toLowerCase();
+          const location = (row.dataset.location || '').toLowerCase();
+          const status = row.dataset.status || '';
+          const matchesSearch = !searchTerm || name.includes(searchTerm) || location.includes(searchTerm);
+          const matchesStatus = statusFilter === 'all' || status === statusFilter;
+          row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+        });
+      }
+
+      function exportCropRequests() {
+        if (!allCropRequests.length) { showToast('No data to export', 'warning'); return; }
+        const cropVal = document.getElementById('cropFilter')?.value || 'all';
+        const statusVal = document.getElementById('cropStatusFilter')?.value || 'all';
+        const rows = allCropRequests.filter(r =>
+          (cropVal === 'all' || r.crop === cropVal) &&
+          (statusVal === 'all' || r.status === statusVal)
+        );
+        const headers = ['Farmer', 'Phone', 'Location', 'Crop', 'Quantity (Q)', 'Rate (₹/Q)', 'Status', 'Assigned Buyer', 'Date'];
+        const csvRows = [headers.join(',')];
+        rows.forEach(r => {
+          csvRows.push([
+            `"${r.farmerName}"`, r.farmerPhone, `"${r.location}"`, r.crop, r.quantity, r.pricePerQuintal,
+            r.status, r.assignedBuyer ? `"${r.assignedBuyer.name}"` : '',
+            new Date(r.createdAt).toLocaleDateString('en-GB')
+          ].join(','));
+        });
+        downloadCSV(csvRows.join('\n'), 'crop_sell_requests.csv');
+      }
+
+      function exportFarmers() {
+        if (!allFarmers.length) { showToast('No data to export', 'warning'); return; }
+        const headers = ['Name', 'Phone', 'Email', 'Location', 'KYC Status', 'Status', 'Total Orders', 'Joined'];
+        const csvRows = [headers.join(',')];
+        allFarmers.forEach(f => {
+          csvRows.push([
+            `"${f.name}"`, f.phone, f.email, `"${f.location}"`,
+            f.kycStatus, f.status, f.totalOrders,
+            new Date(f.joinedAt).toLocaleDateString('en-GB')
+          ].join(','));
+        });
+        downloadCSV(csvRows.join('\n'), 'farmers_list.csv');
+      }
+
+      function downloadCSV(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+        showToast(`Exported ${filename}`, 'success');
+      }
+
+
+      const API_BASE = 'https://krishinex.com/api';
+      const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+      let allFarmers = [];
+
+      async function fetchFarmers() {
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/farmers`, {
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          });
+          const data = await res.json();
+          if (res.ok) {
+            allFarmers = data;
+            // Update KPI stats
+            const total = data.length;
+            const approved = data.filter(f => f.status === 'approved').length;
+            const pending = data.filter(f => f.status !== 'approved').length;
+            const kycVerified = data.filter(f => f.kycStatus === 'verified').length;
+
+            document.getElementById('stat-totalFarmers').textContent = total.toLocaleString();
+            renderFarmersTable(data);
+          } else {
+            console.error('Failed to load farmers:', data.error);
+          }
+        } catch (err) {
+          console.error('Error loading farmers, using demo data:', err);
+        }
+      }
+
+      function renderFarmersTable(farmers) {
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+
+        if (farmers.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-semibold">No farmers registered yet.</td></tr>`;
+          return;
+        }
+
+        farmers.forEach(farmer => {
+          const statusBadge = farmer.status === 'approved'
+            ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-circle-check mr-1 text-[8px]"></i> Active</span>`
+            : farmer.status === 'blocked'
+              ? `<span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-200"><i class="fas fa-ban mr-1 text-[8px]"></i> Blocked</span>`
+              : `<span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1 text-[8px]"></i> Pending</span>`;
+
+          const kycBadge = farmer.kycStatus === 'verified'
+            ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Verified</span>`
+            : `<span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1 text-[8px]"></i> Pending</span>`;
+
+          const actionBtn = farmer.status === 'approved'
+            ? `<button onclick="blockUser('${farmer._id}', '${farmer.name}')" class="inline-flex items-center rounded-lg border-2 border-rose-200 bg-rose-50 px-3 py-1.5 text-[10px] text-rose-700 font-bold hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1"></i> Block</button>`
+            : farmer.status === 'blocked'
+              ? `<button onclick="unblockUser('${farmer._id}', '${farmer.name}')" class="inline-flex items-center rounded-lg border-2 border-emerald-200 bg-emerald-50 px-3 py-1.5 text-[10px] text-emerald-700 font-bold hover:bg-emerald-100 transition-all"><i class="fas fa-check mr-1"></i> Unblock</button>`
+              : `<button onclick="approveUser('${farmer._id}', '${farmer.name}')" class="inline-flex items-center rounded-lg border-2 border-sky-200 bg-sky-50 px-3 py-1.5 text-[10px] text-sky-700 font-bold hover:bg-sky-100 transition-all"><i class="fas fa-check mr-1"></i> Approve</button>`;
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100 user-row';
+          tr.dataset.name = (farmer.name || '').toLowerCase();
+          tr.dataset.location = (farmer.location || '').toLowerCase();
+          tr.dataset.status = farmer.status || 'pending';
+
+          tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="font-bold text-slate-900">${farmer.name}</div>
+            <div class="text-[10px] text-slate-500">${new Date(farmer.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${farmer.phone}</div>
+            <div class="text-[10px] text-slate-500">${farmer.email || 'No email'}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${farmer.location || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-bold text-slate-900">₹${(farmer.walletBalance || 0).toLocaleString()}</div>
+            <div class="text-[9px] text-slate-500 font-mono uppercase">${farmer.walletNumber || 'No ID'}</div>
+          </td>
+          <td class="px-5 py-4">${kycBadge}</td>
+          <td class="px-5 py-4">${statusBadge}</td>
+          <td class="px-5 py-4 text-right">
+            <div class="flex justify-end gap-1.5">
+              <button onclick="viewUserProfile('${farmer._id}', '${farmer.name}', '${farmer.phone}', '${farmer.location}', '${farmer.status}')"
+                class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                <i class="fas fa-eye mr-1"></i> View
+              </button>
+              ${actionBtn}
+            </div>
+          </td>
+        `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function approveUser(userId, name) {
+        if (!confirm(`Approve farmer ${name}?`)) return;
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/approve/${userId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          });
+          if (res.ok) {
+            showToast(`${name} approved successfully`, 'success');
+            fetchFarmers();
+          } else {
+            showToast('Failed to approve farmer', 'warning');
+          }
+        } catch (e) { showToast('Network error', 'warning'); }
+      }
+
+      async function unblockUser(userId, name) {
+        if (!confirm(`Unblock farmer ${name}?`)) return;
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/unblock/${userId}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          });
+          if (res.ok) {
+            showToast(`${name} unblocked`, 'success');
+            fetchFarmers();
+          } else {
+            showToast('Failed to unblock', 'warning');
+          }
+        } catch (e) { showToast('Network error', 'warning'); }
+      }
+
+      let allBuyerPartners = [];
+
+      async function fetchStats() {
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/farmers/stats`, {
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          });
+          if (res.ok) {
+            const s = await res.json();
+            document.getElementById('stat-totalFarmers').textContent = s.totalFarmers;
+            document.getElementById('stat-walletActive').textContent = s.activeFarmers;
+            document.getElementById('stat-walletInactive').textContent = s.pendingFarmers;
+            document.getElementById('stat-newRequests').textContent = s.newRequests;
+            document.getElementById('stat-assigned').textContent = s.assigned;
+            document.getElementById('stat-completed').textContent = s.completed;
+          }
+        } catch (e) { console.warn('Stats fetch failed, using fallback counts from farmers list'); }
+      }
+
+      async function fetchCropRequests() {
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/crop-requests`, {
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          });
+          if (res.ok) {
+            allCropRequests = await res.json();
+            renderCropRequests(allCropRequests);
+          }
+        } catch (e) { console.error('Crop requests fetch error:', e); }
+      }
+
+      function renderCropRequests(requests) {
+        const tbody = document.getElementById('cropRequestsTbody');
+        tbody.innerHTML = '';
+        if (!requests || requests.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>`;
+          return;
+        }
+
+        requests.forEach(req => {
+          const statusBadge = req.status === 'pending'
+            ? `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> New</span>`
+            : req.status === 'accepted' || req.status === 'in-progress'
+              ? `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span>${req.assignedBuyer ? `<div class="text-[10px] text-slate-500 mt-1">Buyer: ${req.assignedBuyer.name}</div>` : ''}</div>`
+              : req.status === 'completed'
+                ? `<span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black text-sky-700 border-2 border-sky-200"><i class="fas fa-check-double mr-1 text-[8px]"></i> Completed</span>`
+                : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
+
+          const actionBtn = req.status === 'pending'
+            ? `<button onclick="openAssignModal('${req._id}', '${(req.farmerName || '').replace(/'/g, "\\'")}', '${(req.location || '').replace(/'/g, "\\'")}', '${req.crop}', '${req.quantity}', ${req.pricePerQuintal})" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-[11px] text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-link mr-1.5"></i> Assign</button>`
+            : `<button onclick="openAssignModal('${req._id}', '${(req.farmerName || '').replace(/'/g, "\\'")}', '${(req.location || '').replace(/'/g, "\\'")}', '${req.crop}', '${req.quantity}', ${req.pricePerQuintal})" class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-4 py-2 text-[11px] text-slate-700 font-black hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1.5"></i> View</button>`;
+
+          const photoBtn = req.imageUrl
+            ? `<button onclick="viewPhoto('${req.imageUrl}')" class="h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"><i class="fas fa-image text-slate-600 text-xs"></i></button>`
+            : `<span class="text-slate-400 text-xs italic">—</span>`;
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100';
+          tr.innerHTML = `
+            <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.farmerName}</div><div class="text-[10px] text-slate-500">${req.farmerPhone}</div></td>
+            <td class="px-5 py-4"><div class="font-semibold text-slate-900">${req.location}</div></td>
+            <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity} quintal</div></td>
+            <td class="px-5 py-4"><div class="font-black text-emerald-700">${req.pricePerQuintal > 0 ? '₹' + req.pricePerQuintal + '/Q' : '—'}</div></td>
+            <td class="px-5 py-4"><div class="text-[10px] text-slate-700 max-w-[180px] truncate">${req.note || req.variety || '—'}</div></td>
+            <td class="px-5 py-4">${photoBtn}</td>
+            <td class="px-5 py-4">${statusBadge}</td>
+            <td class="px-5 py-4 text-right">${actionBtn}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      async function populateBuyerList() {
+        const list = document.getElementById('buyerMatchList');
+        list.innerHTML = `<p class="text-sm text-slate-400 text-center py-4 italic">Loading buyers...</p>`;
+        try {
+          if (allBuyerPartners.length === 0) {
+            const res = await fetch(`${API_BASE}/employee/admin/buyer-partners`, {
+              headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+            });
+            if (res.ok) allBuyerPartners = await res.json();
+          }
+          if (allBuyerPartners.length === 0) {
+            list.innerHTML = `<p class="text-sm text-slate-500 text-center py-4 italic">No approved buyer partners found.</p>`;
+            return;
+          }
+          list.innerHTML = '';
+          allBuyerPartners.forEach((buyer, i) => {
+            const card = document.createElement('div');
+            card.className = 'rounded-xl border-2 border-slate-200 bg-white p-4 hover:border-emerald-300 hover:bg-emerald-50/30 transition-all cursor-pointer';
+            card.dataset.buyerId = buyer._id;
+            card.innerHTML = `
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="selectedBuyer" value="${buyer._id}" class="h-4 w-4 accent-emerald-600" />
+                  <div>
+                    <p class="text-sm font-black text-slate-900">${buyer.name}</p>
+                    <p class="text-[10px] text-slate-500 font-semibold">${buyer.location} • ${buyer.phone}</p>
+                  </div>
+                </div>
+                ${i === 0 ? '<span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[9px] font-black text-emerald-700 border border-emerald-300"><i class="fas fa-star mr-1"></i> TOP</span>' : ''}
+              </div>
+            `;
+            card.addEventListener('click', () => {
+              document.querySelectorAll('#buyerMatchList > div').forEach(el => el.classList.remove('border-emerald-300', 'bg-emerald-50'));
+              card.classList.add('border-emerald-300', 'bg-emerald-50');
+              card.querySelector('input[type="radio"]').checked = true;
+              selectedBuyerId = buyer._id;
+              document.getElementById('selectedBuyerName').textContent = `${buyer.name} (${buyer.location})`;
+              document.getElementById('selectedBuyerInfo').classList.remove('hidden');
+              document.getElementById('assignBtn').disabled = false;
+            });
+            list.appendChild(card);
+          });
+        } catch (e) {
+          list.innerHTML = `<p class="text-red-500 text-sm text-center py-4">Failed to load buyers.</p>`;
+        }
+      }
+
+      async function assignBuyer() {
+        if (!selectedBuyerId || !currentRequestId) {
+          showToast('Please select a buyer first', 'warning');
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/crop-requests/${currentRequestId}/assign`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buyerId: selectedBuyerId })
+          });
+          if (res.ok) {
+            showToast('Buyer assigned successfully!', 'success');
+            closeAssignModal();
+            fetchCropRequests();
+          } else {
+            const err = await res.json();
+            showToast(err.error || 'Failed to assign', 'warning');
+          }
+        } catch (e) {
+          showToast('Network error', 'warning');
+        }
+      }
+
+      function selectBuyer(el) { el.click(); }
+
+      window.addEventListener('DOMContentLoaded', function () {
+        fetchStats();
+        fetchFarmers();
+        fetchCropRequests();
+      });
+
+      // Keyboard Shortcuts
+      document.addEventListener('keydown', function (e) {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+          return;
+        }
+
+        // Press 'Escape' to close modals
+        if (e.key === 'Escape') {
+          closeAssignModal();
+          closeUserProfile();
+          closePhotoModal();
+        }
+
+        // Press 'Ctrl+K' to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('userSearchInput')?.focus();
+        }
+      });
+
+      // Auto-save assignments every 30 seconds
+      setInterval(() => {
+        if (Object.keys(assignments).length > 0) {
+          localStorage.setItem('krishinex-assignments', JSON.stringify(assignments));
+        }
+      }, 30000);
+    </script>
+</body>
+
+</html>

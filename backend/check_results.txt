@@ -1,0 +1,5 @@
+Admin User Found:
+Role: admin
+Email: admin@khetify.com
+Password: $2b$10$W2c2hQRyFV5/vAhWadTYROTP4ZGKvjxBqr1AXy63upmYPsMSsbPL6
+Status: approved

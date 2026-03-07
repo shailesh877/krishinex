@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Finance & Payouts</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-green-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-wallet text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+      <span
+        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+        <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+      </span>
+      <span class="truncate font-semibold">Analytics</span>
+      </a>
+
+      <a href="settings.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+          <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Settings</span>
+      </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-wallet text-emerald-600"></i>
+                Finance & Payouts Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Consolidated payouts, transactions & financial reconciliation
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-clock text-2xl text-rose-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-rose-600 font-black">Pending</span>
+            </div>
+            <p class="text-3xl font-black text-slate-900 mb-1">₹21.4 L</p>
+            <p class="text-sm text-rose-700 font-bold">Total Pending</p>
+            <div class="mt-3 pt-3 border-t-2 border-rose-100">
+              <p class="text-[10px] text-slate-600 font-semibold">42 partners waiting</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-circle-check text-2xl text-emerald-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-emerald-600 font-black">Paid</span>
+            </div>
+            <p class="text-3xl font-black text-slate-900 mb-1">₹82.6 L</p>
+            <p class="text-sm text-emerald-700 font-bold">This Month</p>
+            <div class="mt-3 pt-3 border-t-2 border-emerald-100">
+              <p class="text-[10px] text-slate-600 font-semibold">124 transactions</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-indian-rupee-sign text-2xl text-sky-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">Revenue</span>
+            </div>
+            <p class="text-3xl font-black text-slate-900 mb-1">₹2.84 L</p>
+            <p class="text-sm text-sky-700 font-bold">Today</p>
+            <div class="mt-3 pt-3 border-t-2 border-sky-100">
+              <p class="text-[10px] text-slate-600 font-semibold">+18% vs yesterday</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-purple-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-hand-holding-dollar text-2xl text-purple-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-purple-600 font-black">Field</span>
+            </div>
+            <p class="text-3xl font-black text-slate-900 mb-1">₹4.2 L</p>
+            <p class="text-sm text-purple-700 font-bold">Collections</p>
+            <div class="mt-3 pt-3 border-t-2 border-purple-100">
+              <p class="text-[10px] text-slate-600 font-semibold">18 pending deposits</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- PENDING PAYOUTS (CONSOLIDATED) -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-rose-50/20 to-amber-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-sack-dollar text-rose-600"></i>
+                  Pending Payouts (All Modules)
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Equipment partners, Buyers, Labour - consolidated view
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="payoutModuleFilter"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All Modules</option>
+                  <option value="equipment">Equipment</option>
+                  <option value="labour">Labour</option>
+                  <option value="buyer">Buyer Trading</option>
+                </select>
+                <button onclick="approveBulkPayouts()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all">
+                  <i class="fas fa-check-double mr-2"></i> Approve Selected
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">
+                    <input type="checkbox" class="h-4 w-4 rounded accent-emerald-600" />
+                  </th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Partner/User</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Module</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Period</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount Due</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Bank Details</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Payout 1: Equipment Partner -->
+                <tr class="hover:bg-amber-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-5 py-4">
+                    <input type="checkbox" class="h-4 w-4 rounded accent-emerald-600" />
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">Sharma Tractor Service</div>
+                    <div class="text-[10px] text-slate-500 font-medium">ID: ST101</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold text-orange-700 border border-orange-200">
+                      <i class="fas fa-tractor mr-1"></i> Equipment
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">Jan 2026</div>
+                    <div class="text-[10px] text-slate-500">18 bookings</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-rose-700">₹1,15,200</div>
+                    <div class="text-[10px] text-slate-500 font-medium">(80% share)</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">SBI - 1234</div>
+                    <div class="text-[10px] text-slate-500">SBIN0001234</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border-2 border-amber-200">
+                      <i class="fas fa-clock mr-1"></i> Pending
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="approvePayout('ST101', '115200', 'Equipment')"
+                      class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-[11px] text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all">
+                      <i class="fas fa-check mr-1.5"></i> Approve
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Payout 2: Buyer Payment Outstanding -->
+                <tr class="hover:bg-rose-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-5 py-4">
+                    <input type="checkbox" class="h-4 w-4 rounded accent-emerald-600" />
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">Rajesh Agro Industries</div>
+                    <div class="text-[10px] text-slate-500 font-medium">ID: BY103</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700 border border-blue-200">
+                      <i class="fas fa-handshake mr-1"></i> Buyer Trading
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">Jan 2026</div>
+                    <div class="text-[10px] text-rose-600 font-bold">Payment overdue</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-rose-700">₹8,40,000</div>
+                    <div class="text-[10px] text-rose-600 font-bold">Outstanding</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">HDFC - 5678</div>
+                    <div class="text-[10px] text-slate-500">HDFC0001234</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[10px] font-black text-rose-700 border-2 border-rose-200">
+                      <i class="fas fa-exclamation-triangle mr-1"></i> Overdue
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="followUpPayment('BY103', 'Rajesh Agro')"
+                      class="inline-flex items-center rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-[11px] text-white font-black hover:from-rose-600 hover:to-rose-700 shadow-md transition-all">
+                      <i class="fas fa-phone mr-1.5"></i> Follow Up
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Payout 3: Labour Payment -->
+                <tr class="hover:bg-purple-50/30 transition-colors">
+                  <td class="px-5 py-4">
+                    <input type="checkbox" class="h-4 w-4 rounded accent-emerald-600" />
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">Ramesh Kumar</div>
+                    <div class="text-[10px] text-slate-500 font-medium">ID: LB001</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-700 border border-purple-200">
+                      <i class="fas fa-people-group mr-1"></i> Labour
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">Jan 2026</div>
+                    <div class="text-[10px] text-slate-500">5 jobs completed</div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-purple-700">₹12,000</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">PNB - 9012</div>
+                    <div class="text-[10px] text-slate-500">PUNB0001234</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border-2 border-amber-200">
+                      <i class="fas fa-clock mr-1"></i> Pending
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="approvePayout('LB001', '12000', 'Labour')"
+                      class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-[11px] text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all">
+                      <i class="fas fa-check mr-1.5"></i> Approve
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- TRANSACTION HISTORY -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-green-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-list text-emerald-600"></i>
+                  Recent Transactions
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Payment history across all modules
+                </p>
+              </div>
+              <button
+                class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-green-600 shadow-md transition-all">
+                <i class="fas fa-download mr-2"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Transaction ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Recipient</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Module</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Payment Mode</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="hover:bg-emerald-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">#PAY-2026-001</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Kumar Equipment</div>
+                    <div class="text-[10px] text-slate-500">ID: EP102</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-bold text-orange-700 border border-orange-200">
+                      Equipment
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-emerald-700">₹76,800</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold text-sky-700 border border-sky-200">
+                      <i class="fas fa-building-columns mr-1"></i> Bank Transfer
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">10 Jan 2026</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-900 border-2 border-emerald-300">
+                      <i class="fas fa-circle-check mr-1"></i> Completed
+                    </span>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-sky-50/30 transition-colors">
+                  <td class="px-5 py-4">
+                    <div class="font-black text-slate-900">#PAY-2026-002</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Ramesh Kumar</div>
+                    <div class="text-[10px] text-slate-500">ID: LB001</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-[9px] font-bold text-purple-700 border border-purple-200">
+                      Labour
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-emerald-700">₹12,000</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-700 border border-purple-200">
+                      <i class="fas fa-credit-card mr-1"></i> NexCard Wallet
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="text-xs font-semibold text-slate-900">12 Jan 2026</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-900 border-2 border-emerald-300">
+                      <i class="fas fa-circle-check mr-1"></i> Completed
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== FINANCE PAGE SCRIPT ========== -->
+  <script>
+    const API_BASE = 'https://krishinex.com/api';
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+    let allPendingPayouts = [];
+    let allTransactions = [];
+
+    async function fetchStats() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/finance/stats`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.status === 401 || res.status === 403) {
+          console.error('Auth failed');
+          showToast('Session Expired. Please Login again.', 'warning');
+          return;
+        }
+        if (res.ok) {
+          const s = await res.json();
+          // Update KPI Cards
+          const kpiValues = document.querySelectorAll('.text-3xl.font-black.text-slate-900');
+          if (kpiValues.length >= 4) {
+            kpiValues[0].textContent = `₹${(s.totalPendingPayouts || 0).toLocaleString()}`;
+            kpiValues[1].textContent = `₹${(s.thisMonthPaid || 0).toLocaleString()}`;
+            kpiValues[2].textContent = `₹${(s.todayRevenue || 0).toLocaleString()}`;
+            kpiValues[3].textContent = `₹${(s.fieldCollections || 0).toLocaleString()}`;
+          }
+
+          // Subtexts
+          const kpiSubtexts = document.querySelectorAll('.mt-3.pt-3 p');
+          if (kpiSubtexts.length >= 4) {
+            kpiSubtexts[0].textContent = `${s.pendingCount || 0} partners waiting`;
+            kpiSubtexts[1].textContent = `${s.completedCount || 0} transactions`;
+          }
+        }
+      } catch (e) { console.error('Stats fetch failed:', e); }
+    }
+
+    async function fetchPendingPayouts() {
+      try {
+        const moduleFilter = document.getElementById('payoutModuleFilter')?.value || 'all';
+        const res = await fetch(`${API_BASE}/employee/admin/finance/pending?module=${moduleFilter.toLowerCase()}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          allPendingPayouts = await res.json();
+          renderPendingTable(allPendingPayouts);
+        }
+      } catch (e) { console.error('Pending payouts fetch error:', e); }
+    }
+
+    function renderPendingTable(items) {
+      const tbody = document.querySelector('table tbody'); // We will assume the first table is pending
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold italic">All settled up! No pending payouts or overdue collections.</td></tr>`;
+        return;
+      }
+
+      items.forEach(item => {
+        let badgeConfig = { bg: 'bg-slate-50', text: 'text-slate-700', icon: 'fa-file', label: item.module };
+
+        if (item.module === 'Equipment') badgeConfig = { bg: 'bg-orange-50', text: 'text-orange-700', icon: 'fa-tractor', label: 'Equipment' };
+        if (item.module === 'Labour') badgeConfig = { bg: 'bg-purple-50', text: 'text-purple-700', icon: 'fa-people-group', label: 'Labour' };
+        if (item.module === 'BuyerTrading') badgeConfig = { bg: 'bg-blue-50', text: 'text-blue-700', icon: 'fa-handshake', label: 'Buyer Collection' };
+
+        const isCollection = item.amountType === 'Collection';
+        const actionBtn = isCollection
+          ? `<button onclick="followUpPayment('${item.partnerId}', '${item.partnerName}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-[11px] text-white font-black hover:from-rose-600 hover:to-rose-700 shadow-md transition-all"><i class="fas fa-phone mr-1.5"></i> Follow Up</button>`
+          : `<button onclick="approvePayout('${item._id}', '${item.module}', '${item.amountDue}', '${item.partnerId}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-[11px] text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+
+        const tr = document.createElement('tr');
+        tr.className = `hover:${isCollection ? 'bg-rose-50/30' : 'bg-emerald-50/30'} transition-colors border-b border-slate-100`;
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <input type="checkbox" class="payout-checkbox h-4 w-4 rounded accent-emerald-600" data-id="${item._id}" data-mod="${item.module}" data-amt="${item.amountDue}" data-pid="${item.partnerId}" ${isCollection ? 'disabled' : ''} />
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-black text-slate-900">${item.partnerName}</div>
+            <div class="text-[10px] text-slate-500 font-medium my-0.5">ID: ${item.partnerId || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4">
+             <span class="inline-flex items-center rounded-full ${badgeConfig.bg} px-2.5 py-1 text-[10px] font-bold ${badgeConfig.text} border border-${badgeConfig.text.split('-')[1]}-200">
+               <i class="fas ${badgeConfig.icon} mr-1"></i> ${badgeConfig.label}
+             </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${item.period}</div>
+            <div class="text-[10px] text-slate-500 truncate max-w-[150px] title="${item.subtext}">${item.subtext}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black ${isCollection ? 'text-rose-700' : 'text-emerald-700'}">₹${item.amountDue.toLocaleString()}</div>
+            <div class="text-[10px] ${isCollection ? 'text-rose-600 font-bold' : 'text-slate-500 font-medium'}">${item.amountType}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${item.bankDetails.split('-')[0]}</div>
+            <div class="text-[10px] text-slate-500">${item.bankDetails.split('-')[1] || ''}</div>
+          </td>
+          <td class="px-5 py-4">
+             <span class="inline-flex items-center rounded-full ${isCollection ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'} px-3 py-1 text-[10px] font-black border-2">
+                <i class="fas ${isCollection ? 'fa-exclamation-triangle' : 'fa-clock'} mr-1"></i> ${item.status}
+             </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            ${actionBtn}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function fetchTransactions() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/finance/transactions`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          allTransactions = await res.json();
+          renderTransactionsTable(allTransactions);
+        }
+      } catch (e) { console.error('Ledger fetch error:', e); }
+    }
+
+    function renderTransactionsTable(transactions) {
+      const tbodys = document.querySelectorAll('table tbody');
+      if (tbodys.length < 2) return;
+      const tbody = tbodys[1]; // Second table is transactions
+      tbody.innerHTML = '';
+
+      if (transactions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-semibold italic">No transaction history found.</td></tr>`;
+        return;
+      }
+
+      transactions.forEach(t => {
+        let badgeClass = 'bg-slate-50 text-slate-700 border-slate-200';
+        if (t.module === 'Equipment') badgeClass = 'bg-orange-50 text-orange-700 border-orange-200';
+        if (t.module === 'Labour') badgeClass = 'bg-purple-50 text-purple-700 border-purple-200';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-emerald-50/30 transition-colors border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="font-black text-slate-900">${t.transactionId}</div>
+          </td>
+           <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${t.recipientName}</div>
+            <div class="text-[10px] text-slate-500 truncate max-w-[120px]">ID: ${t.recipientId}</div>
+          </td>
+          <td class="px-5 py-4">
+             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold border ${badgeClass}">
+                ${t.module}
+             </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-emerald-700">₹${t.amount.toLocaleString()}</div>
+          </td>
+          <td class="px-5 py-4">
+             <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-[10px] font-bold text-sky-700 border border-sky-200">
+               <i class="fas fa-building-columns mr-1"></i> ${t.paymentMode}
+             </span>
+          </td>
+          <td class="px-5 py-4">
+             <div class="text-xs font-semibold text-slate-900">${new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+          </td>
+          <td class="px-5 py-4">
+             <span class="inline-flex items-center rounded-full ${t.status === 'Completed' ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300'} px-3 py-1 text-[10px] font-black border-2">
+               <i class="fas ${t.status === 'Completed' ? 'fa-circle-check' : 'fa-clock'} mr-1"></i> ${t.status}
+             </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+             ${t.status === 'Pending' ? `
+               <button onclick="completeTransaction('${t._id}', '${t.transactionId}', '${t.amount}')" class="inline-flex items-center rounded-xl bg-slate-900 px-3 py-1.5 text-[10px] text-white font-bold hover:bg-slate-800 shadow-sm transition-all">
+                 <i class="fas fa-receipt mr-1"></i> Mark Paid
+               </button>
+             ` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function completeTransaction(id, txId, amount) {
+      const utr = prompt(`Confirm payment of ₹${Number(amount).toLocaleString()} for ${txId}.\nEnter UTR/Reference Number (Optional):`);
+      if (utr === null) return; // Cancelled
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/finance/transactions/${id}/status`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Completed', utrNumber: utr })
+        });
+
+        if (res.ok) {
+          showToast('Transaction marked as COMPLETED!', 'success');
+          refreshData();
+        } else {
+          showToast('Failed to update status', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error while updating status', 'warning');
+      }
+    }
+
+    async function approvePayout(id, module, amount, partnerId) {
+      if (!confirm(`Approve payout of ₹${Number(amount).toLocaleString()} for ${module}?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/finance/approve`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payouts: [{ id, module, amount: Number(amount), partnerId }] })
+        });
+
+        if (res.ok) {
+          showToast('Payout Approved! Transaction generated.', 'success');
+          refreshData();
+        } else {
+          const err = await res.json();
+          showToast(err.error || 'Failed to approve', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error while approving', 'warning');
+      }
+    }
+
+    async function approveBulkPayouts() {
+      const checkboxes = document.querySelectorAll('.payout-checkbox:checked');
+      if (checkboxes.length === 0) {
+        return showToast('Please select at least one valid payout', 'warning');
+      }
+
+      if (!confirm(`Approve ${checkboxes.length} selected payouts?`)) return;
+
+      const payouts = Array.from(checkboxes).map(cb => ({
+        id: cb.dataset.id,
+        module: cb.dataset.mod,
+        amount: Number(cb.dataset.amt),
+        partnerId: cb.dataset.pid
+      }));
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/finance/approve`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ payouts })
+        });
+
+        if (res.ok) {
+          showToast(`Successfully processed ${checkboxes.length} payouts!`, 'success');
+          refreshData();
+        } else {
+          showToast('Failed to process bulk payouts', 'warning');
+        }
+      } catch (e) {
+        showToast('Network Error processing bulk payouts', 'warning');
+      }
+    }
+
+    function followUpPayment(buyerId, buyerName) {
+      showToast(`Logged payment reminder for ${buyerName}`, 'info');
+    }
+
+    function refreshData() {
+      console.log('🔄 Refreshing Finance Data...');
+      fetchStats();
+      fetchPendingPayouts();
+      fetchTransactions();
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', function () {
+      console.log('💰 Live Finance API initializing...');
+
+      // Ensure payout filter has correct listener
+      const filter = document.getElementById('payoutModuleFilter');
+      if (filter) filter.addEventListener('change', fetchPendingPayouts);
+
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(b => {
+        if (b.innerText.includes('Export')) b.id = 'exportFinanceBtn';
+      });
+
+      // Hook up Select All checkbox
+      const headerCheck = document.querySelector('thead input[type="checkbox"]');
+      if (headerCheck) {
+        headerCheck.addEventListener('change', function (e) {
+          document.querySelectorAll('.payout-checkbox:not([disabled])').forEach(cb => {
+            cb.checked = e.target.checked;
+          });
+        });
+      }
+
+      // Listeners are now attached locally or ID-based above.
+
+      // Add Export listener
+      const exportBtn = document.getElementById('exportFinanceBtn');
+      if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+          if (!AUTH_TOKEN) return showToast('Not Authenticated', 'warning');
+          showToast('Generating Secure CSV...', 'info');
+
+          fetch(`${API_BASE}/employee/admin/finance/export`, {
+            headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          })
+            .then(async (res) => {
+              if (!res.ok) throw new Error('Export failed');
+              return res.blob();
+            })
+            .then(blob => {
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = url;
+              a.download = `Finance_Transactions_${new Date().toISOString().split('T')[0]}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              window.URL.revokeObjectURL(url);
+              showToast('CSV Downloaded!', 'success');
+            })
+            .catch(err => {
+              console.error(err);
+              showToast('Export failed. Check console.', 'warning');
+            });
+        });
+      }
+
+      // Automatically fetch all data on load
+      refreshData();
+    });
+
+    function showToast(message, type) {
+      const toast = document.getElementById('toast');
+      const txt = document.getElementById('toastMessage');
+      txt.textContent = message;
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+
+</html>

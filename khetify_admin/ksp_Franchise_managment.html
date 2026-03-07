@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – KSP Franchise Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse-warning {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+    }
+
+    .animate-pulse-warning {
+      animation: pulse-warning 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-teal-50 via-slate-50 to-emerald-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 text-teal-700 border-2 border-teal-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 shadow-sm">
+            <i class="fas fa-store text-teal-600"></i>
+          </span>
+          <span class="truncate font-black">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting Modules</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">User Management</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System Settings</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-teal-400 hover:bg-teal-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-store text-teal-600"></i>
+                KSP Franchise Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Inventory, sales ledger, farmer transactions & wallet management
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div
+            class="rounded-2xl border-2 border-teal-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-100 to-teal-50 flex items-center justify-center">
+                <i class="fas fa-store text-teal-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-teal-600 font-black">Total</span>
+            </div>
+            <p id="kpi-total-franchises" class="text-2xl font-black text-slate-900">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Franchises</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Active</span>
+            </div>
+            <p id="kpi-active-franchises" class="text-2xl font-black text-slate-900">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Active</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-boxes-stacked text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Stock</span>
+            </div>
+            <p id="kpi-total-stock" class="text-2xl font-black text-slate-900">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Value</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-indian-rupee-sign text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">Sales</span>
+            </div>
+            <p id="kpi-monthly-sales" class="text-2xl font-black text-slate-900">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">This Month</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center animate-pulse-warning">
+                <i class="fas fa-triangle-exclamation text-rose-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-rose-600 font-black">Alert</span>
+            </div>
+            <p id="kpi-low-stock" class="text-2xl font-black text-slate-900">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Low Stock</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-purple-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center">
+                <i class="fas fa-wallet text-purple-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-purple-600 font-black">Wallet</span>
+            </div>
+            <p id="kpi-total-wallet" class="text-2xl font-black text-slate-900">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Balance</p>
+          </div>
+        </section>
+
+        <!-- FRANCHISE LIST TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-teal-50/20 to-emerald-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-store-alt text-teal-600"></i>
+                  KSP Franchises
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Franchise details, stock value & wallet balance
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="franchise-state-filter" onchange="filterFranchises()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All States</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Punjab">Punjab</option>
+                </select>
+                <input id="franchise-search" type="text" placeholder="🔍 Search franchise / location"
+                  oninput="filterFranchises()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-56" />
+                <button onclick="exportFranchises()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 px-4 text-xs text-white font-black hover:from-teal-600 hover:to-emerald-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 420px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Franchise</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Owner</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Stock Value</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Wallet Balance</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">This Month Sales</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="franchiseTableBody">
+                <!-- Data will be populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- LIVE STOCK VIEW (PER FRANCHISE) -->
+        <section id="inventory-section"
+          class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-sky-50/20 to-emerald-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-warehouse text-sky-600"></i>
+                  Live Stock Inventory
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Real-time stock: Fertilizers, Seeds, Cattle Feed (with low stock & expiry alerts)
+                </p>
+              </div>
+              <select id="ksp-select-inventory" onchange="fetchInventory(this.value)"
+                class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-bold w-64 text-ellipsis overflow-hidden">
+                <option value="all">All Franchises</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <!-- Product Category 1: Fertilizers -->
+              <div
+                class="rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-black text-slate-900 flex items-center gap-2">
+                      <i class="fas fa-flask text-emerald-600"></i> Fertilizers
+                    </p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">Stock as of today</p>
+                  </div>
+                </div>
+                <div id="inventory-fert-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
+                  <!-- JS Data -->
+                </div>
+              </div>
+
+              <!-- Product Category 2: Seeds -->
+              <div
+                class="rounded-xl border-2 border-sky-200 bg-gradient-to-br from-sky-50 to-white p-4 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-black text-slate-900 flex items-center gap-2">
+                      <i class="fas fa-seedling text-sky-600"></i> Seeds
+                    </p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">Stock as of today</p>
+                  </div>
+                </div>
+                <div id="inventory-seed-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
+                  <!-- JS Data -->
+                </div>
+              </div>
+
+              <!-- Product Category 3: Cattle Feed -->
+              <div
+                class="rounded-xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-4 hover:shadow-lg transition-all">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-black text-slate-900 flex items-center gap-2">
+                      <i class="fas fa-cow text-amber-600"></i> Cattle Feed
+                    </p>
+                    <p class="text-[10px] text-slate-500 font-medium mt-0.5">Stock as of today</p>
+                  </div>
+                </div>
+                <div id="inventory-tool-list" class="space-y-2 max-h-48 overflow-y-auto custom-scroll pr-1">
+                  <!-- JS Data -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FARMER TRANSACTION LEDGER (SALES) -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-receipt text-emerald-600"></i>
+                  Farmer Transaction Ledger
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Sales breakdown: Cash vs NexCard wallet payments
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="ledger-payment-mode" onchange="fetchLedger(this.value)"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold w-48 text-ellipsis overflow-hidden">
+                  <option value="all">All Payment Modes</option>
+                  <option value="cash">Cash</option>
+                  <option value="wallet">NexCard Wallet</option>
+                </select>
+                <button onclick="exportLedger()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Transaction ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Products</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Payment Mode</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Franchise</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                </tr>
+              </thead>
+              <tbody id="ledgerTableBody">
+                <!-- JS Data -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- FRANCHISE WALLET MANAGEMENT -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-wallet text-purple-600"></i>
+                  Franchise Wallet Management
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Pre-paid wallet balance & recharge requests
+                </p>
+              </div>
+              <button onclick="exportWallets()"
+                class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-violet-600 shadow-md transition-all">
+                <i class="fas fa-download mr-2"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 350px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Franchise</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Current Balance</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Recharge Request</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Request Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="walletTableBody">
+                <!-- JS Data -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== KSP FRANCHISE PAGE SCRIPT ========== -->
+  <script>
+    const API_BASE = 'https://krishinex.com/api/employee/admin/ksp';
+    const AUTH_TOKEN = (localStorage.getItem('employeeToken') || '').replace(/["']/g, "").trim();
+    const H = {
+      'Authorization': `Bearer ${AUTH_TOKEN}`,
+      'Content-Type': 'application/json'
+    };
+
+    // Page Load
+    window.addEventListener('DOMContentLoaded', function () {
+      console.log('🏪 KSP Franchise Management Page Loaded');
+      fetchStats();
+      fetchFranchises();
+      fetchInventory('all');
+      fetchLedger('all');
+      fetchWallets();
+
+      // Populate select dropdown after fetchFranchises loads
+      setTimeout(populateFranchiseDropdown, 1500);
+    });
+
+    async function populateFranchiseDropdown() {
+      try {
+        const res = await fetch(`${API_BASE}/franchises`, { headers: H });
+        const kspList = await res.json();
+        const select = document.getElementById('ksp-select-inventory');
+        select.innerHTML = '<option value="all">All Franchises</option>';
+        kspList.forEach(k => {
+          select.insertAdjacentHTML('beforeend', `<option value="${k._id}">${k.franchiseName} - ${k.location}</option>`);
+        });
+      } catch (e) { }
+    }
+
+    async function fetchInventory(kspId = 'all') {
+      try {
+        const res = await fetch(`${API_BASE}/inventory?kspId=${kspId}`, { headers: H });
+        if (!res.ok) throw new Error('API failed');
+        const items = await res.json();
+
+        const fertBox = document.getElementById('inventory-fert-list');
+        const seedBox = document.getElementById('inventory-seed-list');
+        const toolBox = document.getElementById('inventory-tool-list');
+
+        fertBox.innerHTML = '';
+        seedBox.innerHTML = '';
+        toolBox.innerHTML = '';
+
+        if (items.length === 0) {
+          fertBox.innerHTML = '<p class="text-xs text-slate-400 p-2">No data</p>';
+          seedBox.innerHTML = '<p class="text-xs text-slate-400 p-2">No data</p>';
+          toolBox.innerHTML = '<p class="text-xs text-slate-400 p-2">No data</p>';
+          return;
+        }
+
+        items.forEach(i => {
+          let targetBox = toolBox;
+          let alertColorClass = '';
+          let theme = { border: 'border-slate-100', text: 'text-slate-700', alert: '' };
+
+          if (i.category === 'fert') {
+            targetBox = fertBox;
+            theme = { border: 'border-emerald-100', text: 'text-emerald-700', lightBgc: 'bg-white' };
+          } else if (i.category === 'seed') {
+            targetBox = seedBox;
+            theme = { border: 'border-sky-100', text: 'text-sky-700', lightBgc: 'bg-white' };
+          } else {
+            theme = { border: 'border-amber-100', text: 'text-amber-700', lightBgc: 'bg-white' };
+          }
+
+          // Check Low Stock
+          let isLow = false;
+          if (i.stockQty < 10) {
+            isLow = true;
+            theme.border = 'border-rose-200';
+            theme.text = 'text-rose-700';
+            theme.lightBgc = 'bg-rose-50 animate-pulse-warning border-2';
+            theme.alert = `<p class="text-[9px] text-rose-600 font-bold mt-0.5"><i class="fas fa-triangle-exclamation"></i> Low Stock</p>`;
+          }
+
+          const html = `
+             <div class="flex justify-between items-center p-2 rounded-lg ${theme.lightBgc || 'bg-white border'} ${theme.border}">
+               <div class="flex flex-col">
+                 <span class="text-xs font-semibold text-slate-900">${i.name}</span>
+                 ${kspId === 'all' && i.ownerName ? `<span class="text-[9px] text-slate-500 line-clamp-1">${i.ownerName}</span>` : ''}
+               </div>
+               <div class="text-right">
+                 <span class="font-black ${theme.text}">${i.stockQty} ${i.unit}</span>
+                 ${theme.alert}
+               </div>
+             </div>
+           `;
+          targetBox.insertAdjacentHTML('beforeend', html);
+        });
+
+      } catch (e) {
+        console.error(e);
+        showToast('Error loading inventory', 'warning');
+      }
+    }
+
+    async function fetchLedger(paymentMode = 'all') {
+      try {
+        const res = await fetch(`${API_BASE}/ledger?paymentMode=${paymentMode}`, { headers: H });
+        if (!res.ok) throw new Error('API failed');
+        const ledgers = await res.json();
+        const tbody = document.getElementById('ledgerTableBody');
+        tbody.innerHTML = '';
+
+        if (ledgers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-sm text-slate-500 font-semibold">No Transactions Found</td></tr>';
+          return;
+        }
+
+        ledgers.forEach(l => {
+          let paymentBadge = `<span class="inline-flex items-center rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-1 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-money-bill-wave mr-1"></i> Cash</span>`;
+          let rowColor = 'hover:bg-amber-50/30';
+          if (l.paymentMode === 'WALLET') {
+            paymentBadge = `<span class="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-50 to-sky-50 px-3 py-1 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-credit-card mr-1"></i> NexCard Wallet</span>`;
+            rowColor = 'hover:bg-emerald-50/30';
+          }
+
+          const dt = new Date(l.date);
+          const rowHTML = `
+             <tr class="${rowColor} transition-colors border-b border-slate-100">
+               <td class="px-5 py-4"><div class="font-black text-slate-900">${l.transactionId}</div></td>
+               <td class="px-5 py-4">
+                 <div class="font-semibold text-slate-900">${l.farmerName}</div>
+                 <div class="text-[10px] text-slate-500">${l.farmerPhone}</div>
+               </td>
+               <td class="px-5 py-4"><div class="text-[11px] max-w-xs truncate font-semibold text-slate-900" title="${l.products}">${l.products}</div></td>
+               <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${formatCurrency(l.amount)}</div></td>
+               <td class="px-5 py-4">${paymentBadge}</td>
+               <td class="px-5 py-4">
+                 <div class="text-xs font-semibold text-slate-900">${l.franchiseName}</div>
+                 <div class="text-[10px] text-slate-500 line-clamp-1">${l.location}</div>
+               </td>
+               <td class="px-5 py-4">
+                 <div class="text-xs font-semibold text-slate-900">${dt.toLocaleDateString('en-IN')}</div>
+                 <div class="text-[10px] text-slate-500">${dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+               </td>
+             </tr>
+           `;
+          tbody.insertAdjacentHTML('beforeend', rowHTML);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function fetchWallets() {
+      try {
+        const res = await fetch(`${API_BASE}/wallets`, { headers: H });
+        if (!res.ok) throw new Error('API failed');
+        const wallets = await res.json();
+        const tbody = document.getElementById('walletTableBody');
+        tbody.innerHTML = '';
+
+        if (wallets.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-sm text-slate-500 font-semibold">No Wallets Found</td></tr>';
+          return;
+        }
+
+        wallets.forEach(w => {
+          let reqBalance = `<div class="font-black text-slate-400">—</div>`;
+          let reqStatus = `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`;
+          let actionsBtn = `<button onclick="viewWallet('${w._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i> View</button>`;
+          let rowColor = 'hover:bg-emerald-50/30';
+
+          if (w.requestStatus === 'PENDING') {
+            reqBalance = `<div class="font-black text-amber-700">${formatCurrency(w.rechargeRequest)}</div>`;
+            reqStatus = `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-clock mr-1"></i> Pending Approval</span>`;
+            actionsBtn = `<button onclick="approveRecharge('${w._id}', '${w.rechargeRequest}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-[11px] text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+            rowColor = 'hover:bg-amber-50/30';
+          }
+
+          const rowHTML = `
+             <tr class="${rowColor} transition-colors border-b border-slate-100">
+               <td class="px-5 py-4">
+                 <div class="font-black text-slate-900">${w.franchiseName}</div>
+                 <div class="text-[10px] text-slate-500 font-medium line-clamp-1">${w.location}</div>
+               </td>
+               <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">${formatCurrency(w.walletBalance)}</div></td>
+               <td class="px-5 py-4 text-right">${reqBalance}</td>
+               <td class="px-5 py-4">${reqStatus}</td>
+               <td class="px-5 py-4 text-right">${actionsBtn}</td>
+             </tr>
+           `;
+          tbody.insertAdjacentHTML('beforeend', rowHTML);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function fetchStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`, { headers: H });
+        if (!res.ok) throw new Error('Failed to fetch stats');
+        const stats = await res.json();
+
+        document.getElementById('kpi-total-franchises').textContent = stats.totalFranchises;
+        document.getElementById('kpi-active-franchises').textContent = stats.activeFranchises;
+        document.getElementById('kpi-total-stock').textContent = formatCurrency(stats.totalStockValue);
+        document.getElementById('kpi-monthly-sales').textContent = formatCurrency(stats.salesThisMonth);
+        document.getElementById('kpi-low-stock').textContent = stats.lowStockAlerts;
+        document.getElementById('kpi-total-wallet').textContent = formatCurrency(stats.totalWalletBalance);
+
+        checkLowStockAlerts(stats.lowStockAlerts);
+      } catch (e) {
+        console.error(e);
+        showToast('Error loading KPI statistics', 'warning');
+      }
+    }
+
+    async function fetchFranchises() {
+      try {
+        const res = await fetch(`${API_BASE}/franchises`, { headers: H });
+        if (!res.ok) throw new Error('Failed to fetch franchises');
+        const kspList = await res.json();
+        const tbody = document.getElementById('franchiseTableBody');
+        tbody.innerHTML = '';
+
+        if (kspList.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-sm text-slate-500 font-semibold">No Franchises Found</td></tr>`;
+          return;
+        }
+
+        kspList.forEach(k => {
+          const isLowStock = k.lowStockCount > 0;
+          const storeIcon = isLowStock
+            ? `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-rose-100 to-amber-100 flex items-center justify-center shadow-sm animate-pulse-warning"><i class="fas fa-store text-rose-600"></i></div>`
+            : `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm"><i class="fas fa-store text-teal-600"></i></div>`;
+
+          const stockText = isLowStock
+            ? `<div class="font-black text-rose-700">${formatCurrency(k.stockValue)}</div><div class="text-[10px] text-rose-600 font-bold flex items-center justify-end gap-1"><i class="fas fa-triangle-exclamation text-[8px]"></i> Low (${k.lowStockCount})</div>`
+            : `<div class="font-black text-slate-900">${formatCurrency(k.stockValue)}</div>`;
+
+          const statusBadge = k.status === 'approved'
+            ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`
+            : `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
+
+          const rowUrl = `viewFranchise('${k._id}', '${k.franchiseName.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${k.location.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')`;
+
+          const rowHTML = `
+            <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-3">
+                  ${storeIcon}
+                  <div>
+                    <div class="font-black text-slate-900">${k.franchiseName}</div>
+                    <div class="text-[10px] text-slate-500 font-medium">ID: KSP-${k._id.substring(18).toUpperCase()}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-4">
+                <div class="font-semibold text-slate-900">${k.ownerName}</div>
+                <div class="text-[10px] text-slate-500">${k.phone}</div>
+              </td>
+              <td class="px-5 py-4">
+                <div class="font-semibold text-slate-900">${k.location}</div>
+              </td>
+              <td class="px-5 py-4 text-right">${stockText}</td>
+              <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">${formatCurrency(k.walletBalance)}</div></td>
+              <td class="px-5 py-4 text-right"><div class="font-black text-teal-700">${formatCurrency(k.salesThisMonth)}</div></td>
+              <td class="px-5 py-4">${statusBadge}</td>
+              <td class="px-5 py-4 text-right">
+                <button onclick="${rowUrl}" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                  <i class="fas fa-eye mr-1"></i> View
+                </button>
+              </td>
+            </tr>
+          `;
+          tbody.insertAdjacentHTML('beforeend', rowHTML);
+        });
+      } catch (e) {
+        console.error(e);
+        showToast('Error loading franchises', 'warning');
+      }
+    }
+
+    // Show Toast
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      if (!toast) return;
+
+      let bgColor = 'bg-white';
+      let borderColor = 'border-slate-300';
+      let textColor = 'text-slate-900';
+
+      if (type === 'success') {
+        bgColor = 'bg-emerald-50';
+        borderColor = 'border-emerald-200';
+        textColor = 'text-emerald-800';
+      } else if (type === 'warning') {
+        bgColor = 'bg-rose-50';
+        borderColor = 'border-rose-200';
+        textColor = 'text-rose-800';
+      }
+
+      toast.className = `fixed bottom-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-0 ${bgColor} ${borderColor} ${textColor}`;
+      toastMessage.textContent = message;
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+          toast.classList.remove('translate-y-20', 'opacity-0');
+        }, 300);
+      }, 3000);
+    }
+
+    // ===== CSV DOWNLOAD — BASE64 FORCE (Most Reliable) =====
+    async function downloadCSV(endpoint, extraParams, filename) {
+      try {
+        if (!AUTH_TOKEN) {
+          alert("Session Expired! Please login again.");
+          return;
+        }
+
+        const params = new URLSearchParams(extraParams);
+        params.append('_v', Date.now()); // Cache bust
+        params.append('token', AUTH_TOKEN); // Add token for auth middleware fallback
+        const url = `${API_BASE}/${endpoint}?${params.toString()}`;
+
+        showToast('Generating Secure CSV...', 'info');
+
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+        if (!res.ok) throw new Error('Failed to fetch export');
+
+        const arrayBuffer = await res.arrayBuffer();
+
+        // CRITICAL BUGFIX FOR MS EDGE: Edge sometimes ignores the <a> download attribute on vanilla Blobs
+        // and names the downloaded file after the Blob's UUID. Wrapping it in a File object explicitly forces
+        // the filename metadata into the stream header, bypassing the Microsoft Edge UUID bug.
+        const file = new File([arrayBuffer], filename, { type: "text/csv;charset=utf-8;" });
+        const urlObj = window.URL.createObjectURL(file);
+
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = urlObj;
+        a.download = file.name; // Use the inherent file metadata name
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(urlObj);
+          showToast('File Saved Successfully!', 'success');
+        }, 1000);
+
+      } catch (e) {
+        console.error(e);
+        alert('Critical: Export server unreachable.');
+      }
+    }
+
+    // Export Franchises
+    function exportFranchises() {
+      downloadCSV('export', {}, 'KSP_Franchises.csv');
+    }
+
+    // ===== FRANCHISE FILTER (State + Search) =====
+    let _allFranchises = []; // cached list for filtering
+    const _origFetchFranchises = fetchFranchises;
+    // Override fetchFranchises to cache the data
+    fetchFranchises = async function () {
+      try {
+        const res = await fetch(`${API_BASE}/franchises`, { headers: H });
+        if (!res.ok) throw new Error('Refresh needed');
+        _allFranchises = await res.json();
+        renderFranchiseRows(_allFranchises);
+      } catch (e) {
+        console.error(e);
+        showToast('Error loading franchises', 'warning');
+      }
+    };
+
+    function renderFranchiseRows(kspList) {
+      const tbody = document.getElementById('franchiseTableBody');
+      tbody.innerHTML = '';
+      if (kspList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-sm text-slate-500 font-semibold">No Franchises Found</td></tr>`;
+        return;
+      }
+      kspList.forEach(k => {
+        const isLowStock = k.lowStockCount > 0;
+        const storeIcon = isLowStock
+          ? `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-rose-100 to-amber-100 flex items-center justify-center shadow-sm animate-pulse-warning"><i class="fas fa-store text-rose-600"></i></div>`
+          : `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm"><i class="fas fa-store text-teal-600"></i></div>`;
+        const stockText = isLowStock
+          ? `<div class="font-black text-rose-700">${formatCurrency(k.stockValue)}</div><div class="text-[10px] text-rose-600 font-bold flex items-center justify-end gap-1"><i class="fas fa-triangle-exclamation text-[8px]"></i> Low (${k.lowStockCount})</div>`
+          : `<div class="font-black text-slate-900">${formatCurrency(k.stockValue)}</div>`;
+        const statusBadge = k.status === 'approved'
+          ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`
+          : `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
+        const escapedName = (k.franchiseName || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        const escapedLoc = (k.location || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+            <td class="px-5 py-4"><div class="flex items-center gap-3">${storeIcon}<div><div class="font-black text-slate-900">${k.franchiseName}</div><div class="text-[10px] text-slate-500 font-medium">ID: KSP-${k._id.substring(18).toUpperCase()}</div></div></div></td>
+            <td class="px-5 py-4"><div class="font-semibold text-slate-900">${k.ownerName}</div><div class="text-[10px] text-slate-500">${k.phone}</div></td>
+            <td class="px-5 py-4"><div class="font-semibold text-slate-900">${k.location}</div></td>
+            <td class="px-5 py-4 text-right">${stockText}</td>
+            <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">${formatCurrency(k.walletBalance)}</div></td>
+            <td class="px-5 py-4 text-right"><div class="font-black text-teal-700">${formatCurrency(k.salesThisMonth)}</div></td>
+            <td class="px-5 py-4">${statusBadge}</td>
+            <td class="px-5 py-4 text-right">
+              <button onclick="viewFranchise('${k._id}', '${escapedName}', '${escapedLoc}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i> View</button>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    function filterFranchises() {
+      const state = document.getElementById('franchise-state-filter').value;
+      const query = (document.getElementById('franchise-search').value || '').toLowerCase().trim();
+      let filtered = _allFranchises;
+      if (state !== 'all') {
+        filtered = filtered.filter(k => (k.location || '').includes(state));
+      }
+      if (query) {
+        filtered = filtered.filter(k =>
+          (k.franchiseName || '').toLowerCase().includes(query) ||
+          (k.location || '').toLowerCase().includes(query) ||
+          (k.ownerName || '').toLowerCase().includes(query)
+        );
+      }
+      renderFranchiseRows(filtered);
+    }
+
+    // ===== VIEW FRANCHISE DETAILS =====
+    function viewFranchise(id, name, location) {
+      // Show a modal/toast summary with franchise info
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm';
+      modal.id = 'franchise-modal';
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-lg mx-4 overflow-hidden animate-[slideInRight_0.2s_ease-out]">
+          <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-b-2 border-slate-100">
+            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2"><i class="fas fa-store text-teal-600"></i> ${name}</h3>
+            <p class="text-xs text-slate-500 font-semibold mt-0.5"><i class="fas fa-map-marker-alt mr-1"></i> ${location}</p>
+          </div>
+          <div class="p-6 space-y-3">
+            <p class="text-sm text-slate-600"><strong>Franchise ID:</strong> <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${id}</span></p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center">
+                <p class="text-[10px] text-slate-500 font-bold uppercase">Stock Items</p>
+                <p class="text-lg font-black text-emerald-700 mt-1" id="modal-stock-count">Loading...</p>
+              </div>
+              <div class="rounded-xl bg-sky-50 border border-sky-200 p-3 text-center">
+                <p class="text-[10px] text-slate-500 font-bold uppercase">Transactions</p>
+                <p class="text-lg font-black text-sky-700 mt-1" id="modal-txn-count">Loading...</p>
+              </div>
+            </div>
+            <p class="text-[10px] text-slate-400 text-center mt-2">Click outside to close</p>
+          </div>
+          <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap justify-end gap-2">
+            <div id="modal-franchise-actions" class="flex gap-2"></div>
+            <button onclick="fetchInventory('${id}'); document.getElementById('ksp-select-inventory').value='${id}'; document.getElementById('inventory-section').scrollIntoView({ behavior: 'smooth' }); document.getElementById('franchise-modal').remove();" class="inline-flex items-center rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-sky-600 hover:to-sky-700 transition-all"><i class="fas fa-warehouse mr-1.5"></i> View Stock</button>
+            <button onclick="document.getElementById('franchise-modal').remove();" class="inline-flex items-center rounded-xl border-2 border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">Close</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      // Load quick stats
+      fetch(`${API_BASE}/franchises`, { headers: H }).then(r => r.ok ? r.json() : []).then(list => {
+        const k = list.find(x => x._id === id);
+        if (k) {
+          const actionBox = document.getElementById('modal-franchise-actions');
+          if (k.status === 'approved') {
+            actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1.5"></i> Block</button>`;
+          } else {
+            actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+          }
+        }
+      });
+
+      fetch(`${API_BASE}/inventory?kspId=${id}`, { headers: H }).then(r => r.ok ? r.json() : []).then(items => {
+        const el = document.getElementById('modal-stock-count');
+        if (el) el.textContent = items.length || '0';
+      }).catch(() => { });
+      fetch(`${API_BASE}/ledger`, { headers: H }).then(r => r.ok ? r.json() : []).then(txns => {
+        const el = document.getElementById('modal-txn-count');
+        if (el) el.textContent = txns.length || '0';
+      }).catch(() => { });
+    }
+
+    async function approveFranchise(id, name) {
+      if (!confirm(`Approve KSP Franchise: ${name}?`)) return;
+      try {
+        const res = await fetch(`https://krishinex.com/api/employee/admin/approve/${id}`, {
+          method: 'PUT',
+          headers: H
+        });
+        if (res.ok) {
+          showToast(`${name} approved`, 'success');
+          document.getElementById('franchise-modal')?.remove();
+          fetchFranchises();
+        } else {
+          showToast('Approval failed', 'warning');
+        }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    async function blockFranchise(id, name) {
+      if (!confirm(`Block KSP Franchise: ${name}?`)) return;
+      try {
+        const res = await fetch(`https://krishinex.com/api/employee/admin/block/${id}`, {
+          method: 'PUT',
+          headers: H
+        });
+        if (res.ok) {
+          showToast(`${name} blocked`, 'success');
+          document.getElementById('franchise-modal')?.remove();
+          fetchFranchises();
+        } else {
+          showToast('Blocking failed', 'warning');
+        }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    // ===== VIEW WALLET DETAILS =====
+    async function viewWallet(id) {
+      try {
+        const res = await fetch(`${API_BASE}/wallets`, { headers: H });
+        if (!res.ok) throw new Error('Failed to load wallets');
+        const wallets = await res.json();
+        const w = wallets.find(x => x._id === id);
+        if (!w) return showToast('Wallet not found', 'warning');
+
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm';
+        modal.id = 'wallet-detail-modal';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+          <div class="bg-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-md mx-4 overflow-hidden animate-[slideUp_0.3s_ease-out]">
+            <div class="px-6 py-4 bg-emerald-50 border-b-2 border-emerald-100 flex items-center justify-between">
+              <h3 class="text-lg font-black text-emerald-900 flex items-center gap-2"><i class="fas fa-wallet text-emerald-600"></i> Wallet Details</h3>
+              <button onclick="document.getElementById('wallet-detail-modal').remove()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-6">
+              <div class="text-center">
+                <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Current Balance</p>
+                <p class="text-4xl font-black text-emerald-700">${formatCurrency(w.walletBalance)}</p>
+              </div>
+              
+              <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-500 font-bold">Franchise</span>
+                  <span class="text-xs text-slate-900 font-black">${w.franchiseName}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-500 font-bold">Status</span>
+                  <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${w.requestStatus === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${w.requestStatus === 'PENDING' ? 'Pending Recharge' : 'Active'}</span>
+                </div>
+                ${w.requestStatus === 'PENDING' ? `
+                  <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                    <span class="text-xs text-amber-700 font-bold">Pending Amount</span>
+                    <span class="text-sm text-amber-700 font-black">${formatCurrency(w.rechargeRequest)}</span>
+                  </div>
+                ` : ''}
+              </div>
+
+              ${w.requestStatus === 'PENDING' ? `
+                <button onclick="document.getElementById('wallet-detail-modal').remove(); approveRecharge('${w._id}', '${w.rechargeRequest}')" class="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+                  <i class="fas fa-check-circle"></i> Approve Recharge Now
+                </button>
+              ` : `
+                <button onclick="document.getElementById('wallet-detail-modal').remove()" class="w-full h-11 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all">
+                  Close Details
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      } catch (e) {
+        showToast('Error loading wallet details', 'warning');
+      }
+    }
+
+    // ===== APPROVE RECHARGE =====
+    async function approveRecharge(franchiseId, amount) {
+      if (!confirm(`Approve wallet recharge of ₹${Number(amount).toLocaleString('en-IN')} for this franchise?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/approve-wallet/${franchiseId}`, {
+          method: 'PUT',
+          headers: H
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          showToast(data.message || 'Recharge Approved!', 'success');
+          // Refresh everything to reflect new balance
+          fetchStats();
+          fetchWallets();
+          fetchFranchises();
+        } else {
+          const errData = await res.json().catch(() => ({ error: 'Endpoint Not Found (404)' }));
+          showToast(errData.error || 'Approval failed', 'warning');
+          if (res.status === 404) {
+            alert("ALERT: Backend server needs a RESTART to pick up the new Wallet approval routes!");
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        showToast('Server Error during approval', 'warning');
+      }
+    }
+
+    // ===== EXPORT LEDGER =====
+    function exportLedger() {
+      const mode = document.getElementById('ledger-payment-mode').value;
+      downloadCSV('export', { type: 'ledger', paymentMode: mode }, 'KSP_Ledger.csv');
+    }
+
+    // ===== EXPORT WALLETS =====
+    function exportWallets() {
+      downloadCSV('export', { type: 'wallets' }, 'KSP_Wallets.csv');
+    }
+
+    // Check Low Stock Alerts
+    function checkLowStockAlerts(lowStockCount) {
+      if (lowStockCount > 0) {
+        console.warn(`⚠️ ${lowStockCount} franchises have low stock`);
+      }
+    }
+
+    // Show Toast
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      let bgColor = 'bg-white';
+      let borderColor = 'border-slate-300';
+      let textColor = 'text-slate-900';
+
+      if (type === 'success') {
+        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
+        borderColor = 'border-emerald-300';
+        textColor = 'text-emerald-900';
+      } else if (type === 'warning') {
+        bgColor = 'bg-gradient-to-r from-amber-50 to-amber-100';
+        borderColor = 'border-amber-300';
+        textColor = 'text-amber-900';
+      } else if (type === 'info') {
+        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
+        borderColor = 'border-sky-300';
+        textColor = 'text-sky-900';
+      }
+
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toastMessage.className = `text-sm font-bold ${textColor}`;
+      toastMessage.textContent = message;
+
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    // Helper: Format currency
+    function formatCurrency(amount) {
+      if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(1) + ' Cr';
+      if (amount >= 100000) return '₹' + (amount / 100000).toFixed(1) + ' L';
+      if (amount >= 1000) return '₹' + (amount / 1000).toFixed(1) + ' K';
+      return '₹' + amount;
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', function (e) {
+      if (document.activeElement.tagName === 'INPUT') return;
+
+      if (e.key === 's' || e.key === 'S') {
+        // Press 'S' for stock view
+        console.log('Quick access: Stock view');
+      }
+
+      if (e.key === 'w' || e.key === 'W') {
+        // Press 'W' for wallet
+        console.log('Quick access: Wallet management');
+      }
+    });
+  </script>
+</body>
+
+</html>

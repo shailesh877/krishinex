@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <title>KrishiNex Admin – Employee Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            emerald: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-slate-50 text-slate-900">
+  <div class="flex min-h-screen">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== SIDEBAR (REUSABLE) ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-user-tie text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-6">
+      <header
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm animate-fade-in flex-wrap">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <!-- Hamburger -->
+          <button id="hamburger"
+            class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm flex-shrink-0"
+            onclick="toggleSidebar()" aria-pressed="false">
+            <div class="space-y-[5px]">
+              <span
+                class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+              <span
+                class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+              <span
+                class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+            </div>
+          </button>
+          <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Employee Management</h1>
+            <p class="text-slate-500 text-sm font-medium">Create and manage your internal team and their access.</p>
+          </div>
+        </div>
+        <button onclick="openModal()"
+          class="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all flex items-center gap-2 w-full md:w-auto justify-center md:justify-start">
+          <i class="fas fa-plus"></i> Add New Employee
+        </button>
+      </header>
+
+      <!-- Employee Grid/Table -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in"
+        style="animation-delay: 0.1s;">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Code</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modules Access
+                </th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody id="employeeTableBody" class="divide-y divide-slate-50">
+              <!-- Rows will be injected here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="loader" class="p-12 flex flex-col items-center justify-center text-slate-400">
+          <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-emerald-500"></i>
+          <p class="text-sm font-bold">Loading employees...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="modal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-fade-in">
+      <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <h2 id="modalTitle" class="text-xl font-black text-slate-900">Add New Employee</h2>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i
+            class="fas fa-times text-xl"></i></button>
+      </div>
+      <form id="employeeForm" class="p-8 space-y-6">
+        <input type="hidden" id="employeeId">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Full Name</label>
+            <input type="text" id="name" required
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold transition-all">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Employee Code</label>
+            <input type="text" id="employeeCode" required
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold transition-all">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Email Address</label>
+            <input type="email" id="email" required
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold transition-all">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Phone Number</label>
+            <input type="text" id="phone"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold transition-all">
+          </div>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Address</label>
+          <input type="text" id="address"
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold transition-all">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Portal Password</label>
+          <input type="password" id="password" required
+            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none text-sm font-bold transition-all">
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-[11px] font-black text-slate-500 uppercase ml-1">Module Access</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label
+              class="flex items-center p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
+              <input type="checkbox" name="modules" value="labour" class="w-4 h-4 text-emerald-600 rounded">
+              <span class="ml-3 text-sm font-bold text-slate-700">Labour Management</span>
+            </label>
+            <label
+              class="flex items-center p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
+              <input type="checkbox" name="modules" value="equipment" class="w-4 h-4 text-emerald-600 rounded">
+              <span class="ml-3 text-sm font-bold text-slate-700">Equipment Rental</span>
+            </label>
+            <label
+              class="flex items-center p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
+              <input type="checkbox" name="modules" value="soil" class="w-4 h-4 text-emerald-600 rounded">
+              <span class="ml-3 text-sm font-bold text-slate-700">Soil Testing Lab</span>
+            </label>
+            <label
+              class="flex items-center p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
+              <input type="checkbox" name="modules" value="doctor" class="w-4 h-4 text-emerald-600 rounded">
+              <span class="ml-3 text-sm font-bold text-slate-700">Crop Doctor (Chat)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit"
+            class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl hover:bg-slate-800 transition-all">
+            Save Employee Details
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://krishinex.com/api';
+    // Note: In production, get this from localStorage after admin login
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+    let allEmployees = [];
+
+    async function fetchEmployees() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/all`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        allEmployees = data;
+        renderEmployees(data);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loader').innerHTML = '<p class="text-rose-500 font-bold">Failed to load employees. Check console.</p>';
+      }
+    }
+
+    function renderEmployees(employees) {
+      const body = document.getElementById('employeeTableBody');
+      const loader = document.getElementById('loader');
+      loader.classList.add('hidden');
+      body.innerHTML = '';
+
+      employees.forEach(emp => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
+        tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-xs uppercase">
+                                ${emp.name.substring(0, 2)}
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-slate-900">${emp.name}</p>
+                                <p class="text-[10px] text-slate-500 font-medium">${emp.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="bg-slate-100 px-3 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-200">${emp.employeeCode}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-600">${emp.phone || 'N/A'}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1">
+                            ${(emp.employeeModules || []).map(m => `
+                                <span class="bg-blue-50 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-tighter">${m}</span>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2"></span> Active
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="editEmployee('${emp._id}')" class="text-slate-400 hover:text-emerald-600 p-2 transition-colors"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEmployee('${emp._id}')" class="text-slate-400 hover:text-rose-600 p-2 transition-colors ml-2"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+        body.appendChild(tr);
+      });
+    }
+
+    function editEmployee(id) {
+      const emp = allEmployees.find(e => e._id === id);
+      if (emp) openModal(emp);
+    }
+
+    function openModal(emp = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      const form = document.getElementById('employeeForm');
+      form.reset();
+      document.getElementById('employeeId').value = emp ? emp._id : '';
+      document.getElementById('modalTitle').innerText = emp ? 'Edit Employee' : 'Add New Employee';
+
+      if (emp) {
+        document.getElementById('name').value = emp.name;
+        document.getElementById('email').value = emp.email;
+        document.getElementById('phone').value = emp.phone;
+        document.getElementById('address').value = emp.address || '';
+        document.getElementById('employeeCode').value = emp.employeeCode;
+        document.getElementById('password').required = false; // Optional on edit
+
+        const checkboxes = form.querySelectorAll('input[name="modules"]');
+        checkboxes.forEach(cb => {
+          cb.checked = (emp.employeeModules || []).includes(cb.value);
+        });
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    document.getElementById('employeeForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('employeeId').value;
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        employeeCode: document.getElementById('employeeCode').value,
+        employeeModules: Array.from(document.querySelectorAll('input[name="modules"]:checked')).map(cb => cb.value)
+      };
+
+      const password = document.getElementById('password').value;
+      if (password) formData.password = password;
+
+      const url = id ? `${API_BASE}/employee/admin/${id}` : `${API_BASE}/employee/admin/create`;
+      const method = id ? 'PATCH' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(formData)
+        });
+        if (res.ok) {
+          closeModal();
+          fetchEmployees();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Operation failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error');
+      }
+    };
+
+    async function deleteEmployee(id) {
+      if (!confirm('Are you sure you want to delete this employee?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) fetchEmployees();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.onload = fetchEmployees;
+
+    // Make sidebar toggle work
+    function toggleSidebar(show = true) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      if (show) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('opacity-100');
+        if (hamburger) hamburger.setAttribute('aria-pressed', 'true');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.remove('opacity-100');
+        setTimeout(() => backdrop.classList.add('hidden'), 300);
+        if (hamburger) hamburger.setAttribute('aria-pressed', 'false');
+      }
+    }
+  </script>
+</body>
+
+</html>

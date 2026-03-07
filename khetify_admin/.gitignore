@@ -1,0 +1,4 @@
+# Admin Panel Static Files
+.DS_Store
+Thumbs.db
+*.log
