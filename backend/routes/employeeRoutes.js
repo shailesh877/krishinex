@@ -868,10 +868,10 @@ router.put('/admin/crop-requests/:id/assign', protect, checkAdmin, async (req, r
         // 2. If not an Order, check if it's a SellRequest (submitted by farmer)
         const sellReq = await SellRequest.findById(req.params.id).populate('farmer').populate('mandi');
         if (sellReq) {
-            // Parse price from string like "4 / KG (?400 / Quintal)"
+            // Parse price from string like "4 / KG (₹400 / Quintal)"
             const priceStr = sellReq.expectedPrice || "";
             let parsedPrice = 0;
-            const match = priceStr.match(/?(\d+)/);
+            const match = priceStr.match(/₹(\d+)/);
             if (match) {
                 parsedPrice = parseInt(match[1]);
             } else {
