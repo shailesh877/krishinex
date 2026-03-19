@@ -9,3 +9,5 @@ yarn-error.log*
 *.p12
 *.key
 *.mobileprovision
+serviceAccountKey.json
+google-services.json

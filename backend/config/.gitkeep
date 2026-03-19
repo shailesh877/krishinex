@@ -1,1 +1,2 @@
 # This file is used to ensure the config directory exists for service account keys.
+serviceAccountKey.json
