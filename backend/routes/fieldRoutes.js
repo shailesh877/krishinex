@@ -158,7 +158,7 @@ router.get('/tasks', protect, checkAdmin, async (req, res) => {
 // @access  Private/Admin
 router.post('/tasks/assign', protect, checkAdmin, async (req, res) => {
     try {
-        const { executiveId, taskType, partnerName, location, amount, dueDate, notes } = req.body;
+        const { executiveId, taskType, partnerName, location, mobileNumber, amount, dueDate, notes } = req.body;
 
         if (!executiveId || !taskType || !partnerName || !location) {
             return res.status(400).json({ error: 'Executive, Task Type, Partner Name, and Location are required' });
@@ -174,6 +174,7 @@ router.post('/tasks/assign', protect, checkAdmin, async (req, res) => {
             taskType,
             partnerName,
             location,
+            mobileNumber,
             amount: amount || 0,
             dueDate,
             notes
@@ -188,6 +189,54 @@ router.post('/tasks/assign', protect, checkAdmin, async (req, res) => {
     } catch (error) {
         console.error('Error assigning task:', error);
         res.status(500).json({ error: 'Server error assigning task' });
+    }
+});
+
+// @route   GET /api/field/tasks/:id
+// @desc    Get single task details
+// @access  Private
+router.get('/tasks/:id', protect, async (req, res) => {
+    try {
+        const task = await FieldTask.findById(req.params.id).populate('executive', 'name employeeCode phone');
+        if (!task) return res.status(404).json({ error: 'Task not found' });
+        
+        // Ensure only the assigned executive or an admin can view details
+        if (req.user.role !== 'admin' && task.executive._id.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        res.json(task);
+    } catch (error) {
+        console.error('Error fetching task details:', error);
+        res.status(500).json({ error: 'Server error fetching task details' });
+    }
+});
+
+// @route   PATCH /api/field/tasks/:id/status
+// @desc    Update task status
+// @access  Private
+router.patch('/tasks/:id/status', protect, async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!['Pending', 'Accepted', 'Completed', 'Cancelled'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        const task = await FieldTask.findById(req.params.id);
+        if (!task) return res.status(404).json({ error: 'Task not found' });
+
+        // Ensure only the assigned executive or an admin can update
+        if (req.user.role !== 'admin' && task.executive.toString() !== req.user.id) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        task.status = status;
+        await task.save();
+
+        res.json({ message: `Task marked as ${status}`, task });
+    } catch (error) {
+        console.error('Error updating task status:', error);
+        res.status(500).json({ error: 'Server error updating status' });
     }
 });
 

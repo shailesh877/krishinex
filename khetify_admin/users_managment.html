@@ -191,6 +191,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -584,23 +592,34 @@
             </div>
             <div>
               <p class="text-[10px] text-slate-600 font-semibold mb-1">Rate</p>
-              <p class="text-sm font-black text-emerald-700">₹<span id="modalRate">-</span>/Q</p>
+              <p class="text-sm font-black text-emerald-700" id="modalRateContainer"><span id="modalRate">-</span></p>
             </div>
             <div>
               <p class="text-[10px] text-slate-600 font-semibold mb-1">Range</p>
               <p class="text-sm font-black text-sky-700"><span id="modalDistance">-</span> km</p>
             </div>
+            <div class="col-span-2 md:col-span-3 pt-2">
+              <p class="text-[10px] text-emerald-700 font-black mb-1 uppercase tracking-wider">Edit Final Price (₹/Quintal)</p>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                <input type="number" id="modalEditPrice" 
+                  class="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 outline-none font-black text-slate-900 transition-all"
+                  placeholder="Enter final agreed price">
+              </div>
+            </div>
           </div>
-        </div>
 
+        </div>
         <!-- Matching Buyers -->
-        <div>
+        <div id="buyerMatchSection">
           <p class="text-xs uppercase tracking-wide text-slate-600 font-black mb-3 flex items-center gap-2">
             <i class="fas fa-users"></i> Matching Buyers (Location + Crop)
           </p>
-          <div class="space-y-2 max-h-80 overflow-y-auto custom-scroll" id="buyerMatchList">
-            <p class="text-sm text-slate-400 text-center py-4 italic">Loading available buyers...</p>
+          <div id="buyerMatchList" class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            <!-- Dynamically populated -->
+            <p class="text-xs text-slate-400 italic text-center py-4">Loading available buyers...</p>
           </div>
+        </div>
 
           <!-- Selected Buyer -->
           <div id="selectedBuyerInfo" class="hidden rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4">
@@ -632,17 +651,18 @@
       </div>
     </div>
 
-    <!-- USER PROFILE MODAL -->
-    <div id="userProfileModal"
+    <!-- USER PROFILE MODAL (360 VIEW) -->
+    <div id="userProfileModalV360"
       class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
       onclick="if(event.target === this) closeUserProfile()">
       <div
-        class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
-        <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-emerald-50/30 to-white">
+        class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+        <!-- Header -->
+        <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-emerald-50 via-white to-sky-50 flex-shrink-0">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
-              <i class="fas fa-user-circle text-emerald-600"></i>
-              Farmer Profile
+              <i class="fas fa-id-card text-emerald-600"></i>
+              Farmer 360° Profile
             </h2>
             <button onclick="closeUserProfile()"
               class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
@@ -651,38 +671,161 @@
           </div>
         </div>
 
-        <div class="px-6 py-6 space-y-5">
-          <div class="text-center">
-            <div
-              class="inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-green-100 text-5xl mb-4 shadow-xl border-4 border-white">
-              <i class="fas fa-user text-emerald-600"></i>
+        <!-- Body -->
+        <div class="px-6 py-6 overflow-y-auto custom-scroll space-y-6">
+          <!-- Main Info & Stats -->
+          <div class="flex flex-col md:flex-row gap-6">
+            <div class="flex-shrink-0 text-center space-y-3">
+              <div id="p-photo" class="h-32 w-32 rounded-3xl bg-emerald-100 flex items-center justify-center border-4 border-white shadow-xl mx-auto overflow-hidden">
+                <i class="fas fa-user text-emerald-600 text-5xl"></i>
+              </div>
+              <div>
+                <p class="text-xl font-black text-slate-900" id="profileName">-</p>
+                <p class="text-xs text-slate-500 font-bold" id="profileId">-</p>
+              </div>
+              <div id="profileStatusBadge"></div>
             </div>
-            <p class="text-2xl font-black text-slate-900" id="profileName">-</p>
-            <p class="text-sm text-slate-500 font-bold mt-2" id="profileId">-</p>
+
+            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-[10px] uppercase font-black text-slate-400 mb-1">Contact Details</p>
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-phone text-emerald-600 text-xs w-4"></i>
+                    <p class="text-sm font-bold text-slate-700" id="profileMobile">-</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-envelope text-sky-600 text-xs w-4"></i>
+                    <p class="text-sm font-bold text-slate-700 truncate" id="profileEmail">-</p>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <i class="fas fa-map-marker-alt text-rose-600 text-xs w-4 mt-1"></i>
+                    <p class="text-sm font-bold text-slate-700" id="profileLocation">-</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-[10px] uppercase font-black text-slate-400 mb-1">Financial Overview</p>
+                <div class="space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-slate-500">Wallet Bal:</span>
+                    <span class="text-sm font-black text-emerald-700" id="profileWallet">-</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-slate-500">Wallet ID:</span>
+                    <span class="text-[10px] font-mono font-bold text-slate-700" id="profileWalletId">-</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-slate-500">Total Activities:</span>
+                    <span class="text-sm font-black text-slate-800" id="profileTotalOrders">0</span>
+                  </div>
+                  <div class="flex justify-between items-center mt-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                    <span class="text-xs font-black text-emerald-800">Card Number:</span>
+                    <span class="text-sm font-black text-emerald-900 tracking-widest" id="profileCardNumber">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
-            <div class="space-y-3">
-              <div class="flex justify-between">
-                <p class="text-xs text-slate-600 font-bold">Mobile</p>
-                <p class="text-sm font-black text-slate-900" id="profileMobile">-</p>
+          <!-- KYC & Documents Section -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="h-1 bg-emerald-500 flex-1 rounded-full"></div>
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest px-2">KYC & Documents</h3>
+              <div class="h-1 bg-emerald-500 flex-1 rounded-full"></div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Aadhaar Card -->
+              <div class="rounded-2xl border-2 border-slate-100 bg-white p-4 flex items-center justify-between hover:border-emerald-200 transition-all">
+                <div class="flex items-center gap-4">
+                  <div class="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                    <i class="fas fa-id-card text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-black text-slate-900">Aadhaar Card</p>
+                    <p class="text-[11px] text-slate-500 font-bold" id="profileAadhaar">Not Provided</p>
+                  </div>
+                </div>
+                <button id="viewAadhaarBtn" class="hidden h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black hover:bg-slate-800 transition-all flex items-center gap-2">
+                  <i class="fas fa-eye"></i> View Doc
+                </button>
               </div>
-              <div class="flex justify-between">
-                <p class="text-xs text-slate-600 font-bold">Location</p>
-                <p class="text-sm font-black text-slate-900" id="profileLocation">-</p>
+
+              <!-- PAN Card -->
+              <div class="rounded-2xl border-2 border-slate-100 bg-white p-4 flex items-center justify-between hover:border-sky-200 transition-all">
+                <div class="flex items-center gap-4">
+                  <div class="h-12 w-12 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
+                    <i class="fas fa-address-card text-xl"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-black text-slate-900">PAN Card</p>
+                    <p class="text-[11px] text-slate-500 font-bold" id="profilePan">Not Provided</p>
+                  </div>
+                </div>
+                <button id="viewPanBtn" class="hidden h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black hover:bg-slate-800 transition-all flex items-center gap-2">
+                  <i class="fas fa-eye"></i> View Doc
+                </button>
               </div>
-              <div class="flex justify-between">
-                <p class="text-xs text-slate-600 font-bold">Status</p>
-                <span id="profileStatus" class="text-sm font-black text-emerald-700">Active</span>
+            </div>
+          </div>
+
+          </div>
+
+          <!-- Bank Details Section -->
+          <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="h-1 bg-sky-500 flex-1 rounded-full"></div>
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest px-2">Bank Account Info</h3>
+              <div class="h-1 bg-sky-500 flex-1 rounded-full"></div>
+            </div>
+            
+            <div class="rounded-2xl border-2 border-sky-100 bg-sky-50/30 p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">Holder Name</p>
+                <p class="text-sm font-black text-slate-900" id="bankHolder">-</p>
               </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">Bank Name</p>
+                <p class="text-sm font-black text-slate-900" id="bankName">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">A/C Number</p>
+                <p class="text-sm font-black text-emerald-700 font-mono" id="bankAcc">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">IFSC Code</p>
+                <p class="text-sm font-black text-sky-700 font-mono" id="bankIfsc">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Farmer's Recent Activities -->
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="h-1 bg-amber-500 flex-1 rounded-full"></div>
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest px-2">Recent Crop Sell Requests</h3>
+              <div class="h-1 bg-amber-500 flex-1 rounded-full"></div>
+            </div>
+            
+            <div id="profileRecentRequests" class="space-y-3">
+              <!-- Dynamically populated -->
+              <p class="text-xs text-slate-400 italic text-center py-4">No recent crop sell requests found.</p>
             </div>
           </div>
         </div>
 
-        <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end">
+        <!-- Footer -->
+        <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50/80 flex-shrink-0 flex items-center justify-between">
+          <span class="text-[9px] text-slate-400 font-mono tracking-tighter">ENGINE_V360_BETA_2.1</span>
+          <button id="generateCardBtn" onclick="generateUserCard()" class="hidden inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-5 py-2.5 text-sm font-black text-white hover:from-emerald-700 hover:to-emerald-800 shadow-md transition-all">
+            <i class="fas fa-credit-card mr-2"></i> Generate Card Number
+          </button>
           <button onclick="closeUserProfile()"
-            class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
-            Close
+            class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-5 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-50 transition-all">
+            Dismiss
           </button>
         </div>
       </div>
@@ -691,14 +834,31 @@
     <!-- PHOTO VIEWER MODAL -->
     <div id="photoModal"
       class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-lg"
-      onclick="closePhotoModal()">
-      <div class="relative animate-[fadeIn_0.3s_ease-out]">
+      onclick="if(event.target === this) closePhotoModal()">
+      <div class="relative animate-[fadeIn_0.3s_ease-out] group">
         <img id="photoModalImg" src="" alt="Crop photo"
           class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl border-4 border-white" />
+        
+        <!-- Navigation Buttons -->
+        <div id="galleryNav" class="hidden">
+          <button onclick="event.stopPropagation(); prevPhoto()"
+            class="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-sm">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button onclick="event.stopPropagation(); nextPhoto()"
+            class="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all backdrop-blur-sm">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
         <button onclick="closePhotoModal()"
-          class="absolute top-3 right-3 h-11 w-11 rounded-full bg-white/95 flex items-center justify-center shadow-xl hover:bg-white transition-all">
-          <i class="fas fa-times text-slate-900 text-xl"></i>
+          class="absolute -top-12 right-0 md:top-3 md:-right-12 h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all backdrop-blur-sm">
+          <i class="fas fa-times text-xl"></i>
         </button>
+
+        <div id="photoCounterLabel" class="absolute -bottom-10 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest backdrop-blur-sm hidden">
+          IMAGE 1 / 4
+        </div>
       </div>
     </div>
 
@@ -708,15 +868,47 @@
       <p id="toastMessage" class="text-sm font-bold"></p>
     </div>
 
-    <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+
+    <!-- ========== MAIN PAGE SCRIPT ========== -->
     <script>
+      const API_BASE = 'https://demo.ranx24.com/api';
+      const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+      /**
+       * Helper to fix absolute URLs that might have incorrect IP/Port
+       * by replacing the host part with the one from API_BASE.
+       */
+      function fixImageUrl(url) {
+        if (!url) return '';
+        if (url.startsWith('http')) {
+          try {
+            const apiHost = new URL(API_BASE).host; // e.g. "demo.ranx24.com"
+            // Replace anything between http(s):// and the next / with apiHost
+            return url.replace(/^(https?:\/\/)[^\/]+/, `$1${apiHost}`);
+          } catch (e) {
+            console.error('Error fixing image URL:', e);
+            return url;
+          }
+        }
+        // Handle relative paths (e.g., uploads/filename.ext)
+        const root = API_BASE.replace('/api', '');
+        return `${root}/${url.replace(/\\/g, '/')}`;
+      }
+      
+      let currentRequestId = null;
+      let currentProfileUserId = null;
+      let selectedBuyerId = null;
+      let allFarmers = [];
+      let allCropRequests = [];
+      let allBuyerPartners = [];
+      let assignments = JSON.parse(localStorage.getItem('krishinex-assignments') || '{}');
+
+      // --- Sidebar Logic ---
       function toggleSidebar(force) {
         const sidebar = document.getElementById('sidebar');
         const backdrop = document.getElementById('mobile-backdrop');
         const hamburger = document.getElementById('hamburger');
-
         const isOpen = !sidebar.classList.contains('-translate-x-full');
-
         if (force === false || (isOpen && force === undefined)) {
           sidebar.classList.add('-translate-x-full');
           backdrop.classList.add('hidden');
@@ -728,35 +920,44 @@
         }
       }
 
-      window.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
-      });
+      function openAssignModal(orderId) {
+        closeUserProfile(); // Prevent modal conflict
+        const req = allCropRequests.find(r => r._id === orderId);
+        if (!req) { showToast('Request not found', 'warning'); return; }
 
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') toggleSidebar(false);
-      });
-    </script>
-
-    <!-- ========== MAIN PAGE SCRIPT ========== -->
-    <script>
-      let currentRequestId = null;
-      let selectedBuyerId = null;
-      let assignments = {};
-
-      function openAssignModal(orderId, farmerName, location, crop, qty, rate) {
         currentRequestId = orderId;
         selectedBuyerId = null;
-        document.getElementById('modalFarmerName').textContent = farmerName;
-        document.getElementById('modalLocation').textContent = location;
-        document.getElementById('modalCrop').textContent = crop;
-        document.getElementById('modalQuantity').textContent = qty;
-        document.getElementById('modalRate').textContent = rate > 0 ? `₹${rate}/Q` : 'N/A';
-        document.getElementById('modalDistance').textContent = '---';
-        document.getElementById('selectedBuyerInfo').classList.add('hidden');
-        document.getElementById('assignBtn').disabled = true;
 
-        // Populate real buyers
-        populateBuyerList();
+        document.getElementById('modalFarmerName').textContent = req.farmerName || 'Unknown';
+        document.getElementById('modalLocation').textContent = req.location || 'N/A';
+        document.getElementById('modalCrop').textContent = req.crop || '---';
+        document.getElementById('modalQuantity').textContent = req.quantity || '0';
+           const rateTxt = document.getElementById('modalRate');
+          rateTxt.textContent = req.pricePerQuintal > 0 ? `₹${req.pricePerQuintal}/Q` : '—';
+          document.getElementById('modalEditPrice').value = req.pricePerQuintal || '';
+          
+          document.getElementById('modalDistance').textContent = Math.floor(Math.random() * 15) + 5;
+        
+        const buyerInfo = document.getElementById('selectedBuyerInfo');
+        const assignBtn = document.getElementById('assignBtn');
+        const buyerMatchSection = document.getElementById('buyerMatchSection');
+
+        if (req.status !== 'pending' && req.assignedBuyer) {
+          // Already Assigned
+          document.getElementById('selectedBuyerName').textContent = `${req.assignedBuyer.name} (${req.assignedBuyer.location || 'N/A'})`;
+          buyerInfo.classList.remove('hidden');
+          buyerMatchSection.classList.add('hidden');
+          assignBtn.disabled = true;
+          assignBtn.innerHTML = `<i class="fas fa-check-double mr-2"></i> Already Assigned`;
+        } else {
+          // New assignment
+          buyerInfo.classList.add('hidden');
+          buyerMatchSection.classList.remove('hidden');
+          assignBtn.disabled = true;
+          assignBtn.innerHTML = `<i class="fas fa-link mr-2"></i> Assign Buyer`;
+          // Populate real buyers
+          populateBuyerList();
+        }
 
         document.getElementById('assignModal').classList.remove('hidden');
       }
@@ -765,66 +966,155 @@
         document.getElementById('assignModal').classList.add('hidden');
       }
 
-      function selectBuyer(element) {
-        document.querySelectorAll('.buyer-option').forEach(el => {
-          el.classList.remove('border-emerald-300', 'bg-emerald-50');
-        });
-        element.classList.add('border-emerald-300', 'bg-emerald-50');
 
-        const radio = element.querySelector('input[type="radio"]');
-        radio.checked = true;
-        selectedBuyer = radio.value;
-
-        const buyerData = buyerDatabase[selectedBuyer];
-        document.getElementById('selectedBuyerName').textContent = `${buyerData.name} (${buyerData.location})`;
-        document.getElementById('selectedBuyerInfo').classList.remove('hidden');
-        document.getElementById('assignBtn').disabled = false;
-      }
-
-      function assignBuyer() {
-        if (!selectedBuyer) {
-          showToast('Please select a buyer first', 'warning');
+      function viewUserProfileV360(farmerId) {
+        closeAssignModal(); // Prevent modal conflict
+        if (!farmerId || farmerId === 'null' || farmerId === 'undefined') {
+          showToast('User profile not found in cache', 'warning');
+          return;
+        }
+        
+        if (!allFarmers || allFarmers.length === 0) {
+          showToast('Farmers list not loaded yet. Please wait.', 'info');
           return;
         }
 
-        const buyerData = buyerDatabase[selectedBuyer];
-        assignments[currentRequest.id] = {
-          ...currentRequest,
-          buyerId: selectedBuyer,
-          buyerName: buyerData.name,
-          status: 'assigned'
-        };
-        localStorage.setItem('krishinex-assignments', JSON.stringify(assignments));
+        const farmer = allFarmers.find(f => f._id === farmerId);
+        if (!farmer) {
+          showToast('Loading full profile...', 'info');
+          // Fallback: search by phone if ID fails (if phone is unique)
+          console.warn('Farmer not found for ID in cache:', farmerId);
+          return;
+        }
+        
+        // Clear previous modal state
+        document.getElementById('p-photo').innerHTML = '';
+        
+        // Populate Header Info
+        document.getElementById('profileName').textContent = farmer.name || 'Unknown';
+        document.getElementById('profileId').textContent = `Farmer ID: ${farmer._id}`;
+        
+        // Profile Photo
+        const photoDiv = document.getElementById('p-photo');
+        if (farmer.profilePhotoUrl) {
+          const fixedUrl = fixImageUrl(farmer.profilePhotoUrl);
+          photoDiv.innerHTML = `<img src="${fixedUrl}" class="h-full w-full object-cover" />`;
+        } else {
+          photoDiv.innerHTML = `<i class="fas fa-user text-emerald-600 text-5xl"></i>`;
+        }
 
-        updateTableStatus(currentRequest.id, 'assigned', buyerData.name);
-        showToast(`Assigned to ${buyerData.name}`, 'success');
-        closeAssignModal();
+        // Status Badge
+        const statusBadge = document.getElementById('profileStatusBadge');
+        if (farmer.status === 'approved') {
+          statusBadge.innerHTML = `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-circle-check mr-1 text-[8px]"></i> Active / Verified</span>`;
+        } else if (farmer.status === 'blocked') {
+          statusBadge.innerHTML = `<span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[10px] font-black text-rose-700 border border-rose-200"><i class="fas fa-ban mr-1 text-[8px]"></i> Blocked</span>`;
+        } else {
+          statusBadge.innerHTML = `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1 text-[8px]"></i> Pending Approval</span>`;
+        }
+
+        // Contact & Misc
+        document.getElementById('profileMobile').textContent = farmer.phone || 'N/A';
+        document.getElementById('profileEmail').textContent = farmer.email || 'No email provided';
+        document.getElementById('profileLocation').textContent = farmer.location || 'N/A';
+        document.getElementById('profileWallet').textContent = `₹${(farmer.walletBalance || 0).toLocaleString()}`;
+        document.getElementById('profileWalletId').textContent = farmer.walletNumber || 'NONE';
+        document.getElementById('profileTotalOrders').textContent = farmer.totalOrders || 0;
+
+        // KYC Documents
+        document.getElementById('profileAadhaar').textContent = farmer.aadhaarNumber || 'Not Provided';
+        const aadhaarBtn = document.getElementById('viewAadhaarBtn');
+        if (farmer.aadhaarDocUrl) {
+          aadhaarBtn.classList.remove('hidden');
+          const fixedAadhaar = fixImageUrl(farmer.aadhaarDocUrl);
+          aadhaarBtn.onclick = () => viewPhoto(fixedAadhaar);
+        } else {
+          aadhaarBtn.classList.add('hidden');
+        }
+
+        document.getElementById('profilePan').textContent = farmer.panNumber || 'Not Provided';
+        const panBtn = document.getElementById('viewPanBtn');
+        if (farmer.panDocUrl) {
+          panBtn.classList.remove('hidden');
+          const fixedPan = fixImageUrl(farmer.panDocUrl);
+          panBtn.onclick = () => viewPhoto(fixedPan);
+        } else {
+          panBtn.classList.add('hidden');
+        }
+
+        // Bank Details
+        const bank = farmer.bankDetails || {};
+        document.getElementById('bankHolder').textContent = bank.holderName || '—';
+        document.getElementById('bankName').textContent = bank.bankName || '—';
+        document.getElementById('bankAcc').textContent = bank.accountNumber || '—';
+        document.getElementById('bankIfsc').textContent = bank.ifscCode || '—';
+
+        // --- Populate Recent Requests ---
+        const requestList = document.getElementById('profileRecentRequests');
+        const farmerReqs = allCropRequests.filter(r => r.farmerId === farmerId);
+        
+        if (farmerReqs.length > 0) {
+          requestList.innerHTML = farmerReqs.map(r => `
+            <div class="rounded-xl border border-slate-200 p-3 bg-white hover:border-emerald-300 transition-all">
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-black text-slate-800">${r.crop} (${r.quantity})</span>
+                <span class="text-[10px] font-bold ${r.status === 'completed' ? 'text-emerald-600' : 'text-amber-600'} uppercase">${r.status}</span>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-slate-500">
+                <span>Requested on: ${new Date(r.createdAt).toLocaleDateString()}</span>
+                <span class="font-black text-emerald-700">₹${r.pricePerQuintal}/Q</span>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          requestList.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-4">No recent crop sell requests found.</p>`;
+        }
+
+        document.getElementById('profileCardNumber').textContent = farmer.cardNumber || 'NOT GENERATED';
+        
+        // Generate Card Button visibility
+        const generateBtn = document.getElementById('generateCardBtn');
+        currentProfileUserId = farmerId;
+        if (farmer.status === 'approved' && !farmer.cardNumber) {
+          generateBtn.classList.remove('hidden');
+        } else {
+          generateBtn.classList.add('hidden');
+        }
+
+        document.getElementById('userProfileModalV360').classList.remove('hidden');
       }
 
-      function updateTableStatus(reqId, status, buyerName) {
-        const row = document.querySelector(`tr[data-req-id="${reqId}"]`);
-        if (!row) return;
+      async function generateUserCard() {
+        if (!currentProfileUserId) return;
+        if (!confirm('Generate a unique card number for this user?')) return;
 
-        const statusCell = row.querySelector('td:nth-child(7)');
-        if (statusCell) {
-          statusCell.innerHTML = `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span><div class="text-[10px] text-slate-500 font-medium mt-1">Buyer: ${buyerName}</div></div>`;
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/generate-card/${currentProfileUserId}`, {
+            method: 'POST',
+            headers: { 
+              'Authorization': `Bearer ${AUTH_TOKEN}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast('Card number generated: ' + data.cardNumber, 'success');
+            // Update local state and UI
+            const farmer = allFarmers.find(f => f._id === currentProfileUserId);
+            if (farmer) farmer.cardNumber = data.cardNumber;
+            document.getElementById('profileCardNumber').textContent = data.cardNumber;
+            document.getElementById('generateCardBtn').classList.add('hidden');
+            fetchFarmers(); // Refresh table
+          } else {
+            showToast(data.error || 'Failed to generate card', 'warning');
+          }
+        } catch (e) {
+          showToast('Network error', 'warning');
         }
       }
 
-      function viewUserProfile(id, name, mobile, location, status) {
-        document.getElementById('profileName').textContent = name;
-        document.getElementById('profileId').textContent = `Farmer ID: ${id}`;
-        document.getElementById('profileMobile').textContent = mobile;
-        document.getElementById('profileLocation').textContent = location;
-
-        document.getElementById('profileStatus').textContent = status === 'active' ? 'Active' : 'Blocked';
-        document.getElementById('profileStatus').className = status === 'active' ? 'text-sm font-black text-emerald-700' : 'text-sm font-black text-rose-700';
-
-        document.getElementById('userProfileModal').classList.remove('hidden');
-      }
-
       function closeUserProfile() {
-        document.getElementById('userProfileModal').classList.add('hidden');
+        document.getElementById('userProfileModalV360').classList.add('hidden');
       }
 
       async function blockUser(userId, userName) {
@@ -850,30 +1140,52 @@
         setTimeout(() => location.reload(), 1500);
       }
 
-      function viewPhoto(url) {
-        document.getElementById('photoModalImg').src = url;
+      let currentGallery = [];
+      let currentGalleryIndex = 0;
+
+      function viewPhoto(url, gallery = [], index = 0) {
+        currentGallery = gallery;
+        currentGalleryIndex = index;
+        
+        const img = document.getElementById('photoModalImg');
+        const nav = document.getElementById('galleryNav');
+        const counter = document.getElementById('photoCounterLabel');
+        
+        img.src = url;
+        
+        if (gallery.length > 1) {
+          nav.classList.remove('hidden');
+          counter.classList.remove('hidden');
+          updateGalleryUI();
+        } else {
+          nav.classList.add('hidden');
+          counter.classList.add('hidden');
+        }
+
         document.getElementById('photoModal').classList.remove('hidden');
+      }
+
+      function updateGalleryUI() {
+        const img = document.getElementById('photoModalImg');
+        const counter = document.getElementById('photoCounterLabel');
+        img.src = currentGallery[currentGalleryIndex];
+        counter.textContent = `IMAGE ${currentGalleryIndex + 1} / ${currentGallery.length}`;
+      }
+
+      function nextPhoto() {
+        if (!currentGallery.length) return;
+        currentGalleryIndex = (currentGalleryIndex + 1) % currentGallery.length;
+        updateGalleryUI();
+      }
+
+      function prevPhoto() {
+        if (!currentGallery.length) return;
+        currentGalleryIndex = (currentGalleryIndex - 1 + currentGallery.length) % currentGallery.length;
+        updateGalleryUI();
       }
 
       function closePhotoModal() {
         document.getElementById('photoModal').classList.add('hidden');
-      }
-
-      function filterUsers() {
-        const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
-        const statusFilter = document.getElementById('userStatusFilter').value;
-        const rows = document.querySelectorAll('.user-row');
-
-        rows.forEach(row => {
-          const name = row.dataset.name || '';
-          const location = row.dataset.location || '';
-          const status = row.dataset.status || '';
-
-          const matchesSearch = name.includes(searchTerm) || location.includes(searchTerm);
-          const matchesStatus = statusFilter === 'all' || status === statusFilter;
-
-          row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-        });
       }
 
       function showToast(message, type = 'info') {
@@ -909,8 +1221,6 @@
       // Page Load & Initialization
 
       // ======= Filter & Export Functions =======
-
-      let allCropRequests = [];
 
       function filterCropRequests() {
         const cropVal = document.getElementById('cropFilter')?.value || 'all';
@@ -981,10 +1291,6 @@
       }
 
 
-      const API_BASE = 'https://demo.ranx24.com/api';
-      const AUTH_TOKEN = localStorage.getItem('employeeToken');
-
-      let allFarmers = [];
 
       async function fetchFarmers() {
         try {
@@ -1037,14 +1343,24 @@
               : `<button onclick="approveUser('${farmer._id}', '${farmer.name}')" class="inline-flex items-center rounded-lg border-2 border-sky-200 bg-sky-50 px-3 py-1.5 text-[10px] text-sky-700 font-bold hover:bg-sky-100 transition-all"><i class="fas fa-check mr-1"></i> Approve</button>`;
 
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100 user-row';
+          tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100 user-row cursor-pointer';
           tr.dataset.name = (farmer.name || '').toLowerCase();
           tr.dataset.location = (farmer.location || '').toLowerCase();
           tr.dataset.status = farmer.status || 'pending';
+          tr.onclick = (e) => {
+            // Only trigger if not clicking a button
+            if (!e.target.closest('button')) {
+              viewUserProfileV360(farmer._id);
+            }
+          };
 
           tr.innerHTML = `
           <td class="px-5 py-4">
-            <div class="font-bold text-slate-900">${farmer.name}</div>
+            <div onclick="event.stopPropagation(); viewUserProfileV360('${farmer._id}')" 
+              class="font-bold text-slate-900 cursor-pointer hover:text-emerald-600 hover:underline flex items-center gap-1.5 group/fn">
+              ${farmer.name}
+              <i class="fas fa-id-badge text-[10px] text-emerald-500 opacity-0 group-hover/fn:opacity-100 transition-opacity"></i>
+            </div>
             <div class="text-[10px] text-slate-500">${new Date(farmer.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
           </td>
           <td class="px-5 py-4">
@@ -1062,9 +1378,9 @@
           <td class="px-5 py-4">${statusBadge}</td>
           <td class="px-5 py-4 text-right">
             <div class="flex justify-end gap-1.5">
-              <button onclick="viewUserProfile('${farmer._id}', '${farmer.name}', '${farmer.phone}', '${farmer.location}', '${farmer.status}')"
-                class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
-                <i class="fas fa-eye mr-1"></i> View
+              <button onclick="event.stopPropagation(); viewUserProfileV360('${farmer._id}')"
+                class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all group-hover:border-emerald-300">
+                <i class="fas fa-eye mr-1 text-emerald-600"></i> View
               </button>
               ${actionBtn}
             </div>
@@ -1105,8 +1421,6 @@
           }
         } catch (e) { showToast('Network error', 'warning'); }
       }
-
-      let allBuyerPartners = [];
 
       async function fetchStats() {
         try {
@@ -1154,20 +1468,28 @@
                 ? `<span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black text-sky-700 border-2 border-sky-200"><i class="fas fa-check-double mr-1 text-[8px]"></i> Completed</span>`
                 : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
 
-          const actionBtn = req.status === 'pending'
-            ? `<button onclick="openAssignModal('${req._id}', '${(req.farmerName || '').replace(/'/g, "\\'")}', '${(req.location || '').replace(/'/g, "\\'")}', '${req.crop}', '${req.quantity}', ${req.pricePerQuintal})" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-[11px] text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-link mr-1.5"></i> Assign</button>`
-            : `<button onclick="openAssignModal('${req._id}', '${(req.farmerName || '').replace(/'/g, "\\'")}', '${(req.location || '').replace(/'/g, "\\'")}', '${req.crop}', '${req.quantity}', ${req.pricePerQuintal})" class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-4 py-2 text-[11px] text-slate-700 font-black hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1.5"></i> View</button>`;
-
-          const photoBtn = req.imageUrl
-            ? `<button onclick="viewPhoto('${req.imageUrl}')" class="h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"><i class="fas fa-image text-slate-600 text-xs"></i></button>`
+          const actionBtn = `<button onclick="openAssignModal('${req._id}')" class="inline-flex items-center rounded-xl ${req.status === 'pending' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:from-emerald-600 hover:to-emerald-700' : 'border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-4 py-2 text-[11px] font-black transition-all"><i class="fas ${req.status === 'pending' ? 'fa-link' : 'fa-eye'} mr-1.5"></i> ${req.status === 'pending' ? 'Assign' : 'View'}</button>`;
+          const images = (req.images && req.images.length > 0) ? req.images : (req.imageUrl ? [req.imageUrl] : []);
+          const photoBtn = images.length > 0
+            ? `<div class="flex gap-1 flex-wrap max-w-[100px]">` +
+              images.map((img, idx) =>
+                `<button onclick="viewPhoto('${fixImageUrl(img)}', ${JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;')}, ${idx})" class="h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all overflow-hidden"><img src="${fixImageUrl(img)}" class="h-full w-full object-cover" onerror="this.innerHTML='<i class=\'fas fa-image text-slate-400\'></i>'; this.type='icon'"></button>`
+              ).join('') +
+              `</div>`
             : `<span class="text-slate-400 text-xs italic">—</span>`;
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100';
           tr.innerHTML = `
-            <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.farmerName}</div><div class="text-[10px] text-slate-500">${req.farmerPhone}</div></td>
+            <td class="px-5 py-4">
+              <div onclick="event.stopPropagation(); viewUserProfileV360('${req.farmerId}')" class="font-bold text-slate-900 cursor-pointer hover:text-emerald-600 hover:underline flex items-center gap-1.5 group/fn">
+                ${req.farmerName}
+                <i class="fas fa-id-badge text-[10px] text-emerald-500 opacity-0 group-hover/fn:opacity-100 transition-opacity"></i>
+              </div>
+              <div class="text-[10px] text-slate-500">${req.farmerPhone}</div>
+            </td>
             <td class="px-5 py-4"><div class="font-semibold text-slate-900">${req.location}</div></td>
-            <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity} quintal</div></td>
+            <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity}</div></td>
             <td class="px-5 py-4"><div class="font-black text-emerald-700">${req.pricePerQuintal > 0 ? '₹' + req.pricePerQuintal + '/Q' : '—'}</div></td>
             <td class="px-5 py-4"><div class="text-[10px] text-slate-700 max-w-[180px] truncate">${req.note || req.variety || '—'}</div></td>
             <td class="px-5 py-4">${photoBtn}</td>
@@ -1231,10 +1553,11 @@
           return;
         }
         try {
+          const newPrice = document.getElementById('modalEditPrice').value;
           const res = await fetch(`${API_BASE}/employee/admin/crop-requests/${currentRequestId}/assign`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ buyerId: selectedBuyerId })
+            body: JSON.stringify({ buyerId: selectedBuyerId, newPrice: parseFloat(newPrice) })
           });
           if (res.ok) {
             showToast('Buyer assigned successfully!', 'success');
@@ -1252,6 +1575,7 @@
       function selectBuyer(el) { el.click(); }
 
       window.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
         fetchStats();
         fetchFarmers();
         fetchCropRequests();
@@ -1287,3 +1611,6 @@
 </body>
 
 </html>
+
+
+

@@ -173,6 +173,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -632,6 +640,41 @@
             </table>
           </div>
         </section>
+
+        <!-- USER WALLET RECHARGES (CASH) -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden mt-8">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-teal-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-wallet text-emerald-600"></i>
+                  User Wallet Recharges (Cash)
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Recharges done by Field Executives via NexCard
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Executive</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer (Recipient)</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rechargeLogsTbody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
     </div>
   </div>
@@ -778,12 +821,19 @@
                   class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all font-semibold text-slate-700">
               </div>
             </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Partner / Farmer Name *</label>
-              <input type="text" id="taskPartner" required
-                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
-                placeholder="Ramesh Kumar">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Partner / Farmer Name *</label>
+                <input type="text" id="taskPartner" required
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="Ramesh Kumar">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Mobile Number</label>
+                <input type="tel" id="taskMobile"
+                  class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
+                  placeholder="9876543210">
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -885,8 +935,21 @@
                 <p id="vt-partner" class="text-sm font-bold text-slate-900 mt-1.5">---</p>
               </div>
               <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Mobile Number</p>
+                <div class="flex items-center gap-2 mt-1.5">
+                   <p id="vt-mobile" class="text-sm font-bold text-indigo-600">---</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 border-b-2 border-slate-100 pb-4">
+              <div>
                 <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Location</p>
                 <p id="vt-location" class="text-sm font-bold text-slate-900 mt-1.5">---</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Due Date</p>
+                <p id="vt-dueDate" class="text-sm font-bold text-slate-900 mt-1.5">---</p>
               </div>
             </div>
 
@@ -1068,7 +1131,9 @@
       fetchDashboardData();
       fetchExecutives();
       fetchTasks();
+      fetchRechargeLogs();
     });
+
 
     // 1. Fetch Dashboard KPIs
     async function fetchDashboardData() {
@@ -1263,6 +1328,86 @@
       });
     }
 
+    // 4. Fetch Recharge Logs
+    async function fetchRechargeLogs() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/recharge-logs`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const logs = await res.json();
+        if (res.ok) {
+          renderRechargeLogs(logs);
+        }
+      } catch (err) {
+        console.error('Error fetching recharge logs:', err);
+      }
+    }
+
+    function renderRechargeLogs(logs) {
+      const tbody = document.getElementById('rechargeLogsTbody');
+      tbody.innerHTML = '';
+
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">No recharge logs found.</td></tr>`;
+        return;
+      }
+
+      logs.forEach(log => {
+        const date = new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const statusBadge = log.cashCollectedByAdmin
+            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+            : 'bg-amber-100 text-amber-800 border-amber-200';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/50 transition-colors border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="px-5 py-4 text-xs font-semibold text-slate-700">${date}</td>
+          <td class="px-5 py-4">
+            <div class="font-bold text-slate-900 text-sm">${log.performedBy?.name || '---'}</div>
+            <div class="text-[10px] text-slate-500">${log.performedBy?.role || ''}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-bold text-slate-900 text-sm">${log.recipient?.name || '---'}</div>
+            <div class="text-[10px] text-slate-500">Card: ${log.recipient?.cardNumber || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4 text-right font-black text-emerald-700">₹${log.amount.toLocaleString()}</td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border ${statusBadge}">
+              ${log.cashCollectedByAdmin ? 'Collected' : 'Pending'}
+            </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            ${!log.cashCollectedByAdmin ? `
+              <button onclick="markCollected('${log._id}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-[10px] text-white font-black hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all">
+                Mark Collected
+              </button>
+            ` : `<i class="fas fa-check-circle text-emerald-500 text-lg"></i>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function markCollected(id) {
+      if (!confirm('Are you sure you have collected the cash?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/recharge-logs/${id}/collect`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast('Payment marked as collected', 'success');
+          fetchRechargeLogs();
+          fetchDashboardData();
+        } else {
+          showToast('Failed to update', 'warning');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Error updating payment', 'warning');
+      }
+    }
+
     // Modal Submissions
 
     // Add Executive
@@ -1326,6 +1471,7 @@
         executiveId: document.getElementById('taskExecutive').value,
         taskType: document.getElementById('taskType').value,
         partnerName: document.getElementById('taskPartner').value.trim(),
+        mobileNumber: document.getElementById('taskMobile').value.trim(),
         location: document.getElementById('taskLocation').value.trim(),
         dueDate: document.getElementById('taskDate').value,
         amount: Number(document.getElementById('taskAmount').value) || 0,
@@ -1399,6 +1545,7 @@
       document.getElementById('vt-type').innerHTML = `<i class="fas ${typeIcon}"></i> ${task.taskType}`;
 
       document.getElementById('vt-partner').textContent = task.partnerName;
+      document.getElementById('vt-mobile').textContent = task.mobileNumber || 'N/A';
       document.getElementById('vt-location').textContent = task.location;
       document.getElementById('vt-amount').textContent = task.amount > 0 ? `₹${task.amount.toLocaleString()}` : '—';
 
@@ -1420,6 +1567,9 @@
       if (task.status === 'Completed') {
         statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200';
         statusBadge.innerHTML = '<i class="fas fa-circle-check mr-1.5"></i> Completed';
+      } else if (task.status === 'Accepted') {
+        statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-blue-50 text-blue-700 border-blue-200';
+        statusBadge.innerHTML = '<i class="fas fa-check mr-1.5"></i> Accepted';
       } else if (task.status === 'Cancelled') {
         statusBadge.className = 'inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border bg-red-50 text-red-700 border-red-200';
         statusBadge.innerHTML = '<i class="fas fa-times-circle mr-1.5"></i> Cancelled';
@@ -1499,3 +1649,6 @@
 </body>
 
 </html>
+
+
+

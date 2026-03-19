@@ -4,19 +4,35 @@ require('dotenv').config();
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY || ''; // Usually provided in .env
 const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID || '';
 
+// Mock storage for local development
+const mockOtpStore = new Map();
+
 /**
  * Send an OTP via MSG91
  * @param {string} phone - Mobile number with country code (e.g. 919876543210)
  * @returns {Promise<object>} response from MSG91
  */
-async function sendOtp(phone) {
-    // If no auth key is provided, we can fallback to a mock for local dev
-    if (!MSG91_AUTH_KEY) {
-        console.warn('MSG91_AUTH_KEY not set. Mocking OTP Send for', phone);
-        return { type: 'success', message: 'Mock OTP sent (use 123456)' };
+async function sendOtp(phone, customOtp = null) {
+    // Ensure phone has country code for MSG91 (default to 91 if 10 digits)
+    if (phone.length === 10) phone = '91' + phone;
+
+    // If no auth key or no template ID is provided, we can fallback to a mock for local dev
+    if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
+        if (!MSG91_TEMPLATE_ID && MSG91_AUTH_KEY) {
+            console.warn('MSG91_TEMPLATE_ID missing. Falling back to mock OTP.');
+        } else if (!MSG91_AUTH_KEY) {
+            console.warn('MSG91_AUTH_KEY missing. Falling back to mock OTP.');
+        }
+        const otp = customOtp || '1234'; 
+        mockOtpStore.set(phone, otp);
+        return { type: 'success', message: `Mock OTP generated: ${otp}` };
     }
 
-    const url = `https://control.msg91.com/api/v5/otp?template_id=${MSG91_TEMPLATE_ID}&mobile=${phone}`;
+    let url = `https://control.msg91.com/api/v5/otp?template_id=${MSG91_TEMPLATE_ID}&mobile=${phone}`;
+    if (customOtp) {
+        url += `&otp=${customOtp}`;
+    }
+
     try {
         const response = await axios.post(
             url,
@@ -42,10 +58,14 @@ async function sendOtp(phone) {
  * @returns {Promise<object>} response from MSG91
  */
 async function verifyOtp(phone, otp) {
+    // Ensure phone has country code
+    if (phone.length === 10) phone = '91' + phone;
+
     // Mock fallback for local dev
-    if (!MSG91_AUTH_KEY) {
-        console.warn('MSG91_AUTH_KEY not set. Mocking OTP Verify for', phone);
-        if (otp === '123456') {
+    if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
+        console.warn('[MSG91-DEBUG] Mocking OTP Verify for', phone);
+        const storedOtp = mockOtpStore.get(phone) || '1234';
+        if (otp === storedOtp) {
             return { type: 'success', message: 'Mock OTP verified' };
         } else {
             return { type: 'error', message: 'Invalid Mock OTP' };

@@ -118,6 +118,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  cardNumber: {
+    type: String,
+    default: ''
+  },
   walletRechargeAmount: {
     type: Number,
     default: 0
@@ -142,6 +146,14 @@ const userSchema = new mongoose.Schema({
     accountNumber: { type: String, default: '' },
     ifscCode: { type: String, default: '' },
     bankAddress: { type: String, default: '' }
+  },
+  location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], index: '2dsphere' } // [lng, lat]
+  },
+  fcmToken: {
+    type: String,
+    default: ''
   },
   createdAt: {
     type: Date,

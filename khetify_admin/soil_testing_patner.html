@@ -182,6 +182,14 @@
           </span>
           <span class="truncate font-black">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -729,6 +737,37 @@
               </div>
             </div>
 
+              <!-- Admin Action Section (New) -->
+              <div id="adminActionSection" class="hidden pt-6 border-t-2 border-slate-100 mt-6">
+                <h4 class="text-sm font-black text-slate-900 mb-4">Admin Update Actions</h4>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div class="space-y-1">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Update Status</p>
+                    <select id="adminUpdateStatus" class="w-full h-10 px-3 rounded-xl border-2 border-slate-100 text-xs font-bold bg-white focus:border-indigo-500 outline-none transition-all">
+                      <option value="Accepted">Accepted</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
+                  <div class="space-y-1">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Report File (PDF)</p>
+                    <label class="flex items-center justify-center w-full h-10 px-3 rounded-xl border-2 border-dashed border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition-all">
+                      <span id="fileNameDisplay" class="text-[10px] text-slate-500 font-bold">Choose File...</span>
+                      <input type="file" id="adminUpdateReport" accept=".pdf" class="hidden" onchange="updateFileName(this)">
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-1 mb-4">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Add Lab Advisory</p>
+                  <textarea id="adminUpdateAdvisory" rows="2" class="w-full p-3 rounded-xl border-2 border-slate-100 text-xs font-bold bg-white focus:border-indigo-500 outline-none transition-all" placeholder="Enter lab advisory/advice here..."></textarea>
+                </div>
+
+                <button id="btnSubmitAdminUpdate" onclick="submitAdminUpdate()" class="w-full h-11 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                  <i class="fas fa-save"></i> Submit Report & Update Status
+                </button>
+              </div>
             <!-- Modal Bottom -->
             <div class="px-8 py-5 bg-slate-50 flex items-center justify-end border-t-2 border-slate-100">
               <button onclick="closeRequestModal()"
@@ -957,7 +996,7 @@
 
   <!-- ========== SOIL TESTING PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+            const API_BASE = 'https://demo.ranx24.com/api';
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
     const TEST_TYPES_DICT = {
@@ -1060,8 +1099,12 @@
         } else {
           console.error('Error fetching requests', data);
         }
-      } catch (err) {
+            } catch (err) {
         console.error('Error fetching soil requests:', err);
+        const tbody = document.getElementById('requests-table-body');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-4 text-center text-rose-500 font-bold">Failed to load requests. Please check if backend is running on port 5000.</td></tr>`;
+        }
       }
     }
 
@@ -1112,6 +1155,77 @@
       }
 
       document.getElementById('soilRequestModal').classList.remove('hidden');
+
+      // Admin update logic - only show for non-completed requests
+      const adminSection = document.getElementById('adminActionSection');
+      if (adminSection) {
+        if (req.status !== 'Completed') {
+          adminSection.classList.remove('hidden');
+          document.getElementById('adminUpdateStatus').value = req.status === 'pending' ? 'Accepted' : req.status;
+          document.getElementById('adminUpdateAdvisory').value = req.advisoryText || '';
+          document.getElementById('adminUpdateReport').value = '';
+          const fileNameDisp = document.getElementById('fileNameDisplay');
+          if (fileNameDisp) fileNameDisp.textContent = 'Choose File...';
+        } else {
+          adminSection.classList.add('hidden');
+        }
+      }
+
+      // Store current req ID globally for update
+      window.currentUpdatingReqId = reqId;
+    }
+
+    function updateFileName(input) {
+      const fileName = input.files[0] ? input.files[0].name : 'Choose File...';
+      document.getElementById('fileNameDisplay').textContent = fileName;
+    }
+
+    async function submitAdminUpdate() {
+      const btn = document.getElementById('btnSubmitAdminUpdate');
+      const reqId = window.currentUpdatingReqId;
+      if (!reqId) return;
+
+      const status = document.getElementById('adminUpdateStatus').value;
+      const advisoryText = document.getElementById('adminUpdateAdvisory').value;
+      const reportFile = document.getElementById('adminUpdateReport').files[0];
+
+      const formData = new FormData();
+      formData.append('status', status);
+      formData.append('advisoryText', advisoryText);
+      if (reportFile) {
+        formData.append('report', reportFile);
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+
+        const response = await fetch(`${API_BASE}/soil/requests/${reqId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showToast('Success', 'Soil request updated successfully!', 'success');
+          closeRequestModal();
+          // Refresh data
+          if (typeof fetchSoilLabStats === 'function') fetchSoilLabStats();
+          if (typeof fetchSoilRequests === 'function') fetchSoilRequests();
+        } else {
+          showToast('Error', result.message || 'Failed to update request', 'error');
+        }
+      } catch (error) {
+        console.error('Update error:', error);
+        showToast('Error', 'An error occurred while updating', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i> Submit Report & Update Status';
+      }
     }
 
     function closeRequestModal() {
@@ -1441,3 +1555,6 @@
 </body>
 
 </html>
+
+
+

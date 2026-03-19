@@ -24,6 +24,19 @@ const RentalSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
+    priceType: {
+        type: String,
+        enum: ['hourly', 'daily'],
+        default: 'daily'
+    },
+    hours: {
+        type: Number,
+        default: 0
+    },
+    days: {
+        type: Number,
+        default: 0
+    },
 
     // --- Booking financials ---
     totalAmount: {
@@ -71,6 +84,10 @@ const RentalSchema = new mongoose.Schema({
     cashNote: {
         type: String,
         default: ''
+    },
+    completionOTP: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 

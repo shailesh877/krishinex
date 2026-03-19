@@ -182,6 +182,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -705,6 +713,20 @@
     const API_BASE = 'https://demo.ranx24.com/api';
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
+    function fixImageUrl(url) {
+      if (!url) return '';
+      if (url.startsWith('http')) {
+        try {
+          const apiHost = new URL(API_BASE).host;
+          return url.replace(/^(https?:\/\/)[^\/]+/, `$1${apiHost}`);
+        } catch (e) {
+          return url;
+        }
+      }
+      const root = API_BASE.replace('/api', '');
+      return `${root}/${url.replace(/\\/g, '/')}`;
+    }
+
     let allShops = [];
     let allOrders = [];
 
@@ -941,7 +963,7 @@
       const docBtn = document.getElementById('modalViewDocBtn');
       const noDocTxt = document.getElementById('modalNoDocText');
       if (shop.documentUrl) {
-        docBtn.dataset.url = shop.documentUrl;
+        docBtn.dataset.url = fixImageUrl(shop.documentUrl);
         docBtn.classList.remove('hidden');
         noDocTxt.classList.add('hidden');
       } else {
@@ -1087,3 +1109,6 @@
 </body>
 
 </html>
+
+
+

@@ -3,6 +3,64 @@ const router = express.Router();
 const SellRequest = require('../models/SellRequest');
 const Notification = require('../models/Notification');
 const { protect } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Configure multer for crop images
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const dir = path.join(__dirname, '../uploads/crops/');
+        console.log('Multer destination:', dir);
+        if (!fs.existsSync(dir)) {
+            console.log('Creating directory:', dir);
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const name = 'crop-' + uniqueSuffix + path.extname(file.originalname);
+        console.log('Multer filename:', name);
+        cb(null, name);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // Increase to 10MB limit per file
+});
+
+// @route   POST /api/sell/upload-images
+// @desc    Upload up to 4 crop images
+// @access  Private
+router.post('/upload-images', protect, (req, res, next) => {
+    console.log('--- POST /api/sell/upload-images hit ---');
+    upload.array('images', 4)(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            console.error('Multer error:', err);
+            return res.status(400).json({ error: `Multer error: ${err.message}` });
+        } else if (err) {
+            console.error('Unknown upload error:', err);
+            return res.status(500).json({ error: `Upload error: ${err.message}` });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        console.log('Files received:', req.files ? req.files.length : 0);
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files uploaded' });
+        }
+
+        const imageUrls = req.files.map(file => `uploads/crops/${file.filename}`);
+        console.log('Image URLs:', imageUrls);
+        res.status(200).json({ imageUrls });
+    } catch (error) {
+        console.error('Upload images try-catch error:', error);
+        res.status(500).json({ error: 'Failed to upload images' });
+    }
+});
 
 // @route   POST /api/sell/submit
 // @desc    Farmer submits a new sell request
@@ -52,6 +110,7 @@ router.get('/my-requests', protect, async (req, res) => {
     try {
         const requests = await SellRequest.find({ farmer: req.user.id })
             .populate('mandi', 'name')
+            .populate('assignedTo', 'name businessName')
             .sort({ createdAt: -1 });
         res.json(requests);
     } catch (e) {

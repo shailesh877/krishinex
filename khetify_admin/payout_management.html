@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payout Management - Khetify Admin</title>
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-blue-50 via-slate-50 to-sky-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-blue-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-blue-50 via-sky-50 to-blue-50 text-blue-700 border-2 border-blue-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-sky-100 shadow-sm">
+            <i class="fas fa-hand-holding-dollar text-blue-600"></i>
+          </span>
+          <span class="truncate font-black">Payout Management</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-hand-holding-dollar text-blue-600"></i>
+                Payout Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Search and process payments for all farmers & partners
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <a href="finance_payouts_management.html"
+              class="hidden sm:inline-flex h-9 items-center gap-2 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 hover:border-emerald-300 hover:bg-emerald-100 transition-all text-xs font-black text-emerald-700 shadow-sm">
+              <i class="fas fa-history"></i>
+              View History
+            </a>
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-blue-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-6 mx-auto w-full max-w-[1400px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- SEARCH SECTION -->
+        <section class="rounded-3xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden p-6">
+          <div class="max-w-2xl mx-auto text-center space-y-4">
+            <h2 class="text-2xl font-black text-slate-900 italic underline decoration-blue-500 decoration-4 underline-offset-8">Find Recipient</h2>
+            <p class="text-sm text-slate-500 font-bold">Search any Farmer, Machine Partner, Labour, or KSP by Name or Phone Number</p>
+            
+            <div class="relative mt-6 group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                </div>
+                <input type="text" id="user-search-input" 
+                    class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-200 rounded-2xl text-lg font-black text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all shadow-sm"
+                    placeholder="Search Name / Phone / ID..." 
+                    onkeyup="debouncedSearch(event)" />
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                    <span id="search-spinner" class="hidden"><i class="fas fa-circle-notch fa-spin text-blue-500"></i></span>
+                </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RESULTS SECTION -->
+        <section id="search-results-section" class="hidden space-y-4">
+            <div class="flex items-center justify-between px-2">
+                <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Search Results</h3>
+                <span id="result-count" class="text-[10px] bg-slate-200 px-2 py-0.5 rounded-full font-bold">0 found</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="results-grid">
+                <!-- JS Data -->
+            </div>
+        </section>
+
+        <!-- EMPTY STATE -->
+        <div id="empty-state" class="py-20 text-center space-y-4 opacity-50">
+            <div class="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto">
+                <i class="fas fa-search text-3xl text-slate-300"></i>
+            </div>
+            <div>
+                <p class="text-lg font-black text-slate-400">Ready to search</p>
+                <p class="text-xs text-slate-400 font-bold">Type at least 2 characters to look for recipients</p>
+            </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- PAYOUT MODAL -->
+  <div id="payout-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md hidden">
+      <div class="bg-white rounded-3xl shadow-2xl border-2 border-slate-200 w-full max-w-md mx-4 overflow-hidden animate-[slideUp_0.3s_ease-out]">
+          <div class="px-8 py-6 bg-slate-900 text-white flex justify-between items-center">
+              <div>
+                <h3 class="text-xl font-black flex items-center gap-2"><i class="fas fa-money-bill-transfer text-blue-400"></i> Process Payout</h3>
+                <p class="text-xs text-slate-400 font-bold mt-1 uppercase tracking-widest" id="modal-user-name">Recipient Name</p>
+              </div>
+              <button onclick="closePayoutModal()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 transition-all text-slate-400"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="p-8 space-y-6">
+              <div class="p-4 rounded-2xl bg-blue-50 border-2 border-blue-100 flex items-center justify-between">
+                  <div>
+                      <p class="text-[10px] text-blue-600 font-black uppercase tracking-wider mb-0.5">Wallet Balance</p>
+                      <p class="text-2xl font-black text-slate-900" id="modal-wallet-balance">₹0</p>
+                  </div>
+                  <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-wallet text-blue-500"></i>
+                  </div>
+              </div>
+
+              <div class="space-y-4">
+                  <div>
+                      <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Payout Amount (Deduct)</label>
+                      <div class="relative">
+                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400">₹</span>
+                          <input type="number" id="payout-amount" 
+                              class="w-full h-14 pl-10 pr-4 rounded-2xl border-2 border-slate-200 text-xl font-black focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all"
+                              placeholder="0.00">
+                      </div>
+                  </div>
+
+                  <div>
+                      <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">UTR / Transaction Number</label>
+                      <input type="text" id="payout-utr" 
+                          class="w-full h-12 px-4 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-blue-500 outline-none transition-all uppercase placeholder:normal-case shadow-sm"
+                          placeholder="Bank TXN ID or UTR">
+                  </div>
+
+                  <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-500 mb-2 tracking-widest">Note (Optional)</label>
+                    <textarea id="payout-note" rows="2" 
+                        class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-sm font-bold focus:border-blue-500 outline-none transition-all shadow-sm"
+                        placeholder="Purpose of payment..."></textarea>
+                  </div>
+              </div>
+
+              <div class="pt-4 space-y-3">
+                  <button onclick="submitPayout()" id="payout-submit-btn"
+                        class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 text-white font-black shadow-xl shadow-blue-200 hover:from-blue-700 hover:to-sky-700 transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i> Deduct & Mark Paid
+                  </button>
+                  <p class="text-[10px] text-center text-slate-400 font-bold italic"><i class="fas fa-shield-halved mr-1"></i> Amount will be deducted from user wallet instantly</p>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-[110] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <script>
+    const API_BASE = 'https://demo.ranx24.com/api';
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+    const H = { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' };
+
+    let currentRecipient = null;
+    let searchTimeout = null;
+
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      const m = document.getElementById('toastMessage');
+      m.innerText = msg;
+      t.className = `fixed bottom-6 right-6 z-[110] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${type === 'success' ? 'bg-white border-emerald-500 text-emerald-700' : 'bg-white border-rose-500 text-rose-700'}`;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+
+    function debouncedSearch(event) {
+        clearTimeout(searchTimeout);
+        const query = event.target.value.trim();
+        
+        if (query.length < 2) {
+            document.getElementById('search-results-section').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            return;
+        }
+
+        searchTimeout = setTimeout(() => performSearch(query), 500);
+    }
+
+    async function performSearch(query) {
+        const spinner = document.getElementById('search-spinner');
+        spinner.classList.remove('hidden');
+
+        try {
+            const res = await fetch(`${API_BASE}/employee/admin/search-users?query=${query}`, { headers: H });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                showToast(data.error || 'Search failed', 'warning');
+                return;
+            }
+            
+            renderResults(data);
+        } catch (e) {
+            console.error('Search error:', e);
+            showToast('Network error or Search failed', 'warning');
+        } finally {
+            spinner.classList.add('hidden');
+        }
+    }
+
+    function renderResults(users) {
+        const grid = document.getElementById('results-grid');
+        const section = document.getElementById('search-results-section');
+        const empty = document.getElementById('empty-state');
+        const count = document.getElementById('result-count');
+
+        grid.innerHTML = '';
+        count.innerText = `${users.length} found`;
+
+        if (users.length === 0) {
+            grid.innerHTML = '<div class="col-span-full py-10 text-center font-bold text-slate-400 italic">No recipients found matching your search</div>';
+        } else {
+            users.forEach(u => {
+                const card = document.createElement('div');
+                card.className = 'group p-5 rounded-3xl bg-white border-2 border-slate-100 shadow-sm hover:border-blue-400 hover:shadow-xl transition-all animate-[slideUp_0.3s_ease-out]';
+                
+                let roleColor = 'bg-slate-100 text-slate-600';
+                if (u.role === 'farmer') roleColor = 'bg-emerald-50 text-emerald-700';
+                if (u.role === 'machine_partner') roleColor = 'bg-orange-50 text-orange-700';
+                if (u.role === 'labour') roleColor = 'bg-purple-50 text-purple-700';
+                if (u.role === 'ksp') roleColor = 'bg-teal-50 text-teal-700';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="inline-block px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${roleColor}">${u.role.replace('_', ' ')}</span>
+                            <h4 class="text-base font-black text-slate-900 mt-2">${u.businessName || u.name}</h4>
+                            <p class="text-xs text-slate-500 font-bold"><i class="fas fa-phone mr-1"></i> ${u.phone}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[9px] text-slate-400 font-black uppercase">Balance</p>
+                            <p class="text-sm font-black text-blue-600">₹${(u.walletBalance || 0).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-50 flex gap-2">
+                        <button onclick='openPayoutModal(${JSON.stringify(u)})' class="flex-1 bg-slate-900 text-white h-10 rounded-xl text-xs font-black shadow-md shadow-slate-200 hover:bg-blue-600 hover:shadow-blue-200 transition-all">Process Payout</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        empty.classList.add('hidden');
+        section.classList.remove('hidden');
+    }
+
+    function openPayoutModal(user) {
+        currentRecipient = user;
+        document.getElementById('modal-user-name').innerText = user.businessName || user.name;
+        document.getElementById('modal-wallet-balance').innerText = `₹${(user.walletBalance || 0).toLocaleString()}`;
+        document.getElementById('payout-amount').value = '';
+        document.getElementById('payout-utr').value = '';
+        document.getElementById('payout-note').value = '';
+        document.getElementById('payout-modal').classList.remove('hidden');
+    }
+
+    function closePayoutModal() {
+        document.getElementById('payout-modal').classList.add('hidden');
+        currentRecipient = null;
+    }
+
+    async function submitPayout() {
+        const amount = document.getElementById('payout-amount').value;
+        const utr = document.getElementById('payout-utr').value;
+        const note = document.getElementById('payout-note').value;
+        const btn = document.getElementById('payout-submit-btn');
+
+        if (!amount || amount <= 0) return showToast('Enter valid amount', 'warning');
+        if (amount > currentRecipient.walletBalance) return showToast('Insufficient balance', 'warning');
+
+        if (!confirm(`Deduct ₹${amount} from ${currentRecipient.name}'s wallet for payout?`)) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+
+        try {
+            const res = await fetch(`${API_BASE}/employee/admin/process-payout`, {
+                method: 'POST',
+                headers: H,
+                body: JSON.stringify({
+                    id: currentRecipient._id,
+                    amount: amount,
+                    utrNumber: utr,
+                    note: note
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('Payout processed & Wallet updated!', 'success');
+                closePayoutModal();
+                // Refresh search to show new balance
+                const query = document.getElementById('user-search-input').value;
+                if (query) performSearch(query);
+            } else {
+                showToast(data.error || 'Processing failed', 'warning');
+            }
+        } catch (e) {
+            showToast('Network error', 'warning');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Deduct & Mark Paid';
+        }
+    }
+  </script>
+</body>
+
+</html>

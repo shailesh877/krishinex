@@ -56,8 +56,9 @@ router.post('/bulk-update', protect, async (req, res) => {
 
         const results = [];
         for (const item of prices) {
-            const priceDate = new Date(item.date);
-            priceDate.setHours(0, 0, 0, 0);
+            // item.date is 'YYYY-MM-DD'. We want UTC midnight for that specific date.
+            const [year, month, day] = item.date.split('-').map(Number);
+            const priceDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
 
             const updated = await MandiPrice.findOneAndUpdate(
                 { mandi: mandiId, cropName, date: priceDate },
@@ -114,6 +115,46 @@ router.post('/crops', protect, async (req, res) => {
     } catch (e) {
         console.error('Create crop error:', e);
         res.status(500).json({ error: 'Failed to create crop' });
+    }
+});
+
+// @route   DELETE /api/mandi/crops/:id
+// @desc    Delete a Crop (Admin only)
+// @access  Private
+router.delete('/crops/:id', protect, async (req, res) => {
+    try {
+        console.log(`[DEBUG] Attempting to delete crop ID: ${req.params.id}`);
+        const crop = await Crop.findByIdAndDelete(req.params.id);
+        if (!crop) {
+            console.log(`[DEBUG] Crop not found: ${req.params.id}`);
+            return res.status(404).json({ error: 'Crop not found' });
+        }
+        console.log(`[DEBUG] Crop deleted successfully: ${req.params.id}`);
+        res.json({ message: 'Crop deleted successfully' });
+    } catch (e) {
+        console.error('Delete crop error:', e);
+        res.status(500).json({ error: 'Failed to delete crop' });
+    }
+});
+
+// @route   DELETE /api/mandi/:id
+// @desc    Delete a Mandi (Admin only)
+// @access  Private
+router.delete('/:id', protect, async (req, res) => {
+    try {
+        console.log(`[DEBUG] Attempting to delete mandi ID: ${req.params.id}`);
+        const mandi = await Mandi.findByIdAndDelete(req.params.id);
+        if (!mandi) {
+            console.log(`[DEBUG] Mandi not found: ${req.params.id}`);
+            return res.status(404).json({ error: 'Mandi not found' });
+        }
+        // Also delete associated prices
+        await MandiPrice.deleteMany({ mandi: req.params.id });
+        console.log(`[DEBUG] Mandi deleted successfully: ${req.params.id}`);
+        res.json({ message: 'Mandi deleted successfully' });
+    } catch (e) {
+        console.error('Delete mandi error:', e);
+        res.status(500).json({ error: 'Failed to delete mandi' });
     }
 });
 

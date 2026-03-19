@@ -47,6 +47,18 @@ const sellRequestSchema = new mongoose.Schema({
     images: [{
         type: String
     }],
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    otp: {
+        type: String,
+        default: null
+    },
+    adminPrice: {
+        type: Number,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now

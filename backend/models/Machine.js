@@ -37,7 +37,13 @@ const MachineSchema = new mongoose.Schema({
     images: {
         type: [String],
         default: []
+    },
+    location: {
+        type: { type: String, enum: ['Point'], default: 'Point' },
+        coordinates: { type: [Number] } // [lng, lat]
     }
 }, { timestamps: true });
+
+MachineSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('Machine', MachineSchema);

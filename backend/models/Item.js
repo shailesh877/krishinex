@@ -13,18 +13,17 @@ const itemSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['seed', 'pesticide', 'equipment', 'fertilizer', 'other'],
+        enum: ['seed', 'fert', 'pest', 'tool', 'pesticide', 'equipment', 'fertilizer', 'other'],
         required: true
     },
     price: {
         type: Number,
-        required: true,
         min: 0
     },
     unit: {
         type: String,
-        enum: ['BAG', 'QUINTAL', 'KG', 'BOTTLE', 'PIECE'],
-        required: true
+        required: true,
+        trim: true
     },
     stockQty: {
         type: Number,
@@ -38,7 +37,16 @@ const itemSchema = new mongoose.Schema({
     },
     imageUrl: {
         type: String
-    }
+    },
+    hasVariants: {
+        type: Boolean,
+        default: false
+    },
+    variants: [{
+        label: { type: String, trim: true },
+        price: { type: Number, min: 0 },
+        stockQty: { type: Number, default: 0, min: 0 }
+    }]
 }, {
     timestamps: true
 });

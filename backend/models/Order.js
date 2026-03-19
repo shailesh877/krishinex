@@ -59,6 +59,10 @@ const orderSchema = new mongoose.Schema({
         enum: ['pending', 'in-progress', 'settled'],
         default: 'pending'
     },
+    sellRequestId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SellRequest'
+    },
     createdAt: { type: Date, default: Date.now }
 });
 

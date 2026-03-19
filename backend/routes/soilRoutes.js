@@ -106,19 +106,45 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
             return res.status(404).json({ error: 'Soil request not found' });
         }
 
-        // Must be the owner lab
-        if (request.lab.toString() !== req.user.id) {
+        // Must be the owner lab or an admin
+        if (request.lab.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({ error: 'Not authorized for this request' });
         }
 
+        const previousStatus = request.status;
         request.status = status;
         if (reportNote) request.advisoryText = reportNote;
 
         if (req.file) {
-            request.reportUrl = `https://demo.ranx24.com/uploads/${req.file.filename}`;
+            const baseUrl = process.env.BASE_URL || `http://${req.hostname}:5500`;
+            request.reportUrl = `${baseUrl}/uploads/${req.file.filename}`;
         }
 
         await request.save();
+
+        // Wallet Credit Logic for Soil Lab
+        if (status === 'Completed' && previousStatus !== 'Completed') {
+            const lab = await require('../models/User').findById(request.lab);
+            if (lab) {
+                const amount = request.price || 0;
+                lab.walletBalance = (lab.walletBalance || 0) + amount;
+                await lab.save();
+
+                // Create Transaction record
+                await require('../models/Transaction').create({
+                    transactionId: `SOIL-${request._id}-${Date.now()}`,
+                    recipient: lab._id,
+                    module: 'Soil',
+                    amount: amount,
+                    type: 'Payout',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: request._id,
+                    note: `Payment for Soil Test #${request._id.toString().slice(-6)}`
+                });
+                console.log(`[SOIL] Credited ${amount} to lab ${lab.name} for request ${request._id}`);
+            }
+        }
 
         // Optionally send a notification to the farmer
         let notifMsgHi = '';
@@ -136,21 +162,41 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
         }
 
         if (notifMsgHi) {
-            await Notification.create({
-                user: request.farmer,
+            const { sendNotification } = require('../services/notificationService');
+            await sendNotification(request.farmer, {
                 title: 'Soil Test Update',
-                titleHi: 'मिट्टी जांच अपडेट',
-                titleEn: 'Soil Test Update',
-                messageHi: notifMsgHi,
                 messageEn: notifMsgEn,
-                type: 'system'
-            });
+                messageHi: notifMsgHi,
+                type: 'system',
+                refId: request._id.toString()
+            }).catch(() => {});
         }
 
         res.json(request);
     } catch (error) {
         console.error('Soil request update error:', error);
         res.status(500).json({ error: 'Failed to update status' });
+    }
+});
+
+// @route   GET /api/soil/wallet
+// @desc    Get wallet balance and transaction history for soil lab
+// @access  Private
+router.get('/wallet', protect, async (req, res) => {
+    try {
+        const User = require('../models/User');
+        const user = await User.findById(req.user.id).select('walletBalance');
+        const Transaction = require('../models/Transaction');
+        const transactions = await Transaction.find({ recipient: req.user.id })
+            .sort({ createdAt: -1 });
+
+        res.json({
+            balance: user ? user.walletBalance : 0,
+            transactions
+        });
+    } catch (error) {
+        console.error('Fetch Soil Wallet error:', error);
+        res.status(500).json({ error: 'Failed to fetch wallet info' });
     }
 });
 

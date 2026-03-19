@@ -20,7 +20,8 @@ const protect = (req, res, next) => {
 
     if (token) {
         try {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+            const secret = process.env.JWT_SECRET;
+            const decoded = jwt.verify(token, secret);
 
             req.user = decoded; // { id, role, iat, exp }
 

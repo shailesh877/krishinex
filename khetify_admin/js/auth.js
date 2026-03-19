@@ -39,4 +39,23 @@
         // window.location.replace is better than .href for security as it removes the entry from history
         window.location.replace(LOGIN_PAGE);
     };
+    // 4. Global Fetch Interceptor for 401 Unauthorized
+    const originalFetch = window.fetch;
+    window.fetch = async function (...args) {
+        const response = await originalFetch(...args);
+        if (response.status === 401) {
+            // Check if we are already on the login page to avoid infinite loops
+            const isLoginPage = window.location.pathname.includes('login.html');
+            if (!isLoginPage) {
+                console.warn('Unauthorized access - redirecting to login');
+                if (window.logoutSession) {
+                    window.logoutSession();
+                } else {
+                    localStorage.removeItem('employeeToken');
+                    window.location.replace('login.html');
+                }
+            }
+        }
+        return response;
+    };
 })();

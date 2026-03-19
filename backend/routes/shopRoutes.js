@@ -8,6 +8,9 @@ const { protect } = require('../middleware/authMiddleware');
 const Item = require('../models/Item');
 const ShopOrder = require('../models/ShopOrder');
 const Banner = require('../models/Banner');
+const User = require('../models/User');
+const Transaction = require('../models/Transaction');
+const Settings = require('../models/Settings');
 
 // Setup multer for Item images
 const uploadDir = path.join(__dirname, '../uploads/items');
@@ -30,16 +33,32 @@ const upload = multer({ storage });
 // @access  Private
 router.post('/items', protect, upload.single('image'), async (req, res) => {
     try {
-        const { name, category, price, unit, stockQty, description } = req.body;
+        console.log('--- ADD ITEM REQUEST ---');
+        console.log('Body:', req.body);
+        console.log('File:', req.file);
+
+        const { name, category, price, unit, stockQty, description, variants } = req.body;
+        const hasVariants = req.body.hasVariants === 'true' || req.body.hasVariants === true;
+        
+        let parsedVariants = [];
+        if (hasVariants) {
+            try {
+                parsedVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+            } catch (e) {
+                console.error('Error parsing variants:', e);
+            }
+        }
 
         const itemInput = {
             owner: req.user.id,
             name,
             category,
-            price: Number(price),
+            price: price ? Number(price) : 0,
             unit,
-            stockQty: Number(stockQty || 0),
-            description
+            stockQty: stockQty ? Number(stockQty) : 0,
+            description,
+            hasVariants: hasVariants === 'true' || hasVariants === true,
+            variants: parsedVariants
         };
 
         if (req.file) {
@@ -47,10 +66,11 @@ router.post('/items', protect, upload.single('image'), async (req, res) => {
         }
 
         const item = await Item.create(itemInput);
+        console.log('Item created successfully:', item._id);
         res.status(201).json(item);
     } catch (error) {
-        console.error('Add Shop Item error:', error);
-        res.status(500).json({ error: 'Failed to add item' });
+        console.error('Add Shop Item error detail:', error);
+        res.status(500).json({ error: error.message || 'Failed to add item' });
     }
 });
 
@@ -115,7 +135,8 @@ router.put('/items/:id', protect, upload.single('image'), async (req, res) => {
             return res.status(401).json({ error: 'Not authorized' });
         }
 
-        const { name, category, price, unit, stockQty, description } = req.body;
+        const { name, category, price, unit, stockQty, description, variants } = req.body;
+        const hasVariants = req.body.hasVariants === 'true' || req.body.hasVariants === true;
 
         item.name = name || item.name;
         item.category = category || item.category;
@@ -123,6 +144,15 @@ router.put('/items/:id', protect, upload.single('image'), async (req, res) => {
         item.unit = unit || item.unit;
         item.stockQty = stockQty !== undefined ? Number(stockQty) : item.stockQty;
         item.description = description !== undefined ? description : item.description;
+        item.hasVariants = hasVariants;
+
+        if (hasVariants && variants) {
+            try {
+                item.variants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+            } catch (e) {
+                console.error('Error parsing variants in update:', e);
+            }
+        }
 
         if (req.file) {
             item.imageUrl = `uploads/items/${req.file.filename}`;
@@ -133,6 +163,51 @@ router.put('/items/:id', protect, upload.single('image'), async (req, res) => {
     } catch (error) {
         console.error('Update Shop Item error:', error);
         res.status(500).json({ error: 'Failed to update item' });
+    }
+});
+
+// @route   GET /api/shop/dashboard
+// @desc    Get dashboard statistics for the shop provider
+// @access  Private
+router.get('/dashboard', protect, async (req, res) => {
+    try {
+        const ownerId = req.user.id;
+        
+        // Calculate start of today in IST (GMT+5:30)
+        const now = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istNow = new Date(now.getTime() + istOffset);
+        istNow.setUTCHours(0, 0, 0, 0);
+        const startOfToday = new Date(istNow.getTime() - istOffset);
+
+        // Lifetime stats
+        const totalOrders = await ShopOrder.countDocuments({ owner: ownerId });
+        const totalDelivered = await ShopOrder.countDocuments({ owner: ownerId, status: 'DELIVERED' });
+
+        // Today stats (based on when created)
+        const todayNew = await ShopOrder.countDocuments({
+            owner: ownerId,
+            status: 'NEW',
+            createdAt: { $gte: startOfToday }
+        });
+        const todayAccepted = await ShopOrder.countDocuments({
+            owner: ownerId,
+            status: 'ACCEPTED',
+            createdAt: { $gte: startOfToday }
+        });
+        const todayDelivered = await ShopOrder.countDocuments({
+            owner: ownerId,
+            status: 'DELIVERED',
+            createdAt: { $gte: startOfToday }
+        });
+
+        res.json({
+            lifetime: { totalOrders, totalDelivered },
+            today: { new: todayNew, accepted: todayAccepted, delivered: todayDelivered }
+        });
+    } catch (error) {
+        console.error('Fetch Shop Dashboard error:', error);
+        res.status(500).json({ error: 'Failed to fetch dashboard stats' });
     }
 });
 
@@ -191,12 +266,76 @@ router.patch('/orders/:id/status', protect, async (req, res) => {
             return res.status(401).json({ error: 'Not authorized' });
         }
 
+        const previousStatus = order.status;
         order.status = status;
         if (cancelReason) {
             order.cancelReason = cancelReason;
         }
 
         const updatedOrder = await order.save();
+
+        // Notify Buyer about Status Change
+        const { sendNotification } = require('../services/notificationService');
+        
+        let statusMsgEn = '';
+        let statusMsgHi = '';
+        let titleEn = 'Order Update';
+
+        switch (status) {
+            case 'ACCEPTED':
+                statusMsgEn = `Your order #${order._id.toString().slice(-6)} has been accepted and is being prepared.`;
+                statusMsgHi = `आपका ऑर्डर #${order._id.toString().slice(-6)} स्वीकार कर लिया गया है और तैयार किया जा रहा है।`;
+                break;
+            case 'IN_PROGRESS':
+                statusMsgEn = `Your order #${order._id.toString().slice(-6)} is now in progress/out for delivery.`;
+                statusMsgHi = `आपका ऑर्डर #${order._id.toString().slice(-6)} अब प्रगति पर है/डिलिवरी के लिए निकल गया है।`;
+                break;
+            case 'DELIVERED':
+                titleEn = 'Order Delivered';
+                statusMsgEn = `Yay! Your order #${order._id.toString().slice(-6)} has been delivered successfully.`;
+                statusMsgHi = `बधाई हो! आपका ऑर्डर #${order._id.toString().slice(-6)} सफलतापूर्वक डिलिवर हो गया है।`;
+                break;
+            case 'CANCELLED':
+                titleEn = 'Order Cancelled';
+                statusMsgEn = `Your order #${order._id.toString().slice(-6)} has been cancelled. ${cancelReason ? 'Reason: ' + cancelReason : ''}`;
+                statusMsgHi = `आपका ऑर्डर #${order._id.toString().slice(-6)} रद्द कर दिया गया है। ${cancelReason ? 'कारण: ' + cancelReason : ''}`;
+                break;
+        }
+
+        if (statusMsgEn) {
+            await sendNotification(order.buyer, {
+                title: titleEn,
+                messageEn: statusMsgEn,
+                messageHi: statusMsgHi,
+                type: 'status',
+                refId: order._id.toString()
+            });
+        }
+
+        // Wallet Credit Logic for Shop Partner
+        if (status === 'DELIVERED' && previousStatus !== 'DELIVERED') {
+            const owner = await User.findById(order.owner);
+            if (owner) {
+                const amount = order.totalAmount || 0;
+                owner.walletBalance = (owner.walletBalance || 0) + amount;
+                await owner.save();
+
+                // Create Transaction record
+                await Transaction.create({
+                    transactionId: `SHOP-${order._id}-${Date.now()}`,
+                    recipient: owner._id,
+                    module: 'Shop',
+                    amount: amount,
+                    type: 'Payout',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: order._id,
+                    note: `Payment for Order #${order._id.toString().slice(-6)}`
+                });
+                console.log(`[SHOP] Credited ${amount} to partner ${owner.name} for order ${order._id}`);
+            }
+        }
+
         res.json(updatedOrder);
     } catch (error) {
         console.error('Update Shop Order status error:', error);
@@ -232,6 +371,24 @@ router.get('/orders/:id', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/shop/wallet-config
+// @desc    Get wallet discount percentage and user wallet balance
+// @access  Private
+router.get('/wallet-config', protect, async (req, res) => {
+    try {
+        const [settings, user] = await Promise.all([
+            Settings.getSettings(),
+            User.findById(req.user.id).select('walletBalance')
+        ]);
+        res.json({
+            walletDiscountPercentage: settings.pricing.walletDiscountPercentage || 0,
+            walletBalance: user ? user.walletBalance : 0
+        });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch wallet config' });
+    }
+});
+
 // @route   POST /api/shop/checkout
 // @desc    Place a new shop order
 // @access  Private
@@ -251,13 +408,24 @@ router.post('/checkout', protect, async (req, res) => {
             return groups;
         }, {});
 
+        const settings = await Settings.getSettings();
+        const discountPercentage = settings.pricing.walletDiscountPercentage || 0;
+
         const orders = [];
         for (const [ownerId, ownerItems] of Object.entries(groupedItems)) {
-            const totalAmount = ownerItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const rawTotal = ownerItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            let discountApplied = 0;
+            let finalAmount = rawTotal;
+
+            if (paymentMethod === 'wallet') {
+                discountApplied = Math.round((rawTotal * discountPercentage) / 100);
+                finalAmount = rawTotal - discountApplied;
+            }
 
             const orderData = {
                 buyer: req.user.id,
-                owner: ownerId === 'admin' ? req.user.id : ownerId, // If admin or self, handle differently if needed
+                owner: ownerId === 'admin' ? req.user.id : ownerId,
                 items: ownerItems.map(it => ({
                     itemRef: it.id,
                     name: it.name,
@@ -266,7 +434,9 @@ router.post('/checkout', protect, async (req, res) => {
                     unit: it.unit,
                     imageUrl: it.image
                 })),
-                totalAmount,
+                totalAmount: finalAmount,
+                discountApplied,
+                discountPercentage,
                 deliveryAddress,
                 paymentMode: paymentMethod === 'cod' ? 'CASH' : 'WALLET',
                 status: 'NEW'
@@ -274,6 +444,39 @@ router.post('/checkout', protect, async (req, res) => {
 
             const order = await ShopOrder.create(orderData);
             orders.push(order);
+
+            // If wallet payment, check and deduct balance
+            if (paymentMethod === 'wallet') {
+                const user = await User.findById(req.user.id);
+                if (user.walletBalance < finalAmount) {
+                    return res.status(400).json({ error: `Insufficient wallet balance. Need ₹${finalAmount}` });
+                }
+                user.walletBalance -= finalAmount;
+                await user.save();
+
+                // Create transaction linked to order
+                await Transaction.create({
+                    transactionId: `SHOP-WALLET-${Date.now()}-${order._id.toString().slice(-4)}`,
+                    recipient: req.user.id,
+                    module: 'Shop',
+                    amount: finalAmount,
+                    type: 'Debit',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: order._id,
+                    note: `Payment for Shop Order (Discount: ₹${discountApplied})`
+                });
+            }
+
+            // Notify Shop Partner
+            const { sendNotification } = require('../services/notificationService');
+            await sendNotification(ownerId, {
+                title: 'New Online Order',
+                messageEn: `You have received a new order for ${ownerItems.length} items. Total: ₹${finalAmount}`,
+                messageHi: `आपको ${ownerItems.length} आइटम के लिए एक नया ऑर्डर मिला है। कुल: ₹${finalAmount}`,
+                type: 'order',
+                refId: order._id.toString()
+            }).catch(() => { });
 
             // Update item stock
             for (const it of ownerItems) {
@@ -312,6 +515,25 @@ router.get('/banners', async (req, res) => {
     } catch (error) {
         console.error('Fetch Banner error:', error);
         res.status(500).json({ error: 'Failed to fetch banners' });
+    }
+});
+
+// @route   GET /api/shop/wallet
+// @desc    Get wallet balance and transaction history
+// @access  Private
+router.get('/wallet', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('walletBalance');
+        const transactions = await Transaction.find({ recipient: req.user.id })
+            .sort({ createdAt: -1 });
+
+        res.json({
+            balance: user ? user.walletBalance : 0,
+            transactions
+        });
+    } catch (error) {
+        console.error('Fetch Shop Wallet error:', error);
+        res.status(500).json({ error: 'Failed to fetch wallet info' });
     }
 });
 

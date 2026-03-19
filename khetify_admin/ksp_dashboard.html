@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KSP Partner Dashboard | KrishiNex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        .sidebar-item-active {
+            background: linear-gradient(to right, #eff6ff, #f0f9ff);
+            color: #1d4ed8;
+            border-left: 4px solid #3b82f6;
+        }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Mobile Header -->
+    <header class="md:hidden flex items-center justify-between px-4 h-16 bg-white border-b border-slate-200 sticky top-0 z-40">
+        <h1 class="text-lg font-black text-blue-600">KSP Dashboard</h1>
+        <button onclick="toggleSidebar()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r-2 border-slate-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-50 flex flex-col">
+            <div class="p-6 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-gradient-to-br from-blue-600 to-sky-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-black text-slate-900 leading-none">KSP Partner</h2>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">KrishiNex Platform</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scroll">
+                <a href="#" class="sidebar-item-active group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all">
+                    <i class="fas fa-grid-2"></i> Dashboard
+                </a>
+                <a href="#withdraw" class="group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i class="fas fa-money-bill-transfer"></i> Withdrawal
+                </a>
+                <a href="#transactions" class="group flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                    <i class="fas fa-history"></i> Transactions
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-100">
+                <div class="bg-slate-50 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase leading-none">Partner</p>
+                        <p id="kspPartnerName" class="text-xs font-black text-slate-900 truncate mt-1">N/A</p>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-64 p-4 md:p-8 space-y-8">
+            <!-- Top Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Wallet Balance -->
+                <div class="bg-white rounded-[2rem] border-2 border-slate-100 p-6 shadow-sm relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-wallet text-6xl text-blue-600"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none">Partner Wallet</p>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2 mb-1" id="kspBalance">₹0.00</h3>
+                    <p class="text-[11px] text-blue-600 font-bold">Your Earnings & Payout Funds</p>
+                </div>
+
+                <!-- Withdrawal Process Status -->
+                <div class="md:col-span-2 bg-gradient-to-r from-blue-600 to-sky-500 rounded-[2rem] p-6 shadow-xl shadow-blue-100 relative overflow-hidden">
+                    <div class="relative z-10 flex items-center justify-between h-full">
+                        <div class="text-white">
+                            <h3 class="text-xl font-black">Process Withdrawal</h3>
+                            <p class="text-blue-50 text-xs font-bold mt-1 opacity-80">Withdraw cash for any user using NexCard Wallet.</p>
+                        </div>
+                        <i class="fas fa-shield-check text-5xl text-white/20"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- WITHDRAWAL FLOW -->
+                <section class="lg:col-span-7 bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+                    <div class="p-6 border-b-2 border-slate-50 flex items-center justify-between bg-slate-50/50">
+                        <h2 class="text-base font-black text-slate-900 italic">Instant Withdrawal Flow</h2>
+                        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-full uppercase">OTP Verified</span>
+                    </div>
+
+                    <div class="p-8 space-y-8" id="flowContainer">
+                        <!-- Step 1: Search User -->
+                        <div id="stepSearch" class="space-y-6">
+                            <div class="text-center space-y-2 pb-2">
+                                <h3 class="text-2xl font-black text-slate-900">Find User Account</h3>
+                                <p class="text-sm text-slate-500 font-bold">Search by Mobile Number, Wallet ID, or NexCard Number</p>
+                            </div>
+                            
+                            <div class="relative group max-w-lg mx-auto">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                                </div>
+                                <input type="text" id="user-search-input" 
+                                    class="block w-full h-16 pl-12 pr-28 bg-slate-50 border-2 border-slate-200 rounded-2xl text-xl font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-8 focus:ring-blue-100 outline-none transition-all"
+                                    placeholder="Phone / Wallet ID / Card #">
+                                <div class="absolute inset-y-0 right-2 flex items-center">
+                                    <button onclick="searchUser()" id="searchBtn" class="h-12 px-6 bg-slate-900 text-white rounded-xl font-black text-xs hover:bg-blue-600 transition-all">
+                                        SEARCH
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Selection List (Hidden until search returns multiples) -->
+                        <div id="userSelectionList" class="hidden space-y-4 animate-[fadeIn_0.5s_ease-out]">
+                            <div class="text-center pb-2">
+                                <h3 class="text-lg font-black text-slate-900 italic">Multiple Accounts Found</h3>
+                                <p class="text-xs text-slate-500 font-bold">Select the correct account for withdrawal</p>
+                            </div>
+                            <div id="selection-container" class="space-y-3">
+                                <!-- User items will be injected here -->
+                            </div>
+                            <button onclick="resetFlow()" class="w-full py-2 text-slate-400 font-bold text-[10px] uppercase hover:text-slate-600 transition-colors">
+                                Back to Search
+                            </button>
+                        </div>
+
+                        <!-- User Info Card (Hidden until search) -->
+                        <div id="userInfoCard" class="hidden animate-[fadeIn_0.5s_ease-out]">
+                            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-2xl relative overflow-hidden">
+                                <div class="absolute top-[-20%] right-[-10%] w-40 h-40 bg-blue-500 rounded-full blur-[60px] opacity-20"></div>
+                                <div class="relative z-10 flex items-center gap-5">
+                                    <div class="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+                                        <i class="fas fa-user-astronaut text-3xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <h4 id="userName" class="text-xl font-black">--</h4>
+                                            <span id="userRole" class="text-[9px] px-2 py-0.5 bg-blue-500/20 border border-blue-500/30 rounded uppercase font-black">---</span>
+                                        </div>
+                                        <p id="userPhone" class="text-blue-200/60 text-xs font-bold mt-0.5">---</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[9px] uppercase font-black text-blue-200/40">Available Balance</p>
+                                        <p id="userWallet" class="text-2xl font-black text-emerald-400 mt-1">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amount & OTP Section -->
+                            <div class="mt-8 space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Withdrawal Amount</label>
+                                        <div class="relative group">
+                                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <i class="fas fa-indian-rupee-sign text-slate-400"></i>
+                                            </div>
+                                            <input type="number" id="withdrawAmount" 
+                                                class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-black text-lg focus:bg-white focus:border-blue-500 outline-none transition-all"
+                                                placeholder="0.00">
+                                        </div>
+                                    </div>
+                                    <div id="otpBox" class="space-y-2 hidden opacity-0 transition-all duration-500">
+                                        <label class="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1">Enter User OTP</label>
+                                        <div class="relative group">
+                                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <i class="fas fa-key text-rose-400"></i>
+                                            </div>
+                                            <input type="text" id="withdrawOtp" maxlength="4"
+                                                class="block w-full h-14 pl-12 pr-4 bg-rose-50 border-2 border-rose-100 rounded-2xl font-black text-lg text-rose-700 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 outline-none transition-all"
+                                                placeholder="4-Digit OTP">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button id="withdrawMainBtn" onclick="initiateWithdraw()" 
+                                    class="w-full h-16 bg-slate-900 text-white rounded-[1.25rem] font-black text-lg shadow-xl hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                                    <span>Send Verification OTP</span>
+                                    <i class="fas fa-bolt-lightning text-amber-400"></i>
+                                </button>
+                                
+                                <button onclick="resetFlow()" class="w-full py-2 text-slate-400 font-bold text-[10px] uppercase hover:text-slate-600 transition-colors">
+                                    Cancel & Search Again
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RECENT TRANSACTIONS -->
+                <section class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl p-6 h-full flex flex-col">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-base font-black text-slate-900 italic">Recent Withdrawals</h2>
+                            <button onclick="loadStats()" class="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-blue-500 transition-colors">
+                                <i class="fas fa-rotate"></i>
+                            </button>
+                        </div>
+
+                        <div id="tx-container" class="flex-1 space-y-4 overflow-y-auto custom-scroll pr-2 max-h-[600px]">
+                            <!-- Loading state -->
+                            <div class="animate-pulse space-y-4">
+                                <div class="h-20 bg-slate-50 rounded-2xl"></div>
+                                <div class="h-20 bg-slate-50 rounded-2xl"></div>
+                                <div class="h-20 bg-slate-50 rounded-2xl"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl hidden animate-[slideInRight_0.3s_ease-out]">
+        <p id="toastMessage" class="text-sm font-black"></p>
+    </div>
+
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+
+    <script>
+        const API_BASE = 'https://demo.ranx24.com/api';
+        const AUTH_TOKEN = localStorage.getItem('kspToken');
+        let selectedUser = null;
+        let otpSent = false;
+
+        // Redirect if no token
+        if (!AUTH_TOKEN) window.location.href = 'ksp_login.html';
+
+        // Global Fetch Interceptor for 401 Unauthorized
+        const originalFetch = window.fetch;
+        window.fetch = async function (...args) {
+            const response = await originalFetch(...args);
+            if (response.status === 401) {
+                const isLoginPage = window.location.pathname.includes('ksp_login.html');
+                if (!isLoginPage) {
+                    console.warn('Unauthorized access - redirecting to login');
+                    logout();
+                }
+            }
+            return response;
+        };
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/ksp/stats`, {
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('kspBalance').textContent = `₹${data.balance.toLocaleString()}`;
+                    document.getElementById('kspPartnerName').textContent = data.name;
+                    renderTransactions(data.recentTransactions);
+                } else {
+                    if (data.error === 'Not authorized, token failed') {
+                        showToast('Session Expired. Please login again.', 'error');
+                        setTimeout(() => logout(), 2000);
+                    } else {
+                        showToast(data.error || 'Failed to load stats', 'error');
+                    }
+                }
+            } catch (err) { 
+                console.error('Stats load error', err);
+                showToast('Network error or server down', 'error');
+            }
+        }
+
+        function renderTransactions(txns) {
+            const container = document.getElementById('tx-container');
+            if (txns.length === 0) {
+                container.innerHTML = `<div class="py-20 text-center opacity-30 font-black italic text-xs">No Recent History</div>`;
+                return;
+            }
+            container.innerHTML = txns.map(t => `
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all duration-300">
+                    <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-xl ${t.type === 'Credit' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'} flex items-center justify-center">
+                            <i class="fas ${t.type === 'Credit' ? 'fa-arrow-left' : 'fa-arrow-right'}"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight">${t.transactionId}</p>
+                            <p class="text-[9px] text-slate-500 font-bold mt-1">${new Date(t.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-black ${t.type === 'Credit' ? 'text-emerald-600' : 'text-slate-900'}">${t.type === 'Credit' ? '+' : '-'} ₹${t.amount.toLocaleString()}</p>
+                        <p class="text-[8px] text-slate-400 font-bold uppercase mt-1">WALLET TRF</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function searchUser() {
+            const q = document.getElementById('user-search-input').value;
+            if (!q) return showToast('Please enter search query', 'error');
+
+            const btn = document.getElementById('searchBtn');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/ksp/search`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: q })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    if (Array.isArray(data) && data.length > 1) {
+                        // Multi-user scenario
+                        document.getElementById('stepSearch').classList.add('hidden');
+                        document.getElementById('userSelectionList').classList.remove('hidden');
+                        const container = document.getElementById('selection-container');
+                        container.innerHTML = data.map(u => `
+                            <div onclick='selectUser(${JSON.stringify(u)})' class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl flex items-center justify-between cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-10 w-10 flex items-center justify-center bg-white rounded-xl border border-slate-200">
+                                        <i class="fas fa-user text-slate-400 group-hover:text-blue-500"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-black text-slate-900">${u.name}</p>
+                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">${u.role}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs font-black text-blue-600">SELECT</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        // Single user
+                        const user = Array.isArray(data) ? data[0] : data;
+                        selectUser(user);
+                    }
+                } else {
+                    showToast(data.error || 'User not found', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            } finally {
+                btn.innerHTML = 'SEARCH';
+                btn.disabled = false;
+            }
+        }
+
+        function selectUser(user) {
+            selectedUser = user;
+            document.getElementById('stepSearch').classList.add('hidden');
+            document.getElementById('userSelectionList').classList.add('hidden');
+            document.getElementById('userInfoCard').classList.remove('hidden');
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userPhone').textContent = `+91 ${user.phone}`;
+            document.getElementById('userRole').textContent = user.role;
+            document.getElementById('userWallet').textContent = `₹${user.walletBalance.toLocaleString()}`;
+        }
+
+        async function initiateWithdraw() {
+            if (!otpSent) {
+                // Step 1: Request OTP
+                const amt = document.getElementById('withdrawAmount').value;
+                if (!amt || amt <= 0) return showToast('Enter valid amount', 'error');
+                
+                const btn = document.getElementById('withdrawMainBtn');
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending OTP...';
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch(`${API_BASE}/ksp/withdraw/request-otp`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: selectedUser._id, amount: amt })
+                    });
+                    if (res.ok) {
+                        otpSent = true;
+                        document.getElementById('otpBox').classList.remove('hidden');
+                        setTimeout(() => document.getElementById('otpBox').style.opacity = '1', 50);
+                        btn.innerHTML = 'Confirm & Finalize Withdrawal';
+                        btn.className = "w-full h-16 bg-emerald-600 text-white rounded-[1.25rem] font-black text-lg shadow-xl shadow-emerald-100 hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3";
+                        showToast('OTP sent to user phone!', 'success');
+                    } else {
+                        const d = await res.json();
+                        showToast(d.error || 'Failed to send OTP', 'error');
+                    }
+                } catch (e) { showToast('Network error', 'error'); }
+                finally { btn.disabled = false; }
+            } else {
+                // Step 2: Confirm Withdrawal
+                const amt = document.getElementById('withdrawAmount').value;
+                const otp = document.getElementById('withdrawOtp').value;
+                if (!otp || otp.length < 4) return showToast('Enter valid 4-digit OTP', 'error');
+
+                const btn = document.getElementById('withdrawMainBtn');
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+                btn.disabled = true;
+
+                try {
+                    const res = await fetch(`${API_BASE}/ksp/withdraw/confirm`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: selectedUser._id, amount: amt, otp: otp })
+                    });
+                    const d = await res.json();
+                    if (res.ok) {
+                        showToast('SUCCESS! Withdrawal Completed.', 'success');
+                        setTimeout(() => resetFlow(), 2000);
+                        loadStats();
+                    } else {
+                        showToast(d.error || 'Withdrawal failed', 'error');
+                    }
+                } catch (e) { showToast('Network Error', 'error'); }
+                finally { 
+                    btn.disabled = false; 
+                    if (otpSent) btn.innerHTML = 'Confirm & Finalize Withdrawal';
+                }
+            }
+        }
+
+        function resetFlow() {
+            selectedUser = null;
+            otpSent = false;
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawOtp').value = '';
+            document.getElementById('otpBox').classList.add('hidden');
+            document.getElementById('otpBox').style.opacity = '0';
+            document.getElementById('userInfoCard').classList.add('hidden');
+            document.getElementById('userSelectionList').classList.add('hidden');
+            document.getElementById('stepSearch').classList.remove('hidden');
+            
+            const btn = document.getElementById('withdrawMainBtn');
+            btn.innerHTML = '<span>Send Verification OTP</span> <i class="fas fa-bolt-lightning text-amber-400"></i>';
+            btn.className = "w-full h-16 bg-slate-900 text-white rounded-[1.25rem] font-black text-lg shadow-xl hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-3";
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'ksp_login.html';
+        }
+
+        function toggleSidebar() {
+            const s = document.getElementById('sidebar');
+            s.classList.toggle('-translate-x-full');
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const txt = document.getElementById('toastMessage');
+            txt.textContent = msg;
+            toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        // Init
+        window.addEventListener('DOMContentLoaded', loadStats);
+    </script>
+</body>
+</html>

@@ -171,6 +171,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -392,6 +400,12 @@
                   class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
                   placeholder="500" />
               </div>
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">Wallet Payment Discount (%)</label>
+                <input type="number" id="price_walletDiscount"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="0" />
+              </div>
             </div>
 
             <button onclick="updateSettings('pricing')"
@@ -497,6 +511,7 @@
         document.getElementById('price_baseFee').value = data.pricing.baseServiceFee;
         document.getElementById('price_tax').value = data.pricing.taxRate;
         document.getElementById('price_minWallet').value = data.pricing.minWalletRecharge;
+        document.getElementById('price_walletDiscount').value = data.pricing.walletDiscountPercentage || 0;
 
       } catch (err) {
         showToast('Error loading settings', 'warning');
@@ -517,7 +532,8 @@
         payload.pricing = {
           baseServiceFee: parseFloat(document.getElementById('price_baseFee').value),
           taxRate: parseFloat(document.getElementById('price_tax').value),
-          minWalletRecharge: parseFloat(document.getElementById('price_minWallet').value)
+          minWalletRecharge: parseFloat(document.getElementById('price_minWallet').value),
+          walletDiscountPercentage: parseFloat(document.getElementById('price_walletDiscount').value)
         };
       }
 

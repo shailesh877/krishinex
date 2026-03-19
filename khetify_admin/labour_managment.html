@@ -173,6 +173,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -278,11 +286,11 @@
               onclick="toggleSidebar()" aria-pressed="false">
               <div class="space-y-[5px]">
                 <span
-                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
                 <span
-                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
                 <span
-                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
               </div>
             </button>
 
@@ -298,7 +306,6 @@
           </div>
 
           <div class="flex items-center gap-2">
-
             <button
               class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
               <i class="far fa-bell text-slate-600"></i>
@@ -406,8 +413,8 @@
             class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
             <div class="flex items-center justify-between">
               <div>
-                <h1 class="text-2xl font-black tracking-tight text-slate-900">Labour Aggregation Management <span
-                    class="text-xs text-slate-400 font-normal">v1.2</span></h1>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900">Labour Aggregation Management <span
+                    class="text-xs text-slate-400 font-normal">v1.2</span></h2>
                 <p class="text-xs text-slate-600 font-semibold mt-1">
                   Registered labourers with KYC, skills & availability
                 </p>
@@ -482,6 +489,7 @@
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Rating</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
                 </tr>
               </thead>
               <tbody id="jobHistoryTableBody">
@@ -557,6 +565,49 @@
     </div>
   </div>
 
+  <!-- ASSIGN JOB MODAL -->
+  <div id="assignJobModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeAssignJobModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-user-plus text-orange-600"></i>
+            Assign Labourer to Job
+          </h2>
+          <button onclick="closeAssignJobModal()"
+            class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+            <i class="fas fa-times text-slate-700"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-6 space-y-5">
+        <p class="text-sm text-slate-600">Select an employee who will supervise this labour job.</p>
+        <div class="space-y-2">
+          <label for="employeeSelect" class="block text-xs font-bold text-slate-700">Select Employee:</label>
+          <select id="employeeSelect"
+            class="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-semibold focus:border-emerald-400 focus:ring-emerald-400 transition-all">
+            <option value="">-- Select an Employee --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeAssignJobModal()"
+          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+          Cancel
+        </button>
+        <button onclick="assignJobToEmployee()"
+          class="inline-flex items-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-black text-white hover:bg-emerald-700 shadow-xl shadow-emerald-100 transition-all">
+          Confirm Assignment
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div id="toast"
     class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
@@ -596,42 +647,34 @@
   <script>
     const API_BASE = 'https://demo.ranx24.com/api';
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
-    // Current user role (RBAC)
-    const userRole = 'super-admin'; // Options: 'super-admin', 'employee', 'ksp-franchise'
-    const userPincode = null; // For KSP franchise (pin code specific access)
+    const userRole = 'super-admin';
+    const userPincode = null;
 
     let allLabourers = [];
+    let currentJobToAssign = null;
+    let allEmployees = [];
 
-    // Page Load
     window.addEventListener('DOMContentLoaded', function () {
       console.log('👷 Labour Aggregation Management Page Loaded');
-      console.log('User Role:', userRole);
-
       applyRBAC();
       fetchLabourStats();
       fetchLabourers();
       fetchLabourJobs();
+      fetchEmployeesToAssign();
     });
 
-    // Apply Role-Based Access Control
     function applyRBAC() {
       if (userRole === 'employee') {
-        // Sub-admin: Can only view & approve KYC
         document.querySelectorAll('button').forEach(btn => {
           if (btn.textContent.includes('Edit') || btn.textContent.includes('Delete') || btn.textContent.includes('Block')) {
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
           }
         });
-        console.log('🔒 RBAC: Employee mode - Edit/Delete disabled');
-      } else if (userRole === 'ksp-franchise') {
-        // KSP Franchise: Only see labourers in their pincode
-        if (userPincode) {
-          console.log(`🔒 RBAC: KSP Franchise mode - Filtered to pincode ${userPincode}`);
-          // Filter logic here
-        }
-      } else if (userRole === 'super-admin') {
-        console.log('👑 RBAC: Super Admin mode - Full access');
+        document.querySelectorAll('.assign-job-btn').forEach(btn => {
+          btn.disabled = true;
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+        });
       }
     }
 
@@ -681,7 +724,6 @@
 
       labourers.forEach(labour => {
         const tr = document.createElement('tr');
-        // Include data attributes for the filter function
         const skillsStr = labour.skills.join(', ').toLowerCase();
         tr.className = "hover:bg-purple-50/30 transition-colors border-b border-slate-100 labour-row";
         tr.dataset.name = labour.name.toLowerCase();
@@ -699,7 +741,6 @@
           ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active</span>`
           : `<span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-200"><i class="fas fa-ban mr-1 text-[8px]"></i> Inactive</span>`;
 
-        // Map skills to icons
         const skillBadges = labour.skills.map(s => {
           let icon = 'fas fa-wrench';
           if (s.toLowerCase().includes('harvest')) icon = 'fas fa-wheat-awn';
@@ -713,64 +754,22 @@
 
         let actionBtns = '';
         if (isPending) {
-          actionBtns = `
-            <button onclick="approveLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-emerald-500 text-white px-2.5 py-1 text-[9px] font-black hover:bg-emerald-600 transition-all mr-1">
-              <i class="fas fa-check mr-1"></i> Approve
-            </button>
-            <button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1">
-              <i class="fas fa-ban mr-1"></i> Reject
-            </button>
-          `;
+          actionBtns = `<button onclick="approveLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-emerald-500 text-white px-2.5 py-1 text-[9px] font-black hover:bg-emerald-600 transition-all mr-1"><i class="fas fa-check mr-1"></i> Approve</button><button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i> Reject</button>`;
         } else if (isVerified) {
-          actionBtns = `
-            <button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-100 transition-all mr-1">
-              <i class="fas fa-ban mr-1"></i> Suspend
-            </button>
-          `;
+          actionBtns = `<button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-100 transition-all mr-1"><i class="fas fa-ban mr-1"></i> Suspend</button>`;
         } else if (isRejected) {
-          actionBtns = `
-            <button onclick="approveLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 text-[9px] font-black hover:bg-emerald-100 transition-all mr-1">
-              <i class="fas fa-check-circle mr-1"></i> Re-activate
-            </button>
-          `;
+          actionBtns = `<button onclick="approveLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 text-[9px] font-black hover:bg-emerald-100 transition-all mr-1"><i class="fas fa-check-circle mr-1"></i> Re-activate</button>`;
         }
 
         tr.innerHTML = `
-          <td class="px-5 py-4">
-            <div class="flex items-center gap-3">
-              <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center shadow-sm">
-                <i class="fas fa-user text-purple-600"></i>
-              </div>
-              <div>
-                <div class="font-black text-slate-900">${labour.name}</div>
-                <div class="text-[10px] text-slate-500 font-medium">ID: ${labour.labourCode}</div>
-              </div>
-            </div>
-          </td>
-          <td class="px-5 py-4">
-            <div class="font-semibold text-slate-900">${labour.phone}</div>
-            <div class="text-[10px] text-slate-500 truncate w-32" title="${labour.location}">${labour.location || 'N/A'}</div>
-          </td>
-          <td class="px-5 py-4">
-            <div class="flex flex-wrap gap-1">${skillBadges || '<span class="text-xs text-slate-400">None</span>'}</div>
-          </td>
+          <td class="px-5 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center shadow-sm"><i class="fas fa-user text-purple-600"></i></div><div><div class="font-black text-slate-900">${labour.name}</div><div class="text-[10px] text-slate-500 font-medium">ID: ${labour.labourCode}</div></div></div></td>
+          <td class="px-5 py-4"><div class="font-semibold text-slate-900">${labour.phone}</div><div class="text-[10px] text-slate-500 truncate w-32" title="${labour.location}">${labour.location || 'N/A'}</div></td>
+          <td class="px-5 py-4"><div class="flex flex-wrap gap-1">${skillBadges || '<span class="text-xs text-slate-400">None</span>'}</div></td>
           <td class="px-5 py-4">${kycBadge}</td>
           <td class="px-5 py-4">${availBadge}</td>
-          <td class="px-5 py-4 text-right">
-            <div class="font-black text-slate-900">${labour.jobsDone}</div>
-          </td>
-          <td class="px-5 py-4 text-right">
-            <div class="flex items-center justify-end gap-1">
-              <i class="fas fa-star text-amber-500 text-xs"></i>
-              <span class="font-black text-slate-900">${labour.rating}</span>
-            </div>
-          </td>
-          <td class="px-5 py-4 text-right">
-            ${actionBtns}
-            <button onclick="viewLabourProfile('${labour.labourCode}', '${labour.name.replace(/'/g, "\\'")}', '${labour.location.replace(/'/g, "\\'")}', '${labour.skills.join(', ')}', '${labour.jobsDone}', '${labour.rating}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
-              <i class="fas fa-eye mr-1"></i> View
-            </button>
-          </td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${labour.jobsDone}</div></td>
+          <td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-1"><i class="fas fa-star text-amber-500 text-xs"></i><span class="font-black text-slate-900">${labour.rating}</span></div></td>
+          <td class="px-5 py-4 text-right">${actionBtns}<button onclick="viewLabourProfile('${labour.labourCode}', '${labour.name.replace(/'/g, "\\'")}', '${labour.location.replace(/'/g, "\\'")}', '${labour.skills.join(', ')}', '${labour.jobsDone}', '${labour.rating}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i> View</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -782,9 +781,7 @@
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
-        if (res.ok) {
-          renderJobsTable(data);
-        }
+        if (res.ok) renderJobsTable(data);
       } catch (e) { console.error('Error fetching jobs:', e); }
     }
 
@@ -792,14 +789,13 @@
       const tbody = document.getElementById('jobHistoryTableBody');
       tbody.innerHTML = '';
       if (jobs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500 font-bold">No completed jobs found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-500 font-bold">No jobs found.</td></tr>`;
         return;
       }
 
       jobs.forEach(job => {
         const d = new Date(job.createdAt);
         const dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-
         const tr = document.createElement('tr');
         tr.className = "hover:bg-emerald-50/30 transition-colors border-b border-slate-100";
 
@@ -809,40 +805,21 @@
         else statusBadge = `<span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black text-slate-700 border-2 border-slate-300">${job.status}</span>`;
 
         tr.innerHTML = `
-          <td class="px-5 py-4">
-            <div class="font-black text-slate-900">#${job._id.substring(18).toUpperCase()}</div>
-            <div class="text-[10px] text-slate-500 font-medium">${dateStr}</div>
-          </td>
-          <td class="px-5 py-4">
-            <div class="text-xs font-semibold text-slate-900">${job.labourName} → ${job.farmerName}</div>
-            <div class="text-[10px] text-slate-500 truncate w-32" title="${job.labourLocation}">${job.labourLocation || 'N/A'}</div>
-          </td>
-          <td class="px-5 py-4">
-            <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-              <i class="fas fa-briefcase mr-1"></i> ${job.workType}
-            </span>
-          </td>
+          <td class="px-5 py-4"><div class="font-black text-slate-900">#${job._id.substring(18).toUpperCase()}</div><div class="text-[10px] text-slate-500 font-medium">${dateStr}</div></td>
+          <td class="px-5 py-4"><div class="text-xs font-semibold text-slate-900">${job.labourName} → ${job.farmerName}</div><div class="text-[10px] text-slate-500 truncate w-32" title="${job.labourLocation}">${job.labourLocation || 'N/A'}</div></td>
+          <td class="px-5 py-4"><span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-briefcase mr-1"></i> ${job.workType}</span></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${job.hoursWorked || 0} hrs / ${job.acresCovered || 0} acres</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">₹${job.amount || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-1"><i class="fas fa-star text-amber-500 text-sm"></i><span class="font-black text-slate-900">${job.rating || 0}</span></div></td>
+          <td class="px-5 py-4">${statusBadge}</td>
           <td class="px-5 py-4 text-right">
-            <div class="font-black text-slate-900">${job.hoursWorked || 0} hrs / ${job.acresCovered || 0} acres</div>
-          </td>
-          <td class="px-5 py-4 text-right">
-            <div class="font-black text-emerald-700">₹${job.amount || 0}</div>
-          </td>
-          <td class="px-5 py-4 text-right">
-            <div class="flex items-center justify-end gap-1">
-              <i class="fas fa-star text-amber-500 text-sm"></i>
-              <span class="font-black text-slate-900">${job.rating || 0}</span>
-            </div>
-          </td>
-          <td class="px-5 py-4">
-            ${statusBadge}
+            ${!job.assignedTo ? `<button onclick="openAssignJobModal('${job._id}')" class="inline-flex items-center rounded-lg bg-orange-100 text-orange-700 border border-orange-200 px-2.5 py-1.5 text-[10px] font-black hover:bg-orange-200 transition-all assign-job-btn"><i class="fas fa-user-plus mr-1"></i> Assign</button>` : `<div class="flex flex-col items-end gap-1"><span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-500 border border-slate-200 px-2.5 py-1.5 text-[10px] font-black"><i class="fas fa-check-double mr-1"></i> Assigned</span><span class="text-[9px] font-bold text-slate-400">by ${job.assignedEmployeeName || 'Employee'} (${job.assignedEmployeeId || 'N/A'})</span></div>`}
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // View Labour Profile
     function viewLabourProfile(id, name, location, skills, jobs, rating) {
       document.getElementById('labourProfileName').textContent = name;
       document.getElementById('labourProfileId').textContent = `Labour ID: ${id}`;
@@ -850,19 +827,16 @@
       document.getElementById('labourProfileSkills').textContent = skills;
       document.getElementById('labourProfileJobs').textContent = jobs;
       document.getElementById('labourProfileRating').textContent = rating;
-
       document.getElementById('labourProfileModal').classList.remove('hidden');
     }
 
-    // Administrative Actions
     async function approveLabour(id) {
       try {
         const res = await fetch(`${API_BASE}/employee/admin/labour/approve/${id}`, {
           method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
-        const data = await res.json();
-        if (res.ok) { showToast(data.message, 'success'); fetchLabourers(); fetchLabourStats(); }
-        else showToast(data.error || 'Failed', 'warning');
+        if (res.ok) { showToast('Labourer approved', 'success'); fetchLabourers(); fetchLabourStats(); }
+        else showToast('Failed to approve', 'warning');
       } catch (e) { showToast('Network error', 'warning'); }
     }
 
@@ -871,93 +845,100 @@
         const res = await fetch(`${API_BASE}/employee/admin/labour/reject/${id}`, {
           method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
-        const data = await res.json();
-        if (res.ok) { showToast(data.message, 'success'); fetchLabourers(); fetchLabourStats(); }
-        else showToast(data.error || 'Failed', 'warning');
+        if (res.ok) { showToast('Labourer suspended', 'success'); fetchLabourers(); fetchLabourStats(); }
+        else showToast('Failed to suspend', 'warning');
       } catch (e) { showToast('Network error', 'warning'); }
     }
 
-    function closeLabourProfile() {
-      document.getElementById('labourProfileModal').classList.add('hidden');
-    }
+    function closeLabourProfile() { document.getElementById('labourProfileModal').classList.add('hidden'); }
 
-    // Export Labourers
     async function exportLabourers() {
-      await fetchAndDownloadCSV(`${API_BASE}/employee/admin/labour/export`, 'Labourers_Export.csv');
-    }
-
-    function fetchAndDownloadCSV(url, filename) {
       showToast('Starting download...', 'info');
-
-      const exportUrl = `${url}?token=${AUTH_TOKEN}`;
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = exportUrl;
-      document.body.appendChild(iframe);
-
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-        showToast(filename + ' download initiated!', 'success');
-      }, 3000);
+      window.open(`${API_BASE}/employee/admin/labour/export?token=${AUTH_TOKEN}`, '_blank');
     }
 
-    // Filter Labourers
     function filterLabourers() {
       const searchTerm = document.getElementById('labourSearchInput').value.toLowerCase();
       const skillFilter = document.getElementById('skillFilter').value;
       const availabilityFilter = document.getElementById('availabilityFilter').value;
-      const rows = document.querySelectorAll('.labour-row');
-
-      rows.forEach(row => {
-        const name = row.dataset.name || '';
-        const location = row.dataset.location || '';
-        const skill = row.dataset.skill || '';
-        const availability = row.dataset.availability || '';
-
-        const matchesSearch = name.includes(searchTerm) || location.includes(searchTerm);
-        const matchesSkill = skillFilter === 'all' || skill === skillFilter;
-        const matchesAvailability = availabilityFilter === 'all' || availability === availabilityFilter;
-
+      document.querySelectorAll('.labour-row').forEach(row => {
+        const matchesSearch = row.dataset.name.includes(searchTerm) || row.dataset.location.includes(searchTerm);
+        const matchesSkill = skillFilter === 'all' || row.dataset.skill.includes(skillFilter.toLowerCase());
+        const matchesAvailability = availabilityFilter === 'all' || row.dataset.availability === availabilityFilter;
         row.style.display = (matchesSearch && matchesSkill && matchesAvailability) ? '' : 'none';
       });
     }
 
-    // Show Toast
     function showToast(message, type = 'info') {
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toastMessage');
+      let bgColor = 'bg-white', borderColor = 'border-slate-300', textColor = 'text-slate-900';
+      if (type === 'success') { bgColor = 'bg-emerald-50'; borderColor = 'border-emerald-300'; textColor = 'text-emerald-900'; }
+      else if (type === 'warning') { bgColor = 'bg-rose-50'; borderColor = 'border-rose-300'; textColor = 'text-rose-900'; }
 
-      let bgColor = 'bg-white';
-      let borderColor = 'border-slate-300';
-      let textColor = 'text-slate-900';
-
-      if (type === 'success') {
-        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
-        borderColor = 'border-emerald-300';
-        textColor = 'text-emerald-900';
-      } else if (type === 'info') {
-        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
-        borderColor = 'border-sky-300';
-        textColor = 'text-sky-900';
-      }
-
-      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl ${bgColor} ${borderColor}`;
       toastMessage.className = `text-sm font-bold ${textColor}`;
       toastMessage.textContent = message;
-
       toast.classList.remove('hidden');
       setTimeout(() => toast.classList.add('hidden'), 3500);
     }
 
-    // Keyboard Shortcuts
-    document.addEventListener('keydown', function (e) {
-      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+    async function fetchEmployeesToAssign() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/all`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          allEmployees = await res.json();
+          const select = document.getElementById('employeeSelect');
+          select.innerHTML = '<option value="">-- Select an Employee --</option>';
+          allEmployees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp._id;
+            opt.textContent = `${emp.name} (${emp.employeeCode || 'N/A'})`;
+            select.appendChild(opt);
+          });
+        }
+      } catch (e) { console.error('Error fetching employees:', e); }
+    }
 
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('labourSearchInput')?.focus();
+    function openAssignJobModal(jobId) {
+      currentJobToAssign = jobId;
+      document.getElementById('assignJobModal').classList.remove('hidden');
+    }
+
+    function closeAssignJobModal() {
+      currentJobToAssign = null;
+      document.getElementById('assignJobModal').classList.add('hidden');
+    }
+
+    async function assignJobToEmployee() {
+      const employeeId = document.getElementById('employeeSelect').value;
+      if (!employeeId) { showToast('Please select an employee', 'warning'); return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/jobs/${currentJobToAssign}/assign`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ employeeId })
+        });
+        if (res.ok) {
+          showToast('Job assigned successfully!', 'success');
+          closeAssignJobModal();
+          fetchLabourJobs();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Failed to assign job', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'warning');
       }
-    });
+    }
+
+    function logoutSession() {
+      localStorage.removeItem('employeeToken');
+      window.location.href = 'login.html';
+    }
   </script>
 </body>
 

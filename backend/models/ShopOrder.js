@@ -47,6 +47,14 @@ const shopOrderSchema = new mongoose.Schema({
         enum: ['CASH', 'WALLET'],
         default: 'CASH'
     },
+    discountApplied: {
+        type: Number,
+        default: 0
+    },
+    discountPercentage: {
+        type: Number,
+        default: 0
+    },
     walletRechargeStatus: {
         type: String,
         enum: ['NONE', 'PENDING', 'APPROVED', 'REJECTED'],

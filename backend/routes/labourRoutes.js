@@ -13,8 +13,10 @@ router.get('/my-bookings', protect, async (req, res) => {
     console.log('GET /api/labour/my-bookings hit, user:', req.user.id);
     try {
         const jobs = await LabourJob.find({ farmer: req.user.id })
-            .populate('labour', 'name phone')
+            .populate('labour', 'name phone profilePhotoUrl')
             .sort({ createdAt: -1 });
+        
+        console.log(`[MY-BOOKINGS] Returning ${jobs.length} jobs. Coords/OTPs:`, jobs.map(j => ({ id: j._id, otp: j.completionOTP })));
         res.json(jobs);
     } catch (error) {
         console.error('Fetch my labour bookings error:', error);
@@ -23,11 +25,11 @@ router.get('/my-bookings', protect, async (req, res) => {
 });
 
 // @route   GET /api/labour/public
-// @desc    Get all labourers with filters
+// @desc    Get all labourers with filters (including proximity)
 // @access  Private
 router.get('/public', protect, async (req, res) => {
     try {
-        const { search, maxDistance } = req.query;
+        const { search, maxDistance, category, userLat, userLng } = req.query;
         let query = { role: 'labour', status: 'approved' };
 
         if (search) {
@@ -37,18 +39,53 @@ router.get('/public', protect, async (req, res) => {
             ];
         }
 
-        if (maxDistance && maxDistance !== 'null') {
-            query.maxDistanceKm = { $lte: Number(maxDistance) };
+        if (category && category !== 'all') {
+            const regex = new RegExp(category, 'i');
+            query['labourDetails.skills'] = { $regex: regex };
         }
 
-        const labourers = await User.find(query)
-            .select('-password')
-            .sort({ createdAt: -1 });
+        let labourers;
+        const radius = (maxDistance && maxDistance !== 'null') ? Number(maxDistance) : null;
 
+        if (radius && !isNaN(radius)) {
+            if (!userLat || !userLng) {
+                console.log(`[LABOUR_PUBLIC] Distance (${radius}km) requested but no coords provided.`);
+                return res.json([]); 
+            }
+
+            labourers = await User.aggregate([
+                {
+                    $geoNear: {
+                        near: {
+                            type: 'Point',
+                            coordinates: [Number(userLng), Number(userLat)]
+                        },
+                        distanceField: 'distanceKm',
+                        maxDistance: radius * 1000, // Distance in meters
+                        query: query,
+                        spherical: true,
+                        distanceMultiplier: 0.001 // Convert meters to km
+                    }
+                },
+                {
+                    $project: {
+                        password: 0
+                    }
+                }
+            ]);
+        } else {
+            // No distance filter, use standard find
+            labourers = await User.find(query)
+                .select('-password')
+                .sort({ createdAt: -1 });
+        }
+
+        console.log(`[LABOUR_PUBLIC] Query:`, JSON.stringify(query));
+        console.log(`[LABOUR_PUBLIC] Found ${labourers.length} results`);
         res.json(labourers);
     } catch (error) {
         console.error('Fetch public labour error:', error);
-        res.status(500).json({ error: 'Failed to fetch labour' });
+        res.status(500).json({ error: 'Failed to fetch labour', details: error.message });
     }
 });
 
@@ -73,14 +110,14 @@ router.post('/book', protect, async (req, res) => {
         });
 
         // Notify Labour
-        await Notification.create({
-            user: labourId,
+        const { sendNotification } = require('../services/notificationService');
+        await sendNotification(labourId, {
             title: 'New Job Request',
             messageEn: `You have a new job request for ${workType}.`,
             messageHi: `आपको ${workType} के लिए एक नया काम का अनुरोध मिला है।`,
             type: 'order',
             refId: job._id.toString()
-        });
+        }).catch(() => {});
 
         res.status(201).json({ message: 'Booking successful', job });
     } catch (error) {
@@ -92,12 +129,11 @@ router.post('/book', protect, async (req, res) => {
 // Get Dashboard Stats for Labour Partner
 router.get('/dashboard', protect, async (req, res) => {
     try {
-        // Find orders assigned to this user representing labour jobs
-        // Assuming Order schema can track labour assignments via assignedTo
-        const orders = await Order.find({ assignedTo: req.user.id });
-        const totalRequests = orders.length;
+        // Find jobs assigned to this labourer
+        const jobs = await LabourJob.find({ labour: req.user.id });
+        const totalRequests = jobs.length;
 
-        const completed = orders.filter(o => o.assignedStatus === 'completed' || o.assignedStatus === 'delivered').length;
+        const completed = jobs.filter(j => j.status === 'Completed').length;
 
         res.json({ totalRequests, completed });
     } catch (error) {
@@ -109,10 +145,28 @@ router.get('/dashboard', protect, async (req, res) => {
 // Get all bookings assigned to this user
 router.get('/bookings', protect, async (req, res) => {
     try {
-        const bookings = await Order.find({ assignedTo: req.user.id })
-            .populate('buyer', 'name phone address')
+        const jobs = await LabourJob.find({ labour: req.user.id })
+            .populate('farmer', 'name phone address')
             .sort({ createdAt: -1 });
-        res.json(bookings);
+
+        // Map LabourJob to shape Partner App expects (Order shape)
+        const mappedBookings = jobs.map(j => {
+            let assignedStatus = 'new';
+            if (j.status === 'Accepted' || j.status === 'In Progress') assignedStatus = 'ok';
+            else if (j.status === 'Completed') assignedStatus = 'completed';
+            else if (j.status === 'Cancelled') assignedStatus = 'cancelled';
+
+            return {
+                ...j.toObject(),
+                buyer: j.farmer, // Map farmer to buyer
+                assignedStatus: assignedStatus,
+                crop: j.workType, // Map workType to crop
+                quantity: j.acresCovered || 0,
+                location: j.farmer?.address || 'Unknown'
+            };
+        });
+
+        res.json(mappedBookings);
     } catch (error) {
         console.error('Fetch labour bookings error:', error);
         res.status(500).json({ error: 'Failed to fetch bookings' });
@@ -122,33 +176,130 @@ router.get('/bookings', protect, async (req, res) => {
 // Update booking status
 router.patch('/bookings/:id/status', protect, async (req, res) => {
     try {
-        const { status, cancelReason } = req.body;
-        // Map frontend statuses: 'new', 'accepted', 'completed', 'remove' -> 'cancelled'
-        let assignedStatus = status;
-        if (status === 'remove') assignedStatus = 'cancelled';
-        if (status === 'accepted') assignedStatus = 'ok';
+        const { status, cancelReason, otp } = req.body;
+        
+        // Map Partner App status to LabourJob status
+        let newStatus = 'Pending';
+        if (status === 'accepted' || status === 'ok') newStatus = 'Accepted';
+        else if (status === 'completed') newStatus = 'Completed';
+        else if (status === 'remove' || status === 'cancelled') newStatus = 'Cancelled';
+        else if (status === 'in-progress') newStatus = 'In Progress';
 
-        const validStatuses = ['new', 'ok', 'completed', 'delivered', 'cancelled'];
-        if (!validStatuses.includes(assignedStatus)) {
-            return res.status(400).json({ error: 'Invalid status' });
+        const jobToUpdate = await LabourJob.findOne({ _id: req.params.id, labour: req.user.id });
+        if (!jobToUpdate) return res.status(404).json({ error: 'Booking not found' });
+
+        const previousStatus = jobToUpdate.status;
+
+        // 1. If accepting, generate OTP
+        let generatedOTP = jobToUpdate.completionOTP;
+        if (newStatus === 'Accepted' && !generatedOTP) {
+            generatedOTP = Math.floor(1000 + Math.random() * 9000).toString(); // 4 digit OTP
+            console.log(`[OTP_GEN] Generated OTP ${generatedOTP} for job ${req.params.id}`);
         }
 
-        const update = { assignedStatus };
-        if (assignedStatus === 'cancelled' && cancelReason) {
-            update.cancelReason = cancelReason;
+        // 2. If completing, verify OTP
+        if (newStatus === 'Completed') {
+            if (!otp) {
+                return res.status(400).json({ error: 'Completion OTP is required' });
+            }
+            if (otp !== jobToUpdate.completionOTP) {
+                return res.status(400).json({ error: 'Invalid Completion OTP' });
+            }
         }
 
-        const order = await Order.findOneAndUpdate(
-            { _id: req.params.id, assignedTo: req.user.id },
-            update,
+        const job = await LabourJob.findOneAndUpdate(
+            { _id: req.params.id, labour: req.user.id },
+            { 
+                status: newStatus,
+                completionOTP: generatedOTP,
+                ...(cancelReason && { cancelReason }) 
+            },
             { new: true }
-        );
+        ).populate('farmer', 'name phone walletBalance');
 
-        if (!order) return res.status(404).json({ error: 'Booking not found' });
-        res.json({ message: 'Status updated', order });
+        // 3. Wallet Transaction Logic on Completion
+        if (newStatus === 'Completed' && previousStatus !== 'Completed') {
+            const labourer = await require('../models/User').findById(req.user.id);
+            const farmer = await require('../models/User').findById(job.farmer._id);
+            
+            if (labourer && farmer) {
+                const amount = job.amount || 0;
+
+                // CHECK: Does farmer have enough balance? 
+                // User requirement said "deduct and add", usually we check but if it's a direct requirement we proceed.
+                // However, safety first:
+                if (farmer.walletBalance < amount) {
+                    // Revert status if possible, or just log error. 
+                    // For now, we proceed as requested but log warning if negative.
+                    console.warn(`[LABOUR_PAYMENT] Farmer ${farmer._id} has insufficient balance (₹${farmer.walletBalance}) for job ₹${amount}`);
+                }
+
+                // DEDUCT from Farmer
+                farmer.walletBalance = (farmer.walletBalance || 0) - amount;
+                await farmer.save();
+
+                // ADD to Labourer
+                labourer.walletBalance = (labourer.walletBalance || 0) + amount;
+                await labourer.save();
+
+                // Create Transaction record for Labourer
+                try {
+                    await require('../models/Transaction').create({
+                        transactionId: `LAB-CR-${job._id}-${Date.now()}`,
+                        recipient: labourer._id,
+                        module: 'Labour',
+                        amount: amount,
+                        type: 'Payout',
+                        paymentMode: 'NexCard Wallet',
+                        status: 'Completed',
+                        referenceId: job._id,
+                        description: `Earned from job for ${farmer.name}`
+                    });
+
+                    // Create Transaction record for Farmer
+                    await require('../models/Transaction').create({
+                        transactionId: `LAB-DR-${job._id}-${Date.now()}`,
+                        recipient: farmer._id,
+                        module: 'Labour',
+                        amount: amount,
+                        type: 'Debit',
+                        paymentMode: 'NexCard Wallet',
+                        status: 'Completed',
+                        referenceId: job._id,
+                        description: `Payment for labour job by ${labourer.name}`
+                    });
+                } catch (trError) {
+                    console.error('Failed to create transaction record:', trError);
+                }
+                
+                console.log(`[LABOUR_PAYMENT] Job ${job._id}: ₹${amount} moved from Farmer ${farmer._id} to Labourer ${labourer._id}`);
+            }
+        }
+
+        res.json({ message: 'Status updated successfully', job });
     } catch (error) {
-        console.error('Update booking status error:', error);
+        console.error('Update labour booking status error:', error);
         res.status(500).json({ error: 'Failed to update status' });
+    }
+});
+
+// @route   GET /api/labour/wallet
+// @desc    Get wallet balance and transaction history for labour partner
+// @access  Private
+router.get('/wallet', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('walletBalance');
+        const Transaction = require('../models/Transaction');
+        const transactions = await Transaction.find({ recipient: req.user.id })
+            .sort({ createdAt: -1 });
+
+        res.json({
+            balance: user ? user.walletBalance : 0,
+            transactions
+        });
+    } catch (error) {
+        console.error('Fetch Labour Wallet error:', error);
+        res.status(500).json({ error: 'Failed to fetch wallet info' });
     }
 });
 

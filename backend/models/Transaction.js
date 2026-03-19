@@ -13,7 +13,7 @@ const transactionSchema = new mongoose.Schema({
     },
     module: {
         type: String,
-        enum: ['Equipment', 'Labour', 'BuyerTrading', 'Platform', 'KSP'],
+        enum: ['Equipment', 'Labour', 'BuyerTrading', 'Platform', 'KSP', 'Shop', 'Soil'],
         required: true
     },
     amount: {
@@ -22,7 +22,7 @@ const transactionSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['Payout', 'Collection'],
+        enum: ['Payout', 'Collection', 'Debit', 'Credit'],
         default: 'Payout'
     },
     paymentMode: {
@@ -38,7 +38,18 @@ const transactionSchema = new mongoose.Schema({
     // Reference to the source document this pays out (Rental, LabourJob, Order)
     referenceId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: false
+    },
+    // Who performed the transaction (Field Executive / Employee)
+    performedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
+    },
+    // For cash recharges: has the FE/Employee given the cash to Admin?
+    cashCollectedByAdmin: {
+        type: Boolean,
+        default: false
     },
     // Optional remark from admin
     note: {

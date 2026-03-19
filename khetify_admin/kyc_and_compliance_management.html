@@ -173,6 +173,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -693,7 +701,7 @@
   <!-- ========== KYC PAGE SCRIPT ========== -->
   <script>
     // API Config
-    const API_BASE = 'http://127.0.0.1:5000/api';
+    const API_BASE = 'https://demo.ranx24.com/api';
     let AUTH_TOKEN = localStorage.getItem('employeeToken');
     let H = {
       'Content-Type': 'application/json',
@@ -992,3 +1000,6 @@
 </body>
 
 </html>
+
+
+

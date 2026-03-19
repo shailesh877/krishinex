@@ -172,6 +172,14 @@
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
         </a>
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
 
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
@@ -599,6 +607,7 @@
               <thead class="sticky top-0 z-10 bg-slate-50">
                 <tr class="text-xs text-slate-700">
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Transaction ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Type</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Recipient</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Module</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
@@ -612,6 +621,12 @@
                 <tr class="hover:bg-emerald-50/30 transition-colors border-b border-slate-100">
                   <td class="px-5 py-4">
                     <div class="font-black text-slate-900">#PAY-2026-001</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-arrow-down mr-1"></i> Credit
+                    </span>
                   </td>
                   <td class="px-5 py-4">
                     <div class="font-semibold text-slate-900">Kumar Equipment</div>
@@ -646,6 +661,12 @@
                 <tr class="hover:bg-sky-50/30 transition-colors">
                   <td class="px-5 py-4">
                     <div class="font-black text-slate-900">#PAY-2026-002</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-arrow-down mr-1"></i> Credit
+                    </span>
                   </td>
                   <td class="px-5 py-4">
                     <div class="font-semibold text-slate-900">Ramesh Kumar</div>
@@ -851,7 +872,7 @@
       tbody.innerHTML = '';
 
       if (transactions.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-semibold italic">No transaction history found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400 font-semibold italic">No transaction history found.</td></tr>`;
         return;
       }
 
@@ -859,12 +880,18 @@
         let badgeClass = 'bg-slate-50 text-slate-700 border-slate-200';
         if (t.module === 'Equipment') badgeClass = 'bg-orange-50 text-orange-700 border-orange-200';
         if (t.module === 'Labour') badgeClass = 'bg-purple-50 text-purple-700 border-purple-200';
+        if (t.module === 'Platform') badgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-emerald-50/30 transition-colors border-b border-slate-100';
         tr.innerHTML = `
           <td class="px-5 py-4">
             <div class="font-black text-slate-900">${t.transactionId}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase ${t.type === 'Credit' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
+              <i class="fas ${t.type === 'Credit' ? 'fa-arrow-down' : 'fa-arrow-up'} mr-1"></i> ${t.type || 'N/A'}
+            </span>
           </td>
            <td class="px-5 py-4">
             <div class="font-semibold text-slate-900">${t.recipientName}</div>
@@ -1064,3 +1091,6 @@
 </body>
 
 </html>
+
+
+

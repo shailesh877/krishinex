@@ -12,7 +12,8 @@ const settingsSchema = new mongoose.Schema({
     pricing: {
         baseServiceFee: { type: Number, default: 100 },
         taxRate: { type: Number, default: 12 }, // GST etc.
-        minWalletRecharge: { type: Number, default: 500 }
+        minWalletRecharge: { type: Number, default: 500 },
+        walletDiscountPercentage: { type: Number, default: 0 }
     },
     // Platform meta
     platform: {

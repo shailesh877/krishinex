@@ -91,4 +91,23 @@ router.post('/', protect, async (req, res) => {
     }
 });
 
+// @route   POST /api/notifications/token
+// @desc    Register/Update FCM token for push notifications
+// @access  Private
+router.post('/token', protect, async (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) return res.status(400).json({ error: 'Token is required' });
+
+        await require('../models/User').findByIdAndUpdate(req.user.id, {
+            fcmToken: token
+        });
+
+        res.json({ message: 'Token registered successfully' });
+    } catch (error) {
+        console.error('Token registration error:', error);
+        res.status(500).json({ error: 'Failed to register token' });
+    }
+});
+
 module.exports = router;

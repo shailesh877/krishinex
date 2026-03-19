@@ -1,0 +1,8 @@
+[2026-03-16T22:04:45.758Z] UPDATE_ERROR: quantity is not defined
+Stack: ReferenceError: quantity is not defined
+    at D:\khetify\backend\routes\orderRoutes.js:201:61
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[2026-03-16T22:05:11.530Z] UPDATE_ERROR: quantity is not defined
+Stack: ReferenceError: quantity is not defined
+    at D:\khetify\backend\routes\orderRoutes.js:201:61
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

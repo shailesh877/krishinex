@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { sendNotification } = require('../services/notificationService');
 const Machine = require('../models/Machine');
-const Notification = require('../models/Notification');
 const { protect } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
@@ -23,9 +23,9 @@ const upload = multer({ storage: storage });
 // @access  Private
 router.post('/', protect, upload.array('images', 3), async (req, res) => {
     try {
-        const { machineName, priceDay, priceHour, desc, distanceKm, village, category } = req.body;
+        const { machineName, priceDay, priceHour, desc, distanceKm, village, category, latitude, longitude } = req.body;
 
-        const imageUrls = req.files ? req.files.map(file => `/uploads/machines/${file.filename}`) : [];
+        const imageUrls = req.files ? req.files.map(file => `uploads/machines/${file.filename}`) : [];
 
         const machine = await Machine.create({
             owner: req.user.id,
@@ -36,16 +36,21 @@ router.post('/', protect, upload.array('images', 3), async (req, res) => {
             distanceKm: Number(distanceKm) || 0,
             village: village || '',
             category: category || 'other',
-            images: imageUrls
+            images: imageUrls,
+            location: (latitude && longitude) ? {
+                type: 'Point',
+                coordinates: [Number(longitude), Number(latitude)]
+            } : undefined
         });
 
-        await Notification.create({
-            user: req.user.id,
-            title: 'Machine Added',
-            messageEn: `Your machine "${machineName}" has been added successfully.`,
-            messageHi: `आपकी मशीन "${machineName}" सफलतापूर्वक जुड़ गई है।`,
-            type: 'system',
-        });
+        await sendNotification(
+            req.user.id,
+            'Machine Added',
+            `Your machine "${machineName}" has been added successfully.`,
+            `आपकी मशीन "${machineName}" सफलतापूर्वक जुड़ गई है।`,
+            'system',
+            machine._id.toString()
+        ).catch(() => { });
 
         res.status(201).json({ message: 'Machine added successfully', machine });
     } catch (error) {
@@ -72,7 +77,7 @@ router.get('/my', protect, async (req, res) => {
 // @access  Private
 router.get('/public', protect, async (req, res) => {
     try {
-        const { search, maxDistance, category } = req.query;
+        const { search, maxDistance, category, userLat, userLng } = req.query;
         console.log('Public machines request:', req.query);
         let query = {};
 
@@ -84,15 +89,55 @@ router.get('/public', protect, async (req, res) => {
             query.category = { $regex: category, $options: 'i' };
         }
 
-        if (maxDistance && maxDistance !== 'null') {
-            query.distanceKm = { $lte: Number(maxDistance) };
+        let machines;
+
+        if (maxDistance && maxDistance !== 'null' && userLat && userLng) {
+            console.log('[MACHINE_PUBLIC] Using GeoJSON distance filter:', maxDistance, 'km');
+            machines = await Machine.aggregate([
+                {
+                    $geoNear: {
+                        near: {
+                            type: 'Point',
+                            coordinates: [Number(userLng), Number(userLat)]
+                        },
+                        key: 'location',
+                        distanceField: 'distanceKm', // This will update the machine's distanceKm in the result
+                        maxDistance: Number(maxDistance) * 1000, // Distance in meters
+                        query: query,
+                        spherical: true,
+                        distanceMultiplier: 0.001 // Convert meters to km
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'owner'
+                    }
+                },
+                { $unwind: '$owner' },
+                {
+                    $project: {
+                        'owner.password': 0,
+                        'owner.fcmToken': 0
+                    }
+                }
+            ]);
+        } else {
+            console.log('[MACHINE_PUBLIC] No distance filter/coords, using standard find');
+            // If distance filter is requested but no coords, we can't filter accurately, 
+            // but we'll return items and maybe filter by the static distanceKm if explicitly needed.
+            if (maxDistance && maxDistance !== 'null') {
+                query.distanceKm = { $lte: Number(maxDistance) };
+            }
+
+            machines = await Machine.find(query)
+                .populate('owner', 'name phone address profilePhotoUrl')
+                .sort({ createdAt: -1 });
         }
 
-        console.log('Final machine query:', query);
-        const machines = await Machine.find(query)
-            .populate('owner', 'name phone address profilePhotoUrl')
-            .sort({ createdAt: -1 });
-
+        console.log('Final machines count:', machines.length);
         res.json(machines);
     } catch (error) {
         console.error('Fetch public machines error:', error);
@@ -110,7 +155,7 @@ router.put('/:id', protect, upload.array('images', 3), async (req, res) => {
             return res.status(404).json({ error: 'Machine not found' });
         }
 
-        const { name, priceDay, priceHour, desc, distanceKm, village, existingImages } = req.body;
+        const { name, priceDay, priceHour, desc, distanceKm, village, existingImages, latitude, longitude } = req.body;
 
         let imageUrls = [];
         if (existingImages) {
@@ -118,7 +163,7 @@ router.put('/:id', protect, upload.array('images', 3), async (req, res) => {
         }
 
         if (req.files && req.files.length > 0) {
-            const newImageUrls = req.files.map(file => `/uploads/machines/${file.filename}`);
+            const newImageUrls = req.files.map(file => `uploads/machines/${file.filename}`);
             imageUrls = [...imageUrls, ...newImageUrls];
         }
 
@@ -130,15 +175,23 @@ router.put('/:id', protect, upload.array('images', 3), async (req, res) => {
         machine.village = village !== undefined ? village : machine.village;
         machine.images = imageUrls.slice(0, 3); // Max 3 images
 
+        if (latitude && longitude) {
+            machine.location = {
+                type: 'Point',
+                coordinates: [Number(longitude), Number(latitude)]
+            };
+        }
+
         await machine.save();
 
-        await Notification.create({
-            user: req.user.id,
-            title: 'Machine Updated',
-            messageEn: `Your machine "${machine.name}" has been updated.`,
-            messageHi: `आपकी मशीन "${machine.name}" अपडेट कर दी गई है।`,
-            type: 'system',
-        });
+        await sendNotification(
+            req.user.id,
+            'Machine Updated',
+            `Your machine "${machine.name}" has been updated.`,
+            `आपकी मशीन "${machine.name}" अपडेट कर दी गई है।`,
+            'system',
+            machine._id.toString()
+        ).catch(() => { });
 
         res.json({ message: 'Machine updated successfully', machine });
     } catch (error) {
@@ -157,13 +210,14 @@ router.delete('/:id', protect, async (req, res) => {
             return res.status(404).json({ error: 'Machine not found' });
         }
 
-        await Notification.create({
-            user: req.user.id,
-            title: 'Machine Deleted',
-            messageEn: `Your machine "${machine.name}" has been removed.`,
-            messageHi: `आपकी मशीन "${machine.name}" हटा दी गई है।`,
-            type: 'system',
-        });
+        await sendNotification(
+            req.user.id,
+            'Machine Deleted',
+            `Your machine "${machine.name}" has been removed.`,
+            `आपकी मशीन "${machine.name}" हटा दी गई है।`,
+            'system',
+            machine._id.toString()
+        ).catch(() => { });
 
         res.json({ message: 'Machine deleted successfully' });
     } catch (error) {

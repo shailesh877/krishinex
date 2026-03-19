@@ -11,6 +11,11 @@ const labourJobSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
     workType: {
         type: String,
         required: true
@@ -38,6 +43,10 @@ const labourJobSchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Accepted', 'In Progress', 'Completed', 'Cancelled'],
         default: 'Pending'
+    },
+    completionOTP: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 

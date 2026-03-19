@@ -26,13 +26,17 @@ const fieldTaskSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    mobileNumber: {
+        type: String,
+        trim: true
+    },
     amount: {
         type: Number,
         default: 0
     },
     status: {
         type: String,
-        enum: ['Pending', 'Completed', 'Cancelled'],
+        enum: ['Pending', 'Accepted', 'Completed', 'Cancelled'],
         default: 'Pending'
     },
     dueDate: {

@@ -1,0 +1,71 @@
+[
+  {
+    "_id": "7488577742",
+    "count": 3,
+    "users": [
+      {
+        "id": "69abfa4e33ca35b64fd44e1a",
+        "name": "Kishan pandit",
+        "role": "equipment"
+      },
+      {
+        "id": "69ac39f433ca35b64fd450e2",
+        "name": "Ram kumar",
+        "role": "shop"
+      },
+      {
+        "id": "69aea12233ca35b64fd45201",
+        "name": "Kishan",
+        "role": "farmer"
+      }
+    ]
+  },
+  {
+    "_id": "8005324740",
+    "count": 2,
+    "users": [
+      {
+        "id": "69b520e033ca35b64fd467cb",
+        "name": "Rajan giri",
+        "role": "farmer"
+      },
+      {
+        "id": "69b7d9680a4ab203bf83fbe3",
+        "name": "Rajan Labour",
+        "role": "labour"
+      }
+    ]
+  },
+  {
+    "_id": "9648022011",
+    "count": 2,
+    "users": [
+      {
+        "id": "69a47fc2917d49d795fb4b70",
+        "name": "Yuvraj",
+        "role": "buyer"
+      },
+      {
+        "id": "69aa9ddf748b875747eeda37",
+        "name": "Yuvraj Singh ",
+        "role": "farmer"
+      }
+    ]
+  },
+  {
+    "_id": "8340450782",
+    "count": 2,
+    "users": [
+      {
+        "id": "69aed48333ca35b64fd454da",
+        "name": "Alok Gupta",
+        "role": "buyer"
+      },
+      {
+        "id": "69aedbe533ca35b64fd4570e",
+        "name": "Abhishek kumar",
+        "role": "farmer"
+      }
+    ]
+  }
+]

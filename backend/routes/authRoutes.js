@@ -21,49 +21,48 @@ const upload = multer({ storage: storage });
 // Handles multipart/form-data
 router.post('/register', upload.single('aadhaarDoc'), async (req, res) => {
     try {
-        const { role, name, businessName, email, phone, address, aadhaarNumber } = req.body;
+    const { role, name, businessName, email, phone, address, aadhaarNumber, lat, lng } = req.body;
 
-        // Validate essential fileds
-        if (!role || !name || !phone || !address) {
-            return res.status(400).json({ error: 'Role, Name, Phone, and Address are required.' });
-        }
+    // Validate essential fileds
+    if (!role || !name || !phone || !address) {
+      return res.status(400).json({ error: 'Role, Name, Phone, and Address are required.' });
+    }
 
-        // Check if user with this phone already exists for the specific role
-        const existingPhoneUser = await User.findOne({ phone, role });
-        if (existingPhoneUser) {
-            return res.status(400).json({ error: 'An account with this phone number already exists for this role.' });
-        }
+    // Check if user with this phone already exists for the specific role
+    const existingPhoneUser = await User.findOne({ phone, role });
+    if (existingPhoneUser) {
+      return res.status(400).json({ error: 'An account with this phone number already exists for this role.' });
+    }
 
-        // Check if email is provided and already exists for the specific role
-        if (email) {
-            const existingEmailUser = await User.findOne({ email, role });
-            if (existingEmailUser) {
-                return res.status(400).json({ error: 'An account with this email address already exists for this role.' });
-            }
-        }
+    // Check if email is provided and already exists for the specific role
+    if (email) {
+      const existingEmailUser = await User.findOne({ email, role });
+      if (existingEmailUser) {
+        return res.status(400).json({ error: 'An account with this email address already exists for this role.' });
+      }
+    }
 
-        let aadhaarDocUrl = null;
-        if (req.file) {
-            const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:5000';
-            aadhaarDocUrl = `${baseUrl}/uploads/${req.file.filename}`;
-        }
+    let aadhaarDocUrl = null;
+    if (req.file) {
+      console.log(`[AUTH] Aadhaar file received: ${req.file.filename}`);
+      aadhaarDocUrl = `uploads/${req.file.filename}`;
+    }
 
-        // Employee might not need aadhaar during registration, but others might.
-        if (role !== 'employee' && !aadhaarNumber && !aadhaarDocUrl) {
-            // Optional check based on strictness. The frontend requires it.
-        }
-
-        const newUser = new User({
-            role,
-            name,
-            businessName,
-            email: email ? email : undefined,
-            phone,
-            address,
-            aadhaarNumber,
-            aadhaarDocUrl,
-            status: role === 'employee' ? 'approved' : 'pending' // auto-approve employee, or make pending
-        });
+    const newUser = new User({
+      role,
+      name,
+      businessName,
+      email: email ? email : undefined,
+      phone,
+      address,
+      aadhaarNumber,
+      aadhaarDocUrl,
+      location: lat && lng ? {
+        type: 'Point',
+        coordinates: [Number(lng), Number(lat)]
+      } : undefined,
+      status: role === 'employee' ? 'approved' : 'pending'
+    });
 
         await newUser.save();
 
@@ -82,8 +81,8 @@ const { sendOtp, verifyOtp } = require('../services/msg91');
 const jwt = require('jsonwebtoken');
 
 // Utility to generate JWT token
-const generateToken = (userId, role) => {
-    return jwt.sign({ id: userId, role }, process.env.JWT_SECRET || 'fallback_secret', {
+const generateToken = (userId, name, role) => {
+    return jwt.sign({ id: userId, name, role }, process.env.JWT_SECRET, {
         expiresIn: '30d',
     });
 };
@@ -124,7 +123,7 @@ router.post('/verify-otp', async (req, res) => {
                 });
             }
 
-            const token = generateToken(user._id, user.role);
+            const token = generateToken(user._id, user.name, user.role);
             res.status(200).json({
                 message: 'Login successful',
                 verified: true,
@@ -174,7 +173,7 @@ router.post('/login-partner-success', async (req, res) => {
         }
 
         // Generate a proper JWT for the frontend to use on all subsequent API calls
-        const token = generateToken(user._id, user.role);
+        const token = generateToken(user._id, user.name, user.role);
 
         res.status(200).json({
             message: 'Login successful',
@@ -209,18 +208,18 @@ router.post('/login-employee', async (req, res) => {
             return res.status(400).json({ error: 'Email and password are required.' });
         }
 
-        email = email.trim(); // Trim whitespace just in case
-
-        // Allow both 'employee' and 'admin' roles to login via email/password
+        console.log('Login attempt:', { email, role: 'checked categories' });
+        // Allow 'employee', 'admin', and 'field_executive' roles to login via email/password
         const user = await User.findOne({
             email,
-            role: { $in: ['employee', 'admin'] }
+            role: { $in: ['employee', 'admin', 'field_executive'] }
         });
 
         if (!user) {
-            console.log('Login Failed: User not found', { email });
+            console.log('Login Failed: User not found or role mismatch', { email });
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
+        console.log('User found:', { email: user.email, role: user.role });
 
         // Compare password: handles both hashed and plain text
         let isMatch = false;
@@ -235,7 +234,7 @@ router.post('/login-employee', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
-        const token = generateToken(user._id, user.role);
+        const token = generateToken(user._id, user.name, user.role);
 
         res.status(200).json({
             message: 'Employee login successful',

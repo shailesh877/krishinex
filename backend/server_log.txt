@@ -94,3 +94,32 @@ Server running on port 5000
 2026-03-07T04:29:19.619Z - GET /api/employee/admin/soil-labs/stats
 2026-03-07T04:29:20.094Z - GET /api/employee/admin/soil-labs
 2026-03-07T04:29:20.268Z - GET /api/employee/admin/soil-requests
+2026-03-17T15:18:20.170Z - GET /api/test-direct
+2026-03-17T15:18:20.404Z - GET /api/employee/admin/search-users?query=9793
+2026-03-17T15:21:41.233Z - GET /api/employee/admin/search-users?query=9793
+2026-03-17T15:27:24.936Z - GET /api/employee/admin/search-users?query=9793
+2026-03-17T15:32:21.274Z - GET /admin/search-users?query=9793 - 401 (18ms)
+2026-03-17T15:36:57.355Z - GET /admin/search-users?query=9793 - 200 (86ms)
+2026-03-17T15:38:14.546Z - GET /admin/search-users?query=97 - 200 (86ms)
+2026-03-17T15:38:22.938Z - GET /admin/search-users?query=9793 - 200 (89ms)
+2026-03-17T15:38:50.645Z - GET /admin/search-users?query=800 - 200 (81ms)
+2026-03-17T15:38:55.154Z - GET /admin/search-users?query=80053 - 200 (57ms)
+2026-03-17T15:39:46.071Z - POST /admin/process-payout - 500 (639ms)
+2026-03-17T15:39:51.767Z - POST /admin/process-payout - 400 (59ms)
+2026-03-17T15:40:03.543Z - GET /admin/search-users?query=800 - 200 (78ms)
+2026-03-17T15:40:04.141Z - GET /admin/search-users?query=80053 - 200 (85ms)
+2026-03-17T15:40:13.141Z - GET /admin/dashboard-stats - 200 (964ms)
+2026-03-17T15:40:19.166Z - GET /admin/finance/pending?module=all - 500 (56ms)
+2026-03-17T15:40:19.199Z - GET /admin/finance/stats - 304 (384ms)
+2026-03-17T15:40:19.230Z - GET /admin/finance/transactions - 304 (117ms)
+2026-03-17T15:40:49.105Z - GET /admin/dashboard-stats - 304 (484ms)
+2026-03-17T15:41:09.089Z - GET /admin/labours - 304 (100ms)
+2026-03-17T15:41:09.215Z - GET /admin/labour/jobs - 200 (121ms)
+2026-03-17T15:41:09.288Z - GET /admin/all - 200 (65ms)
+2026-03-17T15:41:09.444Z - GET /admin/labour/stats - 200 (460ms)
+2026-03-17T15:42:07.718Z - GET /admin/dashboard-stats - 200 (489ms)
+2026-03-17T15:49:34.177Z - GET /admin/finance/pending?module=all - 500 (106ms)
+2026-03-17T15:49:34.240Z - GET /admin/finance/transactions - 304 (165ms)
+2026-03-17T15:49:34.501Z - GET /admin/finance/stats - 304 (433ms)
+2026-03-17T15:50:17.953Z - GET /admin/dashboard-stats - 200 (611ms)
+2026-03-17T15:55:18.599Z - GET /admin/dashboard-stats - 304 (535ms)

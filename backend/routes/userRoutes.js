@@ -15,7 +15,7 @@ const Transaction = require('../models/Transaction');
 // @access  Private
 router.get('/wallet', protect, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('walletBalance walletNumber');
+        const user = await User.findById(req.user.id).select('walletBalance walletNumber cardNumber name');
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         const transactions = await Transaction.find({ recipient: req.user.id })
@@ -25,6 +25,8 @@ router.get('/wallet', protect, async (req, res) => {
         res.json({
             balance: user.walletBalance || 0,
             walletNumber: user.walletNumber || '',
+            cardNumber: user.cardNumber || '',
+            name: user.name || '',
             transactions
         });
     } catch (error) {
@@ -130,7 +132,8 @@ router.get('/profile', protect, async (req, res) => {
                     accountNumber: '',
                     ifscCode: '',
                     bankAddress: ''
-                }
+                },
+                skills: user.labourDetails?.skills || []
             });
         } else {
             res.status(404).json({ error: 'User not found' });
@@ -153,6 +156,9 @@ router.put('/profile', protect, async (req, res) => {
             user.email = req.body.email && req.body.email.trim() !== '' ? req.body.email : user.email;
             user.address = req.body.address || user.address;
             user.businessName = req.body.businessName || user.businessName;
+            if (req.body.aadhaarNumber && user.status === 'approved') {
+                return res.status(403).json({ error: 'Verified Aadhaar cannot be changed' });
+            }
             user.aadhaarNumber = req.body.aadhaarNumber || user.aadhaarNumber;
 
             if (req.body.maxDistanceKm !== undefined) user.maxDistanceKm = req.body.maxDistanceKm;
@@ -160,6 +166,13 @@ router.put('/profile', protect, async (req, res) => {
             if (req.body.ratePerHour !== undefined) user.ratePerHour = req.body.ratePerHour;
             if (req.body.jobNotificationOn !== undefined) user.jobNotificationOn = req.body.jobNotificationOn;
             if (req.body.whatsappOn !== undefined) user.whatsappOn = req.body.whatsappOn;
+
+            // Handle labour skills
+            if (user.role === 'labour' && req.body.skills !== undefined) {
+                if (!user.labourDetails) user.labourDetails = { skills: [] };
+                user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
+                user.markModified('labourDetails');
+            }
 
             // Update bank details
             if (req.body.bankDetails) {
@@ -178,6 +191,15 @@ router.put('/profile', protect, async (req, res) => {
             }
 
             if (req.body.panNumber !== undefined) user.panNumber = req.body.panNumber;
+
+            // Handle location update
+            if (req.body.lat !== undefined && req.body.lng !== undefined) {
+                user.location = {
+                    type: 'Point',
+                    coordinates: [Number(req.body.lng), Number(req.body.lat)]
+                };
+                user.markModified('location');
+            }
 
             const updatedUser = await user.save();
 
@@ -199,6 +221,7 @@ router.put('/profile', protect, async (req, res) => {
                 whatsappOn: updatedUser.whatsappOn,
                 bankDetails: updatedUser.bankDetails,
                 panNumber: updatedUser.panNumber,
+                skills: updatedUser.labourDetails?.skills || [],
                 message: 'Profile updated successfully'
             });
         } else {
@@ -269,12 +292,14 @@ router.post('/upload-aadhaar', protect, upload.single('aadhaar'), async (req, re
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
-
-        // Save URL to user record
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (user.status === 'approved') {
+            return res.status(403).json({ error: 'Verified Aadhaar document cannot be changed' });
+        }
+
+        const fileUrl = `uploads/${req.file.filename}`;
 
         user.aadhaarDocUrl = fileUrl;
         await user.save();
@@ -292,8 +317,7 @@ router.post('/upload-aadhaar', protect, upload.single('aadhaar'), async (req, re
 router.post('/upload-pan', protect, upload.single('pan'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        const fileUrl = `uploads/${req.file.filename}`;
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -311,8 +335,7 @@ router.post('/upload-pan', protect, upload.single('pan'), async (req, res) => {
 router.post('/upload-license', protect, upload.single('license'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        const fileUrl = `uploads/${req.file.filename}`;
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -333,8 +356,7 @@ router.post('/upload-photo', protect, uploadPhoto.single('photo'), async (req, r
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        const fileUrl = `uploads/${req.file.filename}`;
 
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -423,8 +445,7 @@ router.post('/upload-chat-media', protect, uploadChatMediaUser.single('file'), a
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        const fileUrl = `uploads/${req.file.filename}`;
         res.json({ url: fileUrl });
     } catch (e) {
         console.error('Chat media upload error:', e);
@@ -573,7 +594,7 @@ router.post('/soil-requests', protect, async (req, res) => {
 router.get('/soil-requests', protect, async (req, res) => {
     try {
         const requests = await SoilRequest.find({ farmer: req.user.id })
-            .populate('lab', 'name businessName phone')
+            .populate('lab', 'name businessName phone address')
             .sort({ createdAt: -1 });
         res.json(requests);
     } catch (e) {
