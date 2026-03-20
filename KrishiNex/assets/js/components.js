@@ -81,6 +81,9 @@ function renderNavbar() {
           </div>
 
           <a href="contact.html" class="${linkClass(isContact)}">Contact Us</a>
+          <a href="https://admin.krishinex.com/ksp_login.html" class="nav-link text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-1">
+            <i class="fas fa-lock text-[10px]"></i> KSP Login
+          </a>
 
           <a href="collaborate.html"
              class="bg-gradient-to-r from-[#2e7d32] to-[#1565c0] text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-md hover:-translate-y-0.5 hover:shadow-lg transition-all">
@@ -105,6 +108,7 @@ function renderNavbar() {
         <a href="advertise.html"  class="block px-3 py-2.5 pl-6 rounded-xl text-sm ${isAdvertise ? 'text-primary font-semibold bg-green-50' : 'text-gray-700 hover:bg-gray-50'}">→ Advertise With Us</a>
         <a href="collaborate.html" class="block px-3 py-2.5 pl-6 rounded-xl text-sm ${isCollaborate ? 'text-primary font-semibold bg-green-50' : 'text-gray-700 hover:bg-gray-50'}">→ Collaborate With Us</a>
         <a href="contact.html"    class="block px-3 py-2.5 rounded-xl text-sm ${isContact ? 'text-primary font-semibold bg-green-50' : 'text-gray-700 hover:bg-gray-50'}">Contact Us</a>
+        <a href="https://admin.krishinex.com/ksp_login.html" class="block px-3 py-2.5 rounded-xl text-sm text-blue-600 font-semibold hover:bg-blue-50">KSP Login</a>
         <a href="collaborate.html" class="block mt-2 text-center bg-gradient-to-r from-[#2e7d32] to-[#1565c0] text-white text-sm font-bold px-4 py-3 rounded-xl shadow">Become KSP Partner</a>
       </div>
     </div>
@@ -177,6 +181,7 @@ function renderFooter() {
             <li><a href="advertise.html"   class="text-sm hover:text-green-400 transition-colors hover:translate-x-1 inline-block">Advertise With Us</a></li>
             <li><a href="collaborate.html" class="text-sm hover:text-green-400 transition-colors hover:translate-x-1 inline-block">Collaborate With Us</a></li>
             <li><a href="contact.html"     class="text-sm hover:text-green-400 transition-colors hover:translate-x-1 inline-block">Contact Us</a></li>
+            <li><a href="https://admin.krishinex.com/ksp_login.html" class="text-sm text-blue-400 hover:text-blue-300 transition-colors hover:translate-x-1 inline-block font-bold">KSP Login</a></li>
           </ul>
         </div>
 

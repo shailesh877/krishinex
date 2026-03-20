@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const KSPApplication = require('../models/KSPApplication');
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -11,6 +14,63 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+});
+
+const generateToken = (userId, name, role) => {
+    return jwt.sign({ id: userId, name, role }, process.env.JWT_SECRET, {
+        expiresIn: '30d',
+    });
+};
+
+// KSP Partner Login (Phone/Password)
+router.post('/login', async (req, res) => {
+  try {
+    const { phone, password } = req.body;
+
+    if (!phone || !password) {
+      return res.status(400).json({ error: 'Phone and password are required' });
+    }
+
+    // Find user with role 'ksp'
+    const user = await User.findOne({ phone, role: 'ksp' });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid phone or password' });
+    }
+
+    if (!user.password) {
+      return res.status(401).json({ error: 'Account not set up for password login. Contact admin.' });
+    }
+
+    // Verify password
+    let isMatch = false;
+    if (user.password.startsWith('$2') || user.password.length > 30) {
+      isMatch = await bcrypt.compare(password, user.password);
+    } else {
+      isMatch = (password === user.password);
+    }
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid phone or password' });
+    }
+
+    const token = generateToken(user._id, user.name, user.role);
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        role: user.role,
+        phone: user.phone
+      }
+    });
+
+  } catch (error) {
+    console.error('KSP Login Error:', error);
+    res.status(500).json({ error: 'Server error during login' });
+  }
 });
 
 // Submit KSP Application
