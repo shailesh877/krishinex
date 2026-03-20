@@ -31,13 +31,13 @@ const parseQuantityInQuintals = (qtyStr) => {
 const parsePriceInQuintals = (priceStr) => {
     if (!priceStr) return 0;
     const str = String(priceStr);
-    
+
     // Extract all numbers that look like prices
     const matches = str.match(/\d+(\.\d+)?/g);
     if (!matches) return 0;
-    
+
     const prices = matches.map(m => parseFloat(m));
-    
+
     // If we have "(₹100 / Quintal)" or similar, prioritize that specific number
     const qmatch = str.match(/₹?(\d+(\.\d+)?)\s*\/\s*Quintal/i);
     if (qmatch) return parseFloat(qmatch[1]) || 0;
@@ -257,7 +257,7 @@ router.get('/labour-tasks', protect, async (req, res) => {
             .populate('farmer', 'name phone address profilePhotoUrl aadhaarNumber location')
             .populate('labour', 'name businessName phone address profilePhotoUrl labourDetails rating')
             .sort({ createdAt: -1 });
-        
+
         // Map to the shape expected by the frontend (which expects 'Order' like fields)
         const mapped = tasks.map(t => {
             let assignedStatus = 'new';
@@ -287,7 +287,7 @@ router.get('/labour-tasks', protect, async (req, res) => {
 router.patch('/labour-tasks/:id/status', protect, async (req, res) => {
     try {
         const { status } = req.body;
-        
+
         // Map Partner App status to LabourJob status
         let newStatus = 'Pending';
         if (status === 'accepted' || status === 'ok') newStatus = 'Accepted';
@@ -691,14 +691,14 @@ router.post('/recharge-farmer', protect, async (req, res) => {
 // @access  Private/Admin
 router.get('/admin/recharge-logs', protect, checkAdmin, async (req, res) => {
     try {
-        const logs = await Transaction.find({ 
-            module: 'Platform', 
+        const logs = await Transaction.find({
+            module: 'Platform',
             type: 'Credit',
             paymentMode: 'Cash'
         })
-        .populate('recipient', 'name phone cardNumber')
-        .populate('performedBy', 'name role employeeCode')
-        .sort({ createdAt: -1 });
+            .populate('recipient', 'name phone cardNumber')
+            .populate('performedBy', 'name role employeeCode')
+            .sort({ createdAt: -1 });
 
         res.json(logs);
     } catch (error) {
@@ -783,7 +783,7 @@ router.post('/admin/generate-card/:userId', protect, checkAdmin, async (req, res
     try {
         const user = await User.findById(req.params.userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
-        
+
         if (user.status !== 'approved') {
             return res.status(400).json({ error: 'User must be approved before generating a card' });
         }
@@ -1773,7 +1773,7 @@ router.patch('/admin/labour/jobs/:id/assign', protect, checkAdmin, async (req, r
         console.log('--- LABOUR ASSIGN REQUEST RECEIVED ---');
         console.log('ID:', req.params.id);
         console.log('Body:', req.body);
-        
+
         const { employeeId } = req.body;
         if (!employeeId) return res.status(400).json({ error: 'Employee ID is required' });
 
@@ -1787,7 +1787,7 @@ router.patch('/admin/labour/jobs/:id/assign', protect, checkAdmin, async (req, r
             console.log('Job not found:', req.params.id);
             return res.status(404).json({ error: 'Job not found' });
         }
-        
+
         console.log('Job assigned successfully');
         res.json({ message: 'Job assigned successfully', job });
     } catch (e) {
@@ -2373,7 +2373,7 @@ router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
                 lowStockCount
             };
         });
-        
+
         const rajan = data.find(f => f._id.toString() === '69b930538be41ec37832c23e');
         if (rajan) console.log('RAJAN DATA TO FRONTEND:', rajan.walletNumber);
 
@@ -2424,10 +2424,10 @@ router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) 
 router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // 1. Get Wallet Transactions (Recharges/Payouts)
         const txns = await Transaction.find({ recipient: id, module: 'KSP' }).sort({ createdAt: -1 }).lean();
-        
+
         // 2. Get Sales History
         const sales = await FranchiseSale.find({ franchise: id }).sort({ createdAt: -1 }).lean();
 
@@ -3027,7 +3027,7 @@ router.post('/admin/process-payout', protect, checkAdmin, async (req, res) => {
         await Transaction.create({
             transactionId: 'PAY' + Date.now().toString().substring(6),
             recipient: id,
-            module: 'Platform', 
+            module: 'Platform',
             amount: debitAmount,
             type: 'Payout',
             paymentMode: paymentMode || 'Bank Transfer',
@@ -3467,7 +3467,7 @@ router.get('/admin/franchise-stats', protect, checkAdmin, async (req, res) => {
         const totalFranchises = await User.countDocuments({ role: 'ksp' });
         const activeFranchises = await User.countDocuments({ role: 'ksp', status: 'approved' });
         const lowStockItems = await Item.countDocuments({ stockQty: { $lt: 10 } });
-        
+
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
@@ -3519,7 +3519,7 @@ router.post('/admin/franchises', protect, checkAdmin, async (req, res) => {
             walletBalance: 0
         });
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'Franchise Created Successfully',
             franchiseId: newFranchise._id
         });
@@ -3539,11 +3539,11 @@ router.get('/admin/franchises', protect, checkAdmin, async (req, res) => {
 
         const result = await Promise.all(franchises.map(async f => {
             const lowStockCount = await Item.countDocuments({ owner: f._id, stockQty: { $lt: 10 } });
-            
+
             const startOfMonth = new Date();
             startOfMonth.setDate(1);
             startOfMonth.setHours(0, 0, 0, 0);
-            
+
             const sales = await FranchiseSale.find({ franchise: f._id, createdAt: { $gte: startOfMonth }, status: 'Completed' });
             const salesThisMonth = sales.reduce((sum, s) => sum + s.totalAmount, 0);
 
@@ -3608,10 +3608,10 @@ router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) 
 router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         // 1. Get Wallet Transactions (Recharges/Payouts)
         const txns = await Transaction.find({ recipient: id, module: 'KSP' }).sort({ createdAt: -1 }).lean();
-        
+
         // 2. Get Sales History
         const sales = await FranchiseSale.find({ franchise: id }).sort({ createdAt: -1 }).lean();
 
@@ -3755,7 +3755,7 @@ router.put('/admin/franchise/approve-wallet/:id', protect, checkAdmin, async (re
 
         res.json({ message: `Recharge of ₹${amount} approved successfully` });
     } catch (e) {
-         res.status(500).json({ error: 'Failed' });
+        res.status(500).json({ error: 'Failed' });
     }
 });
 

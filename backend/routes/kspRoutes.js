@@ -109,9 +109,10 @@ router.post('/search', protect, async (req, res) => {
   try {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query is required' });
+    console.log(`KSP Search Query: ${query} by KSP: ${req.user.id}`);
 
     const users = await User.find({
-      role: 'farmer',
+      role: { $in: ['farmer', 'buyer'] },
       $or: [
         { phone: new RegExp(query, 'i') },
         { name: new RegExp(query, 'i') },

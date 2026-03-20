@@ -117,7 +117,7 @@
       </div>
 
       <!-- Navigation -->
-            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -806,7 +806,9 @@
 
   <!-- ========== KSP FRANCHISE PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:5500/api' 
+    : `${window.location.origin}/api`;
     const AUTH_TOKEN = (localStorage.getItem('employeeToken') || '').replace(/["']/g, "").trim();
     const H = {
       'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -1324,25 +1326,37 @@
         console.log('MODAL LIST FETCHED:', list);
         const k = list.find(x => x._id === id);
         console.log('MODAL FRANCHISE FOUND:', k);
-        if (k) {
-          const numEl = document.getElementById("modal-wallet-number");
-          const actionEl = document.getElementById("modal-wallet-action");
-          
-          numEl.textContent = k.walletNumber || "Not Generated";
-          
-          if (!k.walletNumber || k.walletNumber.length < 11) {
-            actionEl.innerHTML = `<button onclick="generateWalletId('${id}', '${name.replace(/'/g, "\\'")}')" class="bg-brand-blue text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-all active:scale-95 hover:bg-sky-600"><i class="fas fa-bolt mr-1"></i> Generate</button>`;
-          } else {
-            actionEl.innerHTML = "";
-          }
+          if (k) {
+            const numEl = document.getElementById("modal-wallet-number");
+            const actionEl = document.getElementById("modal-wallet-action");
+            const photoEl = document.getElementById("modal-partner-photo");
+            const aadhaarEl = document.getElementById("modal-aadhaar-link");
 
-          const actionBox = document.getElementById('modal-franchise-actions');
-          if (k.status === 'approved') {
-            actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1.5"></i> Block</button>`;
-          } else {
-            actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+            numEl.textContent = k.walletNumber || "Not Generated";
+            
+            if (k.profilePhotoUrl) {
+                photoEl.src = k.profilePhotoUrl;
+            }
+
+            if (k.aadhaarDocUrl) {
+                aadhaarEl.innerHTML = `<a href="${k.aadhaarDocUrl}" target="_blank" class="text-xs font-black text-brand-blue hover:underline flex items-center gap-1"><i class="fas fa-file-pdf"></i> View Aadhaar Document</a>`;
+            } else {
+                aadhaarEl.innerHTML = `<span class="text-xs text-slate-400">Aadhaar not uploaded</span>`;
+            }
+
+            if (!k.walletNumber || k.walletNumber.length < 11) {
+              actionEl.innerHTML = `<button onclick="generateWalletId('${id}', '${name.replace(/'/g, "\\'")}')" class="bg-brand-blue text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-all active:scale-95 hover:bg-sky-600"><i class="fas fa-bolt mr-1"></i> Generate</button>`;
+            } else {
+              actionEl.innerHTML = "";
+            }
+
+            const actionBox = document.getElementById('modal-franchise-actions');
+            if (k.status === 'approved') {
+              actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1.5"></i> Block</button>`;
+            } else {
+              actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+            }
           }
-        }
       });
 
       fetch(`${API_BASE}/employee/admin/franchise/inventory?kspId=${id}`, { headers: H }).then(r => r.ok ? r.json() : []).then(items => {
@@ -1606,37 +1620,37 @@
 
     // ===== DIRECT RECHARGE =====
     async function rechargeFranchise(id, name) {
-        const amount = document.getElementById('direct-recharge-amount').value;
-        if (!amount || amount <= 0) return showToast('Enter valid amount', 'warning');
-        
-        if (!confirm(`Directly Recharge â‚¹${amount} into ${name}'s wallet?`)) return;
+      const amount = document.getElementById('direct-recharge-amount').value;
+      if (!amount || amount <= 0) return showToast('Enter valid amount', 'warning');
 
-        try {
-            const res = await fetch(`${API_BASE}/employee/admin/ksp/direct-recharge`, {
-                method: 'POST',
-                headers: { ...H, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, amount })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                showToast(`Recharge Successful! New Balance: â‚¹${data.newBalance}`, 'success');
-                document.getElementById('franchise-modal')?.remove();
-                fetchFranchises();
-            } else {
-                showToast(data.error || 'Recharge failed', 'warning');
-            }
-        } catch (e) {
-            showToast('Network error', 'warning');
+      if (!confirm(`Directly Recharge â‚¹${amount} into ${name}'s wallet?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/direct-recharge`, {
+          method: 'POST',
+          headers: { ...H, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, amount })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Recharge Successful! New Balance: â‚¹${data.newBalance}`, 'success');
+          document.getElementById('franchise-modal')?.remove();
+          fetchFranchises();
+        } else {
+          showToast(data.error || 'Recharge failed', 'warning');
         }
+      } catch (e) {
+        showToast('Network error', 'warning');
+      }
     }
 
     // ===== VIEW TRANSACTION HISTORY =====
     async function viewFranchiseTransactions(id, name) {
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md';
-        modal.id = 'txn-history-modal';
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-        modal.innerHTML = `
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md';
+      modal.id = 'txn-history-modal';
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+      modal.innerHTML = `
             <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden animate-[zoomIn_0.3s_ease-out]">
                 <div class="px-8 py-6 bg-slate-900 text-white flex justify-between items-center">
                     <div>
@@ -1665,14 +1679,14 @@
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
+      document.body.appendChild(modal);
 
-        try {
-            const res = await fetch(`${API_BASE}/employee/admin/ksp/transactions/${id}`, { headers: H });
-            const data = await res.json();
-            const list = document.getElementById('modal-txn-list');
-            if (res.ok && data.length > 0) {
-                list.innerHTML = data.map(t => `
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/transactions/${id}`, { headers: H });
+        const data = await res.json();
+        const list = document.getElementById('modal-txn-list');
+        if (res.ok && data.length > 0) {
+          list.innerHTML = data.map(t => `
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <td class="px-8 py-5">
                             <div class="text-xs font-black text-slate-900">${new Date(t.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
@@ -1691,12 +1705,12 @@
                         </td>
                     </tr>
                 `).join('');
-            } else {
-                list.innerHTML = `<tr><td colspan="4" class="px-8 py-12 text-center text-slate-400 font-bold italic">No transaction records found.</td></tr>`;
-            }
-        } catch (e) {
-            document.getElementById('modal-txn-list').innerHTML = `<tr><td colspan="4" class="px-8 py-12 text-center text-rose-500 font-bold italic">Failed to load transaction history.</td></tr>`;
+        } else {
+          list.innerHTML = `<tr><td colspan="4" class="px-8 py-12 text-center text-slate-400 font-bold italic">No transaction records found.</td></tr>`;
         }
+      } catch (e) {
+        document.getElementById('modal-txn-list').innerHTML = `<tr><td colspan="4" class="px-8 py-12 text-center text-rose-500 font-bold italic">Failed to load transaction history.</td></tr>`;
+      }
     }
 
   </script>

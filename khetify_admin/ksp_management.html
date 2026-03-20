@@ -20,18 +20,31 @@
     };
   </script>
   <style>
-    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
   </style>
 </head>
 
 <body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
   <div class="min-h-screen flex">
     <!-- MOBILE OVERLAY -->
-    <div id="mobile-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar(false)"></div>
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
 
-    
+
     <!-- ========== SIDEBAR (REUSABLE) ========== -->
     <aside id="sidebar"
       class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
@@ -278,42 +291,42 @@
       <main class="flex-1 px-4 md:px-6 py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                    <i class="fas fa-clock text-orange-600"></i>
-                </div>
-                <div>
-                    <p class="text-[11px] font-black text-slate-500 uppercase">Pending</p>
-                    <p id="pendingCount" class="text-2xl font-black">0</p>
-                </div>
+          <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
+              <i class="fas fa-clock text-orange-600"></i>
             </div>
-            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                    <i class="fas fa-search text-blue-600"></i>
-                </div>
-                <div>
-                    <p class="text-[11px] font-black text-slate-500 uppercase">In Review</p>
-                    <p id="reviewCount" class="text-2xl font-black">0</p>
-                </div>
+            <div>
+              <p class="text-[11px] font-black text-slate-500 uppercase">Pending</p>
+              <p id="pendingCount" class="text-2xl font-black">0</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
-                    <i class="fas fa-check-circle text-green-600"></i>
-                </div>
-                <div>
-                    <p class="text-[11px] font-black text-slate-500 uppercase">Approved</p>
-                    <p id="approvedCount" class="text-2xl font-black">0</p>
-                </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+              <i class="fas fa-search text-blue-600"></i>
             </div>
-            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
-                    <i class="fas fa-times-circle text-red-600"></i>
-                </div>
-                <div>
-                    <p class="text-[11px] font-black text-slate-500 uppercase">Rejected</p>
-                    <p id="rejectedCount" class="text-2xl font-black">0</p>
-                </div>
+            <div>
+              <p class="text-[11px] font-black text-slate-500 uppercase">In Review</p>
+              <p id="reviewCount" class="text-2xl font-black">0</p>
             </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
+              <i class="fas fa-check-circle text-green-600"></i>
+            </div>
+            <div>
+              <p class="text-[11px] font-black text-slate-500 uppercase">Approved</p>
+              <p id="approvedCount" class="text-2xl font-black">0</p>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center">
+              <i class="fas fa-times-circle text-red-600"></i>
+            </div>
+            <div>
+              <p class="text-[11px] font-black text-slate-500 uppercase">Rejected</p>
+              <p id="rejectedCount" class="text-2xl font-black">0</p>
+            </div>
+          </div>
         </div>
 
         <!-- Table -->
@@ -351,7 +364,9 @@
   </div>
 
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'http://localhost:5500/api' 
+    : `${window.location.origin}/api`;
     const token = localStorage.getItem('employeeToken');
 
     function showToast(msg) {
@@ -364,10 +379,10 @@
     async function fetchApps() {
       try {
         const res = await fetch(`${API_BASE}/ksp/all`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-        
+
         const tbody = document.getElementById('appBody');
         const emptyState = document.getElementById('emptyState');
         tbody.innerHTML = '';
@@ -425,30 +440,30 @@
     }
 
     function getStatusClass(status) {
-        if (status === 'pending') return 'bg-orange-50 border-orange-200 text-orange-600';
-        if (status === 'in-review') return 'bg-blue-50 border-blue-200 text-blue-600';
-        if (status === 'approved') return 'bg-green-50 border-green-200 text-green-600';
-        return 'bg-red-50 border-red-200 text-red-600';
+      if (status === 'pending') return 'bg-orange-50 border-orange-200 text-orange-600';
+      if (status === 'in-review') return 'bg-blue-50 border-blue-200 text-blue-600';
+      if (status === 'approved') return 'bg-green-50 border-green-200 text-green-600';
+      return 'bg-red-50 border-red-200 text-red-600';
     }
 
     async function updateStatus(id, newStatus) {
-        try {
-            const res = await fetch(`${API_BASE}/ksp/${id}/status`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
+      try {
+        const res = await fetch(`${API_BASE}/ksp/${id}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
 
-            if (res.ok) {
-                showToast('Status Updated');
-                fetchApps();
-            }
-        } catch (err) {
-            showToast('Update Failed');
+        if (res.ok) {
+          showToast('Status Updated');
+          fetchApps();
         }
+      } catch (err) {
+        showToast('Update Failed');
+      }
     }
 
     function toggleSidebar(force) {
@@ -468,4 +483,5 @@
     fetchApps();
   </script>
 </body>
+
 </html>
