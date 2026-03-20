@@ -581,7 +581,8 @@
 
   <!-- SCRIPTS -->
   <script>
-    const API = '/api/employee';
+    const API_BASE = 'https://demo.ranx24.com/api';
+    const API = API_BASE + '/employee';
     const AUTH = localStorage.getItem('employeeToken');
     const H = { 'Authorization': `Bearer ${AUTH}`, 'Content-Type': 'application/json' };
 
