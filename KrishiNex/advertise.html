@@ -172,15 +172,40 @@
   <div id="footer-root"></div>
   <script src="assets/js/components.js"></script>
   <script>
-    function handleFormSubmit(e, formId) {
+    async function handleFormSubmit(e, formId) {
       e.preventDefault();
       const form = document.getElementById(formId);
-      const successEl = form.querySelector('[id$="-success"]');
-      if (successEl) {
-        successEl.classList.remove('hidden');
-        form.querySelector('button[type="submit"]').textContent = '✓ Submitted';
-        form.querySelector('button[type="submit"]').disabled = true;
-        form.querySelector('button[type="submit"]').style.opacity = '0.6';
+      const btn = form.querySelector('button[type="submit"]');
+      const successEl = document.getElementById('adv-success');
+      
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        btn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Submitting...';
+        btn.disabled = true;
+
+        const response = await fetch('https://demo.ranx24.com/api/ads/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          successEl.classList.remove('hidden');
+          btn.innerHTML = '✓ Submitted';
+          btn.style.opacity = '0.6';
+          form.reset();
+        } else {
+          alert('Failed to submit enquiry. Please try again.');
+          btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Submit Enquiry';
+          btn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Network error. Please check your connection.');
+        btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Submit Enquiry';
+        btn.disabled = false;
       }
     }
   </script>

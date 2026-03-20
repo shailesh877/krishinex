@@ -63,6 +63,8 @@ app.use('/api/leads', require('./routes/leadRoutes'));
 app.use('/api/suggestions', require('./routes/suggestionRoutes'));
 app.use('/api/doctor', require('./routes/doctorRoutes'));
 app.use('/api/contact', require('./routes/contactRoutes'));
+app.use('/api/ads', require('./routes/adRoutes'));
+app.use('/api/ksp', require('./routes/kspRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

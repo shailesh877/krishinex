@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Ad Enquiries Management - KrishiNex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="js/auth.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { green: '#16A34A', blue: '#0EA5E9' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR (Standardized) -->
+
+    <div class="flex-1 flex flex-col md:ml-64">
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <i class="fas fa-bullhorn text-emerald-600"></i>
+              Advertisement Enquiries
+            </h1>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-4 md:px-6 py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i class="fas fa-clock text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-[11px] font-black text-slate-500 uppercase">Pending</p>
+                    <p id="pendingCount" class="text-2xl font-black">0</p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-spinner text-blue-600 fa-spin-slow"></i>
+                </div>
+                <div>
+                    <p class="text-[11px] font-black text-slate-500 uppercase">In Progress</p>
+                    <p id="progressCount" class="text-2xl font-black">0</p>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-[11px] font-black text-slate-500 uppercase">Resolved</p>
+                    <p id="resolvedCount" class="text-2xl font-black">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enquiries Table -->
+        <section class="bg-white rounded-2xl border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="bg-slate-50">
+                <tr class="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Company & Contact</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Category & Proposal</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right px-6 py-4 border-b-2 border-slate-200">Action</th>
+                </tr>
+              </thead>
+              <tbody id="enquiryBody" class="divide-y divide-slate-100">
+                <!-- Data rows -->
+              </tbody>
+            </table>
+            <div id="emptyState" class="hidden p-12 text-center bg-slate-50/50">
+              <i class="fas fa-inbox text-slate-200 text-6xl mb-4"></i>
+              <p class="text-slate-400 font-bold">No advertisement enquiries found.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300">
+    <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+      <i class="fas fa-check-circle text-emerald-400"></i>
+      <span id="toastMsg" class="text-sm font-black"></span>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://demo.ranx24.com/api';
+    const token = localStorage.getItem('employeeToken');
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    async function fetchEnquiries() {
+      try {
+        const res = await fetch(`${API_BASE}/ads/all`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const tbody = document.getElementById('enquiryBody');
+        const emptyState = document.getElementById('emptyState');
+        tbody.innerHTML = '';
+
+        let counts = { pending: 0, 'in-progress': 0, resolved: 0 };
+
+        if (!data || data.length === 0) {
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+        data.forEach(item => {
+          counts[item.status]++;
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/80 transition-colors';
+          tr.innerHTML = `
+            <td class="px-6 py-5">
+              <p class="text-sm font-black text-slate-900">${item.company}</p>
+              <p class="text-xs font-semibold text-slate-600 pt-0.5">${item.fullName}</p>
+              <p class="text-[10px] text-brand-blue font-bold">${item.phone} • ${item.email || ''}</p>
+            </td>
+            <td class="px-6 py-5 max-w-md">
+              <p class="text-[10px] font-black text-emerald-600 mb-1 uppercase tracking-tight">${item.category}</p>
+              <p class="text-xs font-semibold text-slate-700 whitespace-pre-wrap">${item.message || 'No proposal provided'}</p>
+            </td>
+            <td class="px-6 py-5 text-[11px] font-black text-slate-400">
+              ${new Date(item.createdAt).toLocaleString()}
+            </td>
+            <td class="px-6 py-5">
+                <select onchange="updateStatus('${item._id}', this.value)" 
+                        class="text-[10px] font-black uppercase px-2 py-1 rounded-lg border-2 ${getStatusClass(item.status)}">
+                    <option value="pending" ${item.status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="in-progress" ${item.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="resolved" ${item.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                </select>
+            </td>
+            <td class="px-6 py-5 text-right">
+              <a href="mailto:${item.email}" class="h-9 w-9 inline-flex rounded-xl bg-blue-50 text-blue-500 items-center justify-center hover:bg-blue-500 hover:text-white transition-all shadow-sm">
+                <i class="fas fa-reply"></i>
+              </a>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('pendingCount').innerText = counts.pending;
+        document.getElementById('progressCount').innerText = counts['in-progress'];
+        document.getElementById('resolvedCount').innerText = counts.resolved;
+      } catch (err) {
+        showToast('Failed to load enquiries');
+      }
+    }
+
+    function getStatusClass(status) {
+        if (status === 'pending') return 'bg-orange-50 border-orange-200 text-orange-600';
+        if (status === 'in-progress') return 'bg-blue-50 border-blue-200 text-blue-600';
+        return 'bg-green-50 border-green-200 text-green-600';
+    }
+
+    async function updateStatus(id, newStatus) {
+        try {
+            const res = await fetch(`${API_BASE}/ads/${id}/status`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (res.ok) {
+                showToast('Status Updated');
+                fetchEnquiries();
+            }
+        } catch (err) {
+            showToast('Update Failed');
+        }
+    }
+
+    fetchEnquiries();
+  </script>
+</body>
+</html>

@@ -17,6 +17,9 @@ def get_nav_block(active_page):
         ("soil_testing_patner.html", "fas fa-flask", "Soil Testing", "indigo", "purple"),
         ("suggestion_management.html", "fas fa-lightbulb", "Dynamic Advisory", "emerald", "sky"),
         ("doctor_consultation_management.html", "fas fa-user-doctor", "Doctor Consultations", "emerald", "sky"),
+        ("contact_management.html", "fas fa-ticket", "Contact Inquiries", "emerald", "sky"),
+        ("ad_management.html", "fas fa-bullhorn", "Ad Enquiries", "emerald", "sky"),
+        ("ksp_management.html", "fas fa-handshake", "KSP Applications", "emerald", "sky"),
         ("spacer", "Users"),
         ("employee_managment.html", "fas fa-user-tie", "Employee Management", "emerald", "sky"),
         ("users_managment.html", "fas fa-seedling", "Farmers & Users", "emerald", "green"),
@@ -125,5 +128,6 @@ robust_fix('Analytics_Reports.html', 'Analytics_Reports.html')
 robust_fix('buyer_managment.html', 'buyer_managment.html')
 robust_fix('employee_managment.html', 'employee_managment.html')
 robust_fix('index.html', 'index.html')
+robust_fix('contact_management.html', 'contact_management.html')
 
 print("Final standardization completed.")

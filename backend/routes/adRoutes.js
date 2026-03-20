@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const KSPApplication = require('../models/KSPApplication');
+const AdEnquiry = require('../models/AdEnquiry');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -13,41 +13,41 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Submit KSP Application
+// Submit Advertisement Enquiry
 router.post('/submit', async (req, res) => {
   try {
-    const application = new KSPApplication(req.body);
-    await application.save();
+    const enquiry = new AdEnquiry(req.body);
+    await enquiry.save();
 
     // Send confirmation email
     if (req.body.email) {
       const mailOptions = {
-        from: '"KrishiNex Partnership" <' + process.env.SMTP_USER + '>',
+        from: '"KrishiNex Advertising" <' + process.env.SMTP_USER + '>',
         to: req.body.email,
-        subject: 'KSP Partnership Application Received - KrishiNex',
+        subject: 'Advertisement Enquiry Received - KrishiNex',
         html: `
-          <h3>Welcome to the KrishiNex Family!</h3>
+          <h3>Thank you for your interest in advertising with KrishiNex!</h3>
           <p>Hi ${req.body.fullName},</p>
-          <p>We have received your application for becoming a <b>KrishiNex Sewa Point (KSP)</b> partner in <b>${req.body.city}, ${req.body.state}</b>.</p>
-          <p>Our partnership team will review your application and shop details. You will hear from us within 48 hours.</p>
+          <p>We have received your enquiry regarding <b>${req.body.category}</b> for <b>${req.body.company}</b>.</p>
+          <p>Our team will review your proposal and get back to you within 24 hours.</p>
           <br>
-          <p>Best Regards,<br>Partnership Team, KrishiNex</p>
+          <p>Best Regards,<br>Team KrishiNex</p>
         `,
       };
       transporter.sendMail(mailOptions).catch(err => console.log('Mail Error:', err));
     }
 
-    res.status(201).json({ success: true, message: 'Application submitted successfully' });
+    res.status(201).json({ success: true, message: 'Enquiry submitted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// Admin: Get all KSP applications
+// Admin: Get all ad enquiries
 router.get('/all', async (req, res) => {
   try {
-    const applications = await KSPApplication.find().sort({ createdAt: -1 });
-    res.json(applications);
+    const enquiries = await AdEnquiry.find().sort({ createdAt: -1 });
+    res.json(enquiries);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -57,7 +57,7 @@ router.get('/all', async (req, res) => {
 router.put('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
-    await KSPApplication.findByIdAndUpdate(req.params.id, { status });
+    await AdEnquiry.findByIdAndUpdate(req.params.id, { status });
     res.json({ success: true, message: 'Status updated' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
