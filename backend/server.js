@@ -16,16 +16,15 @@ const shopRoutes = require('./routes/shopRoutes'); // Added shopRoutes import
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors({
-    origin: '*'
+    origin: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Global Request Logger
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`);
     next();
 });
 
