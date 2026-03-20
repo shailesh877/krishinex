@@ -39,6 +39,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Serve Admin Panel statically
 app.use('/admin', express.static(path.join(__dirname, '../khetify_admin')));
 
+// Serve KrishiNex landing page statically
+app.use('/', express.static(path.join(__dirname, '../KrishiNex')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', require('./routes/userRoutes'));
@@ -59,6 +62,7 @@ app.use('/api/ksp', require('./routes/kspRoutes'));
 app.use('/api/leads', require('./routes/leadRoutes'));
 app.use('/api/suggestions', require('./routes/suggestionRoutes'));
 app.use('/api/doctor', require('./routes/doctorRoutes'));
+app.use('/api/contact', require('./routes/contactRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
