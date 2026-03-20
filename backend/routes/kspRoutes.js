@@ -20,9 +20,9 @@ const transporter = nodemailer.createTransport({
 });
 
 const generateToken = (userId, name, role) => {
-    return jwt.sign({ id: userId, name, role }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
-    });
+  return jwt.sign({ id: userId, name, role }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
 };
 
 // KSP Partner Login (Phone/Password)
@@ -109,10 +109,9 @@ router.post('/search', protect, async (req, res) => {
   try {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Query is required' });
-    console.log(`KSP Search Query: ${query} by KSP: ${req.user.id}`);
 
     const users = await User.find({
-      role: { $in: ['farmer', 'buyer'] },
+      role: 'farmer',
       $or: [
         { phone: new RegExp(query, 'i') },
         { name: new RegExp(query, 'i') },
@@ -128,6 +127,8 @@ router.post('/search', protect, async (req, res) => {
   }
 });
 
+const { sendNotification } = require('../services/notificationService');
+
 // Withdraw: Request OTP
 router.post('/withdraw/request-otp', protect, async (req, res) => {
   try {
@@ -139,8 +140,26 @@ router.post('/withdraw/request-otp', protect, async (req, res) => {
       return res.status(400).json({ error: 'Insufficient farmer balance' });
     }
 
-    console.log(`[KSP] Sending withdrawal OTP to farmer ${farmer.phone}`);
-    await sendOtp(farmer.phone);
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log(`[KSP] Sending withdrawal OTP to farmer ${farmer.phone}: ${otp}`);
+    
+    // Send via SMS
+    await sendOtp(farmer.phone, otp);
+    
+    // Send via App Notification (Bell icon)
+    try {
+      await sendNotification(farmer._id, {
+        title: 'Withdrawal OTP',
+        messageEn: `Your OTP for withdrawal of ₹${amount} is ${otp}. Valid for 10 minutes.`,
+        messageHi: `₹${amount} की निकासी के लिए आपका OTP ${otp} है। 10 मिनट के लिए मान्य।`,
+        type: 'payment',
+        data: { otp, amount: amount.toString() }
+      });
+    } catch (notifyErr) {
+      console.error('KSP Notification Error:', notifyErr);
+      // We don't fail the request if only notification fails, as SMS might still work
+    }
+
     res.json({ success: true, message: 'OTP sent' });
   } catch (error) {
     console.error('KSP Withdraw Request Error:', error);
@@ -153,7 +172,7 @@ router.post('/withdraw/confirm', protect, async (req, res) => {
   try {
     const { userId, amount, otp } = req.body;
     const amt = parseFloat(amount);
-    
+
     const farmer = await User.findById(userId);
     if (!farmer) return res.status(404).json({ error: 'Farmer not found' });
 
@@ -179,7 +198,7 @@ router.post('/withdraw/confirm', protect, async (req, res) => {
 
     // Create Transactions
     const saleId = `KSP-WDL-${Date.now()}`;
-    
+
     // Debit for Farmer
     await Transaction.create({
       transactionId: `${saleId}-D`,

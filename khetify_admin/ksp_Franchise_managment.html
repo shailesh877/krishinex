@@ -806,9 +806,9 @@
 
   <!-- ========== KSP FRANCHISE PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'http://localhost:5500/api' 
-    : `${window.location.origin}/api`;
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:5500/api'
+      : `${window.location.origin}/api`;
     const AUTH_TOKEN = (localStorage.getItem('employeeToken') || '').replace(/["']/g, "").trim();
     const H = {
       'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -1326,37 +1326,25 @@
         console.log('MODAL LIST FETCHED:', list);
         const k = list.find(x => x._id === id);
         console.log('MODAL FRANCHISE FOUND:', k);
-          if (k) {
-            const numEl = document.getElementById("modal-wallet-number");
-            const actionEl = document.getElementById("modal-wallet-action");
-            const photoEl = document.getElementById("modal-partner-photo");
-            const aadhaarEl = document.getElementById("modal-aadhaar-link");
+        if (k) {
+          const numEl = document.getElementById("modal-wallet-number");
+          const actionEl = document.getElementById("modal-wallet-action");
 
-            numEl.textContent = k.walletNumber || "Not Generated";
-            
-            if (k.profilePhotoUrl) {
-                photoEl.src = k.profilePhotoUrl;
-            }
+          numEl.textContent = k.walletNumber || "Not Generated";
 
-            if (k.aadhaarDocUrl) {
-                aadhaarEl.innerHTML = `<a href="${k.aadhaarDocUrl}" target="_blank" class="text-xs font-black text-brand-blue hover:underline flex items-center gap-1"><i class="fas fa-file-pdf"></i> View Aadhaar Document</a>`;
-            } else {
-                aadhaarEl.innerHTML = `<span class="text-xs text-slate-400">Aadhaar not uploaded</span>`;
-            }
-
-            if (!k.walletNumber || k.walletNumber.length < 11) {
-              actionEl.innerHTML = `<button onclick="generateWalletId('${id}', '${name.replace(/'/g, "\\'")}')" class="bg-brand-blue text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-all active:scale-95 hover:bg-sky-600"><i class="fas fa-bolt mr-1"></i> Generate</button>`;
-            } else {
-              actionEl.innerHTML = "";
-            }
-
-            const actionBox = document.getElementById('modal-franchise-actions');
-            if (k.status === 'approved') {
-              actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1.5"></i> Block</button>`;
-            } else {
-              actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
-            }
+          if (!k.walletNumber || k.walletNumber.length < 11) {
+            actionEl.innerHTML = `<button onclick="generateWalletId('${id}', '${name.replace(/'/g, "\\'")}')" class="bg-brand-blue text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-all active:scale-95 hover:bg-sky-600"><i class="fas fa-bolt mr-1"></i> Generate</button>`;
+          } else {
+            actionEl.innerHTML = "";
           }
+
+          const actionBox = document.getElementById('modal-franchise-actions');
+          if (k.status === 'approved') {
+            actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1.5"></i> Block</button>`;
+          } else {
+            actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+          }
+        }
       });
 
       fetch(`${API_BASE}/employee/admin/franchise/inventory?kspId=${id}`, { headers: H }).then(r => r.ok ? r.json() : []).then(items => {

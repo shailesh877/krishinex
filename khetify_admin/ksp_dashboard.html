@@ -508,6 +508,7 @@
     </style>
 
     <script>
+        const API_BASE = '/api';
         const AUTH_TOKEN = localStorage.getItem('kspToken');
         let selectedUser = null;
         let otpSent = false;
@@ -536,7 +537,7 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    document.getElementById('kspBalance').textContent = `₹${data.balance.toLocaleString()}`;
+                    document.getElementById('kspBalance').textContent = `₹${(data.balance || 0).toLocaleString()}`;
                     document.getElementById('kspPartnerName').textContent = data.name;
                     renderTransactions(data.recentTransactions);
                 } else {
@@ -549,7 +550,7 @@
                 }
             } catch (err) {
                 console.error('Stats load error', err);
-                showToast('Network error or server down', 'error');
+                showToast(`Stats error: ${err.message || 'Check connection'}`, 'error');
             }
         }
 
@@ -571,7 +572,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-sm font-black ${t.type === 'Credit' ? 'text-emerald-600' : 'text-slate-900'}">${t.type === 'Credit' ? '+' : '-'} ₹${t.amount.toLocaleString()}</p>
+                        <p class="text-sm font-black ${t.type === 'Credit' ? 'text-emerald-600' : 'text-slate-900'}">${t.type === 'Credit' ? '+' : '-'} ₹${(t.amount || 0).toLocaleString()}</p>
                         <p class="text-[8px] text-slate-400 font-bold uppercase mt-1">WALLET TRF</p>
                     </div>
                 </div>
@@ -615,18 +616,17 @@
                                 </div>
                             </div>
                         `).join('');
-                    } else if (Array.isArray(data) && data.length === 1) {
-                        // Single user
-                        selectUser(data[0]);
                     } else {
-                        // No users found
-                        showToast('No user found with this number/query', 'error');
+                        // Single user
+                        const user = Array.isArray(data) ? data[0] : data;
+                        selectUser(user);
                     }
                 } else {
                     showToast(data.error || 'User not found', 'error');
                 }
             } catch (err) {
-                showToast('Network error', 'error');
+                showToast(`Search error: ${err.message || 'Check connection'}`, 'error');
+                console.error('User search script error:', err);
             } finally {
                 btn.innerHTML = 'SEARCH';
                 btn.disabled = false;
@@ -641,7 +641,7 @@
             document.getElementById('userName').textContent = user.name;
             document.getElementById('userPhone').textContent = `+91 ${user.phone}`;
             document.getElementById('userRole').textContent = user.role;
-            document.getElementById('userWallet').textContent = `₹${user.walletBalance.toLocaleString()}`;
+            document.getElementById('userWallet').textContent = `₹${(user.walletBalance || 0).toLocaleString()}`;
         }
 
         async function initiateWithdraw() {
@@ -671,7 +671,10 @@
                         const d = await res.json();
                         showToast(d.error || 'Failed to send OTP', 'error');
                     }
-                } catch (e) { showToast('Network error', 'error'); }
+                } catch (e) { 
+                    console.error('OTP request error:', e);
+                    showToast(`OTP error: ${e.message}`, 'error'); 
+                }
                 finally { btn.disabled = false; }
             } else {
                 // Step 2: Confirm Withdrawal
@@ -697,7 +700,10 @@
                     } else {
                         showToast(d.error || 'Withdrawal failed', 'error');
                     }
-                } catch (e) { showToast('Network Error', 'error'); }
+                } catch (e) { 
+                    console.error('Withdraw confirm error:', e);
+                    showToast(`Withdrawal error: ${e.message}`, 'error'); 
+                }
                 finally {
                     btn.disabled = false;
                     if (otpSent) btn.innerHTML = 'Confirm & Finalize Withdrawal';
