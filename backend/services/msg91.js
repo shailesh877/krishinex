@@ -23,7 +23,7 @@ async function sendOtp(phone, customOtp = null) {
         } else if (!MSG91_AUTH_KEY) {
             console.warn('MSG91_AUTH_KEY missing. Falling back to mock OTP.');
         }
-        const otp = customOtp || '1234'; 
+        const otp = customOtp || '123456'; 
         mockOtpStore.set(phone, otp);
         return { type: 'success', message: `Mock OTP generated: ${otp}` };
     }
@@ -64,7 +64,7 @@ async function verifyOtp(phone, otp) {
     // Mock fallback for local dev
     if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
         console.warn('[MSG91-DEBUG] Mocking OTP Verify for', phone);
-        const storedOtp = mockOtpStore.get(phone) || '1234';
+        const storedOtp = mockOtpStore.get(phone) || '123456';
         if (otp === storedOtp) {
             return { type: 'success', message: 'Mock OTP verified' };
         } else {
