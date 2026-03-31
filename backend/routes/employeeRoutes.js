@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, checkAdmin } = require('../middleware/authMiddleware');
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const Order = require('../models/Order');
 const Rental = require('../models/Rental');
@@ -17,6 +17,8 @@ const FranchiseSale = require('../models/FranchiseSale');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const mongoose = require('mongoose');
+const Settings = require('../models/Settings');
 
 const parseQuantityInQuintals = (qtyStr) => {
     if (!qtyStr) return 0;
@@ -541,7 +543,7 @@ router.post('/upload-chat-media', protect, uploadChatMedia.single('file'), async
 // @route   GET /api/employee/admin/all
 // @desc    Get all employees for admin management
 // @access  Private/Admin
-router.get('/admin/all', protect, checkAdmin, async (req, res) => {
+router.get('/admin/all', protect, checkModule('labour'), async (req, res) => {
     try {
         const employees = await User.find({ role: 'employee' }).select('-password').sort({ createdAt: -1 });
         res.json(employees);
@@ -554,7 +556,7 @@ router.get('/admin/all', protect, checkAdmin, async (req, res) => {
 // @route   POST /api/employee/admin/create
 // @desc    Create a new employee
 // @access  Private/Admin
-router.post('/admin/create', protect, checkAdmin, async (req, res) => {
+router.post('/admin/create', protect, checkModule('employees'), async (req, res) => {
     try {
         const { name, email, phone, address, employeeCode, password, employeeModules } = req.body;
 
@@ -590,7 +592,7 @@ router.post('/admin/create', protect, checkAdmin, async (req, res) => {
 // @route   PATCH /api/employee/admin/:id
 // @desc    Update employee details and access
 // @access  Private/Admin
-router.patch('/admin/:id', protect, checkAdmin, async (req, res) => {
+router.patch('/admin/:id', protect, checkModule('employees'), async (req, res) => {
     try {
         const updates = req.body;
         const employee = await User.findOneAndUpdate(
@@ -610,7 +612,7 @@ router.patch('/admin/:id', protect, checkAdmin, async (req, res) => {
 // @route   DELETE /api/employee/admin/:id
 // @desc    Delete an employee
 // @access  Private/Admin
-router.delete('/admin/:id', protect, checkAdmin, async (req, res) => {
+router.delete('/admin/:id', protect, checkModule('employees'), async (req, res) => {
     try {
         const employee = await User.findOneAndDelete({ _id: req.params.id, role: 'employee' });
         if (!employee) return res.status(404).json({ error: 'Employee not found' });
@@ -656,8 +658,11 @@ router.post('/recharge-farmer', protect, async (req, res) => {
 
         // Create transaction for Farmer
         try {
+            const shortId = Date.now().toString().slice(-8).toUpperCase();
+            const employeeName = req.user.name || 'Field Executive';
+            
             await Transaction.create({
-                transactionId: `RECH-${farmer._id}-${Date.now()}`,
+                transactionId: `RECH-${shortId}`,
                 recipient: farmer._id,
                 performedBy: req.user.id,
                 module: 'Platform',
@@ -665,7 +670,7 @@ router.post('/recharge-farmer', protect, async (req, res) => {
                 type: 'Credit',
                 paymentMode: 'Cash',
                 status: 'Completed',
-                note: `Wallet recharge for ${farmer.name} by UserID: ${req.user.id}`
+                note: `Wallet Recharge by ${employeeName} (Partner App)`
             });
             console.log('[DEBUG] Transaction created successfully.');
         } catch (txErr) {
@@ -673,10 +678,17 @@ router.post('/recharge-farmer', protect, async (req, res) => {
             throw txErr; // Re-throw to be caught by outer catch
         }
 
+        // 4. Dynamic Auto-Repayment (If farmer has debt and wallet balance, sweep it)
+        const { processAutoRepayment } = require('../services/repaymentService');
+        await processAutoRepayment(farmer._id);
+
+        // Fetch updated farmer for final balance in response
+        const updatedFarmer = await User.findById(farmer._id);
+
         res.json({
             message: 'Recharge successful',
-            newBalance: farmer.walletBalance,
-            farmerName: farmer.name
+            newBalance: updatedFarmer.walletBalance,
+            farmerName: updatedFarmer.name
         });
     } catch (error) {
         const errLog = `[${new Date().toISOString()}] RECHARGE_ERROR: ${error.message} - ${error.stack}\n`;
@@ -689,7 +701,7 @@ router.post('/recharge-farmer', protect, async (req, res) => {
 // @route   GET /api/employee/admin/recharge-logs
 // @desc    Get all wallet recharges for admin tracking
 // @access  Private/Admin
-router.get('/admin/recharge-logs', protect, checkAdmin, async (req, res) => {
+router.get('/admin/recharge-logs', protect, checkModule('labour'), async (req, res) => {
     try {
         const logs = await Transaction.find({
             module: 'Platform',
@@ -710,7 +722,7 @@ router.get('/admin/recharge-logs', protect, checkAdmin, async (req, res) => {
 // @route   PATCH /api/employee/admin/recharge-logs/:id/collect
 // @desc    Mark a cash recharge as collected by admin
 // @access  Private/Admin
-router.patch('/admin/recharge-logs/:id/collect', protect, checkAdmin, async (req, res) => {
+router.patch('/admin/recharge-logs/:id/collect', protect, checkModule('labour'), async (req, res) => {
     try {
         const log = await Transaction.findById(req.params.id);
         if (!log) return res.status(404).json({ error: 'Transaction log not found' });
@@ -732,10 +744,10 @@ router.patch('/admin/recharge-logs/:id/collect', protect, checkAdmin, async (req
 // @route   GET /api/employee/admin/farmers
 // @desc    Get all farmers (role: 'buyer') with stats for admin management
 // @access  Private/Admin
-router.get('/admin/farmers', protect, checkAdmin, async (req, res) => {
+router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => {
     try {
         const farmers = await User.find({ role: { $in: ['farmer', 'buyer'] } })
-            .select('name phone email address status aadhaarNumber aadhaarDocUrl panNumber panDocUrl bankDetails walletBalance walletNumber cardNumber profilePhotoUrl createdAt')
+            .select('name phone email address status aadhaarNumber aadhaarDocUrl panNumber panDocUrl bankDetails walletBalance walletNumber cardNumber profilePhotoUrl creditLimit creditUsed createdAt')
             .sort({ createdAt: -1 });
 
         // Get stats per farmer concurrently
@@ -763,6 +775,8 @@ router.get('/admin/farmers', protect, checkAdmin, async (req, res) => {
                 walletBalance: f.walletBalance || 0,
                 walletNumber: f.walletNumber || '',
                 cardNumber: f.cardNumber || '',
+                creditLimit: f.creditLimit || 0,
+                creditUsed: f.creditUsed || 0,
                 totalOrders: orders + sellReqs,
                 completedOrders: completed,
                 joinedAt: f.createdAt
@@ -779,7 +793,7 @@ router.get('/admin/farmers', protect, checkAdmin, async (req, res) => {
 // @route   POST /api/employee/admin/generate-card/:userId
 // @desc    Generate a random 11-digit card number for a user
 // @access  Private/Admin
-router.post('/admin/generate-card/:userId', protect, checkAdmin, async (req, res) => {
+router.post('/admin/generate-card/:userId', protect, checkModule('users'), async (req, res) => {
     try {
         const user = await User.findById(req.params.userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -788,14 +802,18 @@ router.post('/admin/generate-card/:userId', protect, checkAdmin, async (req, res
             return res.status(400).json({ error: 'User must be approved before generating a card' });
         }
 
-        if (user.cardNumber) {
-            return res.status(400).json({ error: 'Card number already generated' });
-        }
+        // if (user.cardNumber) {
+        //     return res.status(400).json({ error: 'Card number already generated' });
+        // }
 
-        // Generate a random 11-digit number
-        let cardNumber = '';
-        for (let i = 0; i < 11; i++) {
-            cardNumber += Math.floor(Math.random() * 10);
+        // Use manual value from body or generate random 16-digit
+        let cardNumber = req.body.cardNumber;
+        
+        if (!cardNumber) {
+            cardNumber = '';
+            for (let i = 0; i < 16; i++) {
+                cardNumber += Math.floor(Math.random() * 10);
+            }
         }
 
         user.cardNumber = cardNumber;
@@ -811,7 +829,7 @@ router.post('/admin/generate-card/:userId', protect, checkAdmin, async (req, res
 // @route   GET /api/employee/admin/farmers/stats
 // @desc    Get KPI stats for farmers dashboard
 // @access  Private/Admin
-router.get('/admin/farmers/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/farmers/stats', protect, checkModule('users'), async (req, res) => {
     try {
         const totalFarmers = await User.countDocuments({ role: 'buyer' });
         const activeFarmers = await User.countDocuments({ role: 'buyer', status: 'approved' });
@@ -845,7 +863,7 @@ router.get('/admin/farmers/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/soil-labs/stats
 // @desc    Get KPI stats for Soil Labs dashboard (Admin)
 // @access  Private/Admin
-router.get('/admin/soil-labs/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/soil-labs/stats', protect, checkModule('soil'), async (req, res) => {
     try {
         const totalLabs = await User.countDocuments({ role: 'soil' });
         const activeLabs = await User.countDocuments({ role: 'soil', status: 'approved' });
@@ -899,7 +917,7 @@ router.get('/admin/soil-labs/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/soil-labs
 // @desc    Get all active soil labs with their stats
 // @access  Private/Admin
-router.get('/admin/soil-labs', protect, checkAdmin, async (req, res) => {
+router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) => {
     try {
         const labs = await User.find({ role: 'soil' })
             .select('name businessName phone email address status employeeCode soilDetails createdAt aadhaarDocUrl')
@@ -934,7 +952,7 @@ router.get('/admin/soil-labs', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/soil-requests
 // @desc    Get all soil test requests (orders) for admin
 // @access  Private/Admin
-router.get('/admin/soil-requests', protect, checkAdmin, async (req, res) => {
+router.get('/admin/soil-requests', protect, checkModule('soil'), async (req, res) => {
     try {
         const requests = await SoilRequest.find({})
             .populate('farmer', 'name phone address')
@@ -949,9 +967,14 @@ router.get('/admin/soil-requests', protect, checkAdmin, async (req, res) => {
             labName: r.lab ? (r.lab.businessName || r.lab.name) : 'Unknown',
             testType: r.testType,
             price: r.price,
+            paymentMethod: r.paymentMethod || 'cash',
+            paymentStatus: r.paymentStatus || 'Pending',
             status: r.status,
             createdAt: r.createdAt,
-            sampleLocation: r.farmer ? r.farmer.address : 'N/A',
+            state: r.state || '',
+            district: r.district || '',
+            village: r.village || '',
+            sampleLocation: r.village ? `${r.village}, ${r.district}, ${r.state}` : (r.farmer ? r.farmer.address : 'N/A'),
             cropName: r.cropName || 'N/A',
             sampleType: r.sampleType || 'Field Soil',
             visitType: r.visitType || 'I will visit lab',
@@ -966,6 +989,61 @@ router.get('/admin/soil-requests', protect, checkAdmin, async (req, res) => {
     }
 });
 
+// @route   PUT /api/employee/admin/soil-requests/:id/assign
+// @desc    Assign a lab partner to a soil test request
+// @access  Private/Admin
+router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { labId } = req.body;
+        if (!labId) return res.status(400).json({ error: 'labId is required' });
+
+        const lab = await User.findById(labId);
+        if (!lab || lab.role !== 'soil') {
+            return res.status(404).json({ error: 'Lab partner not found' });
+        }
+
+        const request = await SoilRequest.findByIdAndUpdate(
+            req.params.id,
+            { lab: labId, status: 'New' },
+            { new: true }
+        ).populate('farmer', 'name');
+
+        if (!request) return res.status(404).json({ error: 'Soil request not found' });
+
+        // Send notification to lab partner
+        try {
+            const { sendNotification } = require('../services/notificationService');
+            await sendNotification(labId, {
+                title: 'New Soil Test Assigned',
+                messageEn: `A new soil test request from ${request.farmer ? request.farmer.name : 'a farmer'} has been assigned to you.`,
+                messageHi: `एक नया मिट्टी परीक्षण अनुरोध ${request.farmer ? request.farmer.name : 'एक किसान'} से आपको सौंपा गया है।`,
+                type: 'soil_test',
+                refId: request._id.toString()
+            });
+
+            // Send notification to farmer
+            if (request.farmer) {
+                const notifMsgEn = `Your soil test request has been assigned to a lab partner.`;
+                const notifMsgHi = `आपके मिट्टी परीक्षण अनुरोध को एक लैब पार्टनर को सौंपा गया है।`;
+                await sendNotification(request.farmer, {
+                    title: 'Soil Test Update',
+                    messageEn: notifMsgEn,
+                    messageHi: notifMsgHi,
+                    type: 'soil_test',
+                    refId: request._id.toString()
+                }).catch(() => {}); // Catch notification errors to not block main flow
+            }
+        } catch (notifError) {
+            console.error('Notification error (ignoring):', notifError);
+        }
+
+        res.json({ message: 'Lab assigned successfully', request });
+    } catch (error) {
+        console.error('Assign lab error:', error);
+        res.status(500).json({ error: 'Failed to assign lab' });
+    }
+});
+
 // =============================================
 // ADMIN: CROP SELL REQUESTS MANAGEMENT ROUTES
 // =============================================
@@ -973,7 +1051,7 @@ router.get('/admin/soil-requests', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/crop-requests
 // @desc    Get all crop sell requests (orders) for admin
 // @access  Private/Admin
-router.get('/admin/crop-requests', protect, checkAdmin, async (req, res) => {
+router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, res) => {
     try {
         const [orders, sellRequests] = await Promise.all([
             Order.find({})
@@ -1041,7 +1119,7 @@ router.get('/admin/crop-requests', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/buyer-partners
 // @desc    Get all buyer partners (role: 'buyer') for assignment dropdown
 // @access  Private/Admin  
-router.get('/admin/buyer-partners', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer-partners', protect, checkModule('doctor'), async (req, res) => {
     try {
         // Note: In this system, buyer partners have role 'buyer' and are approved
         // They are different from farmer-buyers; we use them to match crop sell requests
@@ -1063,7 +1141,7 @@ router.get('/admin/buyer-partners', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/crop-requests/:id/assign
 // @desc    Assign a crop request to a buyer partner
 // @access  Private/Admin
-router.put('/admin/crop-requests/:id/assign', protect, checkAdmin, async (req, res) => {
+router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), async (req, res) => {
     try {
         const { buyerId } = req.body;
         if (!buyerId) return res.status(400).json({ error: 'buyerId is required' });
@@ -1089,6 +1167,13 @@ router.put('/admin/crop-requests/:id/assign', protect, checkAdmin, async (req, r
             const otp = Math.floor(1000 + Math.random() * 9000).toString();
             const finalPrice = newPrice || parsePriceInQuintals(sellReq.expectedPrice);
 
+            const settings = await Settings.getSettings();
+            // Prioritize locked rate from SellRequest, fallback to settings
+            const bCommissionRate = sellReq.commissionRate || settings.commissions.buyerTrading || 0;
+            const qty = parseQuantityInQuintals(sellReq.quantity);
+            const cropPrice = qty * finalPrice;
+            const commissionAmount = (cropPrice * bCommissionRate) / 100;
+
             // Create an Order (for the buyer to see)
             const newOrder = new Order({
                 buyer: buyerId, // The partner who is buying
@@ -1104,6 +1189,9 @@ router.put('/admin/crop-requests/:id/assign', protect, checkAdmin, async (req, r
                 variety: sellReq.variety || '',
                 pricePerQuintal: finalPrice,
                 pricePerKg: finalPrice / 100,
+                amount: cropPrice,
+                commission: commissionAmount,
+                commissionRate: bCommissionRate,
                 imageUrl: (sellReq.images && sellReq.images.length > 0) ? sellReq.images[0] : '',
                 note: sellReq.notes || '',
                 status: 'accepted',
@@ -1146,7 +1234,7 @@ router.put('/admin/block/:id', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/unblock/:id
 // @desc    Unblock a user (set back to approved)
 // @access  Private/Admin
-router.put('/admin/unblock/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/unblock/:id', protect, checkModule('buyer'), async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true });
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -1159,7 +1247,7 @@ router.put('/admin/unblock/:id', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/approve/:id
 // @desc    Approve a pending user
 // @access  Private/Admin
-router.put('/admin/approve/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/approve/:id', protect, checkModule('buyer'), async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true });
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -1177,7 +1265,7 @@ router.put('/admin/approve/:id', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/buyer/stats
 // @desc    KPI cards: total buyers, active buyers, total orders, outstanding
 // @access  Private/Admin
-router.get('/admin/buyer/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer/stats', protect, checkModule('buyer'), async (req, res) => {
     try {
         const totalBuyers = await User.countDocuments({ role: 'buyer' });
         const activeBuyers = await User.countDocuments({ role: 'buyer', status: 'approved' });
@@ -1213,9 +1301,9 @@ router.get('/admin/buyer/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/buyers
 // @desc    All buyer profiles with their order stats
 // @access  Private/Admin
-router.get('/admin/buyers', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
     try {
-        const buyers = await User.find({ role: 'buyer' }).sort({ createdAt: -1 });
+        const buyers = await User.find({ role: { $in: ['buyer', 'crop-buyer'] } }).sort({ createdAt: -1 });
 
         const enriched = await Promise.all(buyers.map(async (b) => {
             const orders = await Order.find({ buyer: b._id });
@@ -1241,7 +1329,15 @@ router.get('/admin/buyers', protect, checkAdmin, async (req, res) => {
                 totalOrders: orders.length,
                 totalPurchaseQty: Math.round(totalPurchaseQty),
                 totalValue,
-                outstandingAmount: outstanding
+                outstandingAmount: outstanding,
+                bankDetails: {
+                    holderName: b.bankDetails?.holderName || '',
+                    bankName: b.bankDetails?.bankName || '',
+                    accountNumber: b.bankDetails?.accountNumber || '',
+                    ifscCode: b.bankDetails?.ifscCode || '',
+                    bankAddress: b.bankDetails?.bankAddress || '',
+                    bankDocUrl: b.bankDetails?.bankDocUrl || ''
+                }
             };
         }));
 
@@ -1255,7 +1351,7 @@ router.get('/admin/buyers', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/buyer/requests
 // @desc    All pending buyer purchase requests (orders with status pending)
 // @access  Private/Admin
-router.get('/admin/buyer/requests', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer/requests', protect, checkModule('buyer'), async (req, res) => {
     try {
         const requests = await Order.find({ status: 'pending' })
             .populate('buyer', 'name phone businessName address')
@@ -1289,16 +1385,21 @@ router.get('/admin/buyer/requests', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/buyer/reconciliation
 // @desc    Payment reconciliation: all non-pending orders for admin review
 // @access  Private/Admin
-router.get('/admin/buyer/reconciliation', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer/reconciliation', protect, checkModule('buyer'), async (req, res) => {
     try {
         const orders = await Order.find({ status: { $in: ['accepted', 'in-progress', 'completed'] } })
             .populate('buyer', 'name phone businessName address')
             .sort({ createdAt: -1 })
             .limit(100);
 
+        const settings = await Settings.getSettings();
+        const commissionRate = settings.commissions.buyerTrading || 0;
+
         const enriched = orders.map(o => {
             const qty = parseQuantityInQuintals(o.quantity);
-            const totalPayable = qty * (o.pricePerQuintal || 0);
+            const cropPrice = qty * (o.pricePerQuintal || 0);
+            const commission = o.commission || (cropPrice * commissionRate / 100);
+            const totalPayable = cropPrice + commission;
             const amountReceived = o.amountReceived || 0;
             const pendingAmount = Math.max(0, totalPayable - amountReceived);
             const farmerPayout = o.farmerAmount || 0;
@@ -1340,7 +1441,7 @@ router.get('/admin/buyer/reconciliation', protect, checkAdmin, async (req, res) 
 // @route   PUT /api/employee/admin/buyer/assign-farmer/:orderId
 // @desc    Admin assigns a farmer to a buyer's pending order
 // @access  Private/Admin
-router.put('/admin/buyer/assign-farmer/:orderId', protect, checkAdmin, async (req, res) => {
+router.put('/admin/buyer/assign-farmer/:orderId', protect, checkModule('buyer'), async (req, res) => {
     try {
         const { farmerName, farmerMobile, village, district, state, pricePerQuintal, amount } = req.body;
         if (!farmerName) return res.status(400).json({ error: 'Farmer name is required' });
@@ -1374,6 +1475,49 @@ router.put('/admin/buyer/approve/:buyerId', protect, checkAdmin, async (req, res
     } catch (e) {
         res.status(500).json({ error: 'Failed to approve buyer' });
     }
+});
+
+// @route   PUT /api/employee/admin/buyer/update/:buyerId
+// @desc    Admin can update ANY field of a buyer (bypassing restriction)
+router.put('/admin/buyer/update/:buyerId', protect, checkAdmin, async (req, res) => {
+    try {
+        const buyer = await User.findById(req.params.buyerId);
+        if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
+
+        // Update fields if provided
+        if (req.body.name) buyer.name = req.body.name;
+        if (req.body.email) buyer.email = req.body.email;
+        if (req.body.phone) buyer.phone = req.body.phone;
+        if (req.body.address) buyer.address = req.body.address;
+        if (req.body.businessName) buyer.businessName = req.body.businessName;
+        if (req.body.aadhaarNumber) buyer.aadhaarNumber = req.body.aadhaarNumber;
+
+        // Update Bank Details
+        if (req.body.bankDetails) {
+            const b = req.body.bankDetails;
+            buyer.bankDetails = {
+                holderName: b.holderName || (buyer.bankDetails ? buyer.bankDetails.holderName : ''),
+                bankName: b.bankName || (buyer.bankDetails ? buyer.bankDetails.bankName : ''),
+                accountNumber: b.accountNumber || (buyer.bankDetails ? buyer.bankDetails.accountNumber : ''),
+                ifscCode: b.ifscCode || (buyer.bankDetails ? buyer.bankDetails.ifscCode : ''),
+                bankAddress: b.bankAddress || (buyer.bankDetails ? buyer.bankDetails.bankAddress : ''),
+                bankDocUrl: buyer.bankDetails ? buyer.bankDetails.bankDocUrl : ''
+            };
+        }
+
+        await buyer.save();
+        res.json({ message: 'Buyer profile updated successfully by Admin', buyer: {
+            ...buyer.toObject(),
+            bankDetails: {
+                holderName: buyer.bankDetails?.holderName || '',
+                bankName: buyer.bankDetails?.bankName || '',
+                accountNumber: buyer.bankDetails?.accountNumber || '',
+                ifscCode: buyer.bankDetails?.ifscCode || '',
+                bankAddress: buyer.bankDetails?.bankAddress || '',
+                bankDocUrl: buyer.bankDetails?.bankDocUrl || ''
+            }
+        }});
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // @route   PUT /api/employee/admin/buyer/reject/:buyerId
@@ -1490,12 +1634,18 @@ router.get('/admin/buyer/export/requests', protect, checkAdmin, async (req, res)
 // @access  Private/Admin
 router.get('/admin/buyer/export/reconciliation', protect, checkAdmin, async (req, res) => {
     try {
+        const settings = await Settings.getSettings();
+        const commissionRate = settings.commissions.buyerTrading || 0;
         const orders = await Order.find({ status: { $ne: 'pending' } }).populate('buyer', 'name phone businessName address').lean();
+        
         const rows = orders.map(o => {
             const b = o.buyer || {};
-            const totalPayable = (o.quantity || 0) * (o.pricePerQuintal || 0);
+            const qty = parseQuantityInQuintals(o.quantity);
+            const cropPrice = qty * (o.pricePerQuintal || 0);
+            const commission = o.commission || (cropPrice * commissionRate / 100);
+            const totalPayable = cropPrice + commission;
             const amountReceived = o.amountReceived || 0;
-            return [escapeCSV(o._id), escapeCSV(new Date(o.createdAt).toLocaleDateString('en-IN')), escapeCSV(b.businessName || b.name), escapeCSV(b.address), escapeCSV(o.crop), o.quantity || 0, totalPayable, amountReceived, totalPayable - amountReceived, o.farmerAmount || 0, escapeCSV(o.settlement || 'pending')].join(',');
+            return [escapeCSV(o._id), escapeCSV(new Date(o.createdAt).toLocaleDateString('en-IN')), escapeCSV(b.businessName || b.name), escapeCSV(b.address), escapeCSV(o.crop), qty, totalPayable, amountReceived, totalPayable - amountReceived, o.farmerAmount || 0, escapeCSV(o.settlement || 'pending')].join(',');
         });
         const csv = '\uFEFF' + 'Order ID,Date,Buyer,Location,Crop,Quantity (Q),Total Payable (Rs),Amount Received (Rs),Pending (Rs),Farmer Payout (Rs),Settlement\n' + rows.join('\n');
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -1577,7 +1727,16 @@ router.get('/admin/shops', protect, checkAdmin, async (req, res) => {
                 productsCount: items.length,
                 categories,
                 totalOrders: totalOrdersDocs.length,
-                fulfilledOrders: totalOrdersDocs.filter(o => o.status === 'DELIVERED').length
+                fulfilledOrders: totalOrdersDocs.filter(o => o.status === 'DELIVERED').length,
+                // Additional Info
+                aadhaarNumber: s.aadhaarNumber,
+                aadhaarDocUrl: s.aadhaarDocUrl,
+                panNumber: s.panNumber,
+                panDocUrl: s.panDocUrl,
+                gstNumber: s.gstNumber,
+                licenseNumber: s.licenseNumber,
+                businessLicenseUrl: s.businessLicenseUrl,
+                bankDetails: s.bankDetails
             };
         }));
 
@@ -1654,6 +1813,48 @@ router.put('/admin/shop/block/:id', protect, checkAdmin, async (req, res) => {
     }
 });
 
+// @route   PUT /api/employee/admin/shop/update/:id
+// @desc    Update shop partner details (Admin only)
+// @access  Private/Admin
+router.put('/admin/shop/update/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const shop = await User.findById(req.params.id);
+        if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
+        const {
+            name, businessName, email, phone, address,
+            aadhaarNumber, panNumber, gstNumber, licenseNumber,
+            bankDetails
+        } = req.body;
+
+        if (name) shop.name = name;
+        if (businessName) shop.businessName = businessName;
+        if (email) shop.email = email;
+        if (phone) shop.phone = phone;
+        if (address) shop.address = address;
+        if (aadhaarNumber) shop.aadhaarNumber = aadhaarNumber;
+        if (panNumber) shop.panNumber = panNumber;
+        if (gstNumber) shop.gstNumber = gstNumber;
+        if (licenseNumber) shop.licenseNumber = licenseNumber;
+
+        if (bankDetails) {
+            if (!shop.bankDetails) shop.bankDetails = {};
+            if (bankDetails.holderName !== undefined) shop.bankDetails.holderName = bankDetails.holderName;
+            if (bankDetails.bankName !== undefined) shop.bankDetails.bankName = bankDetails.bankName;
+            if (bankDetails.accountNumber !== undefined) shop.bankDetails.accountNumber = bankDetails.accountNumber;
+            if (bankDetails.ifscCode !== undefined) shop.bankDetails.ifscCode = bankDetails.ifscCode;
+            if (bankDetails.bankAddress !== undefined) shop.bankDetails.bankAddress = bankDetails.bankAddress;
+            shop.markModified('bankDetails');
+        }
+
+        await shop.save();
+        res.json({ message: 'Shop details updated successfully' });
+    } catch (e) {
+        console.error('Update shop error:', e);
+        res.status(500).json({ error: 'Failed to update shop' });
+    }
+});
+
 // =============================================
 // ADMIN: LABOUR AGGREGATION MANAGEMENT ROUTES
 // =============================================
@@ -1661,7 +1862,7 @@ router.put('/admin/shop/block/:id', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/labour/stats
 // @desc    Get KPI stats for Labour dashboard (Admin)
 // @access  Private/Admin
-router.get('/admin/labour/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/labour/stats', protect, checkModule('labour'), async (req, res) => {
     try {
         const totalLabourers = await User.countDocuments({ role: 'labour' });
         const activeLabourers = await User.countDocuments({ role: 'labour', 'labourDetails.availability': 'active' });
@@ -1694,7 +1895,7 @@ router.get('/admin/labour/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/labours
 // @desc    Get all labourers with their skills and aggregated job stats
 // @access  Private/Admin
-router.get('/admin/labours', protect, checkAdmin, async (req, res) => {
+router.get('/admin/labours', protect, checkModule('labour'), async (req, res) => {
     try {
         const labourers = await User.find({ role: 'labour' })
             .select('name businessName phone email address status employeeCode createdAt aadhaarDocUrl labourDetails')
@@ -1728,7 +1929,7 @@ router.get('/admin/labours', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/labour/jobs
 // @desc    Get all recent labour jobs
 // @access  Private/Admin
-router.get('/admin/labour/jobs', protect, checkAdmin, async (req, res) => {
+router.get('/admin/labour/jobs', protect, checkModule('labour'), async (req, res) => {
     try {
         const jobs = await LabourJob.find()
             .populate('labour', 'name businessName address')
@@ -1768,7 +1969,7 @@ router.get('/admin/labour/jobs', protect, checkAdmin, async (req, res) => {
 // @route   PATCH /api/employee/admin/labour/jobs/:id/assign
 // @desc    Assign a labour job to an employee
 // @access  Private/Admin
-router.patch('/admin/labour/jobs/:id/assign', protect, checkAdmin, async (req, res) => {
+router.patch('/admin/labour/jobs/:id/assign', protect, checkModule('labour'), async (req, res) => {
     try {
         console.log('--- LABOUR ASSIGN REQUEST RECEIVED ---');
         console.log('ID:', req.params.id);
@@ -1797,7 +1998,7 @@ router.patch('/admin/labour/jobs/:id/assign', protect, checkAdmin, async (req, r
 });
 // @desc    Export all labourers as CSV
 // @access  Private/Admin
-router.get('/admin/labour/export', protect, checkAdmin, async (req, res) => {
+router.get('/admin/labour/export', protect, checkModule('labour'), async (req, res) => {
     try {
         const labourers = await User.find({ role: 'labour' }).lean();
         const rows = labourers.map(l => {
@@ -1833,7 +2034,7 @@ router.get('/admin/labour/export', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/labour/approve/:id
 // @desc    Approve a labourer
 // @access  Private/Admin
-router.put('/admin/labour/approve/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/labour/approve/:id', protect, checkModule('labour'), async (req, res) => {
     try {
         const labour = await User.findById(req.params.id);
         if (!labour) return res.status(404).json({ error: 'Labourer not found' });
@@ -1848,7 +2049,7 @@ router.put('/admin/labour/approve/:id', protect, checkAdmin, async (req, res) =>
 // @route   PUT /api/employee/admin/labour/reject/:id
 // @desc    Reject/Suspend a labourer
 // @access  Private/Admin
-router.put('/admin/labour/reject/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/labour/reject/:id', protect, checkModule('labour'), async (req, res) => {
     try {
         const labour = await User.findById(req.params.id);
         if (!labour) return res.status(404).json({ error: 'Labourer not found' });
@@ -1883,7 +2084,7 @@ router.put('/admin/labour/availability/:id', protect, checkAdmin, async (req, re
 // @route   GET /api/employee/admin/rental/stats
 // @desc    KPI stats for Equipment Rental dashboard
 // @access  Private/Admin
-router.get('/admin/rental/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/rental/stats', protect, checkModule('equipment'), async (req, res) => {
     try {
         const totalBookings = await Rental.countDocuments();
         const activeBookings = await Rental.countDocuments({ status: { $in: ['New', 'Accepted', 'In Progress'] } });
@@ -1921,7 +2122,7 @@ router.get('/admin/rental/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/rental/bookings
 // @desc    Get all rental bookings with full details
 // @access  Private/Admin
-router.get('/admin/rental/bookings', protect, checkAdmin, async (req, res) => {
+router.get('/admin/rental/bookings', protect, checkModule('equipment'), async (req, res) => {
     try {
         const { status, page = 1, limit = 50 } = req.query;
         const filter = status && status !== 'all' ? { status } : {};
@@ -1975,7 +2176,7 @@ router.get('/admin/rental/bookings', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/rental/bookings/:id/status
 // @desc    Admin update rental status
 // @access  Private/Admin
-router.put('/admin/rental/bookings/:id/status', protect, checkAdmin, async (req, res) => {
+router.put('/admin/rental/bookings/:id/status', protect, checkModule('equipment'), async (req, res) => {
     try {
         const { status, cancelReason } = req.body;
         const validStatuses = ['New', 'Accepted', 'In Progress', 'Completed', 'Cancelled'];
@@ -2002,7 +2203,7 @@ router.put('/admin/rental/bookings/:id/status', protect, checkAdmin, async (req,
 // @route   PUT /api/employee/admin/rental/bookings/:id/assign
 // @desc    Assign a field executive to a rental booking
 // @access  Private/Admin
-router.put('/admin/rental/bookings/:id/assign', protect, checkAdmin, async (req, res) => {
+router.put('/admin/rental/bookings/:id/assign', protect, checkModule('equipment'), async (req, res) => {
     try {
         const { fieldExecId } = req.body;
         const rental = await Rental.findById(req.params.id);
@@ -2022,7 +2223,7 @@ router.put('/admin/rental/bookings/:id/assign', protect, checkAdmin, async (req,
 // @route   PUT /api/employee/admin/rental/bookings/:id/collect
 // @desc    Mark cash as collected for a completed booking
 // @access  Private/Admin
-router.put('/admin/rental/bookings/:id/collect', protect, checkAdmin, async (req, res) => {
+router.put('/admin/rental/bookings/:id/collect', protect, checkModule('equipment'), async (req, res) => {
     try {
         const { cashNote } = req.body;
         const rental = await Rental.findById(req.params.id);
@@ -2042,7 +2243,7 @@ router.put('/admin/rental/bookings/:id/collect', protect, checkAdmin, async (req
 // @route   GET /api/employee/admin/rental/field-execs
 // @desc    Get all field executives for assignment dropdown
 // @access  Private/Admin
-router.get('/admin/rental/field-execs', protect, checkAdmin, async (req, res) => {
+router.get('/admin/rental/field-execs', protect, checkModule('equipment'), async (req, res) => {
     try {
         const fes = await User.find({ role: 'field_executive' }).select('name phone address').lean();
         res.json(fes);
@@ -2054,7 +2255,7 @@ router.get('/admin/rental/field-execs', protect, checkAdmin, async (req, res) =>
 // @route   GET /api/employee/admin/rental/cash-collections
 // @desc    Get all cash collections (completed + collected)
 // @access  Private/Admin
-router.get('/admin/rental/cash-collections', protect, checkAdmin, async (req, res) => {
+router.get('/admin/rental/cash-collections', protect, checkModule('equipment'), async (req, res) => {
     try {
         const collections = await Rental.find({ cashCollected: true })
             .populate('machine', 'name')
@@ -2085,6 +2286,92 @@ router.get('/admin/rental/cash-collections', protect, checkAdmin, async (req, re
 // @route   GET /api/employee/admin/rental/export
 // @desc    Export all rental bookings as CSV
 // @access  Private/Admin
+
+// @route   GET /api/employee/admin/rental/partners
+// @desc    Get all equipment partners with their machine counts and booking stats
+// @access  Private/Admin
+router.get('/admin/rental/partners', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const partners = await User.find({ role: 'equipment' })
+            .select('name businessName phone email address status createdAt aadhaarDocUrl bankDetails profilePhotoUrl')
+            .sort({ createdAt: -1 });
+
+        const enriched = await Promise.all(partners.map(async (p) => {
+            const [machineCount, totalBookings] = await Promise.all([
+                Machine.countDocuments({ owner: p._id }),
+                Rental.countDocuments({ owner: p._id })
+            ]);
+
+            return {
+                _id: p._id,
+                name: p.businessName || p.name,
+                phone: p.phone,
+                email: p.email || '',
+                location: p.address || '',
+                status: p.status,
+                joinedAt: p.createdAt,
+                machineCount,
+                totalBookings,
+                documentUrl: p.aadhaarDocUrl || '',
+                bankDetails: p.bankDetails || {},
+                profilePhotoUrl: p.profilePhotoUrl || ''
+            };
+        }));
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Admin rental partners fetch error:', e);
+        res.status(500).json({ error: 'Failed to fetch equipment partners' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/partners/:id/status
+// @desc    Update partner status (approve/block/pending)
+// @access  Private/Admin
+router.put('/admin/rental/partners/:id/status', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const valid = ['pending', 'approved', 'blocked', 'rejected'];
+        if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+        partner.status = status;
+        await partner.save();
+        res.json({ message: `Partner status updated to ${status}`, status: partner.status });
+    } catch (e) {
+        console.error('Partner status update error:', e);
+        res.status(500).json({ error: 'Failed to update partner status' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/partners/:id/bank
+// @desc    Update partner bank details
+// @access  Private/Admin
+router.put('/admin/rental/partners/:id/bank', protect, checkModule('equipment'), async (req, res) => {
+    console.log(`[DEBUG] Bank update request for ID: ${req.params.id}`);
+    try {
+        const { holderName, bankName, accountNumber, ifscCode } = req.body;
+        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+        const currentDetails = partner.bankDetails || {};
+        partner.bankDetails = {
+            holderName: holderName || currentDetails.holderName || '',
+            bankName: bankName || currentDetails.bankName || '',
+            accountNumber: accountNumber || currentDetails.accountNumber || '',
+            ifscCode: ifscCode || currentDetails.ifscCode || ''
+        };
+
+        await partner.save();
+        res.json({ message: 'Bank details updated successfully', bankDetails: partner.bankDetails });
+    } catch (e) {
+        console.error('Partner bank update error:', e);
+        res.status(500).json({ error: 'Failed to update bank details' });
+    }
+});
+
 // ==========================================
 // KYC & COMPLIANCE MANAGEMENT (Admin)
 // ==========================================
@@ -2092,7 +2379,7 @@ router.get('/admin/rental/cash-collections', protect, checkAdmin, async (req, re
 // @route   GET /api/employee/admin/kyc/stats
 // @desc    Get KYC verification statistics
 // @access  Private/Admin
-router.get('/admin/kyc/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/kyc/stats', protect, checkModule('kyc'), async (req, res) => {
     try {
         const roles = ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive'];
         const stats = await User.aggregate([
@@ -2129,7 +2416,7 @@ router.get('/admin/kyc/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/kyc/list
 // @desc    Get filterable list of partners for KYC
 // @access  Private/Admin
-router.get('/admin/kyc/list', protect, checkAdmin, async (req, res) => {
+router.get('/admin/kyc/list', protect, checkModule('kyc'), async (req, res) => {
     try {
         const { status, role, search } = req.query;
         let query = { role: { $in: ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive'] } };
@@ -2234,7 +2521,7 @@ router.get('/admin/kyc/export', protect, checkAdmin, async (req, res) => {
     }
 });
 
-router.get('/admin/rental/export', protect, checkAdmin, async (req, res) => {
+router.get('/admin/rental/export', protect, checkModule('equipment'), async (req, res) => {
     try {
         const bookings = await Rental.find({})
             .populate('machine', 'name village')
@@ -2677,7 +2964,7 @@ router.get('/admin/ksp/export', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/finance/stats
 // @desc    Get key KPIs for Finance Dashboard
 // @access  Private/Admin
-router.get('/admin/finance/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/finance/stats', protect, checkModule('finance'), async (req, res) => {
     try {
         let totalPendingPayouts = 0;
         let pendingCount = 0;
@@ -2754,9 +3041,18 @@ router.get('/admin/finance/stats', protect, checkAdmin, async (req, res) => {
         // For Shop Orders, platform revenue is typically the commission/margin.
         todayRevenue += todayShopOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-        // Ideally, we'd also add Platform Commissions from completed rentals today
+        // Platform Commissions from completed rentals today
         const todayRentals = await Rental.find({ status: 'Completed', updatedAt: { $gte: today } });
         todayRevenue += todayRentals.reduce((sum, r) => sum + (r.platformCommission || 0), 0);
+
+        // Platform Commissions from Buyer Trading today
+        const settings = await Settings.getSettings();
+        const bCommissionRate = settings.commissions.buyerTrading || 0;
+        const todayBuyerOrders = await Order.find({ status: 'completed', updatedAt: { $gte: today } });
+        todayRevenue += todayBuyerOrders.reduce((sum, o) => {
+            const commission = o.commission || ( (o.amount || (parseQuantityInQuintals(o.quantity) * (o.pricePerQuintal || 0))) * bCommissionRate / 100 );
+            return sum + commission;
+        }, 0);
 
         res.json({
             totalPendingPayouts,
@@ -2776,7 +3072,7 @@ router.get('/admin/finance/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/finance/pending
 // @desc    Get all pending payouts (Equipment, Labour) and collections (Buyers)
 // @access  Private/Admin
-router.get('/admin/finance/pending', protect, checkAdmin, async (req, res) => {
+router.get('/admin/finance/pending', protect, checkModule('finance'), async (req, res) => {
     try {
         const { module } = req.query; // 'all', 'equipment', 'labour', 'buyer'
         let pendingItems = [];
@@ -2876,7 +3172,7 @@ router.get('/admin/finance/pending', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/finance/approve
 // @desc    Approve a list of pending payouts and generate Transactions
 // @access  Private/Admin
-router.put('/admin/finance/approve', protect, checkAdmin, async (req, res) => {
+router.put('/admin/finance/approve', protect, checkModule('finance'), async (req, res) => {
     try {
         const { payouts } = req.body; // Array of { id, module, amount, partnerId }
 
@@ -2932,7 +3228,7 @@ router.put('/admin/finance/approve', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/finance/transactions
 // @desc    Get all transactions (Ledger/History)
 // @access  Private/Admin
-router.get('/admin/finance/transactions', protect, checkAdmin, async (req, res) => {
+router.get('/admin/finance/transactions', protect, checkModule('finance'), async (req, res) => {
     try {
         const { status } = req.query;
         let query = {};
@@ -2968,7 +3264,7 @@ router.get('/admin/finance/transactions', protect, checkAdmin, async (req, res) 
 
 // @route   GET /api/employee/admin/search-users
 // @desc    Search users/partners by name/phone/id
-router.get('/admin/search-users', protect, checkAdmin, async (req, res) => {
+router.get('/admin/search-users', protect, checkModule('payout'), async (req, res) => {
     console.log('--- SEARCH HANDLER TRIGGERED ---');
     console.log('Query:', req.query.query);
     try {
@@ -3005,7 +3301,7 @@ router.get('/admin/search-users', protect, checkAdmin, async (req, res) => {
 
 // @route   POST /api/employee/admin/process-payout
 // @desc    Admin pays user/partner and deducts from wallet
-router.post('/admin/process-payout', protect, checkAdmin, async (req, res) => {
+router.post('/admin/process-payout', protect, checkModule('payout'), async (req, res) => {
     try {
         const { id, amount, note, utrNumber, paymentMode } = req.body;
         if (!id || !amount || amount <= 0) {
@@ -3047,7 +3343,7 @@ router.post('/admin/process-payout', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/finance/transactions/:id/status
 // @desc    Update status of a transaction
 // @access  Private/Admin
-router.put('/admin/finance/transactions/:id/status', protect, checkAdmin, async (req, res) => {
+router.put('/admin/finance/transactions/:id/status', protect, checkModule('finance'), async (req, res) => {
     try {
         const { status, note, utrNumber } = req.body;
         if (!['Pending', 'Completed', 'Failed'].includes(status)) {
@@ -3072,7 +3368,7 @@ router.put('/admin/finance/transactions/:id/status', protect, checkAdmin, async 
 // @route   GET /api/employee/admin/finance/reconciliation
 // @desc    Get financial reconciliation report (Cash In vs Cash Out)
 // @access  Private/Admin
-router.get('/admin/finance/reconciliation', protect, checkAdmin, async (req, res) => {
+router.get('/admin/finance/reconciliation', protect, checkModule('finance'), async (req, res) => {
     try {
         let totalCashIn = 0;
 
@@ -3115,7 +3411,7 @@ router.get('/admin/finance/reconciliation', protect, checkAdmin, async (req, res
 // @route   GET /api/employee/admin/finance/export
 // @desc    Export Transactions to CSV
 // @access  Private/Admin
-router.get('/admin/finance/export', protect, checkAdmin, async (req, res) => {
+router.get('/admin/finance/export', protect, checkModule('finance'), async (req, res) => {
     try {
         const txns = await Transaction.find({ status: 'Completed' })
             .populate('recipient', 'name businessName phone role')
@@ -3154,7 +3450,7 @@ router.get('/admin/finance/export', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/analytics/overview
 // @desc    Get aggregated business insights and performance metrics
 // @access  Private/Admin
-router.get('/admin/analytics/overview', protect, checkAdmin, async (req, res) => {
+router.get('/admin/analytics/overview', protect, checkModule('analytics'), async (req, res) => {
     try {
         const { range = '30d' } = req.query;
         const now = new Date();
@@ -3274,7 +3570,7 @@ function calculateGrowth(current, previous) {
 // @route   GET /api/employee/admin/analytics/report/:module
 // @desc    Download module specific report
 // @access  Private/Admin
-router.get('/admin/analytics/report/:module', protect, checkAdmin, async (req, res) => {
+router.get('/admin/analytics/report/:module', protect, checkModule('analytics'), async (req, res) => {
     try {
         const { module } = req.params;
         const { format = 'csv' } = req.query;
@@ -3332,7 +3628,7 @@ router.get('/admin/analytics/report/:module', protect, checkAdmin, async (req, r
 });
 
 // Admin Dashboard Comprehensive Stats
-router.get('/admin/dashboard-stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/dashboard-stats', protect, async (req, res) => {
     try {
         const now = new Date();
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -3462,7 +3758,7 @@ function formatTimeAgo(date) {
 
 // @route   GET /api/employee/admin/franchise-stats
 // @desc    Get KPI stats for Franchise dashboard
-router.get('/admin/franchise-stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/franchise-stats', protect, checkModule('ksp_franchise'), async (req, res) => {
     try {
         const totalFranchises = await User.countDocuments({ role: 'ksp' });
         const activeFranchises = await User.countDocuments({ role: 'ksp', status: 'approved' });
@@ -3494,7 +3790,7 @@ router.get('/admin/franchise-stats', protect, checkAdmin, async (req, res) => {
 
 // @route   POST /api/employee/admin/franchises
 // @desc    Add a new KSP franchise
-router.post('/admin/franchises', protect, checkAdmin, async (req, res) => {
+router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
     try {
         const { name, phone, email, password, businessName, address } = req.body;
 
@@ -3531,7 +3827,7 @@ router.post('/admin/franchises', protect, checkAdmin, async (req, res) => {
 
 // @route   GET /api/employee/admin/franchises
 // @desc    Get all franchises for admin
-router.get('/admin/franchises', protect, checkAdmin, async (req, res) => {
+router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
     try {
         const franchises = await User.find({ role: 'ksp' })
             .select('name businessName phone address status walletBalance walletNumber createdAt')

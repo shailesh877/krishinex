@@ -78,7 +78,7 @@
       </div>
 
       <!-- Navigation -->
-            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+                        <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -147,6 +147,15 @@
           <span class="truncate font-semibold">Shop Management</span>
         </a>
 
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
         </div>
@@ -158,6 +167,24 @@
             <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
         </a>
 
         <a href="suggestion_management.html"
@@ -296,7 +323,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
-            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
           </div>
           <button onclick="logoutSession()"
             class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
@@ -331,27 +358,10 @@
             Add New Advisory Suggestion
           </h2>
           <form id="suggestionForm" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="space-y-1">
-                <label class="text-[11px] font-black text-slate-500 uppercase">Title (English)</label>
-                <input type="text" id="titleEn" placeholder="e.g. Today's Advisory" value="Today's Advisory"
-                  class="w-full h-11 px-4 rounded-xl border-2 border-slate-200 bg-slate-50/50 text-sm font-semibold focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all outline-none">
-              </div>
-              <div class="space-y-1">
-                <label class="text-[11px] font-black text-slate-500 uppercase">Title (Hindi)</label>
-                <input type="text" id="titleHi" placeholder="e.g. आज का सुझाव" value="आज का सुझाव"
-                  class="w-full h-11 px-4 rounded-xl border-2 border-slate-200 bg-slate-50/50 text-sm font-semibold focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all outline-none">
-              </div>
-            </div>
             <div class="space-y-1">
-              <label class="text-[11px] font-black text-slate-500 uppercase">Content (English)</label>
-              <textarea id="contentEn" rows="3" placeholder="Enter advisory message in English..."
-                class="w-full p-4 rounded-xl border-2 border-slate-200 bg-slate-50/50 text-sm font-semibold focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"></textarea>
-            </div>
-            <div class="space-y-1">
-              <label class="text-[11px] font-black text-slate-500 uppercase">Content (Hindi)</label>
-              <textarea id="contentHi" rows="3" placeholder="हिंदी में संदेश लिखें..."
-                class="w-full p-4 rounded-xl border-2 border-slate-200 bg-slate-50/50 text-sm font-semibold focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all outline-none"></textarea>
+              <label class="text-[11px] font-black text-slate-500 uppercase">Advisory Image (Recommended Size: 1200x600)</label>
+              <input type="file" id="image" accept="image/*" required
+                class="w-full h-11 px-4 py-2 rounded-xl border-2 border-slate-200 bg-slate-50/50 text-sm font-semibold focus:border-emerald-400 transition-all outline-none">
             </div>
             <div class="flex justify-end">
               <button type="submit"
@@ -374,9 +384,8 @@
             <table class="min-w-full border-separate border-spacing-0">
               <thead class="bg-slate-50">
                 <tr class="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">English Content</th>
-                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Hindi Content</th>
-                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Date Added</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Advisory Image</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Date Published</th>
                   <th class="text-right px-6 py-4 border-b-2 border-slate-200">Action</th>
                 </tr>
               </thead>
@@ -436,19 +445,15 @@
           tr.className = 'hover:bg-slate-50/80 transition-colors';
           tr.innerHTML = `
             <td class="px-6 py-5">
-              <p class="text-[11px] font-black text-emerald-600 mb-1 uppercase tracking-tight">${item.titleEn}</p>
-              <p class="text-sm font-semibold text-slate-700 leading-relaxed">${item.contentEn}</p>
+              ${item.imageUrl ? `<img src="https://demo.ranx24.com/${item.imageUrl}" class="h-16 w-32 object-cover rounded-xl border-2 border-white shadow-lg" />` : '<span class="text-slate-300 italic text-[10px]">No Image</span>'}
             </td>
-            <td class="px-6 py-5 border-l border-slate-100">
-              <p class="text-[11px] font-black text-emerald-600 mb-1 uppercase tracking-tight">${item.titleHi}</p>
-              <p class="text-sm font-semibold text-slate-700 leading-relaxed">${item.contentHi}</p>
-            </td>
-            <td class="px-6 py-5 text-xs font-black text-slate-400">
+            <td class="px-6 py-5 text-xs font-black text-slate-500">
               ${new Date(item.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+              <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Status: Active</p>
             </td>
             <td class="px-6 py-5 text-right">
               <button onclick="deleteSuggestion('${item._id}')" 
-                class="h-9 w-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                class="h-10 w-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-90">
                 <i class="fas fa-trash-alt"></i>
               </button>
             </td>
@@ -462,25 +467,26 @@
 
     document.getElementById('suggestionForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const body = {
-        titleEn: document.getElementById('titleEn').value,
-        titleHi: document.getElementById('titleHi').value,
-        contentEn: document.getElementById('contentEn').value,
-        contentHi: document.getElementById('contentHi').value
-      };
+      const formData = new FormData();
+      
+      const fileInput = document.getElementById('image');
+      if (!fileInput.files[0]) {
+        showToast('Please select an image first');
+        return;
+      }
+      formData.append('image', fileInput.files[0]);
 
       try {
         const res = await fetch(`${API_BASE}/suggestions`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(body)
+          body: formData
         });
 
         if (res.ok) {
-          showToast('Advisory Successfully Published!');
+          showToast('Advisory Image Successfully Published!');
           document.getElementById('suggestionForm').reset();
           fetchSuggestions();
         } else {
@@ -516,6 +522,7 @@
 
     fetchSuggestions();
   </script>
+  <script src="js/sidebar-guard.js"></script>
 </body>
 </html>
 

@@ -17,7 +17,7 @@ async function testSignup() {
         form.append('aadhaarDoc', fs.createReadStream('dummy.pdf'));
 
         console.log('Sending request...');
-        const response = await axios.post('http://10.216.253.218:5000/api/auth/register', form, {
+        const response = await axios.post('https://demo.ranx24.com/api/auth/register', form, {
             headers: form.getHeaders()
         });
 

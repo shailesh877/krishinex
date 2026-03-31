@@ -43,4 +43,33 @@ const checkAdmin = (req, res, next) => {
     }
 };
 
-module.exports = { protect, checkAdmin };
+/**
+ * checkModule - Granular RBAC Middleware
+ * Allows access if user is 'admin' OR an 'employee' with the required module permission.
+ */
+const User = require('../models/User');
+const checkModule = (moduleKey) => async (req, res, next) => {
+    try {
+        if (!req.user) return res.status(401).json({ error: 'Authentication required.' });
+
+        // Super Admin gets full access
+        if (req.user.role === 'admin') return next();
+
+        // Fetch fresh user data to check permissions
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User account not found.' });
+
+        // Check if employee has the specific module assigned
+        if (user.role === 'employee' && user.employeeModules && user.employeeModules.includes(moduleKey)) {
+            return next();
+        }
+
+        console.warn(`[RBAC] Access denied for ${user.email} on module: ${moduleKey}`);
+        res.status(403).json({ error: `Access denied. ${moduleKey} permission required.` });
+    } catch (error) {
+        console.error('[RBAC] Error checking permissions:', error);
+        res.status(500).json({ error: 'Internal server error during permission check.' });
+    }
+};
+
+module.exports = { protect, checkAdmin, checkModule };

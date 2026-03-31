@@ -9,7 +9,19 @@ const soilRequestSchema = new mongoose.Schema({
     lab: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
+    },
+    state: {
+        type: String,
+        default: ''
+    },
+    district: {
+        type: String,
+        default: ''
+    },
+    village: {
+        type: String,
+        default: ''
     },
     status: {
         type: String,
@@ -42,6 +54,19 @@ const soilRequestSchema = new mongoose.Schema({
     price: {
         type: Number,
         default: 0
+    },
+    paymentMethod: {
+        type: String,
+        enum: ['cash', 'wallet'],
+        default: 'cash'
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Completed'],
+        default: 'Pending'
+    },
+    paidAt: {
+        type: Date
     },
     createdAt: {
         type: Date,

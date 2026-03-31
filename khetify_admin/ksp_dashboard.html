@@ -340,9 +340,9 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    document.getElementById('kspBalance').textContent = `₹${(data.balance || 0).toLocaleString()}`;
-                    document.getElementById('kspPartnerName').textContent = data.name;
-                    renderTransactions(data.recentTransactions);
+                    document.getElementById('kspBalance').textContent = `₹${((data && data.balance) || 0).toLocaleString()}`;
+                    document.getElementById('kspPartnerName').textContent = (data && data.name) || 'Partner';
+                    renderTransactions(data && data.recentTransactions);
                 } else {
                     if (data.error === 'Not authorized, token failed') {
                         showToast('Session Expired. Please login again.', 'error');
@@ -359,7 +359,7 @@
 
         function renderTransactions(txns) {
             const container = document.getElementById('tx-container');
-            if (txns.length === 0) {
+            if (!txns || !Array.isArray(txns) || txns.length === 0) {
                 container.innerHTML = `<div class="py-20 text-center opacity-30 font-black italic text-xs">No Recent History</div>`;
                 return;
             }
@@ -382,6 +382,8 @@
             `).join('');
         }
 
+        let searchResults = [];
+
         async function searchUser() {
             const q = document.getElementById('user-search-input').value;
             if (!q) return showToast('Please enter search query', 'error');
@@ -398,20 +400,27 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    if (Array.isArray(data) && data.length > 1) {
+                    if (!data || (Array.isArray(data) && data.length === 0)) {
+                        showToast('User not found in farmer database', 'error');
+                        return;
+                    }
+
+                    searchResults = Array.isArray(data) ? data : [data];
+
+                    if (searchResults.length > 1) {
                         // Multi-user scenario
                         document.getElementById('stepSearch').classList.add('hidden');
                         document.getElementById('userSelectionList').classList.remove('hidden');
                         const container = document.getElementById('selection-container');
-                        container.innerHTML = data.map(u => `
-                            <div onclick='selectUser(${JSON.stringify(u)})' class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl flex items-center justify-between cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                        container.innerHTML = searchResults.map((u, index) => `
+                            <div onclick='selectUserByIndex(${index})' class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl flex items-center justify-between cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
                                 <div class="flex items-center gap-4">
                                     <div class="h-10 w-10 flex items-center justify-center bg-white rounded-xl border border-slate-200">
                                         <i class="fas fa-user text-slate-400 group-hover:text-blue-500"></i>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-black text-slate-900">${u.name}</p>
-                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">${u.role}</p>
+                                        <p class="text-sm font-black text-slate-900">${u.name || 'Unknown'}</p>
+                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">${u.role || 'User'}</p>
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -421,8 +430,7 @@
                         `).join('');
                     } else {
                         // Single user
-                        const user = Array.isArray(data) ? data[0] : data;
-                        selectUser(user);
+                        selectUser(searchResults[0]);
                     }
                 } else {
                     showToast(data.error || 'User not found', 'error');
@@ -436,14 +444,24 @@
             }
         }
 
+        function selectUserByIndex(index) {
+            if (searchResults[index]) {
+                selectUser(searchResults[index]);
+            }
+        }
+
         function selectUser(user) {
+            if (!user) {
+                showToast('Error: User data is missing', 'error');
+                return;
+            }
             selectedUser = user;
             document.getElementById('stepSearch').classList.add('hidden');
             document.getElementById('userSelectionList').classList.add('hidden');
             document.getElementById('userInfoCard').classList.remove('hidden');
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('userPhone').textContent = `+91 ${user.phone}`;
-            document.getElementById('userRole').textContent = user.role;
+            document.getElementById('userName').textContent = user.name || 'Unknown User';
+            document.getElementById('userPhone').textContent = user.phone ? `+91 ${user.phone}` : 'No Phone';
+            document.getElementById('userRole').textContent = user.role || 'Farmer';
             document.getElementById('userWallet').textContent = `₹${(user.walletBalance || 0).toLocaleString()}`;
         }
 
@@ -552,6 +570,7 @@
         // Init
         window.addEventListener('DOMContentLoaded', loadStats);
     </script>
+  <script src="js/sidebar-guard.js"></script>
 </body>
 
 </html>

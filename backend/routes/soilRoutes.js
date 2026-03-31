@@ -99,7 +99,11 @@ router.get('/requests', protect, async (req, res) => {
 // @access  Private
 router.patch('/requests/:id/status', protect, upload.single('report'), async (req, res) => {
     try {
-        const { status, reportNote } = req.body;
+        let { status, reportNote } = req.body;
+        if (!status) {
+            console.log('[SOIL ERROR] Status missing in req.body. Body:', req.body);
+            return res.status(400).json({ error: 'status is required in request body' });
+        }
         const request = await SoilRequest.findById(req.params.id);
 
         if (!request) {
@@ -112,6 +116,8 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
         }
 
         const previousStatus = request.status;
+        const previousPaymentStatus = request.paymentStatus;
+        
         request.status = status;
         if (reportNote) request.advisoryText = reportNote;
 
@@ -120,31 +126,100 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
             request.reportUrl = `${baseUrl}/uploads/${req.file.filename}`;
         }
 
-        await request.save();
+        // --- Payment Logic (User -> Lab + Admin) ---
+        // Trigger if moving to any active status AND not yet paid
+        const activeStatuses = ['Accepted', 'InProgress', 'Completed'];
+        const shouldPay = activeStatuses.includes(status) && request.paymentStatus !== 'Completed';
+        
+        console.log(`[SOIL DEBUG] Status: ${status}, Prev: ${previousStatus}, ShouldPay: ${shouldPay}, Method: ${request.paymentMethod}, Paid: ${request.paymentStatus}`);
 
-        // Wallet Credit Logic for Soil Lab
-        if (status === 'Completed' && previousStatus !== 'Completed') {
-            const lab = await require('../models/User').findById(request.lab);
-            if (lab) {
-                const amount = request.price || 0;
-                lab.walletBalance = (lab.walletBalance || 0) + amount;
-                await lab.save();
+        if (shouldPay && request.paymentMethod === 'wallet') {
+            const Settings = require('../models/Settings');
+            const Transaction = require('../models/Transaction');
+            const User = require('../models/User');
 
-                // Create Transaction record
-                await require('../models/Transaction').create({
-                    transactionId: `SOIL-${request._id}-${Date.now()}`,
-                    recipient: lab._id,
+            const farmer = await User.findById(request.farmer);
+            const lab = await User.findById(request.lab);
+            const settings = await Settings.getSettings();
+            
+            const amount = request.price || 250;
+            const commPercent = settings.commissions?.soil || 10;
+            const commissionAmount = Math.round(amount * (commPercent / 100));
+            const payoutAmount = amount - commissionAmount;
+
+            console.log(`[SOIL PAYMENT] Details - Farmer: ${farmer?._id}, Lab: ${lab?._id}, Amount: ${amount}, Comm%: ${commPercent}`);
+
+            if (farmer && lab) {
+                // 1. DEDUCT from Farmer
+                if (farmer.walletBalance < amount) {
+                    console.log(`[SOIL PAYMENT] Error: Insufficient balance for farmer ${farmer._id}`);
+                    return res.status(400).json({ error: 'Farmer has insufficient wallet balance to proceed with this request.' });
+                }
+                
+                farmer.walletBalance -= amount;
+                await farmer.save();
+
+                // Farmer Debit Transaction
+                await Transaction.create({
+                    transactionId: `SOIL-DR-${request._id}-${Date.now()}`,
+                    recipient: farmer._id,
                     module: 'Soil',
                     amount: amount,
+                    type: 'Debit',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: request._id,
+                    note: `Payment for Soil Test Request #${request._id.toString().slice(-6)}`
+                });
+
+                // 2. CREDIT Net Payout to Lab
+                lab.walletBalance = (lab.walletBalance || 0) + payoutAmount;
+                await lab.save();
+
+                // Lab Credit Transaction
+                await Transaction.create({
+                    transactionId: `SOIL-CR-${request._id}-${Date.now()}`,
+                    recipient: lab._id,
+                    module: 'Soil',
+                    amount: payoutAmount,
+                    totalAmount: amount,
+                    commissionAmount: commissionAmount,
                     type: 'Payout',
                     paymentMode: 'NexCard Wallet',
                     status: 'Completed',
                     referenceId: request._id,
-                    note: `Payment for Soil Test #${request._id.toString().slice(-6)}`
+                    note: `Payment for Soil Test #${request._id.toString().slice(-6)} (Total: ₹${amount}, Commission: ₹${commissionAmount})`
                 });
-                console.log(`[SOIL] Credited ${amount} to lab ${lab.name} for request ${request._id}`);
+
+                // 3. CREDIT Commission to Admin
+                const admin = await User.findOne({ role: 'admin' });
+                if (admin) {
+                    admin.walletBalance = (admin.walletBalance || 0) + commissionAmount;
+                    await admin.save();
+
+                    await Transaction.create({
+                        transactionId: `SOIL-ADM-${request._id}-${Date.now()}`,
+                        recipient: admin._id,
+                        module: 'Platform',
+                        amount: commissionAmount,
+                        totalAmount: amount,
+                        type: 'Credit',
+                        paymentMode: 'NexCard Wallet',
+                        status: 'Completed',
+                        referenceId: request._id,
+                        note: `Commission from Soil Test #${request._id.toString().slice(-6)}`
+                    });
+                }
+
+                // Update request payment status
+                request.paymentStatus = 'Completed';
+                request.paidAt = new Date();
+                console.log(`[SOIL PAYMENT] Successfully processed: Farmer -₹${amount}, Lab +₹${payoutAmount}, Admin +₹${commissionAmount}`);
             }
         }
+
+        // Final save for status, reportUrl, paymentStatus, etc.
+        await request.save();
 
         // Optionally send a notification to the farmer
         let notifMsgHi = '';
@@ -167,7 +242,7 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
                 title: 'Soil Test Update',
                 messageEn: notifMsgEn,
                 messageHi: notifMsgHi,
-                type: 'system',
+                type: 'soil_test',
                 refId: request._id.toString()
             }).catch(() => {});
         }

@@ -102,7 +102,7 @@
       </div>
 
       <!-- Navigation -->
-            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+                        <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -171,6 +171,15 @@
           <span class="truncate font-black">Shop Management</span>
         </a>
 
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
         </div>
@@ -182,6 +191,24 @@
             <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
         </a>
 
         <a href="suggestion_management.html"
@@ -339,7 +366,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
-            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
           </div>
           <button onclick="logoutSession()"
             class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
@@ -392,7 +419,7 @@
                 class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
                 <i class="fas fa-user text-white text-xs"></i>
               </div>
-              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+              <span id="headerUserName" class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
             </button>
           </div>
         </div>
@@ -612,18 +639,13 @@
   <!-- Shop Profile Modal -->
   <div id="shopProfileModal" class="fixed inset-0 z-50 hidden">
     <!-- Overlay backdrop -->
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeShopProfile()">
-    </div>
-
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeShopProfile()"></div>
     <!-- Modal content inside a sliding drawer -->
-    <div
-      class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l-2 border-slate-200 animate-[slideInRight_0.3s_ease-out]">
+    <div class="absolute inset-y-0 right-0 w-full max-w-xl bg-white shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l-2 border-slate-200 animate-[slideInRight_0.3s_ease-out]">
       <!-- Header -->
-      <div
-        class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-white via-teal-50/50 to-emerald-50/50 border-b-2 border-slate-200">
+      <div class="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-white via-teal-50/50 to-emerald-50/50 border-b-2 border-slate-200">
         <div class="flex items-center gap-3">
-          <div
-            class="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm">
             <i class="fas fa-store text-teal-600 text-lg"></i>
           </div>
           <div>
@@ -631,89 +653,198 @@
             <p class="text-[10px] text-slate-500 font-bold" id="modalShopId">ID: SH001</p>
           </div>
         </div>
-        <button onclick="closeShopProfile()"
-          class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center transition-colors">
-          <i class="fas fa-times"></i>
-        </button>
+        <div class="flex items-center gap-2">
+            <button id="toggleEditBtn" onclick="toggleEditMode()" class="h-8 px-3 rounded-lg bg-teal-500 text-white text-[10px] font-black hover:bg-teal-600 transition-colors">
+                <i class="fas fa-edit mr-1"></i> Edit Details
+            </button>
+            <button onclick="closeShopProfile()" class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
       </div>
 
       <!-- Body -->
-      <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
-        <!-- Contact block -->
-        <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
-          <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Contact Information</h4>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                <i class="fas fa-phone"></i>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-500 font-bold">Phone</p>
-                <p class="text-sm font-semibold text-slate-900" id="modalShopPhone">-</p>
-              </div>
+      <div class="flex-1 overflow-y-auto custom-scroll p-6">
+        <div id="viewMode" class="space-y-6">
+            <!-- Contact block -->
+            <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Contact & Basic Information</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Owner Name</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_ownerName">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Phone</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_phone">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Email</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_email">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Status</p>
+                        <span id="modalShopStatus" class="text-sm font-black text-emerald-700">Active</span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-200">
+                    <p class="text-[10px] text-slate-500 font-bold">Address</p>
+                    <p class="text-sm font-semibold text-slate-900" id="v_address">-</p>
+                </div>
             </div>
-            <div class="flex items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-500 font-bold">Email</p>
-                <p class="text-sm font-semibold text-slate-900" id="modalShopEmail">-</p>
-              </div>
+
+            <!-- KYC block -->
+            <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">KYC & Compliance</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Aadhaar Number</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_aadhaarNumber">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">PAN Number</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_panNumber">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">GST Number</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_gstNumber">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">License Number (GST)</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_licenseNumber">-</p>
+                    </div>
+                </div>
+                <!-- Docs -->
+                <div class="mt-4 pt-4 border-t border-slate-200 flex flex-wrap gap-2">
+                    <button id="doc_aadhaar" class="hidden px-3 py-1.5 rounded-lg border-2 border-blue-200 bg-blue-50 text-[10px] font-bold text-blue-700 hover:bg-blue-100" onclick="window.open(this.dataset.url, '_blank')">
+                        <i class="fas fa-id-card mr-1"></i> Aadhaar
+                    </button>
+                    <button id="doc_pan" class="hidden px-3 py-1.5 rounded-lg border-2 border-indigo-200 bg-indigo-50 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100" onclick="window.open(this.dataset.url, '_blank')">
+                        <i class="fas fa-file-invoice mr-1"></i> PAN
+                    </button>
+                    <button id="doc_gst" class="hidden px-3 py-1.5 rounded-lg border-2 border-emerald-200 bg-emerald-50 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100" onclick="window.open(this.dataset.url, '_blank')">
+                        <i class="fas fa-certificate mr-1"></i> License
+                    </button>
+                </div>
             </div>
-            <div class="flex items-center gap-3">
-              <div
-                class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                <i class="fas fa-map-marker-alt"></i>
-              </div>
-              <div>
-                <p class="text-[10px] text-slate-500 font-bold">Address</p>
-                <p class="text-sm font-semibold text-slate-900" id="modalShopLocation">-</p>
-              </div>
+
+            <!-- Bank block -->
+            <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
+                <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Banking Information</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Holder Name</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_bank_holderName">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">Bank Name</p>
+                        <p class="text-sm font-semibold text-slate-900" id="v_bank_bankName">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">A/C Number</p>
+                        <p class="text-sm font-black text-slate-900" id="v_bank_accountNumber">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold">IFSC Code</p>
+                        <p class="text-sm font-black text-slate-900" id="v_bank_ifscCode">-</p>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-200">
+                    <p class="text-[10px] text-slate-500 font-bold">Bank Address</p>
+                    <p class="text-xs font-semibold text-slate-900" id="v_bank_bankAddress">-</p>
+                </div>
+                <!-- Cheque Doc -->
+                <div class="mt-4">
+                    <button id="doc_cheque" class="hidden w-full px-3 py-2 rounded-lg border-2 border-amber-200 bg-amber-50 text-xs font-black text-amber-700 hover:bg-amber-100" onclick="window.open(this.dataset.url, '_blank')">
+                        <i class="fas fa-money-check mr-2"></i> View Cancelled Cheque / Passbook
+                    </button>
+                    <p id="no_cheque" class="text-center text-[10px] font-bold text-slate-400">Cancelled Cheque not uploaded</p>
+                </div>
             </div>
-          </div>
         </div>
 
-        <!-- Capability block -->
-        <div class="rounded-xl border-2 border-slate-100 bg-slate-50 p-4">
-          <h4 class="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Shop Metrics</h4>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p class="text-[10px] text-slate-500 font-bold">Listed Products</p>
-              <p class="text-lg font-black text-teal-700" id="modalShopProducts">-</p>
+        <!-- EDIT MODE FORM -->
+        <div id="editMode" class="hidden space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="col-span-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Business Name</label>
+                    <input type="text" id="e_businessName" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Owner Name</label>
+                    <input type="text" id="e_name" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Phone</label>
+                    <input type="text" id="e_phone" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Address</label>
+                    <textarea id="e_address" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold h-16"></textarea>
+                </div>
             </div>
-            <div>
-              <p class="text-[10px] text-slate-500 font-bold">Fulfilled Orders</p>
-              <p class="text-lg font-black text-emerald-700" id="modalShopOrders">-</p>
+
+            <div class="h-px bg-slate-200 my-4"></div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Aadhaar No</label>
+                    <input type="text" id="e_aadhaarNumber" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">PAN No</label>
+                    <input type="text" id="e_panNumber" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">GST No</label>
+                    <input type="text" id="e_gstNumber" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">License No</label>
+                    <input type="text" id="e_licenseNumber" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
             </div>
-          </div>
-          <div class="border-t-2 border-slate-200 pt-3 mt-3 space-y-3">
-            <div class="flex justify-between items-center">
-              <p class="text-xs text-slate-600 font-bold">Document</p>
-              <button id="modalViewDocBtn"
-                class="text-xs font-black text-blue-600 hover:text-blue-800 transition-colors hidden"
-                onclick="window.open(this.dataset.url, '_blank')">
-                <i class="fas fa-external-link-alt mr-1"></i> View KYC Document
-              </button>
-              <span id="modalNoDocText" class="text-xs font-bold text-slate-400">Not Uploaded</span>
+
+            <div class="h-px bg-slate-200 my-4"></div>
+
+            <div class="grid grid-cols-2 gap-3 pb-4">
+                <div class="col-span-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Bank Holder Name</label>
+                    <input type="text" id="e_bank_holderName" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Bank Name</label>
+                    <input type="text" id="e_bank_bankName" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">A/C Number</label>
+                    <input type="text" id="e_bank_accountNumber" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase">IFSC Code</label>
+                    <input type="text" id="e_bank_ifscCode" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-black text-slate-500 uppercase">Bank Address</label>
+                    <input type="text" id="e_bank_bankAddress" class="w-full mt-1 px-3 py-2 rounded-lg border-2 border-slate-200 focus:border-teal-400 text-sm font-semibold">
+                </div>
             </div>
-            <div class="flex justify-between items-center">
-              <p class="text-xs text-slate-600 font-bold">Status</p>
-              <span id="modalShopStatus" class="text-sm font-black text-emerald-700">Active</span>
-            </div>
-          </div>
+
+            <button onclick="saveShopEdits()" class="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-black shadow-lg hover:shadow-xl transition-all">
+                Save All Changes
+            </button>
+            <button onclick="toggleEditMode(false)" class="w-full py-2 rounded-xl text-slate-500 font-bold hover:bg-slate-100 transition-all">
+                Cancel
+            </button>
         </div>
       </div>
 
       <!-- Footer Action Buttons -->
-      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-between items-center">
+      <div id="modalFooter" class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-between items-center">
         <div class="flex gap-2" id="modalActionButtons">
           <!-- Dynamically populated based on status -->
         </div>
-        <button onclick="closeShopProfile()"
-          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+        <button onclick="closeShopProfile()" class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
           Close
         </button>
       </div>
@@ -994,29 +1125,97 @@
       }).join('');
     }
 
+    let currentEditingShopId = null;
+
+    function toggleEditMode(enable = true) {
+        const view = document.getElementById('viewMode');
+        const edit = document.getElementById('editMode');
+        const footer = document.getElementById('modalFooter');
+        const toggleBtn = document.getElementById('toggleEditBtn');
+
+        if (enable) {
+            view.classList.add('hidden');
+            edit.classList.remove('hidden');
+            footer.classList.add('hidden');
+            toggleBtn.innerHTML = '<i class="fas fa-eye mr-1"></i> Exit Edit';
+            toggleBtn.onclick = () => toggleEditMode(false);
+            toggleBtn.classList.remove('bg-teal-500');
+            toggleBtn.classList.add('bg-slate-500');
+        } else {
+            view.classList.remove('hidden');
+            edit.classList.add('hidden');
+            footer.classList.remove('hidden');
+            toggleBtn.innerHTML = '<i class="fas fa-edit mr-1"></i> Edit Details';
+            toggleBtn.onclick = () => toggleEditMode(true);
+            toggleBtn.classList.remove('bg-slate-500');
+            toggleBtn.classList.add('bg-teal-500');
+        }
+    }
+
     function viewShop(shopId) {
       const shop = allShops.find(s => s._id === shopId);
       if (!shop) return;
+      currentEditingShopId = shopId;
+      toggleEditMode(false); // Reset to view mode
 
       document.getElementById('modalShopName').textContent = shop.businessName;
       document.getElementById('modalShopId').textContent = 'ID: #' + shop._id.substring(18).toUpperCase();
-      document.getElementById('modalShopPhone').textContent = shop.phone;
-      document.getElementById('modalShopEmail').textContent = shop.email || 'N/A';
-      document.getElementById('modalShopLocation').textContent = shop.address || 'N/A';
+      
+      // Contact
+      document.getElementById('v_ownerName').textContent = shop.name || '-';
+      document.getElementById('v_phone').textContent = shop.phone;
+      document.getElementById('v_email').textContent = shop.email || 'N/A';
+      document.getElementById('v_address').textContent = shop.address || 'N/A';
 
-      document.getElementById('modalShopProducts').textContent = (shop.productsCount || 0).toLocaleString();
-      document.getElementById('modalShopOrders').textContent = (shop.totalOrders || 0).toLocaleString();
+      // KYC
+      document.getElementById('v_aadhaarNumber').textContent = shop.aadhaarNumber || 'Not Provided';
+      document.getElementById('v_panNumber').textContent = shop.panNumber || 'Not Provided';
+      document.getElementById('v_gstNumber').textContent = shop.gstNumber || 'Not Provided';
+      document.getElementById('v_licenseNumber').textContent = shop.licenseNumber || 'Not Provided';
 
-      const docBtn = document.getElementById('modalViewDocBtn');
-      const noDocTxt = document.getElementById('modalNoDocText');
-      if (shop.documentUrl) {
-        docBtn.dataset.url = fixImageUrl(shop.documentUrl);
-        docBtn.classList.remove('hidden');
-        noDocTxt.classList.add('hidden');
+      // Docs
+      const setupDoc = (id, url) => {
+          const btn = document.getElementById(id);
+          if (url) {
+              btn.dataset.url = fixImageUrl(url);
+              btn.classList.remove('hidden');
+          } else btn.classList.add('hidden');
+      };
+      setupDoc('doc_aadhaar', shop.aadhaarDocUrl);
+      setupDoc('doc_pan', shop.panDocUrl);
+      setupDoc('doc_gst', shop.businessLicenseUrl);
+      
+      // Bank
+      const b = shop.bankDetails || {};
+      document.getElementById('v_bank_holderName').textContent = b.holderName || '-';
+      document.getElementById('v_bank_bankName').textContent = b.bankName || '-';
+      document.getElementById('v_bank_accountNumber').textContent = b.accountNumber || '-';
+      document.getElementById('v_bank_ifscCode').textContent = b.ifscCode || '-';
+      document.getElementById('v_bank_bankAddress').textContent = b.bankAddress || '-';
+      
+      if (b.bankDocUrl) {
+          document.getElementById('doc_cheque').dataset.url = fixImageUrl(b.bankDocUrl);
+          document.getElementById('doc_cheque').classList.remove('hidden');
+          document.getElementById('no_cheque').classList.add('hidden');
       } else {
-        docBtn.classList.add('hidden');
-        noDocTxt.classList.remove('hidden');
+          document.getElementById('doc_cheque').classList.add('hidden');
+          document.getElementById('no_cheque').classList.remove('hidden');
       }
+
+      // Edit Mode Fields
+      document.getElementById('e_businessName').value = shop.businessName;
+      document.getElementById('e_name').value = shop.name || '';
+      document.getElementById('e_phone').value = shop.phone;
+      document.getElementById('e_address').value = shop.address || '';
+      document.getElementById('e_aadhaarNumber').value = shop.aadhaarNumber || '';
+      document.getElementById('e_panNumber').value = shop.panNumber || '';
+      document.getElementById('e_gstNumber').value = shop.gstNumber || '';
+      document.getElementById('e_licenseNumber').value = shop.licenseNumber || '';
+      document.getElementById('e_bank_holderName').value = b.holderName || '';
+      document.getElementById('e_bank_bankName').value = b.bankName || '';
+      document.getElementById('e_bank_accountNumber').value = b.accountNumber || '';
+      document.getElementById('e_bank_ifscCode').value = b.ifscCode || '';
+      document.getElementById('e_bank_bankAddress').value = b.bankAddress || '';
 
       const statusEl = document.getElementById('modalShopStatus');
       const isApproved = shop.status === 'approved' || shop.status === 'Active';
@@ -1033,6 +1232,58 @@
       }
 
       document.getElementById('shopProfileModal').classList.remove('hidden');
+    }
+
+    async function saveShopEdits() {
+        if (!currentEditingShopId) return;
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        const payload = {
+            businessName: document.getElementById('e_businessName').value,
+            name: document.getElementById('e_name').value,
+            phone: document.getElementById('e_phone').value,
+            address: document.getElementById('e_address').value,
+            aadhaarNumber: document.getElementById('e_aadhaarNumber').value,
+            panNumber: document.getElementById('e_panNumber').value,
+            gstNumber: document.getElementById('e_gstNumber').value,
+            licenseNumber: document.getElementById('e_licenseNumber').value,
+            bankDetails: {
+                holderName: document.getElementById('e_bank_holderName').value,
+                bankName: document.getElementById('e_bank_bankName').value,
+                accountNumber: document.getElementById('e_bank_accountNumber').value,
+                ifscCode: document.getElementById('e_bank_ifscCode').value,
+                bankAddress: document.getElementById('e_bank_bankAddress').value
+            }
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/employee/admin/shop/update/${currentEditingShopId}`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${AUTH_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('Shop details updated!', 'success');
+                fetchShops();
+                toggleEditMode(false);
+                // Update local UI immediately
+                setTimeout(() => viewShop(currentEditingShopId), 500);
+            } else {
+                showToast(data.error || 'Failed to update', 'error');
+            }
+        } catch (e) {
+            showToast('Network Error', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     }
 
     function closeShopProfile() {
@@ -1153,6 +1404,7 @@
       setTimeout(() => toast.classList.add('hidden'), 3500);
     }
   </script>
+  <script src="js/sidebar-guard.js"></script>
 </body>
 
 </html>

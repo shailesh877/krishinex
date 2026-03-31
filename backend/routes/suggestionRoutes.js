@@ -2,6 +2,25 @@ const express = require('express');
 const router = express.Router();
 const Suggestion = require('../models/Suggestion');
 const { protect } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Setup multer for Suggestion images
+const uploadDir = path.join(__dirname, '../uploads/suggestions');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination(req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename(req, file, cb) {
+        cb(null, `suggestion-${Date.now()}${path.extname(file.originalname)}`);
+    }
+});
+const upload = multer({ storage });
 
 // @route   GET /api/suggestions/latest
 // @desc    Get the latest active suggestion
@@ -35,21 +54,22 @@ router.get('/all', async (req, res) => {
 // @route   POST /api/suggestions
 // @desc    Create a new suggestion (Admin/Employee)
 // @access  Private
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, upload.single('image'), async (req, res) => {
     try {
         const { titleEn, titleHi, contentEn, contentHi } = req.body;
 
-        if (!contentEn || !contentHi) {
-            return res.status(400).json({ error: 'English and Hindi content are required' });
-        }
-
-        const suggestion = await Suggestion.create({
+        const suggestionData = {
             titleEn,
             titleHi,
             contentEn,
             contentHi
-        });
+        };
 
+        if (req.file) {
+            suggestionData.imageUrl = `uploads/suggestions/${req.file.filename}`;
+        }
+
+        const suggestion = await Suggestion.create(suggestionData);
         res.status(201).json(suggestion);
     } catch (error) {
         console.error('Create suggestion error:', error);

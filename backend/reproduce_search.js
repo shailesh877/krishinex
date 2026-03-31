@@ -21,7 +21,7 @@ async function reproduce() {
         );
         console.log('Generated Token:', token);
 
-        const response = await axios.get('http://localhost:5500/api/employee/admin/search-users?query=9793', {
+        const response = await axios.get('https://demo.ranx24.com/api/employee/admin/search-users?query=9793', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

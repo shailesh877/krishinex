@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Rental = require('../models/Rental');
+const User = require('../models/User');
+const Machine = require('../models/Machine');
+const Settings = require('../models/Settings');
+const Transaction = require('../models/Transaction');
 const Notification = require('../models/Notification');
 const { protect } = require('../middleware/authMiddleware');
 const { sendNotification } = require('../services/notificationService');
@@ -90,62 +94,114 @@ router.patch('/:id/status', protect, async (req, res) => {
             rental.cancelReason = cancelReason;
         }
 
-        // Generate OTP if marking as Accepted
-        if (status === 'Accepted' && previousStatus !== 'Accepted' && !rental.completionOTP) {
-            rental.completionOTP = Math.floor(1000 + Math.random() * 9000).toString();
+        // Check for conflicts if marking as Accepted
+        if (status === 'Accepted' && previousStatus !== 'Accepted') {
+            const overlaps = await Rental.find({
+                _id: { $ne: rental._id },
+                machine: rental.machine,
+                status: { $in: ['Accepted', 'In Progress'] },
+                $or: [
+                    { fromDate: { $lt: rental.toDate }, toDate: { $gt: rental.fromDate } }
+                ]
+            });
+
+            if (overlaps.length > 0) {
+                return res.status(400).json({ error: 'Another booking already exists for this time slot. Cannot accept this request.' });
+            }
+
+            // Generate OTP
+            if (!rental.completionOTP) {
+                rental.completionOTP = Math.floor(1000 + Math.random() * 9000).toString();
+            }
+        }
+
+        rental.status = status;
+        if (status === 'Cancelled' && cancelReason) {
+            rental.cancelReason = cancelReason;
         }
 
         await rental.save();
 
         // Wallet Credit + Debit Logic on Completion
         if (status === 'Completed' && previousStatus !== 'Completed') {
-            const User = require('../models/User');
-            const Transaction = require('../models/Transaction');
             const amount = rental.totalAmount || 0;
+            const settings = await Settings.getSettings();
+            const commPercent = settings.commissions.equipment || 0;
 
-            // 1. Credit Equipment Owner wallet
+            const commissionAmount = Math.round(amount * (commPercent / 100));
+            const payoutAmount = amount - commissionAmount;
+
+            // 1. Credit Equipment Owner wallet (Net Payout)
             const owner = await User.findById(rental.owner);
             if (owner) {
-                owner.walletBalance = (owner.walletBalance || 0) + amount;
+                owner.walletBalance = (owner.walletBalance || 0) + payoutAmount;
                 await owner.save();
 
                 await Transaction.create({
                     transactionId: `RENT-OWN-${rental._id}-${Date.now()}`,
                     recipient: owner._id,
                     module: 'Equipment',
-                    amount: amount,
+                    amount: payoutAmount,
+                    totalAmount: amount,
+                    commissionAmount: commissionAmount,
                     type: 'Credit',
                     paymentMode: 'NexCard Wallet',
                     status: 'Completed',
                     referenceId: rental._id,
-                    note: `Equipment Rental Payment #${rental._id.toString().slice(-6)}`
+                    note: `Equipment Rental Payout #${rental._id.toString().slice(-6)} (Total: ₹${amount}, Commission: ₹${commissionAmount})`
                 });
-                console.log(`[RENTAL] Credited ₹${amount} to owner ${owner.name}`);
+
+                // 4. Dynamic Auto-Repayment (If owner has debt and wallet balance, sweep it)
+                const { processAutoRepayment } = require('../services/repaymentService');
+                await processAutoRepayment(owner._id, rental._id);
+
+                console.log(`[RENTAL] Credited ₹${payoutAmount} to owner ${owner.name} (Commission: ₹${commissionAmount})`);
             }
 
-            // 2. Deduct Farmer (buyer) wallet
+            // 2. Credit Admin wallet (Commission)
+            const admin = await User.findOne({ role: 'admin' });
+            if (admin) {
+                admin.walletBalance = (admin.walletBalance || 0) + commissionAmount;
+                await admin.save();
+
+                await Transaction.create({
+                    transactionId: `RENT-ADM-${rental._id}-${Date.now()}`,
+                    recipient: admin._id,
+                    module: 'Platform',
+                    amount: commissionAmount,
+                    totalAmount: amount,
+                    type: 'Credit',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: rental._id,
+                    note: `Commission from Equipment Rental #${rental._id.toString().slice(-6)}`
+                });
+                console.log(`[RENTAL] Credited ₹${commissionAmount} commission to Admin`);
+            }
+
+            // 3. DEDUCT from Farmer (buyer) wallet
             const buyer = await User.findById(rental.buyer);
             if (buyer) {
                 buyer.walletBalance = (buyer.walletBalance || 0) - amount;
                 await buyer.save();
 
                 await Transaction.create({
-                    transactionId: `RENT-BUY-${rental._id}-${Date.now()}`,
+                    transactionId: `${rental.paymentMode === 'WALLET' ? 'RENT-WAL-BUY' : 'RENT-CS-BUY'}-${rental._id}-${Date.now()}`,
                     recipient: buyer._id,
                     module: 'Equipment',
                     amount: amount,
                     type: 'Debit',
-                    paymentMode: 'NexCard Wallet',
+                    paymentMode: rental.paymentMode === 'WALLET' ? 'NexCard Wallet' : 'Cash',
                     status: 'Completed',
                     referenceId: rental._id,
                     note: `Equipment Rental Payment #${rental._id.toString().slice(-6)}`
                 });
-                console.log(`[RENTAL] Deducted ₹${amount} from buyer ${buyer.name}`);
+                console.log(`[RENTAL] Deducted ₹${amount} from buyer ${buyer.name} (${rental.paymentMode})`);
             }
         }
 
         // Notify the FARMER (buyer) about status change
-        const machineName = rental.machine ? (await require('../models/Machine').findById(rental.machine))?.name || 'Machine' : 'Machine';
+        const machineName = rental.machine ? (await Machine.findById(rental.machine))?.name || 'Machine' : 'Machine';
         if (status === 'Accepted') {
             await sendNotification(rental.buyer, {
                 title: '🚜 Equipment Booking Accepted',
@@ -190,10 +246,44 @@ router.post('/book', protect, async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const machine = await require('../models/Machine').findById(machineId);
+        const machine = await Machine.findById(machineId);
         if (!machine) {
             return res.status(404).json({ error: 'Machine not found' });
         }
+
+        // Check for double booking (Only block if another booking is already Accepted or In Progress)
+        const overlaps = await Rental.find({
+            machine: machineId,
+            status: { $in: ['Accepted', 'In Progress'] },
+            $or: [
+                { fromDate: { $lt: new Date(toDate) }, toDate: { $gt: new Date(fromDate) } }
+            ]
+        });
+
+        if (overlaps.length > 0) {
+            return res.status(400).json({ error: 'This time slot is already booked. Please choose another time.' });
+        }
+
+        let discountApplied = 0;
+        let finalAmount = amount;
+        if (req.body.paymentMethod !== 'wallet') {
+            return res.status(400).json({ error: 'Only Wallet payment is accepted for Equipment bookings.' });
+        }
+
+        let paymentMode = 'WALLET';
+        finalAmount = amount; // No discount for equipment 
+
+            const user = await User.findById(req.user.id);
+            const userBalance = user.walletBalance || 0;
+            if (userBalance < finalAmount) {
+                return res.status(400).json({ error: `Insufficient wallet balance. Need ₹${finalAmount}` });
+            }
+            // No deduction at booking time per user request - deduct on completion.
+
+        const settings = await Settings.getSettings();
+        const commissionPercent = settings.commissions?.equipment || 5;
+        const platformCommission = Math.round((finalAmount * commissionPercent) / 100);
+        const ownerPayout = finalAmount - platformCommission;
 
         const rental = await Rental.create({
             machine: machineId,
@@ -201,23 +291,33 @@ router.post('/book', protect, async (req, res) => {
             buyer: req.user.id,
             fromDate,
             toDate,
-            totalAmount: amount,
+            totalAmount: finalAmount,
+            platformCommission,
+            ownerPayout,
             priceType: priceType || 'daily',
             hours: req.body.hours !== undefined ? req.body.hours : (priceType === 'hourly' ? 1 : 0),
             days: req.body.days !== undefined ? req.body.days : (priceType === 'daily' ? 1 : 0),
+            purpose: req.body.purpose || '',
+            paymentMode,
+            discountApplied,
             status: 'New'
         });
 
+        // No transaction at booking time - created on completion.
+
         // Notify Owner
         const { sendNotification } = require('../services/notificationService');
+        const durationStr = priceType === 'hourly' ? `${req.body.hours || 1} घंटे` : `${req.body.days || 1} दिन`;
+        const durationStrEn = priceType === 'hourly' ? `${req.body.hours || 1} Hours` : `${req.body.days || 1} Days`;
+        
         await sendNotification(machine.owner, {
             user: machine.owner,
-            title: 'New Rental Request',
-            messageEn: `You have a new rental request for "${machine.name}".`,
-            messageHi: `आपको "${machine.name}" के लिए एक नया रental अनुरोध मिला है।`,
+            title: '🚜 New Rental Request',
+            messageEn: `New request for "${machine.name}" for ${durationStrEn}. Purpose: ${req.body.purpose || 'Not specified'}.`,
+            messageHi: `"${machine.name}" के लिए ${durationStr} का नया अनुरोध मिला है। उद्देश्य: ${req.body.purpose || 'नहीं बताया'}.`,
             type: 'order',
             refId: rental._id.toString()
-        }).catch(() => {});
+        }).catch(() => { });
 
         res.status(201).json({ message: 'Booking successful', rental });
     } catch (error) {
@@ -231,9 +331,7 @@ router.post('/book', protect, async (req, res) => {
 // @access  Private
 router.get('/wallet', protect, async (req, res) => {
     try {
-        const User = require('../models/User');
         const user = await User.findById(req.user.id).select('walletBalance');
-        const Transaction = require('../models/Transaction');
         const transactions = await Transaction.find({ recipient: req.user.id })
             .sort({ createdAt: -1 });
 
@@ -244,6 +342,39 @@ router.get('/wallet', protect, async (req, res) => {
     } catch (error) {
         console.error('Fetch Rental Wallet error:', error);
         res.status(500).json({ error: 'Failed to fetch wallet info' });
+    }
+});
+
+// @route   GET /api/rentals/check-availability
+// @desc    Check if a machine is available for a given time range
+// @access  Private
+router.get('/check-availability', protect, async (req, res) => {
+    try {
+        const { machineId, fromDate, toDate } = req.query;
+
+        if (!machineId || !fromDate || !toDate) {
+            return res.status(400).json({ error: 'Missing machineId, fromDate, or toDate' });
+        }
+
+        const start = new Date(fromDate);
+        const end = new Date(toDate);
+
+        // Find overlapping bookings that are NOT cancelled or pending
+        const overlaps = await Rental.find({
+            machine: machineId,
+            status: { $in: ['Accepted', 'In Progress'] },
+            $or: [
+                { fromDate: { $lt: end }, toDate: { $gt: start } }
+            ]
+        });
+
+        res.json({
+            available: overlaps.length === 0,
+            bookedSlots: overlaps.map(o => ({ from: o.fromDate, to: o.toDate }))
+        });
+    } catch (error) {
+        console.error('Check availability error:', error);
+        res.status(500).json({ error: 'Failed to check availability' });
     }
 });
 

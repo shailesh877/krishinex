@@ -4,7 +4,7 @@ formData.append('name', 'Bhai Buyer');
 formData.append('phone', '9876543210');
 formData.append('address', 'New Delhi');
 
-fetch('http://localhost:5000/api/auth/register', {
+fetch('https://demo.ranx24.com/api/auth/register', {
     method: 'POST',
     body: formData
 })

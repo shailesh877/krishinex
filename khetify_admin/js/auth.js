@@ -58,4 +58,49 @@
         }
         return response;
     };
+    // 5. Global UI Initialization (Sidebars & Headers)
+    document.addEventListener('DOMContentLoaded', () => {
+        const userDataStr = localStorage.getItem('employeeUser');
+        if (userDataStr) {
+            try {
+                const userData = JSON.parse(userDataStr);
+                const userName = userData.name || 'Admin';
+                const firstName = userName.split(' ')[0];
+
+                // Update Sidebar Name
+                const sidebarName = document.getElementById('sidebarUserName');
+                if (sidebarName) {
+                    sidebarName.textContent = userName;
+                } else {
+                    // Fallback: search for <p> with class truncate containing "Super Admin"
+                    const ps = document.getElementsByTagName('p');
+                    for (let p of ps) {
+                        if (p.classList.contains('truncate') && p.textContent.trim() === 'Super Admin') {
+                            p.id = 'sidebarUserName';
+                            p.textContent = userName;
+                            break;
+                        }
+                    }
+                }
+
+                // Update Header Initial/Name
+                const headerName = document.getElementById('headerUserName');
+                if (headerName) {
+                    headerName.textContent = firstName;
+                } else {
+                    // Fallback search for header element
+                    const spans = document.getElementsByTagName('span');
+                    for (let span of spans) {
+                        if (span.textContent.trim() === 'SA' && span.classList.contains('sm:inline')) {
+                            span.id = 'headerUserName';
+                            span.textContent = firstName;
+                            break;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing user data for UI:', e);
+            }
+        }
+    });
 })();

@@ -11,7 +11,7 @@ const notificationSchema = new mongoose.Schema({
     messageEn: { type: String, required: true },
     type: {
         type: String,
-        enum: ['order', 'assigned', 'status', 'system', 'payment'],
+        enum: ['order', 'assigned', 'status', 'system', 'payment', 'PAYMENT_REMINDER'],
         default: 'system'
     },
     refId: { type: String, default: '' }, // order ID or other ref

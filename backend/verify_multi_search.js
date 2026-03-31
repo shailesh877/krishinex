@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 async function verifyMultiSearch() {
-    const API_BASE = 'http://localhost:5500/api';
+    const API_BASE = 'https://demo.ranx24.com/api';
     const phone = '9648022011'; // Known duplicate
     
     try {

@@ -55,6 +55,13 @@ const transactionSchema = new mongoose.Schema({
     note: {
         type: String,
         default: ''
+    },
+    // New fields for Commission Tracking
+    totalAmount: {
+        type: Number
+    },
+    commissionAmount: {
+        type: Number
     }
 }, { timestamps: true });
 

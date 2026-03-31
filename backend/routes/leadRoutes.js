@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Lead = require('../models/Lead');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, checkAdmin } = require('../middleware/authMiddleware');
 
 // @route   POST /api/leads
 // @desc    Submit a new loan application lead
@@ -40,6 +40,38 @@ router.get('/my-leads', protect, async (req, res) => {
     } catch (error) {
         console.error('Fetch leads error:', error);
         res.status(500).json({ error: 'Server error fetching leads' });
+    }
+});
+
+// @route   GET /api/leads/admin/all
+// @desc    Get all loan applications (Admin only)
+// @access  Private/Admin
+router.get('/admin/all', protect, checkAdmin, async (req, res) => {
+    try {
+        const leads = await Lead.find()
+            .populate('user', 'name phone')
+            .sort({ createdAt: -1 });
+        res.json(leads);
+    } catch (error) {
+        res.status(500).json({ error: 'Server error fetching leads' });
+    }
+});
+
+// @route   PUT /api/leads/status/:id
+// @desc    Update lead status (Admin only)
+// @access  Private/Admin
+router.put('/status/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const lead = await Lead.findById(req.params.id);
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
+
+        lead.status = status;
+        await lead.save();
+        res.json(lead);
+    } catch (error) {
+        console.error('Update lead status error:', error);
+        res.status(500).json({ error: 'Failed to update lead status' });
     }
 });
 

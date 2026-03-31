@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Shop Banners Management - KrishiNex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="js/auth.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { green: '#16A34A', blue: '#0EA5E9' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .fa-spin-slow { animation: spin 3s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-images text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <div class="flex-1 flex flex-col md:ml-64">
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger" class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm" onclick="toggleSidebar()">
+              <i class="fas fa-bars text-slate-600"></i>
+            </button>
+            <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <i class="fas fa-images text-emerald-600"></i>
+              Shop Banners Management
+            </h1>
+          </div>
+          <button onclick="openModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg active:scale-95">
+            <i class="fas fa-plus"></i> <span class="hidden sm:inline">Add New Banner</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="flex-1 px-4 md:px-6 py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+        <!-- Banner Grid -->
+        <div id="bannerGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Data will be injected here -->
+        </div>
+
+        <div id="emptyState" class="hidden p-12 text-center bg-white rounded-2xl border-2 border-dashed border-slate-300">
+          <i class="fas fa-images text-slate-200 text-6xl mb-4"></i>
+          <p class="text-slate-400 font-bold">No banners found. Start by adding one!</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ADD MODAL -->
+  <div id="bannerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
+    <div class="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-white">
+            <h2 class="text-xl font-black text-slate-900">Upload Banner</h2>
+            <button onclick="closeModal()" class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                <i class="fas fa-times text-slate-600"></i>
+            </button>
+        </div>
+        <form id="bannerForm" class="p-6 space-y-4">
+            <div>
+                <label class="block text-[11px] font-black text-slate-500 uppercase mb-1.5 ml-1">Banner Title (Optional)</label>
+                <input type="text" id="bannerTitle" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none font-semibold text-slate-700" placeholder="e.g. Summer Sale 2024">
+            </div>
+            <div>
+                <label class="block text-[11px] font-black text-slate-500 uppercase mb-1.5 ml-1">Redirect Link (Optional)</label>
+                <input type="text" id="bannerLink" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none font-semibold text-slate-700" placeholder="e.g. /shop/category/seeds">
+            </div>
+            <div>
+                <label class="block text-[11px] font-black text-slate-500 uppercase mb-1.5 ml-1">Banner Image (Required)</label>
+                <div id="dropZone" class="relative group h-48 border-4 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 transition-all cursor-pointer">
+                    <input type="file" id="bannerImage" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewImage(this)">
+                    <div id="uploadPlaceholder" class="text-center p-4">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-slate-300 group-hover:text-emerald-400 mb-3 transition-colors"></i>
+                        <p class="text-xs font-black text-slate-500 group-hover:text-emerald-600 mb-1 leading-tight">Click or drag image here</p>
+                        <p class="text-[10px] font-semibold text-slate-400 italic">PNG, JPG or WebP (Max 5MB)</p>
+                    </div>
+                    <img id="imagePreview" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg border-2 border-white">
+                </div>
+            </div>
+            <button type="submit" id="submitBtn" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4">
+                <span>Upload Banner</span>
+            </button>
+        </form>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300">
+    <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+      <i class="fas fa-check-circle text-emerald-400"></i>
+      <span id="toastMsg" class="text-sm font-black"></span>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://demo.ranx24.com/api';
+    const SERVER_URL = 'https://demo.ranx24.com';
+    const token = localStorage.getItem('employeeToken');
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    function openModal() { document.getElementById('bannerModal').classList.remove('hidden'); }
+    function closeModal() {
+      document.getElementById('bannerModal').classList.add('hidden');
+      document.getElementById('bannerForm').reset();
+      document.getElementById('imagePreview').classList.add('hidden');
+      document.getElementById('uploadPlaceholder').classList.remove('hidden');
+    }
+
+    function previewImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('imagePreview').src = e.target.result;
+          document.getElementById('imagePreview').classList.remove('hidden');
+          document.getElementById('uploadPlaceholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    async function fetchBanners() {
+      try {
+        const res = await fetch(`${API_BASE}/shop/banners/all`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const grid = document.getElementById('bannerGrid');
+        const emptyState = document.getElementById('emptyState');
+        grid.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+        data.forEach(banner => {
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden group hover:shadow-xl hover:border-emerald-200 transition-all duration-300';
+          card.innerHTML = `
+            <div class="relative h-48 bg-slate-100 overflow-hidden">
+                <img src="${SERVER_URL}/${banner.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-3 left-3">
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase shadow-sm ${banner.active ? 'bg-emerald-500 text-white' : 'bg-slate-500 text-white'}">
+                        ${banner.active ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
+                <div class="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="toggleBannerStatus('${banner._id}')" class="h-8 w-8 rounded-lg bg-white/90 backdrop-blur text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-lg active:scale-95 border border-blue-200">
+                        <i class="fas ${banner.active ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                    </button>
+                    <button onclick="deleteBanner('${banner._id}')" class="h-8 w-8 rounded-lg bg-white/90 backdrop-blur text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-lg active:scale-95 border border-red-200">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 bg-gradient-to-br from-white to-slate-50">
+                <h3 class="font-black text-slate-800 text-[13px] truncate">${banner.title || 'Untitled Banner'}</h3>
+                <p class="text-[10px] font-bold text-slate-400 mt-0.5 truncate italic">Link: ${banner.link || 'None'}</p>
+                <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <p class="text-[10px] font-bold text-slate-400">${new Date(banner.createdAt).toLocaleDateString()} • ${new Date(banner.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    <i class="fas fa-circle-check text-emerald-100 group-hover:text-emerald-500 transition-colors"></i>
+                </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        showToast('Failed to load banners');
+      }
+    }
+
+    document.getElementById('bannerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        
+        try {
+            const imageFile = document.getElementById('bannerImage').files[0];
+            if (!imageFile) return Alert('Please select an image');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Uploading...</span>';
+
+            const formData = new FormData();
+            formData.append('title', document.getElementById('bannerTitle').value);
+            formData.append('link', document.getElementById('bannerLink').value);
+            formData.append('image', imageFile);
+
+            const res = await fetch(`${API_BASE}/shop/banners`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (res.ok) {
+                showToast('Banner Uploaded Successfully');
+                closeModal();
+                fetchBanners();
+            } else {
+                showToast('Upload Failed');
+            }
+        } catch (err) {
+            showToast('Error uploading banner');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+
+    async function toggleBannerStatus(id) {
+        try {
+            const res = await fetch(`${API_BASE}/shop/banners/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Status Updated');
+                fetchBanners();
+            }
+        } catch (err) {
+            showToast('Update Failed');
+        }
+    }
+
+    async function deleteBanner(id) {
+        if (!confirm('Are you sure you want to delete this banner?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/shop/banners/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast('Banner Deleted');
+                fetchBanners();
+            }
+        } catch (err) {
+            showToast('Delete Failed');
+        }
+    }
+
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (!sidebar || !backdrop) return;
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      }
+    }
+
+    fetchBanners();
+  </script>
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

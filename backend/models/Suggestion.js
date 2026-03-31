@@ -11,15 +11,18 @@ const suggestionSchema = new mongoose.Schema({
     },
     contentEn: {
         type: String,
-        required: true
+        required: false
     },
     contentHi: {
         type: String,
-        required: true
+        required: false
     },
     active: {
         type: Boolean,
         default: true
+    },
+    imageUrl: {
+        type: String
     }
 }, {
     timestamps: true

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, checkAdmin } = require('../middleware/authMiddleware');
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
 const Settings = require('../models/Settings');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 // @route   GET /api/settings
 // @desc    Get platform settings
 // @access  Private/Admin
-router.get('/', protect, checkAdmin, async (req, res) => {
+router.get('/', protect, checkModule('settings'), async (req, res) => {
     try {
         const settings = await Settings.getSettings();
         res.json(settings);
@@ -20,18 +20,39 @@ router.get('/', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/settings
 // @desc    Update platform settings
 // @access  Private/Admin
-router.put('/', protect, checkAdmin, async (req, res) => {
+router.put('/', protect, checkModule('settings'), async (req, res) => {
     try {
-        let settings = await Settings.getSettings();
         const { commissions, pricing, platform } = req.body;
+        if (commissions) {
+            const updateObj = {};
+            for (const key in commissions) {
+                updateObj[`commissions.${key}`] = commissions[key];
+            }
+            const updated = await Settings.findOneAndUpdate({}, { $set: updateObj }, { new: true, upsert: true });
+            return res.json({ message: 'Settings updated successfully', settings: updated });
+        }
 
-        if (commissions) settings.commissions = { ...settings.commissions, ...commissions };
-        if (pricing) settings.pricing = { ...settings.pricing, ...pricing };
-        if (platform) settings.platform = { ...settings.platform, ...platform };
+        if (pricing) {
+            const updateObj = {};
+            for (const key in pricing) {
+                updateObj[`pricing.${key}`] = pricing[key];
+            }
+            const updated = await Settings.findOneAndUpdate({}, { $set: updateObj }, { new: true, upsert: true });
+            return res.json({ message: 'Settings updated successfully', settings: updated });
+        }
 
-        await settings.save();
-        res.json({ message: 'Settings updated successfully', settings });
+        if (platform) {
+            const updateObj = {};
+            for (const key in platform) {
+                updateObj[`platform.${key}`] = platform[key];
+            }
+            const updated = await Settings.findOneAndUpdate({}, { $set: updateObj }, { new: true, upsert: true });
+            return res.json({ message: 'Settings updated successfully', settings: updated });
+        }
+
+        res.json({ message: 'No updates provided' });
     } catch (err) {
+        console.error('Settings update error:', err);
         res.status(500).json({ error: 'Failed to update settings' });
     }
 });
@@ -39,17 +60,12 @@ router.put('/', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/settings/password
 // @desc    Change admin password
 // @access  Private/Admin
-router.put('/password', protect, checkAdmin, async (req, res) => {
+router.put('/password', protect, checkModule('settings'), async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
         const user = await User.findById(req.user.id);
 
         if (!user) return res.status(404).json({ error: 'User not found' });
-
-        // If password is not hashed (mock state), compare directly
-        // But for security we should use bcrypt if it's already there
-        // Looking at authRoutes, it seems they might be using plain text or simple comparisons
-        // Let's check how they do it in authRoutes.
 
         let isMatch = false;
         if (user.password.startsWith('$2') || user.password.length > 30) {
@@ -62,9 +78,6 @@ router.put('/password', protect, checkAdmin, async (req, res) => {
             return res.status(400).json({ error: 'Incorrect current password' });
         }
 
-        // Hash new password if we want to be secure, but let's stick to existing pattern
-        // If the user's current password was plain, we might want to keep it simple for them 
-        // until a full migration. But let's use bcrypt for new ones.
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
 

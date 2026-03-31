@@ -4,7 +4,7 @@ const User = require('../models/User');
 const { Chat, Message } = require('../models/Chat');
 const SoilRequest = require('../models/SoilRequest');
 const Notification = require('../models/Notification');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -126,15 +126,20 @@ router.get('/profile', protect, async (req, res) => {
                 whatsappOn: user.whatsappOn,
                 panNumber: user.panNumber || '',
                 panDocUrl: user.panDocUrl || '',
+                gstNumber: user.gstNumber || 'TEST-999-GST',
+                licenseNumber: user.licenseNumber || 'TEST-000-LIC',
+                businessLicenseUrl: user.businessLicenseUrl || '',
                 bankDetails: user.bankDetails || {
                     holderName: '',
                     bankName: '',
                     accountNumber: '',
                     ifscCode: '',
-                    bankAddress: ''
+                    bankAddress: '',
+                    bankDocUrl: ''
                 },
                 skills: user.labourDetails?.skills || []
             });
+            console.log(`[DEBUG] Profile fetched for user ${req.user.id}: GST=${user.gstNumber}, LIC=${user.licenseNumber}`);
         } else {
             res.status(404).json({ error: 'User not found' });
         }
@@ -152,14 +157,47 @@ router.put('/profile', protect, async (req, res) => {
         const user = await User.findById(req.user.id);
 
         if (user) {
+            if (user.status === 'approved') {
+                const sensitiveFields = ['name', 'email', 'address', 'businessName', 'aadhaarNumber', 'panNumber', 'gstNumber', 'licenseNumber', 'bankDetails'];
+                for (const field of sensitiveFields) {
+                    if (req.body[field] !== undefined) {
+                        // For GST and License, let's allow if they match current value
+                        if (field === 'bankDetails') {
+                            // Deep comparison for bank details simplified: if any key is different
+                            const b = req.body.bankDetails;
+                            const current = user.bankDetails || {};
+                            if (
+                                (b.holderName && b.holderName !== current.holderName) ||
+                                (b.bankName && b.bankName !== current.bankName) ||
+                                (b.accountNumber && b.accountNumber !== current.accountNumber) ||
+                                (b.ifscCode && b.ifscCode !== current.ifscCode)
+                            ) {
+                                return res.status(403).json({ error: `Verified bank details cannot be changed. Contact support.` });
+                            }
+                        } else if (req.body[field] !== user[field] && String(req.body[field]).trim() !== String(user[field] || '').trim()) {
+                             return res.status(403).json({ error: `Verified profile info (${field}) cannot be changed. Please contact support to edit ${field}.` });
+                        }
+                    }
+                }
+            }
             user.name = req.body.name || user.name;
             user.email = req.body.email && req.body.email.trim() !== '' ? req.body.email : user.email;
             user.address = req.body.address || user.address;
             user.businessName = req.body.businessName || user.businessName;
-            if (req.body.aadhaarNumber && user.status === 'approved') {
-                return res.status(403).json({ error: 'Verified Aadhaar cannot be changed' });
-            }
             user.aadhaarNumber = req.body.aadhaarNumber || user.aadhaarNumber;
+            
+            // Handle Bank Details
+            if (req.body.bankDetails) {
+                const b = req.body.bankDetails;
+                user.bankDetails = {
+                    holderName: b.holderName || (user.bankDetails ? user.bankDetails.holderName : ''),
+                    bankName: b.bankName || (user.bankDetails ? user.bankDetails.bankName : ''),
+                    accountNumber: b.accountNumber || (user.bankDetails ? user.bankDetails.accountNumber : ''),
+                    ifscCode: b.ifscCode || (user.bankDetails ? user.bankDetails.ifscCode : ''),
+                    bankAddress: b.bankAddress || (user.bankDetails ? user.bankDetails.bankAddress : ''),
+                    bankDocUrl: user.bankDetails ? user.bankDetails.bankDocUrl : ''
+                };
+            }
 
             if (req.body.maxDistanceKm !== undefined) user.maxDistanceKm = req.body.maxDistanceKm;
             if (req.body.ratePerDay !== undefined) user.ratePerDay = req.body.ratePerDay;
@@ -265,6 +303,10 @@ router.put('/bank-details', protect, async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        if (user.status === 'approved') {
+            return res.status(403).json({ error: 'Approved bank details cannot be changed. Please contact support.' });
+        }
+
         const b = user.bankDetails || {};
         user.bankDetails = {
             holderName: holderName !== undefined ? holderName : b.holderName || '',
@@ -288,25 +330,35 @@ router.put('/bank-details', protect, async (req, res) => {
 // @access  Private
 router.post('/upload-aadhaar', protect, upload.single('aadhaar'), async (req, res) => {
     try {
+        console.log(`[DEBUG] Aadhaar upload request from user: ${req.user.id}`);
+        
         if (!req.file) {
+            console.log('[DEBUG] No file received in req.file');
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
+        console.log(`[DEBUG] File received: ${req.file.originalname}, size: ${req.file.size}, mimetype: ${req.file.mimetype}`);
+
         const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+            console.log(`[DEBUG] User not found for ID: ${req.user.id}`);
+            return res.status(404).json({ error: 'User not found' });
+        }
 
         if (user.status === 'approved') {
             return res.status(403).json({ error: 'Verified Aadhaar document cannot be changed' });
         }
 
         const fileUrl = `uploads/${req.file.filename}`;
-
         user.aadhaarDocUrl = fileUrl;
+        
+        console.log(`[DEBUG] Saving user profile with new Aadhaar URL: ${fileUrl}`);
         await user.save();
+        console.log('[DEBUG] Aadhaar upload successful');
 
         res.json({ message: 'Aadhaar document uploaded successfully', url: fileUrl });
     } catch (error) {
-        console.error('Aadhaar upload error:', error);
+        console.error('[CRITICAL] Aadhaar upload error:', error);
         res.status(500).json({ error: error.message || 'Upload failed' });
     }
 });
@@ -320,6 +372,10 @@ router.post('/upload-pan', protect, upload.single('pan'), async (req, res) => {
         const fileUrl = `uploads/${req.file.filename}`;
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (user.status === 'approved') {
+            return res.status(403).json({ error: 'Verified PAN document cannot be changed' });
+        }
 
         user.panDocUrl = fileUrl;
         await user.save();
@@ -339,11 +395,40 @@ router.post('/upload-license', protect, upload.single('license'), async (req, re
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        if (user.status === 'approved') {
+            return res.status(403).json({ error: 'Verified business license cannot be changed' });
+        }
+
         user.businessLicenseUrl = fileUrl;
         await user.save();
         res.json({ message: 'Business license uploaded successfully', url: fileUrl });
     } catch (error) {
         res.status(500).json({ error: 'License upload failed' });
+    }
+});
+
+// @route   POST /api/user/upload-bank-doc
+// @desc    Upload Cancelled Cheque / Bank Passbook document
+// @access  Private
+router.post('/upload-bank-doc', protect, upload.single('bankDoc'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        const fileUrl = `uploads/${req.file.filename}`;
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (user.status === 'approved') {
+            return res.status(403).json({ error: 'Verified bank document cannot be changed' });
+        }
+
+        if (!user.bankDetails) user.bankDetails = {};
+        user.bankDetails.bankDocUrl = fileUrl;
+        user.markModified('bankDetails');
+        await user.save();
+
+        res.json({ message: 'Bank document uploaded successfully', url: fileUrl });
+    } catch (error) {
+        res.status(500).json({ error: 'Bank document upload failed' });
     }
 });
 
@@ -550,36 +635,79 @@ router.get('/soil-labs', protect, async (req, res) => {
 });
 
 // @route   POST /api/user/soil-requests
-// @desc    Book a soil test
+// @desc    Book a soil test with dynamic pricing and payment options
 // @access  Private
 router.post('/soil-requests', protect, async (req, res) => {
     try {
-        const { labId, cropName, sampleType, visitType, testType } = req.body;
-        if (!labId) return res.status(400).json({ error: 'Please select a lab' });
+        const { labId, cropName, sampleType, visitType, testType, state, district, village, paymentMethod } = req.body;
+        
+        const Settings = require('../models/Settings');
+        const Transaction = require('../models/Transaction');
+        const settings = await Settings.getSettings();
+        const price = settings.pricing.soilTestPrice || 250;
+
+        let paymentStatus = 'Pending';
+        let paidAt = null;
+
+        if (paymentMethod !== 'wallet') {
+            return res.status(400).json({ error: 'Only Wallet payment is accepted for Soil Testing.' });
+        }
+
+        const user = await User.findById(req.user.id);
+        if (user.walletBalance < price) {
+            return res.status(400).json({ error: `Insufficient wallet balance. Need ₹${price}` });
+        }
+
+        // NO DEDUCTION AT BOOKING TIME - deduct when Lab accepts.
+        paymentStatus = 'Pending';
+        paidAt = null;
 
         const request = new SoilRequest({
             farmer: req.user.id,
-            lab: labId,
+            lab: labId || undefined,
             cropName: cropName || '',
             sampleType: sampleType || 'Field Soil',
             visitType: visitType || 'I will visit lab',
             testType: testType || 'NPK',
+            state: state || '',
+            district: district || '',
+            village: village || '',
+            price: price,
+            paymentMethod: paymentMethod || 'cash',
+            paymentStatus: paymentStatus,
+            paidAt: paidAt,
             status: 'New'
         });
 
         await request.save();
 
-        // Notify the Lab Employee
-        await Notification.create({
-            user: labId,
-            title: 'New Soil Test Request',
-            titleHi: 'नया मिट्टी जांच अनुरोध',
-            titleEn: 'New Soil Test Request',
-            messageHi: `किसान ${req.user.name} ने मिट्टी जांच बुक की है।`,
-            messageEn: `Farmer ${req.user.name} has booked a soil test.`,
-            type: 'system',
-            refId: request._id.toString()
-        });
+        // Notify the Lab Employee if labId provided, ELSE notify Admin
+        try {
+            const { sendNotification } = require('../services/notificationService');
+            if (labId) {
+                await sendNotification(labId, {
+                    title: 'New Soil Test Request',
+                    messageHi: `किसान ${user.name} ने मिट्टी जांच बुक की है (${paymentMethod === 'wallet' ? 'Wallet Paid' : 'Cash'}).`,
+                    messageEn: `Farmer ${user.name} has booked a soil test (${paymentMethod === 'wallet' ? 'Wallet Paid' : 'Cash'}).`,
+                    type: 'soil_test',
+                    refId: request._id.toString()
+                });
+            } else {
+                // Find all admins
+                const admins = await User.find({ role: 'admin' });
+                for (const admin of admins) {
+                    await sendNotification(admin._id, {
+                        title: 'New Soil Request (Unassigned)',
+                        messageHi: `एक नई मिट्टी जांच बुक की गई है। कृपया इसे लैब पार्टनर को असाइन करें।`,
+                        messageEn: `A new soil test has been booked. Please assign it to a lab partner.`,
+                        type: 'soil_test',
+                        refId: request._id.toString()
+                    });
+                }
+            }
+        } catch (err) {
+            console.error('Booking notification error:', err);
+        }
 
         res.json(request);
     } catch (e) {
@@ -594,12 +722,58 @@ router.post('/soil-requests', protect, async (req, res) => {
 router.get('/soil-requests', protect, async (req, res) => {
     try {
         const requests = await SoilRequest.find({ farmer: req.user.id })
-            .populate('lab', 'name businessName phone address')
+            .populate({
+                path: 'lab',
+                select: 'name businessName phone address',
+                match: { _id: { $exists: true } }
+            })
             .sort({ createdAt: -1 });
         res.json(requests);
     } catch (e) {
         console.error('Fetch my soil requests error:', e);
         res.status(500).json({ error: 'Failed to fetch your requests' });
+    }
+});
+
+// @route   GET /api/user/admin/farmers
+// @desc    Admin: Search farmers for credit assignment
+// @access  Private (Admin Only)
+router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { search } = req.query;
+        let query = { role: 'farmer' };
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { phone: { $regex: search, $options: 'i' } }
+            ];
+        }
+        const farmers = await User.find(query)
+            .select('name phone profilePhotoUrl creditLimit creditUsed status address village')
+            .limit(50);
+        res.json(farmers);
+    } catch (error) {
+        console.error('Admin Farmer Search error:', error);
+        res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+// @route   PUT /api/user/admin/credit/:id
+// @desc    Admin: Update farmer credit limit
+// @access  Private (Admin Only)
+router.put('/admin/credit/:id', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { creditLimit } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user || user.role !== 'farmer') return res.status(404).json({ error: 'Farmer not found' });
+
+        user.creditLimit = Number(creditLimit);
+        await user.save();
+
+        res.json({ message: `Credit limit updated for ${user.name}`, creditLimit: user.creditLimit });
+    } catch (error) {
+        console.error('Admin Credit Update error:', error);
+        res.status(500).json({ error: 'Update failed' });
     }
 });
 

@@ -13,8 +13,11 @@ def get_nav_block(active_page):
         ("labour_managment.html", "fas fa-people-group", "Labour Aggregation", "purple", "violet"),
         ("buyer_managment.html", "fas fa-handshake", "Buyer Trading (B2B)", "blue", "sky"),
         ("shop_patner.html", "fas fa-shopping-cart", "Shop Management", "teal", "emerald"),
+        ("shop_banners.html", "fas fa-images", "Shop Banners", "emerald", "sky"),
         ("spacer", "Supporting"),
         ("soil_testing_patner.html", "fas fa-flask", "Soil Testing", "indigo", "purple"),
+        ("loan_management.html", "fas fa-file-invoice-dollar", "Loan Applications", "emerald", "sky"),
+        ("kisan_pathshala_management.html", "fas fa-graduation-cap", "Kisan Pathshala", "emerald", "sky"),
         ("suggestion_management.html", "fas fa-lightbulb", "Dynamic Advisory", "emerald", "sky"),
         ("doctor_consultation_management.html", "fas fa-user-doctor", "Doctor Consultations", "emerald", "sky"),
         ("contact_management.html", "fas fa-ticket", "Contact Inquiries", "emerald", "sky"),
@@ -42,6 +45,7 @@ def get_nav_block(active_page):
         </div>''')
             continue
         
+        # Safe unpacking
         href, icon, label, c1, c2 = link
         is_active = (href == active_page)
         
@@ -56,6 +60,9 @@ def get_nav_block(active_page):
             elif active_page == "employee_managment.html":
                 ac1, ac2, atxt, aborder, aicon = "emerald-50", "teal-50", "emerald-700", "emerald-200", "emerald-600"
                 as1, as2 = "emerald-100", "teal-100"
+            elif active_page == "shop_banners.html":
+                ac1, ac2, atxt, aborder, aicon = "emerald-50", "sky-50", "emerald-700", "emerald-200", "emerald-600"
+                as1, as2 = "emerald-100", "sky-100"
             else:
                 ac1, ac2, atxt, aborder, aicon = f"{c1}-50", f"{c2}-50", f"{c1}-700", f"{c1}-200", f"{c1}-600"
                 as1, as2 = f"{c1}-100", f"{c2}-100"
@@ -124,10 +131,29 @@ def robust_fix(filepath, active_page):
     print(f"Standardized: {filepath}")
 
 # Standarize all targets
-robust_fix('Analytics_Reports.html', 'Analytics_Reports.html')
-robust_fix('buyer_managment.html', 'buyer_managment.html')
-robust_fix('employee_managment.html', 'employee_managment.html')
 robust_fix('index.html', 'index.html')
+robust_fix('ksp_Franchise_managment.html', 'ksp_Franchise_managment.html')
+robust_fix('mandi_management.html', 'mandi_management.html')
+robust_fix('machine_partners_management.html', 'machine_partners_management.html')
+robust_fix('labour_managment.html', 'labour_managment.html')
+robust_fix('buyer_managment.html', 'buyer_managment.html')
+robust_fix('shop_patner.html', 'shop_patner.html')
+robust_fix('shop_banners.html', 'shop_banners.html')
+robust_fix('soil_testing_patner.html', 'soil_testing_patner.html')
+robust_fix('loan_management.html', 'loan_management.html')
+robust_fix('kisan_pathshala_management.html', 'kisan_pathshala_management.html')
+robust_fix('suggestion_management.html', 'suggestion_management.html')
+robust_fix('doctor_consultation_management.html', 'doctor_consultation_management.html')
 robust_fix('contact_management.html', 'contact_management.html')
+robust_fix('ad_management.html', 'ad_management.html')
+robust_fix('ksp_management.html', 'ksp_management.html')
+robust_fix('employee_managment.html', 'employee_managment.html')
+robust_fix('users_managment.html', 'users_managment.html')
+robust_fix('field_executive.html', 'field_executive.html')
+robust_fix('payout_management.html', 'payout_management.html')
+robust_fix('kyc_and_compliance_management.html', 'kyc_and_compliance_management.html')
+robust_fix('finance_payouts_management.html', 'finance_payouts_management.html')
+robust_fix('Analytics_Reports.html', 'Analytics_Reports.html')
+robust_fix('settings.html', 'settings.html')
 
 print("Final standardization completed.")

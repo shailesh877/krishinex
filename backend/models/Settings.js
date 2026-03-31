@@ -6,14 +6,17 @@ const settingsSchema = new mongoose.Schema({
         equipment: { type: Number, default: 5 },
         labour: { type: Number, default: 5 },
         buyerTrading: { type: Number, default: 2 },
-        ksp: { type: Number, default: 4 }
+        ksp: { type: Number, default: 4 },
+        soil: { type: Number, default: 10 },
+        shop: { type: Number, default: 0 }
     },
     // Pricing configurations
     pricing: {
         baseServiceFee: { type: Number, default: 100 },
         taxRate: { type: Number, default: 12 }, // GST etc.
         minWalletRecharge: { type: Number, default: 500 },
-        walletDiscountPercentage: { type: Number, default: 0 }
+        walletDiscountPercentage: { type: Number, default: 0 },
+        soilTestPrice: { type: Number, default: 250 }
     },
     // Platform meta
     platform: {

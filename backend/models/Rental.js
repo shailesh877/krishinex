@@ -37,8 +37,21 @@ const RentalSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    purpose: {
+        type: String,
+        default: ''
+    },
 
     // --- Booking financials ---
+    paymentMode: {
+        type: String,
+        enum: ['CASH', 'WALLET'],
+        default: 'CASH'
+    },
+    discountApplied: {
+        type: Number,
+        default: 0
+    },
     totalAmount: {
         type: Number,
         default: 0         // total rental charge (days * priceDay)

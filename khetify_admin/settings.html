@@ -100,7 +100,7 @@
       </div>
 
       <!-- Navigation -->
-      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+                  <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -169,6 +169,15 @@
           <span class="truncate font-semibold">Shop Management</span>
         </a>
 
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
         <div class="pt-3">
           <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
         </div>
@@ -180,6 +189,24 @@
             <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
           </span>
           <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
         </a>
 
         <a href="suggestion_management.html"
@@ -318,7 +345,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
-            <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
           </div>
         </div>
         <button onclick="logoutSession()"
@@ -365,7 +392,7 @@
                 class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
                 <i class="fas fa-user text-white text-xs"></i>
               </div>
-              <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+              <span id="headerUserName" class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
             </button>
           </div>
         </div>
@@ -415,6 +442,18 @@
                     class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
                     placeholder="4" />
                 </div>
+                <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">Soil Testing (%)</label>
+                  <input type="number" id="comm_soil"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="10" />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">Shop Order (%)</label>
+                  <input type="number" id="comm_shop"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="5" />
+                </div>
               </div>
             </div>
 
@@ -450,12 +489,23 @@
                   class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
                   placeholder="12" />
               </div>
-              <input type="hidden" id="price_minWallet" />
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">Min Wallet Recharge (Rs.)</label>
+                <input type="number" id="price_minWallet"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="500" />
+              </div>
               <div class="space-y-2">
                 <label class="text-[11px] font-black uppercase text-slate-500">Wallet Payment Discount (%)</label>
                 <input type="number" id="price_walletDiscount"
                   class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
                   placeholder="0" />
+              </div>
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">Soil Test Price (Rs.)</label>
+                <input type="number" id="price_soilTest"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="250" />
               </div>
             </div>
 
@@ -547,7 +597,8 @@
     async function loadSettings() {
       try {
         const response = await fetch(`${API_BASE}/settings`, {
-          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          cache: 'no-store'
         });
         if (!response.ok) throw new Error('Failed to load settings');
         const data = await response.json();
@@ -557,12 +608,15 @@
         document.getElementById('comm_labour').value = data.commissions.labour;
         document.getElementById('comm_trading').value = data.commissions.buyerTrading;
         document.getElementById('comm_ksp').value = data.commissions.ksp;
+        document.getElementById('comm_soil').value = data.commissions.soil || 10;
+        document.getElementById('comm_shop').value = data.commissions.shop || 0;
 
         // Bind Pricing
         document.getElementById('price_baseFee').value = data.pricing.baseServiceFee;
         document.getElementById('price_tax').value = data.pricing.taxRate;
         document.getElementById('price_minWallet').value = data.pricing.minWalletRecharge;
         document.getElementById('price_walletDiscount').value = data.pricing.walletDiscountPercentage || 0;
+        document.getElementById('price_soilTest').value = data.pricing.soilTestPrice || 250;
 
       } catch (err) {
         showToast('Error loading settings', 'warning');
@@ -573,18 +627,33 @@
       let payload = {};
 
       if (type === 'commissions') {
+        const commEq = parseFloat(document.getElementById('comm_equipment').value);
+        const commLab = parseFloat(document.getElementById('comm_labour').value);
+        const commTrad = parseFloat(document.getElementById('comm_trading').value);
+        const commKsp = parseFloat(document.getElementById('comm_ksp').value);
+        const commSoil = parseFloat(document.getElementById('comm_soil').value);
+
         payload.commissions = {
-          equipment: parseFloat(document.getElementById('comm_equipment').value),
-          labour: parseFloat(document.getElementById('comm_labour').value),
-          buyerTrading: parseFloat(document.getElementById('comm_trading').value),
-          ksp: parseFloat(document.getElementById('comm_ksp').value)
+          equipment: isNaN(commEq) ? 5 : commEq,
+          labour: isNaN(commLab) ? 5 : commLab,
+          buyerTrading: isNaN(commTrad) ? 2 : commTrad,
+          ksp: isNaN(commKsp) ? 4 : commKsp,
+          soil: isNaN(commSoil) ? 10 : commSoil,
+          shop: isNaN(parseFloat(document.getElementById('comm_shop').value)) ? 0 : parseFloat(document.getElementById('comm_shop').value)
         };
       } else if (type === 'pricing') {
+        const baseFee = parseFloat(document.getElementById('price_baseFee').value);
+        const tax = parseFloat(document.getElementById('price_tax').value);
+        const minWallet = parseFloat(document.getElementById('price_minWallet').value);
+        const walletDiscount = parseFloat(document.getElementById('price_walletDiscount').value);
+        const soilTest = parseFloat(document.getElementById('price_soilTest').value);
+
         payload.pricing = {
-          baseServiceFee: parseFloat(document.getElementById('price_baseFee').value),
-          taxRate: parseFloat(document.getElementById('price_tax').value),
-          minWalletRecharge: parseFloat(document.getElementById('price_minWallet').value),
-          walletDiscountPercentage: parseFloat(document.getElementById('price_walletDiscount').value)
+          baseServiceFee: isNaN(baseFee) ? 100 : baseFee,
+          taxRate: isNaN(tax) ? 12 : tax,
+          minWalletRecharge: isNaN(minWallet) ? 500 : minWallet,
+          walletDiscountPercentage: isNaN(walletDiscount) ? 0 : walletDiscount,
+          soilTestPrice: isNaN(soilTest) ? 250 : soilTest
         };
       }
 
@@ -713,6 +782,7 @@
     });
   </script>
 
+  <script src="js/sidebar-guard.js"></script>
 </body>
 
 </html>

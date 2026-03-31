@@ -5,6 +5,7 @@ const Order = require('../models/Order');
 const SellRequest = require('../models/SellRequest');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Settings = require('../models/Settings');
 const { protect } = require('../middleware/authMiddleware');
 
 // Helper to parse quantity and always try to get Quintal value
@@ -141,24 +142,37 @@ router.get('/assigned', protect, async (req, res) => {
             .populate('mandi', 'name location')
             .sort({ createdAt: -1 });
 
+        const settings = await Settings.getSettings();
+        const commissionRate = settings.commissions?.buyerTrading || 0;
+
         // Map to match frontend AssignedOrder type
-        const mappedOrders = orders.map(o => ({
-            _id: o._id.toString(),
-            farmerName: o.buyer?.name || o.farmerName || 'Trader',
-            farmerMobile: o.buyer?.phone || o.farmerMobile || '',
-            village: o.village || o.mandi?.name || o.location,
-            district: o.district || '',
-            state: o.state || '',
-            crop: o.crop,
-            quantity: o.quantity,
-            pricePerQuintal: o.pricePerQuintal || 0,
-            pricePerKg: o.pricePerKg || (o.pricePerQuintal ? o.pricePerQuintal / 100 : 0),
-            amount: o.amount || (parseQuantityInQuintals(o.quantity) * (o.pricePerQuintal || 0)), // Use robust parsing
-            assignedStatus: o.assignedStatus || o.status || 'new',
-            cancelReason: o.cancelReason,
-            sellRequestId: o.sellRequestId,
-            createdAt: o.createdAt
-        }));
+        const mappedOrders = orders.map(o => {
+            const amount = o.amount || (parseQuantityInQuintals(o.quantity) * (o.pricePerQuintal || 0));
+            const rateToUse = o.commissionRate || commissionRate;
+            const commission = o.commission || (amount * rateToUse) / 100;
+            
+            console.log(`[ORDER-DEBUG] OrderID=${o._id}, Amount=${amount}, Rate=${rateToUse}, Comm=${commission}`);
+            
+            return {
+                _id: o._id.toString(),
+                farmerName: o.buyer?.name || o.farmerName || 'Trader',
+                farmerMobile: o.buyer?.phone || o.farmerMobile || '',
+                village: o.village || o.mandi?.name || o.location,
+                district: o.district || '',
+                state: o.state || '',
+                crop: o.crop,
+                quantity: o.quantity,
+                pricePerQuintal: o.pricePerQuintal || 0,
+                pricePerKg: o.pricePerKg || (o.pricePerQuintal ? o.pricePerQuintal / 100 : 0),
+                amount: amount,
+                commission: commission,
+                commissionRate: rateToUse,
+                assignedStatus: o.assignedStatus || o.status || 'new',
+                cancelReason: o.cancelReason,
+                sellRequestId: o.sellRequestId,
+                createdAt: o.createdAt
+            };
+        });
 
         res.json(mappedOrders);
     } catch (error) {
@@ -201,33 +215,54 @@ router.patch('/:id/assigned-status', protect, async (req, res) => {
                 
                 // Update SellRequest
                 await SellRequest.findByIdAndUpdate(order.sellRequestId._id, { status: 'completed' });
- 
+
+                // Get settings for commission
+                const settings = await Settings.getSettings();
+                const commissionRate = settings.commissions.buyerTrading || 0;
+
                 const quantityInQtl = parseQuantityInQuintals(order.quantity);
                 const price = order.pricePerQuintal || 0;
-                const amount = quantityInQtl * price;
+                const baseAmount = quantityInQtl * price;
+                const commissionAmount = (baseAmount * commissionRate) / 100;
+                const totalDeduction = baseAmount + commissionAmount;
 
                 const buyer = await User.findById(req.user.id);
                 if (buyer) {
-                    buyer.walletBalance = (buyer.walletBalance || 0) - amount;
+                    buyer.walletBalance = (buyer.walletBalance || 0) - totalDeduction;
                     await buyer.save();
 
-                    // Create Buyer Transaction (Debit)
+                    // Create Buyer Transaction (Debit - Base Amount)
                     await Transaction.create({
                         transactionId: `BUY-OTP-${order._id}-${Date.now()}`,
                         recipient: buyer._id,
                         module: 'BuyerTrading',
-                        amount: amount,
+                        amount: baseAmount,
                         type: 'Debit',
                         paymentMode: 'NexCard Wallet',
                         status: 'Completed',
                         referenceId: order._id,
                         note: `Payment for ${order.crop} (${quantityInQtl} Qtl) - Sent to Farmer`
                     });
+
+                    // Create Buyer Transaction (Debit - Commission)
+                    if (commissionAmount > 0) {
+                        await Transaction.create({
+                            transactionId: `BUY-COMM-${order._id}-${Date.now()}`,
+                            recipient: buyer._id,
+                            module: 'BuyerTrading',
+                            amount: commissionAmount,
+                            type: 'Debit',
+                            paymentMode: 'NexCard Wallet',
+                            status: 'Completed',
+                            referenceId: order._id,
+                            note: `Trading Commission (${commissionRate}%) for ${order.crop}`
+                        });
+                    }
                 }
 
                 const farmer = await User.findById(order.sellRequestId.farmer);
                 if (farmer) {
-                    farmer.walletBalance = (farmer.walletBalance || 0) + amount;
+                    farmer.walletBalance = (farmer.walletBalance || 0) + baseAmount;
                     await farmer.save();
 
                     // Create Farmer Transaction (Credit)
@@ -235,7 +270,7 @@ router.patch('/:id/assigned-status', protect, async (req, res) => {
                         transactionId: `SELL-OTP-${order._id}-${Date.now()}`,
                         recipient: farmer._id,
                         module: 'BuyerTrading',
-                        amount: amount,
+                        amount: baseAmount,
                         type: 'Credit',
                         paymentMode: 'NexCard Wallet',
                         status: 'Completed',
@@ -243,6 +278,42 @@ router.patch('/:id/assigned-status', protect, async (req, res) => {
                         note: `Payment for ${order.crop} (${quantityInQtl} Qtl) - From Trader`
                     });
                 }
+
+                // 4. Dynamic Auto-Repayment (If farmer has debt and wallet balance, sweep it)
+                const { processAutoRepayment } = require('../services/repaymentService');
+                await processAutoRepayment(farmer._id, order._id);
+
+                // Credit Admin with commission
+                if (commissionAmount > 0) {
+                    const admin = await User.findOne({ role: 'admin' });
+                    if (admin) {
+                        admin.walletBalance = (admin.walletBalance || 0) + commissionAmount;
+                        await admin.save();
+
+                        // Create Admin Transaction (Credit)
+                        await Transaction.create({
+                            transactionId: `ADM-COMM-${order._id}-${Date.now()}`,
+                            recipient: admin._id,
+                            module: 'BuyerTrading',
+                            amount: commissionAmount,
+                            type: 'Credit',
+                            paymentMode: 'NexCard Wallet',
+                            status: 'Completed',
+                            referenceId: order._id,
+                            note: `Trading Commission (${commissionRate}%) from ${buyer?.name || 'Partner'} for order #${order._id}`
+                        });
+                    }
+                }
+                // Save calculated values to Order
+                order.commission = commissionAmount;
+                order.commissionRate = commissionRate;
+                
+                // Track update
+                order.assignedStatus = 'delivered';
+                order.status = 'completed';
+                await order.save();
+
+                return res.json({ message: 'Order delivered and payments processed', order });
             } else {
                 update.status = 'completed';
             }

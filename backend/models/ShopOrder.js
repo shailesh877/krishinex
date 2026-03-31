@@ -17,7 +17,13 @@ const shopOrderSchema = new mongoose.Schema({
         price: Number,
         quantity: Number,
         unit: String,
-        imageUrl: String
+        variantLabel: String,
+        imageUrl: String,
+        hsnCode: String,
+        cgstPercent: Number,
+        sgstPercent: Number,
+        taxableAmount: Number,
+        gstAmount: Number
     }],
     deliveryAddress: {
         name: String,
@@ -59,6 +65,31 @@ const shopOrderSchema = new mongoose.Schema({
         type: String,
         enum: ['NONE', 'PENDING', 'APPROVED', 'REJECTED'],
         default: 'NONE'
+    },
+    estimatedDeliveryTime: {
+        type: String,
+        default: ''
+    },
+    orderType: {
+        type: String,
+        enum: ['ONLINE', 'POS'],
+        default: 'ONLINE'
+    },
+    paymentBreakdown: {
+        cash: { type: Number, default: 0 },
+        wallet: { type: Number, default: 0 },
+        due: { type: Number, default: 0 },
+        shopDue: { type: Number, default: 0 }
+    },
+    posOtp: {
+        type: String
+    },
+    posOtpExpires: {
+        type: Date
+    },
+    isPosVerified: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

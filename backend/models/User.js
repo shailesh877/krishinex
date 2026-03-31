@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
+    enum: ['pending', 'approved', 'rejected', 'blocked'],
     default: 'pending' // Admin needs to approve partners
   },
   mandi: {
@@ -135,6 +135,7 @@ const userSchema = new mongoose.Schema({
   panNumber: { type: String, default: '' },
   panDocUrl: { type: String, default: '' },
   gstNumber: { type: String, default: '' },
+  licenseNumber: { type: String, default: '' },
   businessLicenseUrl: { type: String, default: '' },
   kycVerifiedAt: { type: Date },
   kycVerifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -145,15 +146,24 @@ const userSchema = new mongoose.Schema({
     bankName: { type: String, default: '' },
     accountNumber: { type: String, default: '' },
     ifscCode: { type: String, default: '' },
-    bankAddress: { type: String, default: '' }
+    bankAddress: { type: String, default: '' },
+    bankDocUrl: { type: String, default: '' }
   },
   location: {
     type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], index: '2dsphere' } // [lng, lat]
+    coordinates: { type: [Number], default: [83.00, 25.33] } // [lng, lat]
   },
   fcmToken: {
     type: String,
     default: ''
+  },
+  creditLimit: {
+    type: Number,
+    default: 0
+  },
+  creditUsed: {
+    type: Number,
+    default: 0
   },
   createdAt: {
     type: Date,
@@ -163,5 +173,6 @@ const userSchema = new mongoose.Schema({
 
 userSchema.index({ phone: 1, role: 1 }, { unique: true });
 userSchema.index({ email: 1, role: 1 }, { unique: true, sparse: true });
+userSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('User', userSchema);

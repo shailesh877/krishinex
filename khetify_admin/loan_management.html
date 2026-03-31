@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Loan Applications Management - KrishiNex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation (Will be standardized by script) -->
+                  <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Farmers & Users</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white" onclick="toggleSidebar()">
+              <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
+              Loan Applications Management
+            </h1>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+        <!-- Stats Section -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-md">
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Applications</p>
+                <p class="text-3xl font-black text-slate-900" id="stat-total">0</p>
+            </div>
+            <div class="bg-amber-50 p-5 rounded-2xl border-2 border-amber-100 shadow-md">
+                <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Pending Review</p>
+                <p class="text-3xl font-black text-amber-700" id="stat-pending">0</p>
+            </div>
+            <div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-100 shadow-md">
+                <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Approved</p>
+                <p class="text-3xl font-black text-emerald-700" id="stat-approved">0</p>
+            </div>
+            <div class="bg-rose-50 p-5 rounded-2xl border-2 border-rose-100 shadow-md">
+                <p class="text-[10px] font-black text-rose-600 uppercase tracking-widest">Rejected</p>
+                <p class="text-3xl font-black text-rose-700" id="stat-rejected">0</p>
+            </div>
+        </section>
+
+        <!-- Applications Table -->
+        <section class="bg-white rounded-2xl border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
+            <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <i class="fas fa-list-check text-emerald-600"></i>
+              Application Queue
+            </h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="bg-slate-50">
+                <tr class="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Farmer Details</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Loan Info</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Land Details</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Financials</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right px-6 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="loanBody" class="divide-y divide-slate-100">
+                <!-- Data will be populated here -->
+              </tbody>
+            </table>
+            <div id="emptyState" class="hidden p-20 text-center bg-slate-50/50">
+              <i class="fas fa-file-invoice-dollar text-slate-200 text-6xl mb-4"></i>
+              <p class="text-slate-400 font-bold text-xl">No loan applications found.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 md:p-10">
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
+      <div class="relative bg-white w-full max-w-4xl max-h-full rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+          <div class="p-6 border-b-2 border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50 to-sky-50">
+              <h3 class="text-xl font-black text-slate-900">Application Details</h3>
+              <button onclick="closeModal()" class="h-10 w-10 rounded-full bg-white text-slate-400 hover:text-rose-500 shadow-md">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-8 custom-scroll" id="modalContent">
+              <!-- Content goes here -->
+          </div>
+      </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300">
+    <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+      <i class="fas fa-check-circle text-emerald-400"></i>
+      <span id="toastMsg" class="text-sm font-black"></span>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://demo.ranx24.com/api';
+    const token = localStorage.getItem('employeeToken');
+
+    if (!token) {
+      window.location.replace('login.html');
+    }
+
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    async function fetchLeads() {
+      try {
+        const res = await fetch(`${API_BASE}/leads/admin/all`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        const tbody = document.getElementById('loanBody');
+        const emptyState = document.getElementById('emptyState');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        // Update Stats
+        document.getElementById('stat-total').innerText = data.length;
+        document.getElementById('stat-pending').innerText = data.filter(l => l.status === 'pending').length;
+        document.getElementById('stat-approved').innerText = data.filter(l => l.status === 'approved').length;
+        document.getElementById('stat-rejected').innerText = data.filter(l => l.status === 'rejected').length;
+
+        data.forEach(lead => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/80 transition-colors';
+          
+          let statusColor = 'slate';
+          if(lead.status === 'approved') statusColor = 'emerald';
+          if(lead.status === 'pending') statusColor = 'amber';
+          if(lead.status === 'rejected') statusColor = 'rose';
+
+          tr.innerHTML = `
+            <td class="px-6 py-5">
+              <div class="font-black text-slate-900">${lead.farmerName}</div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase">${lead.mobile}</div>
+            </td>
+            <td class="px-6 py-5">
+              <div class="text-sm font-bold text-emerald-700">₹${lead.loanAmount.toLocaleString()}</div>
+              <div class="text-[10px] text-slate-500 font-medium">${lead.loanPurpose}</div>
+            </td>
+            <td class="px-6 py-5">
+              <div class="text-xs font-semibold text-slate-900">${lead.landSize} Bigha</div>
+              <div class="text-[10px] text-slate-500 uppercase">${lead.landType || 'N/A'}</div>
+            </td>
+             <td class="px-6 py-5">
+              <div class="text-xs font-semibold text-slate-900">Inc: ₹${lead.farmingMonthlyIncome || '0'}/mo</div>
+              <div class="text-[10px] text-slate-500 uppercase">Existing Loan: ${lead.hasExistingLoan || 'no'}</div>
+            </td>
+            <td class="px-6 py-5">
+              <span class="inline-flex items-center rounded-full bg-${statusColor}-50 px-2.5 py-1 text-[10px] font-black text-${statusColor}-700 border-2 border-${statusColor}-200">
+                ${lead.status.toUpperCase()}
+              </span>
+            </td>
+            <td class="px-6 py-5 text-right space-x-2">
+              <button onclick='viewDetails(${JSON.stringify(lead)})'
+                class="h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black hover:bg-slate-800 transition-all shadow-md">
+                View Full
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        showToast('Failed to load applications');
+      }
+    }
+
+    function viewDetails(lead) {
+        const content = document.getElementById('modalContent');
+        content.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Personal Information</h4>
+                        <div class="bg-slate-50 p-4 rounded-2xl space-y-3">
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Father's Name</span><span class="text-xs font-bold text-slate-900">${lead.fatherName || 'N/A'}</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Aadhaar No.</span><span class="text-xs font-bold text-slate-900">${lead.aadhaar}</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">PAN Card</span><span class="text-xs font-bold text-slate-900">${lead.pan || 'N/A'}</span></div>
+                            <div class="pt-2"><p class="text-[10px] text-slate-400 font-bold mb-1">Full Address</p><p class="text-xs font-semibold text-slate-800 leading-relaxed">${lead.fullAddress}</p></div>
+                        </div>
+                    </div>
+                     <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Land & Farming</h4>
+                        <div class="bg-slate-50 p-4 rounded-2xl space-y-3">
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Total Land</span><span class="text-xs font-bold text-slate-900">${lead.landSize} Bigha</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Land Type</span><span class="text-xs font-bold text-slate-900 uppercase">${lead.landType}</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Crops</span><span class="text-xs font-bold text-slate-900">${lead.crops || 'N/A'}</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Khatauni No.</span><span class="text-xs font-bold text-slate-900">${lead.khatauni || 'N/A'}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Loan Requirement</h4>
+                        <div class="bg-emerald-50 p-4 rounded-2xl">
+                            <p class="text-2xl font-black text-emerald-800">₹${lead.loanAmount.toLocaleString()}</p>
+                            <p class="text-xs font-bold text-emerald-600 mt-1 uppercase tracking-tight">${lead.loanPurpose}</p>
+                            ${lead.otherPurpose ? `<p class="text-[10px] text-emerald-500 mt-1 font-semibold italic">Note: ${lead.otherPurpose}</p>` : ''}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Financial Status</h4>
+                        <div class="bg-slate-50 p-4 rounded-2xl space-y-3">
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Farming Income</span><span class="text-xs font-bold text-slate-900">₹${lead.farmingMonthlyIncome}/mo</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Family Income</span><span class="text-xs font-bold text-slate-900">₹${lead.familyMonthlyIncome || '0'}/mo</span></div>
+                            <div class="flex justify-between"><span class="text-xs text-slate-500">Existing Loan</span><span class="text-xs font-bold text-rose-600 uppercase">${lead.hasExistingLoan}</span></div>
+                            ${lead.existingLoanDetails ? `<div class="pt-2"><p class="text-[10px] text-slate-400 font-bold mb-1">Loan Details</p><p class="text-xs font-semibold text-slate-800">${lead.existingLoanDetails}</p></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t-2 border-slate-100 grid grid-cols-2 gap-4">
+                <button onclick="updateStatus('${lead._id}', 'approved')" class="h-12 rounded-xl bg-emerald-500 text-white font-black hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200">Approve Application</button>
+                <button onclick="updateStatus('${lead._id}', 'rejected')" class="h-12 rounded-xl bg-rose-50 text-rose-600 font-black hover:bg-rose-100 transition-all border-2 border-rose-100">Reject Application</button>
+            </div>
+        `;
+        document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    async function updateStatus(id, status) {
+        if(!confirm(`Confirm ${status.toUpperCase()} this application?`)) return;
+        try {
+            // Hum iske liye leadRoutes me PUT route add karenge
+            const res = await fetch(`${API_BASE}/leads/status/${id}`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            });
+            if(res.ok) {
+                showToast(`Application ${status.toUpperCase()}`);
+                closeModal();
+                fetchLeads();
+            }
+        } catch(e) { showToast('Update failed'); }
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    fetchLeads();
+  </script>
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

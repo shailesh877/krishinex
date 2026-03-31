@@ -73,6 +73,10 @@ router.post('/submit', protect, async (req, res) => {
             return res.status(400).json({ error: 'Please provide all required fields' });
         }
 
+        const Settings = require('../models/Settings');
+        const settings = await Settings.getSettings();
+        const currentCommissionRate = settings.commissions?.buyerTrading || 0;
+
         const sellRequest = await SellRequest.create({
             farmer: req.user.id,
             cropName,
@@ -83,7 +87,8 @@ router.post('/submit', protect, async (req, res) => {
             moisture,
             bagCount,
             notes,
-            images
+            images,
+            commissionRate: currentCommissionRate
         });
 
         // Notify Admins or nearby Buyers (Simple system notification for now)

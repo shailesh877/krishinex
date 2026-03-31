@@ -1,0 +1,12 @@
+[2026-03-23T12:26:39.866Z] GET /api/notifications/unread-count
+[2026-03-23T12:26:39.896Z] GET /api/suggestions/all
+[2026-03-23T12:26:39.900Z] GET /api/user/profile
+[2026-03-23T12:26:42.230Z] GET /api/notifications/unread-count
+[2026-03-23T12:26:42.232Z] GET /api/user/profile
+[2026-03-23T12:26:42.234Z] GET /api/suggestions/all
+[2026-03-23T12:26:48.654Z] GET /api/machines/public?search=&category=all&userLat=25.3662823&userLng=83.0060021
+[2026-03-23T12:27:03.082Z] GET /api/rentals/check-availability?machineId=69b83cfdc0598a737e48f37b&fromDate=2026-03-23T12:26:00.000Z&toDate=2026-03-24T12:26:00.000Z
+[2026-03-23T12:27:06.798Z] GET /api/rentals/check-availability?machineId=69b83cfdc0598a737e48f37b&fromDate=2026-03-23T12:26:00.000Z&toDate=2026-03-24T12:26:00.000Z
+[2026-03-23T12:27:14.966Z] GET /api/rentals/check-availability?machineId=69b83cfdc0598a737e48f37b&fromDate=2026-03-23T12:26:00.000Z&toDate=2026-03-23T13:26:00.000Z
+[2026-03-23T12:27:17.752Z] GET /api/rentals/check-availability?machineId=69b83cfdc0598a737e48f37b&fromDate=2026-03-23T12:26:00.000Z&toDate=2026-03-23T14:26:00.000Z
+[2026-03-23T12:27:58.100Z] GET /api/rentals/check-availability?machineId=69b83cfdc0598a737e48f37b&fromDate=2026-03-23T14:30:00.000Z&toDate=2026-03-23T16:30:00.000Z

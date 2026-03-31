@@ -38,6 +38,18 @@ const itemSchema = new mongoose.Schema({
     imageUrl: {
         type: String
     },
+    hsnCode: {
+        type: String,
+        trim: true
+    },
+    cgstPercent: {
+        type: Number,
+        default: 0
+    },
+    sgstPercent: {
+        type: Number,
+        default: 0
+    },
     hasVariants: {
         type: Boolean,
         default: false

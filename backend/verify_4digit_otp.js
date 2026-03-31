@@ -2,7 +2,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 async function verify4DigitOtp() {
-    const API_BASE = 'http://localhost:5500/api';
+    const API_BASE = 'https://demo.ranx24.com/api';
     const TEST_USER_ID = '69a9ddf748b875747eeda37'; 
     
     try {

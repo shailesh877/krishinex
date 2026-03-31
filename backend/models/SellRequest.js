@@ -59,6 +59,10 @@ const sellRequestSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    commissionRate: {
+        type: Number,
+        default: 0
+    },
     createdAt: {
         type: Date,
         default: Date.now

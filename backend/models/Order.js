@@ -63,6 +63,9 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SellRequest'
     },
+    // Commission fields
+    commission: { type: Number, default: 0 },
+    commissionRate: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
 });
 

@@ -28,6 +28,15 @@ const labourJobSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    paymentMode: {
+        type: String,
+        enum: ['CASH', 'WALLET'],
+        default: 'CASH'
+    },
+    discountApplied: {
+        type: Number,
+        default: 0
+    },
     amount: {
         type: Number,
         required: true
@@ -44,9 +53,42 @@ const labourJobSchema = new mongoose.Schema({
         enum: ['Pending', 'Accepted', 'In Progress', 'Completed', 'Cancelled'],
         default: 'Pending'
     },
+    fromDate: {
+        type: Date,
+        required: false
+    },
+    toDate: {
+        type: Date,
+        required: false
+    },
+    priceType: {
+        type: String,
+        enum: ['hourly', 'daily'],
+        default: 'daily'
+    },
+    hours: {
+        type: Number,
+        default: 0
+    },
+    days: {
+        type: Number,
+        default: 0
+    },
+    purpose: {
+        type: String,
+        default: ''
+    },
     completionOTP: {
         type: String,
         default: null
+    },
+    platformCommission: {
+        type: Number,
+        default: 0
+    },
+    ownerPayout: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

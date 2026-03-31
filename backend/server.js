@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
-console.log('--- KHETIFY BACKEND V2.2 (OTP & WALLET FIX) ---');
+
+console.log('--- KHETIFY BACKEND V2.3 (SETTINGS FIX) ---');
 
 // DNS Fix for MongoDB SRV on some networks
 require('dns').setServers(['8.8.8.8', '1.1.1.1']);
@@ -11,7 +12,7 @@ require('dns').setServers(['8.8.8.8', '1.1.1.1']);
 const authRoutes = require('./routes/authRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-const shopRoutes = require('./routes/shopRoutes'); // Added shopRoutes import
+const shopRoutes = require('./routes/shopRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Global Request Logger
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Headers: ${JSON.stringify(req.headers)}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
 
@@ -64,7 +65,8 @@ app.use('/api/suggestions', require('./routes/suggestionRoutes'));
 app.use('/api/doctor', require('./routes/doctorRoutes'));
 app.use('/api/contact', require('./routes/contactRoutes'));
 app.use('/api/ads', require('./routes/adRoutes'));
-app.use('/api/ksp', require('./routes/kspRoutes'));
+app.use('/api/locations', require('./routes/locationRoutes'));
+app.use('/api/videos', require('./routes/videoRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -78,8 +80,39 @@ app.use((err, req, res, next) => {
 const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGODB_URI)
-    .then(() => {
+    .then(async () => {
         console.log('Connected to MongoDB');
+
+        // --- ONE-TIME LEDGER DATA FIX ---
+        try {
+            const db = mongoose.connection.db;
+
+            // 1. Platform Dues (Agri-Credit): Always a PAYMENT for the shop
+            const dueRes = await db.collection('ledgers').updateMany(
+                { method: 'DUE' },
+                { $set: { type: 'PAYMENT' } }
+            );
+
+            // 2. Shop Dues (Personal Responsibility): Always a DUE (Debt) for the shop
+            const shopDueRes = await db.collection('ledgers').updateMany(
+                { method: 'SHOP_DUE' },
+                { $set: { type: 'DUE' } }
+            );
+
+            // 3. CLEAN SLATE FIX: Move ALL existing 'RECOVERY' entries to 'PLATFORM_RECOVERY'
+            // Kyunki Shop Udhaar naya feature hai, toh purani saari recoveries platform wali hi hain.
+            // Inhe hatane se aapka personal bahi-khata ekdum clean ₹100 dikhayega.
+            const platRecRes = await db.collection('ledgers').updateMany(
+                { method: 'RECOVERY' },
+                { $set: { method: 'PLATFORM_RECOVERY', type: 'PAYMENT' } }
+            );
+
+            console.log(`[LEDGER-CLEAN-FIX] Agri-Credit=${dueRes.modifiedCount}, Shop-Credit=${shopDueRes.modifiedCount}, Recoveries-Reset=${platRecRes.modifiedCount}`);
+        } catch (err) {
+            console.error('[LEDGER-FIX] Failed:', err);
+        }
+        // --------------------------------
+
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server running on port ${PORT}`);
         });

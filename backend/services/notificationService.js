@@ -42,7 +42,10 @@ const sendNotification = async (userId, { title, messageEn, messageHi, type, ref
 
         // 2. Send push notification if user has an FCM token and Firebase is initialized
         const user = await User.findById(userId).select('fcmToken');
+        console.log(`[NOTIFY-SERVICE] FCM Token for user ${userId}: ${user?.fcmToken ? 'FOUND' : 'NOT FOUND'}`);
+
         if (user && user.fcmToken && firebaseApp) {
+            console.log(`[NOTIFY-SERVICE] Sending PUSH via Firebase to token: ${user.fcmToken.substring(0, 10)}...`);
             const message = {
                 notification: {
                     title: title,
@@ -63,6 +66,8 @@ const sendNotification = async (userId, { title, messageEn, messageHi, type, ref
                 .catch((error) => {
                     console.error('[FIREBASE] Error sending message:', error);
                 });
+        } else {
+            console.warn(`[NOTIFY-SERVICE] Skip push: Token=${!!user?.fcmToken}, FirebaseInit=${!!firebaseApp}`);
         }
 
         return notification;

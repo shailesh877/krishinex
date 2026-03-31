@@ -5,6 +5,13 @@ const Machine = require('../models/Machine');
 const { protect } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+// Ensure upload directory exists
+const uploadDir = 'uploads/machines/';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Multer Config for multiple machine images
 const storage = multer.diskStorage({
@@ -101,11 +108,11 @@ router.get('/public', protect, async (req, res) => {
                             coordinates: [Number(userLng), Number(userLat)]
                         },
                         key: 'location',
-                        distanceField: 'distanceKm', // This will update the machine's distanceKm in the result
-                        maxDistance: Number(maxDistance) * 1000, // Distance in meters
+                        distanceField: 'distanceKm',
+                        maxDistance: Number(maxDistance) * 1000,
                         query: query,
                         spherical: true,
-                        distanceMultiplier: 0.001 // Convert meters to km
+                        distanceMultiplier: 0.001
                     }
                 },
                 {
@@ -118,6 +125,11 @@ router.get('/public', protect, async (req, res) => {
                 },
                 { $unwind: '$owner' },
                 {
+                    $match: {
+                        'owner.status': 'approved'
+                    }
+                },
+                {
                     $project: {
                         'owner.password': 0,
                         'owner.fcmToken': 0
@@ -125,16 +137,35 @@ router.get('/public', protect, async (req, res) => {
                 }
             ]);
         } else {
-            console.log('[MACHINE_PUBLIC] No distance filter/coords, using standard find');
-            // If distance filter is requested but no coords, we can't filter accurately, 
-            // but we'll return items and maybe filter by the static distanceKm if explicitly needed.
+            console.log('[MACHINE_PUBLIC] No distance filter/coords, using aggregate to filter by approved owner');
             if (maxDistance && maxDistance !== 'null') {
                 query.distanceKm = { $lte: Number(maxDistance) };
             }
 
-            machines = await Machine.find(query)
-                .populate('owner', 'name phone address profilePhotoUrl')
-                .sort({ createdAt: -1 });
+            machines = await Machine.aggregate([
+                { $match: query },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'owner'
+                    }
+                },
+                { $unwind: '$owner' },
+                {
+                    $match: {
+                        'owner.status': 'approved'
+                    }
+                },
+                {
+                    $project: {
+                        'owner.password': 0,
+                        'owner.fcmToken': 0
+                    }
+                },
+                { $sort: { createdAt: -1 } }
+            ]);
         }
 
         console.log('Final machines count:', machines.length);
