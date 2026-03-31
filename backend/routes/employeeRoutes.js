@@ -1897,17 +1897,19 @@ router.get('/admin/labour/stats', protect, checkModule('labour'), async (req, re
 // @access  Private/Admin
 router.get('/admin/labours', protect, checkModule('labour'), async (req, res) => {
     try {
-        const labourers = await User.find({ role: 'labour' })
-            .select('name businessName phone email address status employeeCode createdAt aadhaarDocUrl labourDetails')
-            .sort({ createdAt: -1 });
+        const labours = await User.find({ role: 'labour' })
+            .select('name businessName phone email address status employeeCode createdAt aadhaarNumber aadhaarDocUrl labourDetails bankDetails walletBalance ratePerDay ratePerHour jobNotificationOn whatsappOn maxDistanceKm')
+            .sort({ createdAt: -1 })
+            .lean();
 
-        const enriched = labourers.map(labour => {
+        const enriched = labours.map(labour => {
             return {
                 _id: labour._id,
                 name: labour.businessName || labour.name,
                 labourCode: labour.employeeCode || labour._id.toString().substring(18),
                 phone: labour.phone,
                 email: labour.email || '',
+                address: labour.address || '',
                 location: labour.address || '',
                 status: labour.status,
                 joinedAt: labour.createdAt,
@@ -1915,7 +1917,16 @@ router.get('/admin/labours', protect, checkModule('labour'), async (req, res) =>
                 availability: labour.labourDetails?.availability || 'inactive',
                 jobsDone: labour.labourDetails?.jobsCompleted || 0,
                 rating: labour.labourDetails?.rating || 0,
-                documentUrl: labour.aadhaarDocUrl || ''
+                aadhaarNumber: labour.aadhaarNumber || '',
+                aadhaarDocUrl: labour.aadhaarDocUrl || '',
+                walletBalance: labour.walletBalance || 0,
+                ratePerDay: labour.ratePerDay || 700,
+                ratePerHour: labour.ratePerHour || 90,
+                bankDetails: labour.bankDetails || {},
+                jobNotificationOn: labour.jobNotificationOn,
+                whatsappOn: labour.whatsappOn,
+                maxDistanceKm: labour.maxDistanceKm || 15,
+                createdAt: labour.createdAt
             };
         });
 
@@ -1947,6 +1958,9 @@ router.get('/admin/labour/jobs', protect, checkModule('labour'), async (req, res
                 farmerName: job.farmer?.name || 'Unknown',
                 farmerLocation: job.farmer?.address || '',
                 workType: job.workType,
+                priceType: job.priceType || 'daily',
+                hours: job.hours || 0,
+                days: job.days || 0,
                 hoursWorked: job.hoursWorked,
                 acresCovered: job.acresCovered,
                 amount: job.amount,

@@ -720,6 +720,76 @@
     </div>
   </div>
 
+  <!-- KYC PROFILE MODAL -->
+  <div id="kycProfileModal" class="fixed inset-0 z-[60] hidden overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-opacity">
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+      <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-3xl border border-slate-200">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 px-6 py-5 border-b border-emerald-100/50 flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-inner">
+              <i class="fas fa-shield-halved text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-black text-slate-900">KYC Profile</h3>
+              <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest" id="kycModalUserId">ID: ...</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeKycProfileModal()" class="rounded-full h-8 w-8 flex items-center justify-center bg-white text-slate-400 hover:text-slate-500 hover:bg-slate-100 shadow-sm transition-all focus:outline-none">
+            <span class="sr-only">Close</span>
+            <i class="fas fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-6 space-y-6">
+          
+          <!-- Top Row -->
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 id="kycModalName" class="text-2xl font-black text-slate-900">...</h2>
+              <div class="flex items-center gap-2 mt-2">
+                <span id="kycModalRole" class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 uppercase">...</span>
+                <span id="kycModalStatus" class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-700 uppercase">...</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Contact Details</p>
+              <p id="kycModalPhone" class="text-base font-black text-slate-800">...</p>
+            </div>
+          </div>
+
+          <!-- Documentation -->
+          <div class="rounded-2xl border-2 border-slate-100 bg-slate-50 overflow-hidden">
+            <div class="px-4 py-3 border-b-2 border-slate-100 bg-white/50">
+              <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                <i class="fas fa-folder-open text-sky-500"></i> Submitted Documents
+              </h4>
+            </div>
+            <div class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3" id="kycModalDocuments">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+              <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><i class="fas fa-calendar-check text-slate-400"></i> Verification Date</p>
+              <p id="kycModalVerifiedAt" class="text-sm font-black text-slate-800">...</p>
+            </div>
+            <div class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+              <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><i class="fas fa-comment-dots text-slate-400"></i> Admin Remarks</p>
+              <p id="kycModalRemarks" class="text-sm font-semibold text-slate-700 italic">...</p>
+            </div>
+          </div>
+
+        </div>
+        
+        <div id="kycModalActions" class="bg-slate-50 px-6 py-4 flex justify-end gap-3 rounded-b-3xl border-t border-slate-100 hidden">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- DOCUMENT VIEWER MODAL -->
   <div id="documentModal"
     class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-lg"
@@ -1042,15 +1112,84 @@
       showToast('Document download started', 'success');
     }
 
-    // View KYC History
+    // View KYC History Profile
     async function viewKYCHistory(userId) {
       try {
         const res = await fetch(`${API_BASE}/employee/admin/kyc/details/${userId}`, { headers: H });
+        if (!res.ok) throw new Error('Failed to fetch details');
         const user = await res.json();
-        alert(`KYC Status: ${user.status}\nRemarks: ${user.kycRemarks || 'N/A'}\nVerified At: ${user.kycVerifiedAt ? new Date(user.kycVerifiedAt).toLocaleString() : 'N/A'}`);
+        
+        document.getElementById('kycModalUserId').textContent = `ID: ${user._id ? user._id.toString().substring(18).toUpperCase() : 'N/A'}`;
+        document.getElementById('kycModalName').textContent = user.businessName || user.name || 'Unknown User';
+        
+        document.getElementById('kycModalRole').textContent = (user.role || 'user').toUpperCase();
+        
+        const statusEl = document.getElementById('kycModalStatus');
+        statusEl.textContent = (user.status || 'pending').toUpperCase();
+        statusEl.className = `inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
+          user.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
+          user.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+        }`;
+        
+        document.getElementById('kycModalPhone').textContent = user.phone || 'N/A';
+        
+        const verifiedAt = user.kycVerifiedAt ? new Date(user.kycVerifiedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Pending / Not Verified';
+        document.getElementById('kycModalVerifiedAt').textContent = verifiedAt;
+        
+        document.getElementById('kycModalRemarks').textContent = user.kycRemarks || 'No remarks provided.';
+        
+        // Documents Container
+        const docsContainer = document.getElementById('kycModalDocuments');
+        let docsHtml = '';
+        if (user.aadhaarDocUrl) {
+           docsHtml += `<button onclick="viewDocument('${user.aadhaarDocUrl}')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-white border-2 border-slate-100 hover:border-sky-300 hover:bg-sky-50 transition-all group">
+             <i class="fas fa-id-card text-2xl text-slate-400 group-hover:text-sky-500 mb-2 transition-colors"></i>
+             <span class="text-[10px] font-black text-slate-600 group-hover:text-sky-700 uppercase">Aadhaar Card</span>
+           </button>`;
+        }
+        if (user.panDocUrl) {
+           docsHtml += `<button onclick="viewDocument('${user.panDocUrl}')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-white border-2 border-slate-100 hover:border-purple-300 hover:bg-purple-50 transition-all group">
+             <i class="fas fa-id-badge text-2xl text-slate-400 group-hover:text-purple-500 mb-2 transition-colors"></i>
+             <span class="text-[10px] font-black text-slate-600 group-hover:text-purple-700 uppercase">PAN Card</span>
+           </button>`;
+        }
+        if (user.businessLicenseUrl) {
+           docsHtml += `<button onclick="viewDocument('${user.businessLicenseUrl}')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-white border-2 border-slate-100 hover:border-teal-300 hover:bg-teal-50 transition-all group">
+             <i class="fas fa-file-contract text-2xl text-slate-400 group-hover:text-teal-500 mb-2 transition-colors"></i>
+             <span class="text-[10px] font-black text-slate-600 group-hover:text-teal-700 uppercase">Business License</span>
+           </button>`;
+        }
+        
+        if (!docsHtml) {
+          docsHtml = `<div class="col-span-full text-center py-4"><span class="text-xs text-slate-400 font-bold"><i class="fas fa-info-circle mr-1"></i> No documents uploaded</span></div>`;
+        }
+        docsContainer.innerHTML = docsHtml;
+        
+        const actionsContainer = document.getElementById('kycModalActions');
+        if (user.status === 'pending' || user.status === 'under review') {
+          actionsContainer.innerHTML = `
+            <button onclick="rejectKYC('${user._id}', '${user.name || user.businessName}')" class="px-4 py-2 rounded-xl border-2 border-slate-200 text-slate-700 font-bold text-[11px] hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-all">
+              <i class="fas fa-times mr-1"></i> Reject
+            </button>
+            <button onclick="approveKYC('${user._id}', '${user.name || user.businessName}')" class="px-4 py-2 rounded-xl bg-emerald-500 text-white font-black text-[11px] hover:bg-emerald-600 shadow-md transition-all">
+              <i class="fas fa-check mr-1"></i> Approve
+            </button>
+          `;
+          actionsContainer.classList.remove('hidden');
+        } else {
+          actionsContainer.innerHTML = '';
+          actionsContainer.classList.add('hidden');
+        }
+
+        document.getElementById('kycProfileModal').classList.remove('hidden');
       } catch (e) {
-        showToast(`Could not fetch history`, 'info');
+        console.error(e);
+        showToast('Could not fetch history', 'info');
       }
+    }
+
+    function closeKycProfileModal() {
+      document.getElementById('kycProfileModal').classList.add('hidden');
     }
 
     // Show Toast
