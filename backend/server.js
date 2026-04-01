@@ -17,9 +17,25 @@ const shopRoutes = require('./routes/shopRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-    origin: true
-}));
+const corsOptions = {
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            'https://admin.krishinex.com',
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:5173'
+        ];
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.warn(`[CORS Blocked] Origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

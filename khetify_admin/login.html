@@ -9,17 +9,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
 
 
     <script>
         tailwind.config = {
             theme: {
                 fontFamily: { sans: ['Inter', 'sans-serif'] },
-        extend: {
+                extend: {
                     colors: {
                         brand: {
                             green: '#16A34A',
@@ -30,7 +31,7 @@
             },
         };
     </script>
-<style>
+    <style>
     </style>
 </head>
 
@@ -93,7 +94,8 @@
                                 class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-emerald-100 bg-emerald-50/30 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none text-xl font-black text-slate-900 text-center tracking-[15px]"
                                 placeholder="0000" />
                         </div>
-                        <p class="text-[10px] text-slate-500 font-bold text-center italic">Code sent to your email. Check inbox/spam.</p>
+                        <p class="text-[10px] text-slate-500 font-bold text-center italic">Code sent to your email.
+                            Check inbox/spam.</p>
                     </div>
 
                     <button type="submit" id="submitBtn"
@@ -107,8 +109,9 @@
                         <span id="otpBtnText">Verify & Login</span>
                         <i class="fas fa-shield-check" id="otpBtnIcon"></i>
                     </button>
-                    
-                    <button type="button" id="backToLogin" class="hidden w-full text-center text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-emerald-600 transition-colors">
+
+                    <button type="button" id="backToLogin"
+                        class="hidden w-full text-center text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-emerald-600 transition-colors">
                         Back to Credentials
                     </button>
                 </form>
@@ -130,7 +133,7 @@
     </div>
 
     <script>
-        
+
         const form = document.getElementById('loginForm');
         const submitBtn = document.getElementById('submitBtn');
         const verifyOtpBtn = document.getElementById('verifyOtpBtn');
@@ -153,7 +156,10 @@
             document.getElementById('btnIcon').className = 'fas fa-circle-notch animate-spin';
 
             try {
-                const response = await fetch(`${API_BASE}/auth/login-employee`, {
+                const apiBase = window.API_BASE || '';
+                if (!apiBase) throw new Error('API Configuration missing. Please check if js/auth.js is loaded.');
+
+                const response = await fetch(`${apiBase}/auth/login-employee`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -171,7 +177,7 @@
                         submitBtn.classList.add('hidden');
                         verifyOtpBtn.classList.remove('hidden');
                         backToLogin.classList.remove('hidden');
-                        
+
                         document.getElementById('otpCode').focus();
                     } else {
                         // Direct Login Success (for non-admins)
@@ -181,6 +187,7 @@
                     showError(data.error || 'Login failed. Check credentials.');
                 }
             } catch (err) {
+                console.error('[CRITICAL] Login Network Error:', err);
                 showError('Network error. Check server status.');
             } finally {
                 if (!pendingEmail) {
@@ -198,9 +205,10 @@
 
             verifyOtpBtn.disabled = true;
             document.getElementById('otpBtnText').textContent = 'Verifying...';
-            
+
             try {
-                const response = await fetch(`${API_BASE}/auth/verify-otp-employee`, {
+                const apiBase = window.API_BASE || '';
+                const response = await fetch(`${apiBase}/auth/verify-otp-employee`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: pendingEmail, otp })
@@ -230,7 +238,7 @@
             submitBtn.classList.remove('hidden');
             verifyOtpBtn.classList.add('hidden');
             backToLogin.classList.add('hidden');
-            
+
             submitBtn.disabled = false;
             submitBtn.classList.remove('opacity-70');
             document.getElementById('btnText').textContent = 'Sign In to Dashboard';
@@ -246,7 +254,7 @@
 
             document.getElementById(btnTextId).textContent = 'Success! Redirecting...';
             document.getElementById(btnIconId).className = 'fas fa-check';
-            
+
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 800);
@@ -261,4 +269,3 @@
 </body>
 
 </html>
-

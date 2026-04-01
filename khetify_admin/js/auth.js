@@ -6,6 +6,8 @@
 window.API_BASE = 'https://demo.ranx24.com/api';
 window.IMAGE_BASE = 'https://demo.ranx24.com';
 
+console.log('[DEBUG] Admin API Base Initialized:', window.API_BASE);
+
 (function () {
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
     const LOGIN_PAGE = 'login.html';
