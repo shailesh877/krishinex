@@ -1,36 +1,33 @@
-# update_urls.ps1 - Global URL Update & Refactor for Admin Panel (Fixed)
-$targetDir = "d:\khetify\khetify_admin"
-$newUrl = "https://demo.ranx24.com"
-$newApiUrl = "https://demo.ranx24.com/api"
+# KrishiNex Admin - Global URL Update Script
+# This script ensures all HTML files use the production API URL fallback.
 
-$htmlFiles = Get-ChildItem -Path $targetDir -Filter "*.html" -Recurse
+$productionApi = "https://demo.ranx24.com/api"
+$productionImage = "https://demo.ranx24.com"
+
+Write-Host "🚀 Starting Global URL Update for KrishiNex..." -ForegroundColor Cyan
+
+# Get all HTML files in the current directory and subdirectories
+$htmlFiles = Get-ChildItem -Filter *.html -Recurse
 
 foreach ($file in $htmlFiles) {
-    Write-Host "Processing $($file.FullName)..."
+    Write-Host "Processing: $($file.Name)" -ForegroundColor Gray
     $content = Get-Content $file.FullName -Raw
 
-    # 1. Remove hardcoded API_BASE and IMAGE_BASE definitions
-    # Using simpler replacement without complex regex to avoid PS parser issues
-    $content = $content -replace "const API_BASE = 'http://192.168.1.10:5500/api';", ""
-    $content = $content -replace "const IMAGE_BASE = 'http://192.168.1.10:5500';", ""
-    $content = $content -replace "const API_BASE = 'http://192.168.1.15:5500/api';", ""
-    $content = $content -replace "const IMAGE_BASE = 'http://192.168.1.15:5500';", ""
-    
-    # 2. Add auth.js if missing
-    if ($content -notmatch "js/auth.js") {
-        if ($content -match "<head>") {
-            $content = $content -replace "<head>", "<head>`r`n    <script src=`"js/auth.js`"></script>"
-            Write-Host "  Added js/auth.js to $($file.Name)"
-        }
+    # 1. Update existing API_BASE fallbacks
+    $content = $content -replace "window\.API_BASE\s*\|\|\s*''", "window.API_BASE || '$productionApi'"
+    $content = $content -replace "window\.API_BASE\s*\|\|\s*\"\"", "window.API_BASE || '$productionApi'"
+
+    # 2. Add explicit config if script tag is missing but needed
+    if ($content -like "*`${API_BASE}*" -and $content -notlike "*window.API_BASE =*") {
+        # Inject at the top of the script tag
+        $content = $content -replace "<script\s*src=`"js/auth\.js`"`s*></script>", "<script src=`"js/auth.js`"></script>`n  <script>window.API_BASE = '$productionApi'; window.IMAGE_BASE = '$productionImage';</script>"
     }
 
-    # 3. Global safety sweep for any remaining old IP strings
-    $content = $content -replace "http://192.168.1.10:5500/api", $newApiUrl
-    $content = $content -replace "http://192.168.1.10:5500", $newUrl
-    $content = $content -replace "http://192.168.1.15:5500/api", $newApiUrl
-    $content = $content -replace "http://192.168.1.15:5500", $newUrl
+    # 3. Final safety: replace any direct ${API_BASE} calls with the fallback logic if not already done
+    # (Matches ${API_BASE}/path and replaces with ${window.API_BASE || '...'}/path)
+    $content = $content -replace '`\${API_BASE}', "`${window.API_BASE || '$productionApi'}"
 
-    Set-Content -Path $file.FullName -Value $content -NoNewline
+    Set-Content $file.FullName $content -NoNewline
 }
 
-Write-Host "Global URL update complete for Admin Panel!"
+Write-Host "✅ All files updated! Please upload the contents and restart your server." -ForegroundColor Green

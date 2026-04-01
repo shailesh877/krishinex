@@ -20,6 +20,7 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
     origin: (origin, callback) => {
         const allowedOrigins = [
+            'https://krishinex.com',
             'https://admin.krishinex.com',
             'http://localhost:3000',
             'http://localhost:3001',

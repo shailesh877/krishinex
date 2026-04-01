@@ -156,9 +156,9 @@
             document.getElementById('btnIcon').className = 'fas fa-circle-notch animate-spin';
 
             try {
-                const apiBase = window.API_BASE || '';
-                if (!apiBase) throw new Error('API Configuration missing. Please check if js/auth.js is loaded.');
-
+                // Fallback for API Base if auth.js fails to load
+                const apiBase = window.API_BASE || 'https://demo.ranx24.com/api';
+                
                 const response = await fetch(`${apiBase}/auth/login-employee`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -207,7 +207,9 @@
             document.getElementById('otpBtnText').textContent = 'Verifying...';
 
             try {
-                const apiBase = window.API_BASE || '';
+                // Fallback for API Base if auth.js fails to load
+                const apiBase = window.API_BASE || 'https://demo.ranx24.com/api';
+
                 const response = await fetch(`${apiBase}/auth/verify-otp-employee`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
