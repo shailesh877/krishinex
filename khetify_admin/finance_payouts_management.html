@@ -19,9 +19,17 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: {
@@ -101,7 +109,7 @@
       </div>
 
       <!-- Navigation -->
-                        <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -335,21 +343,21 @@
           <span class="truncate font-semibold">Settings</span>
         </a>
       </nav>
-      <span
+      <!-- <span
         class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
         <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
-      </span>
-      <span class="truncate font-semibold">Analytics</span>
+      </span> -->
+      <!-- <span class="truncate font-semibold">Analytics</span> -->
       </a>
 
-      <a href="settings.html"
+      <!-- <a href="settings.html"
         class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
         <span
           class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
           <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
         </span>
         <span class="truncate font-semibold">Settings</span>
-      </a>
+      </a> -->
       </nav>
 
       <!-- Sidebar Footer -->
@@ -825,7 +833,7 @@
 
   <!-- ========== FINANCE PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
     let allPendingPayouts = [];
@@ -1175,6 +1183,3 @@
 </body>
 
 </html>
-
-
-

@@ -1,35 +1,62 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
+
 const User = require('./models/User');
 
-async function resetAdmin() {
+const resetAdminAccount = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        const email = 'admin@khetify.com';
-        const newPassword = 'admin123';
+        console.log('Connecting to MongoDB...');
+        // Use a more robust connection for Atlas
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        console.log('Connected successfully!');
 
-        let user = await User.findOne({ email, role: 'admin' });
-        if (user) {
-            user.password = newPassword;
-            await user.save();
-            console.log(`Password for ${email} reset to: ${newPassword}`);
-        } else {
-            console.log('Admin not found. Creating new admin...');
-            user = new User({
+        const newEmail = 'admin@krishinex.com';
+        const newPasswordRaw = 'Nex@12345';
+        
+        // Hash the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPasswordRaw, salt);
+
+        // Find any admin or specific one
+        let admin = await User.findOne({ role: 'admin' });
+
+        if (!admin) {
+            console.log('No admin user found. Creating a new one...');
+            admin = new User({
                 role: 'admin',
                 name: 'Super Admin',
-                email: email,
-                password: newPassword,
+                email: newEmail,
+                password: hashedPassword,
                 phone: '0000000000',
-                address: 'HQ'
+                address: 'Headquarters',
+                status: 'approved'
             });
-            await user.save();
-            console.log(`New admin created with Email: ${email} and Password: ${newPassword}`);
+        } else {
+            console.log(`Found existing admin: ${admin.email}. Updating credentials...`);
+            admin.email = newEmail;
+            admin.password = hashedPassword;
+            // Clear any stale OTPs
+            admin.loginOtp = '';
+            admin.loginOtpExpiry = undefined;
         }
-        await mongoose.disconnect();
-    } catch (err) {
-        console.error(err);
-    }
-}
 
-resetAdmin();
+        await admin.save();
+
+        console.log('-------------------------------------------');
+        console.log('✅ Admin Account Reset Successful!');
+        console.log(`Email: ${newEmail}`);
+        console.log(`Password: ${newPasswordRaw}`);
+        console.log('-------------------------------------------');
+        
+        process.exit(0);
+    } catch (error) {
+        console.error('❌ Error resetting admin account:', error);
+        process.exit(1);
+    }
+};
+
+resetAdminAccount();

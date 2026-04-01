@@ -19,9 +19,16 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: {
@@ -1040,12 +1047,11 @@
               <p class="text-sm font-black text-purple-700" id="modalLabTestsDone">-</p>
             </div>
             <div class="flex justify-between border-t-2 border-slate-200 pt-3 mt-3">
-              <p class="text-xs text-slate-600 font-bold">Document</p>
-              <button id="modalViewDocBtn"
-                class="text-xs font-black text-blue-600 hover:text-blue-800 transition-colors hidden"
-                onclick="window.open(this.dataset.url, '_blank')">
-                <i class="fas fa-external-link-alt mr-1"></i> View KYC Document
-              </button>
+              <p class="text-xs text-slate-600 font-bold">Aadhaar Doc</p>
+              <a id="modalViewDocBtn" target="_blank" href="#"
+                class="text-xs font-black text-blue-600 hover:text-blue-800 transition-colors hidden">
+                <i class="fas fa-external-link-alt mr-1"></i> View
+              </a>
               <span id="modalNoDocText" class="text-xs font-bold text-slate-400">Not Uploaded</span>
             </div>
             <div class="flex justify-between border-t-2 border-slate-200 pt-3 mt-3">
@@ -1054,6 +1060,85 @@
             </div>
           </div>
         </div>
+
+        <!-- Bank Details Section -->
+        <div id="modalBankSection" class="rounded-2xl border-2 border-blue-100 bg-blue-50/30 p-5 hidden">
+          <div class="flex justify-between items-center mb-3">
+            <p class="text-[10px] uppercase tracking-wider text-blue-600 font-black"><i class="fas fa-building-columns mr-1"></i> Bank Details</p>
+            <button id="adminEditBankBtn" onclick="toggleBankEdit()" class="text-[10px] font-black text-blue-700 hover:text-blue-900 bg-blue-100 px-3 py-1 rounded-full transition-all">
+              <i class="fas fa-edit mr-1"></i> Edit Bank Info
+            </button>
+          </div>
+          
+          <div id="bankDisplayMode" class="grid grid-cols-2 gap-x-6 gap-y-2">
+            <div><p class="text-[10px] text-slate-400 font-bold">Account Holder</p><p id="modalBankHolder" class="text-sm font-black text-slate-900">—</p></div>
+            <div><p class="text-[10px] text-slate-400 font-bold">Bank Name</p><p id="modalBankName" class="text-sm font-black text-slate-900">—</p></div>
+            <div><p class="text-[10px] text-slate-400 font-bold">Account Number</p><p id="modalBankAccNo" class="text-sm font-black text-slate-900">—</p></div>
+            <div><p class="text-[10px] text-slate-400 font-bold">IFSC Code</p><p id="modalBankIfsc" class="text-sm font-black text-slate-900">—</p></div>
+            <div class="col-span-2"><p class="text-[10px] text-slate-400 font-bold">Branch Address</p><p id="modalBankAddr" class="text-sm font-bold text-slate-700">—</p></div>
+          </div>
+
+          <div id="bankEditMode" class="grid grid-cols-2 gap-x-4 gap-y-3 hidden">
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">Account Holder</label>
+              <input type="text" id="editBankHolder" class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">Bank Name</label>
+              <input type="text" id="editBankName" class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">Account Number</label>
+              <input type="text" id="editBankAccNo" class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">IFSC Code</label>
+              <input type="text" id="editBankIfsc" class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-2">
+              <label class="text-[10px] text-slate-400 font-bold">Branch Address</label>
+              <input type="text" id="editBankAddr" class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-2 flex gap-2 mt-2">
+              <button onclick="saveAdminBankEdits()" class="flex-1 bg-blue-600 text-white text-[10px] font-black py-2 rounded-xl hover:bg-blue-700 shadow-md transition-all">Save Changes</button>
+              <button onclick="toggleBankEdit(false)" class="flex-1 bg-slate-200 text-slate-700 text-[10px] font-black py-2 rounded-xl hover:bg-slate-300 transition-all">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents: Lab License & Cancel Cheque -->
+        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-black mb-3"><i class="fas fa-folder-open mr-1"></i> KYC Documents</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <i class="fas fa-ribbon text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-black text-slate-800">Laboratory License</p>
+                  <p id="modalLabLicenseStatus" class="text-[10px] text-slate-500 font-semibold">Not Uploaded</p>
+                </div>
+              </div>
+              <a id="modalLabLicenseLink" href="#" target="_blank" class="text-xs font-black text-blue-600 hover:underline hidden"><i class="fas fa-eye mr-1"></i> View</a>
+              <span id="modalLabLicenseNone" class="text-xs font-bold text-slate-400">—</span>
+            </div>
+            <div class="flex items-center justify-between border-t border-slate-200 pt-3">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <i class="fas fa-credit-card text-orange-600 text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-black text-slate-800">Cancelled Cheque</p>
+                  <p id="modalCancelChequeStatus" class="text-[10px] text-slate-500 font-semibold">Not Uploaded</p>
+                </div>
+              </div>
+              <a id="modalCancelChequeLink" href="#" target="_blank" class="text-xs font-black text-orange-600 hover:underline hidden"><i class="fas fa-eye mr-1"></i> View</a>
+              <span id="modalCancelChequeNone" class="text-xs font-bold text-slate-400">—</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-between items-center">
@@ -1105,7 +1190,7 @@
 
   <!-- ========== SOIL TESTING PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
     const TEST_TYPES_DICT = {
@@ -1548,26 +1633,26 @@
     }
 
     // View Lab Details
-    function viewLab(labId) {
+    async function viewLab(labId) {
+      window.currentModalLabId = labId;
       const lab = allSoilLabs.find(l => l._id === labId);
       if (!lab) return;
+
+      const SERVER_ROOT = API_BASE.replace('/api', '');
 
       document.getElementById('modalLabName').textContent = lab.labName;
       document.getElementById('modalLabId').textContent = 'Lab ID: SL' + lab._id.substring(0, 5).toUpperCase();
       document.getElementById('modalLabPhone').textContent = lab.phone;
       document.getElementById('modalLabEmail').textContent = lab.email || 'N/A';
-      // Parse location for modal display
+
       let v = 'N/A', s = '';
       if (lab.location && lab.location.includes(',')) {
         const p = lab.location.split(',');
-        v = p[0].trim();
-        s = p[p.length - 1].trim();
-      } else if (lab.location) {
-        v = lab.location;
-      }
+        v = p[0].trim(); s = p[p.length - 1].trim();
+      } else if (lab.location) { v = lab.location; }
       document.getElementById('modalLabLocation').textContent = `${v}${s ? ', ' + s : ''}`;
 
-      let testTypeBadges = lab.testTypes.map(type => {
+      let testTypeBadges = (lab.testTypes || []).map(type => {
         const config = TEST_TYPES_DICT[type] || { color: 'slate', icon: 'vial' };
         return `<span class="inline-flex items-center rounded-full bg-${config.color}-50 px-2 py-0.5 text-[10px] font-bold text-${config.color}-700 border border-${config.color}-200">${type}</span>`;
       }).join('');
@@ -1579,9 +1664,7 @@
       const docBtn = document.getElementById('modalViewDocBtn');
       const noDocTxt = document.getElementById('modalNoDocText');
       if (lab.documentUrl) {
-        // Construct full URL for the document
-        const SERVER_ROOT = API_BASE.replace('/api', '');
-        docBtn.dataset.url = `${SERVER_ROOT}/${lab.documentUrl}`;
+        docBtn.href = lab.documentUrl.startsWith('http') ? lab.documentUrl : `${SERVER_ROOT}/${lab.documentUrl}`;
         docBtn.classList.remove('hidden');
         noDocTxt.classList.add('hidden');
       } else {
@@ -1595,19 +1678,149 @@
         ? 'text-sm font-black text-emerald-700'
         : 'text-sm font-black text-amber-700';
 
+      // ─── Use bankDetails & docs directly from allSoilLabs ───
+      function populateBankAndDocs(bd, licenseUrl, chequeUrl) {
+        // ALWAYS show bank section for Soil Labs so admin can see if they are missing
+        document.getElementById('modalBankSection').classList.remove('hidden');
+        
+        document.getElementById('modalBankHolder').textContent = bd.holderName || 'Not Provided';
+        document.getElementById('modalBankName').textContent = bd.bankName || 'Not Provided';
+        document.getElementById('modalBankAccNo').textContent = bd.accountNumber || 'Not Provided';
+        document.getElementById('modalBankIfsc').textContent = bd.ifscCode || 'Not Provided';
+        document.getElementById('modalBankAddr').textContent = bd.bankAddress || 'Not Provided';
+
+        const licenseLink = document.getElementById('modalLabLicenseLink');
+        const licenseNone = document.getElementById('modalLabLicenseNone');
+        const licenseStatus = document.getElementById('modalLabLicenseStatus');
+        if (licenseUrl) {
+          licenseLink.href = licenseUrl.startsWith('http') ? licenseUrl : `${SERVER_ROOT}/${licenseUrl}`;
+          licenseLink.classList.remove('hidden'); licenseNone.classList.add('hidden');
+          licenseStatus.textContent = 'Uploaded ✓'; licenseStatus.className = 'text-[10px] text-emerald-600 font-black';
+        } else {
+          licenseLink.classList.add('hidden'); licenseNone.classList.remove('hidden');
+          licenseStatus.textContent = 'Not Uploaded'; licenseStatus.className = 'text-[10px] text-rose-500 font-bold';
+        }
+
+        const chequeLink = document.getElementById('modalCancelChequeLink');
+        const chequeNone = document.getElementById('modalCancelChequeNone');
+        const chequeStatus = document.getElementById('modalCancelChequeStatus');
+        if (chequeUrl) {
+          chequeLink.href = chequeUrl.startsWith('http') ? chequeUrl : `${SERVER_ROOT}/${chequeUrl}`;
+          chequeLink.classList.remove('hidden'); chequeNone.classList.add('hidden');
+          chequeStatus.textContent = 'Uploaded ✓'; chequeStatus.className = 'text-[10px] text-emerald-600 font-black';
+        } else {
+          chequeLink.classList.add('hidden'); chequeNone.classList.remove('hidden');
+          chequeStatus.textContent = 'Not Uploaded'; chequeStatus.className = 'text-[10px] text-rose-500 font-bold';
+        }
+      }
+
+      // Use data already in allSoilLabs (now includes bankDetails & businessLicenseUrl)
+      populateBankAndDocs(
+        lab.bankDetails || {},
+        lab.businessLicenseUrl || '',
+        (lab.bankDetails || {}).bankDocUrl || ''
+      );
+
+      // Also fetch fresh from API in background to ensure latest data
+      fetch(`${API_BASE}/employee/admin/users/${labId}`, {
+        headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+      }).then(r => r.ok ? r.json() : null).then(profile => {
+        if (profile) {
+          populateBankAndDocs(
+            profile.bankDetails || {},
+            profile.businessLicenseUrl || '',
+            (profile.bankDetails || {}).bankDocUrl || ''
+          );
+        }
+      }).catch(e => console.warn('Profile refresh failed:', e));
+
       const actionsContainer = document.getElementById('modalActionButtons');
       actionsContainer.innerHTML = '';
-      if (lab.status === 'pending' || lab.status === 'blocked') {
-        actionsContainer.innerHTML += `<button onclick="approveLab('${lab._id}', '${lab.labName.replace(/'/g, "\\'")}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-check-circle mr-2"></i> Approve Lab</button>`;
+      if (lab.status === 'pending' || lab.status === 'blocked' || lab.status === 'rejected') {
+        actionsContainer.innerHTML += `<button onclick="approveLab('${lab._id}', '${lab.labName.replace(/'/g, "\\'")}') " class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-check-circle mr-2"></i> Approve Lab</button>`;
       }
       if (lab.status === 'approved' || lab.status === 'Active') {
-        actionsContainer.innerHTML += `<button onclick="blockLab('${lab._id}', '${lab.labName.replace(/'/g, "\\'")}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-2"></i> Reject / Block</button>`;
+        actionsContainer.innerHTML += `<button onclick="blockLab('${lab._id}', '${lab.labName.replace(/'/g, "\\'")}') " class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-2"></i> Reject / Block</button>`;
       }
 
       document.getElementById('labProfileModal').classList.remove('hidden');
     }
 
-    async function approveLab(labId, labName) {
+    // Toggle Bank Editing Mode
+    function toggleBankEdit(force) {
+      const display = document.getElementById('bankDisplayMode');
+      const edit = document.getElementById('bankEditMode');
+      const editBtn = document.getElementById('adminEditBankBtn');
+      
+      const isEditing = force !== undefined ? force : edit.classList.contains('hidden');
+      
+      if (isEditing) {
+        // Pre-fill inputs from current display text
+        document.getElementById('editBankHolder').value = document.getElementById('modalBankHolder').textContent.replace('Not Provided', '');
+        document.getElementById('editBankName').value = document.getElementById('modalBankName').textContent.replace('Not Provided', '');
+        document.getElementById('editBankAccNo').value = document.getElementById('modalBankAccNo').textContent.replace('Not Provided', '');
+        document.getElementById('editBankIfsc').value = document.getElementById('modalBankIfsc').textContent.replace('Not Provided', '');
+        document.getElementById('editBankAddr').value = document.getElementById('modalBankAddr').textContent.replace('Not Provided', '');
+        
+        display.classList.add('hidden');
+        edit.classList.remove('hidden');
+        editBtn.classList.add('invisible');
+      } else {
+        display.classList.remove('hidden');
+        edit.classList.add('hidden');
+        editBtn.classList.remove('invisible');
+      }
+    }
+
+    // Save Bank Edits from Admin Panel
+    async function saveAdminBankEdits() {
+      const labId = window.currentModalLabId; // We need to store this globally when opening modal
+      if (!labId) return;
+
+      const data = {
+        holderName: document.getElementById('editBankHolder').value.trim(),
+        bankName: document.getElementById('editBankName').value.trim(),
+        accountNumber: document.getElementById('editBankAccNo').value.trim(),
+        ifscCode: document.getElementById('editBankIfsc').value.trim(),
+        bankAddress: document.getElementById('editBankAddr').value.trim()
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/employee/admin/users/${labId}/bank-details`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          showToast('Bank details updated successfully!', 'success');
+          toggleBankEdit(false);
+          // Update display text immediately
+          document.getElementById('modalBankHolder').textContent = data.holderName || 'Not Provided';
+          document.getElementById('modalBankName').textContent = data.bankName || 'Not Provided';
+          document.getElementById('modalBankAccNo').textContent = data.accountNumber || 'Not Provided';
+          document.getElementById('modalBankIfsc').textContent = data.ifscCode || 'Not Provided';
+          document.getElementById('modalBankAddr').textContent = data.bankAddress || 'Not Provided';
+          
+          // Optionally update allSoilLabs memory
+          const lab = allSoilLabs.find(l => l._id === labId);
+          if (lab) lab.bankDetails = data;
+        } else {
+          const res = await response.json();
+          showToast(res.error || 'Failed to update bank details', 'error');
+        }
+      } catch (err) {
+        console.error('Admin bank save error:', err);
+        showToast('Network error while saving bank details', 'error');
+      }
+    }
+
+    
+
+        async function approveLab(labId, labName) {
       if (!confirm(`Are you sure you want to approve ${labName}?`)) return;
       try {
         const res = await fetch(`${API_BASE}/employee/admin/approve/${labId}`, {

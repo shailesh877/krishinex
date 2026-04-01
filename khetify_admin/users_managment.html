@@ -19,9 +19,16 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: {
@@ -675,11 +682,17 @@
             </div>
             <div class="col-span-2 md:col-span-3 pt-2">
               <p class="text-[10px] text-emerald-700 font-black mb-1 uppercase tracking-wider">Edit Final Price (₹/Quintal)</p>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-                <input type="number" id="modalEditPrice" 
-                  class="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 outline-none font-black text-slate-900 transition-all"
-                  placeholder="Enter final agreed price">
+              <div class="flex gap-2">
+                <div class="relative flex-1">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                  <input type="number" id="modalEditPrice" 
+                    class="w-full pl-8 pr-4 py-2.5 rounded-xl border-2 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 outline-none font-black text-slate-900 transition-all"
+                    placeholder="Enter final agreed price">
+                </div>
+                <button onclick="updateRequestPrice()" 
+                  class="h-[46px] px-6 rounded-xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-700 shadow-md transition-all flex items-center justify-center gap-2">
+                  <i class="fas fa-save"></i> Save
+                </button>
               </div>
             </div>
           </div>
@@ -972,7 +985,7 @@
 
     <!-- ========== MAIN PAGE SCRIPT ========== -->
     <script>
-      const API_BASE = 'https://demo.ranx24.com/api';
+      
       const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
       /**
@@ -1044,19 +1057,20 @@
         const buyerMatchSection = document.getElementById('buyerMatchSection');
 
         if (req.status !== 'pending' && req.assignedBuyer) {
-          // Already Assigned
+          // Already Assigned Header Info
           document.getElementById('selectedBuyerName').textContent = `${req.assignedBuyer.name} (${req.assignedBuyer.location || 'N/A'})`;
           buyerInfo.classList.remove('hidden');
-          buyerMatchSection.classList.add('hidden');
           assignBtn.disabled = true;
           assignBtn.innerHTML = `<i class="fas fa-check-double mr-2"></i> Already Assigned`;
+          // SHOW buyerMatchSection even if assigned to ALLOW RE-ASSIGNMENT
+          buyerMatchSection.classList.remove('hidden');
+          populateBuyerList();
         } else {
           // New assignment
           buyerInfo.classList.add('hidden');
           buyerMatchSection.classList.remove('hidden');
           assignBtn.disabled = true;
           assignBtn.innerHTML = `<i class="fas fa-link mr-2"></i> Assign Buyer`;
-          // Populate real buyers
           populateBuyerList();
         }
 
@@ -1615,18 +1629,25 @@
           const statusBadge = req.status === 'pending'
             ? `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> New</span>`
             : req.status === 'accepted' || req.status === 'in-progress'
-              ? `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span>${req.assignedBuyer ? `<div class="text-[10px] text-slate-500 mt-1">Buyer: ${req.assignedBuyer.name}</div>` : ''}</div>`
+              ? `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span>${req.assignedBuyer ? `<div class="text-[10px] text-slate-500 mt-1 font-semibold italic">Buyer: ${req.assignedBuyer.name}</div>` : ''}</div>`
               : req.status === 'completed'
                 ? `<span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black text-sky-700 border-2 border-sky-200"><i class="fas fa-check-double mr-1 text-[8px]"></i> Completed</span>`
-                : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
+                : req.status === 'cancelled'
+                  ? `<div><span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1.5 text-[10px] font-black text-rose-700 border-2 border-rose-200"><i class="fas fa-times-circle mr-1 text-[8px]"></i> Cancelled</span>${req.cancelReason ? `<div class="text-[9px] text-rose-500 mt-1 font-bold italic max-w-[140px]">Reason: ${req.cancelReason}</div>` : ''}</div>`
+                  : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
 
           const actionBtn = `<button onclick="openAssignModal('${req._id}')" class="inline-flex items-center rounded-xl ${req.status === 'pending' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:from-emerald-600 hover:to-emerald-700' : 'border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50'} px-4 py-2 text-[11px] font-black transition-all"><i class="fas ${req.status === 'pending' ? 'fa-link' : 'fa-eye'} mr-1.5"></i> ${req.status === 'pending' ? 'Assign' : 'View'}</button>`;
           const images = (req.images && req.images.length > 0) ? req.images : (req.imageUrl ? [req.imageUrl] : []);
           const photoBtn = images.length > 0
             ? `<div class="flex gap-1 flex-wrap max-w-[100px]">` +
-              images.map((img, idx) =>
-                `<button onclick="viewPhoto('${fixImageUrl(img)}', ${JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;')}, ${idx})" class="h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all overflow-hidden"><img src="${fixImageUrl(img)}" class="h-full w-full object-cover" onerror="this.innerHTML='<i class=\'fas fa-image text-slate-400\'></i>'; this.type='icon'"></button>`
-              ).join('') +
+              images.map((img, idx) => {
+                const fixed = fixImageUrl(img);
+                const galleryJson = JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;');
+                return `<button onclick="viewPhoto('${fixed}', ${galleryJson}, ${idx})" class="relative h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all overflow-hidden">
+                  <img src="${fixed}" class="h-full w-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden')">
+                  <i class="fas fa-image text-slate-400 text-[10px] hidden"></i>
+                </button>`;
+              }).join('') +
               `</div>`
             : `<span class="text-slate-400 text-xs italic">—</span>`;
 
@@ -1683,14 +1704,22 @@
                 ${i === 0 ? '<span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[9px] font-black text-emerald-700 border border-emerald-300"><i class="fas fa-star mr-1"></i> TOP</span>' : ''}
               </div>
             `;
+            const assignBtn = document.getElementById('assignBtn');
             card.addEventListener('click', () => {
               document.querySelectorAll('#buyerMatchList > div').forEach(el => el.classList.remove('border-emerald-300', 'bg-emerald-50'));
               card.classList.add('border-emerald-300', 'bg-emerald-50');
               card.querySelector('input[type="radio"]').checked = true;
               selectedBuyerId = buyer._id;
+              
+              const currentReq = allCropRequests.find(r => r._id === currentRequestId);
+              const isReassign = currentReq && currentReq.assignedBuyer && currentReq.buyerId !== buyer._id;
+
               document.getElementById('selectedBuyerName').textContent = `${buyer.name} (${buyer.location})`;
               document.getElementById('selectedBuyerInfo').classList.remove('hidden');
-              document.getElementById('assignBtn').disabled = false;
+              assignBtn.disabled = false;
+              assignBtn.innerHTML = isReassign 
+                ? `<i class="fas fa-sync-alt mr-2"></i> Re-assign Buyer` 
+                : `<i class="fas fa-link mr-2"></i> Assign Buyer`;
             });
             list.appendChild(card);
           });
@@ -1718,6 +1747,40 @@
           } else {
             const err = await res.json();
             showToast(err.error || 'Failed to assign', 'warning');
+          }
+        } catch (e) {
+          showToast('Network error', 'warning');
+        }
+      }
+
+      async function updateRequestPrice() {
+        if (!currentRequestId) {
+          showToast('No request selected', 'warning');
+          return;
+        }
+        const newPrice = document.getElementById('modalEditPrice').value;
+        if (!newPrice) {
+          showToast('Please enter a valid price', 'warning');
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/employee/admin/crop-requests/${currentRequestId}/update-price`, {
+            method: 'PUT',
+            headers: { 
+              'Authorization': `Bearer ${AUTH_TOKEN}`,
+              'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ newPrice: parseFloat(newPrice) })
+          });
+          
+          if (res.ok) {
+            showToast('Price updated successfully!', 'success');
+            fetchCropRequests(); // Refresh table
+            fetchStats(); // Update totals if needed
+          } else {
+            const err = await res.json();
+            showToast(err.error || 'Failed to update price', 'warning');
           }
         } catch (e) {
           showToast('Network error', 'warning');

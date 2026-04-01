@@ -198,6 +198,62 @@ router.patch('/:id/assigned-status', protect, async (req, res) => {
         if (assignedStatus === 'cancelled' && cancelReason) {
             update.cancelReason = cancelReason;
         }
+
+        if (assignedStatus === 'ok') {
+            console.log(`[ORDER-OK-DEBUG] START: Order ID=${req.params.id}, User=${req.user.id}`);
+            try {
+                // Find order first 
+                let order = await Order.findById(req.params.id);
+                if (!order) {
+                    console.log(`[ORDER-OK-DEBUG] ERROR: Order not found even by ID`);
+                } else {
+                    console.log(`[ORDER-OK-DEBUG] FOUND ORDER: assignedTo=${order.assignedTo}, req.user.id=${req.user.id}`);
+                    // Populate manually if needed
+                    order = await Order.findById(req.params.id).populate('sellRequestId');
+                    
+                    if (!order.sellRequestId) {
+                        console.log(`[ORDER-OK-DEBUG] ERROR: SellRequest NOT linked`);
+                    } else {
+                        const sReq = order.sellRequestId;
+                        console.log(`[ORDER-OK-DEBUG] SREQ: OTP=${sReq.otp}, FarmerID=${sReq.farmer}`);
+
+                        if (sReq.otp && sReq.farmer) {
+                            const { sendNotification: sNotif } = require('../services/notificationService');
+                            const { sendOtp: sOtp } = require('../services/msg91');
+                            const farmerUser = await User.findById(sReq.farmer);
+                            
+                            if (farmerUser) {
+                                const buyerName = req.user.businessName || req.user.name;
+                                const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${buyerName} has accepted your sell request for ${order.crop}.`;
+                                const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - व्यापारी ${buyerName} ने ${order.crop} के लिए आपके बेचने के अनुरोध को स्वीकार कर लिया है।`;
+
+                                console.log(`[ORDER-OK-DEBUG] SENDING PUSH to ${farmerUser._id}`);
+                                await sNotif(farmerUser._id, {
+                                    title: `Order #${order._id.toString().slice(-6)} (OTP: ${sReq.otp})`,
+                                    messageEn: msgEn,
+                                    messageHi: msgHi,
+                                    type: 'crop_sale',
+                                    refId: order._id.toString()
+                                });
+
+                                if (farmerUser.phone) {
+                                    const cleanPhone = farmerUser.phone.replace(/[^0-9]/g, '');
+                                    console.log(`[ORDER-OK-DEBUG] SENDING SMS to ${cleanPhone}`);
+                                    await sOtp(cleanPhone, sReq.otp).catch(err => {
+                                        console.error(`[ORDER-OK-DEBUG] SMS ERR: ${err.message}`);
+                                    });
+                                }
+                            } else {
+                                console.log(`[ORDER-OK-DEBUG] ERROR: Farmer record not found`);
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(`[ORDER-OK-DEBUG] FATAL: ${err.message}`);
+            }
+            console.log(`[ORDER-OK-DEBUG] END`);
+        }
         
         if (assignedStatus === 'delivered') {
             // Check if this is a Crop Sell Order (linked to SellRequest)

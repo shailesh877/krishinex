@@ -13,7 +13,7 @@ const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
 const Ledger = require('../models/Ledger');
-const { sendNotification } = require('../services/notificationService');
+const { sendNotification, checkAndNotifyLowStock } = require('../services/notificationService');
 
 const uploadDir = path.join(__dirname, '../uploads/items');
 if (!fs.existsSync(uploadDir)) {
@@ -273,6 +273,10 @@ router.put('/items/:id', protect, upload.single('image'), async (req, res) => {
         }
 
         const updatedItem = await item.save();
+        
+        // Bhai, stock check karein (new stock monitor alert)
+        checkAndNotifyLowStock(updatedItem._id).catch(() => {});
+
         res.json(updatedItem);
     } catch (error) {
         console.error('Update Shop Item error:', error);
@@ -392,7 +396,6 @@ router.patch('/orders/:id/status', protect, async (req, res) => {
         const updatedOrder = await order.save();
 
         // Notify Buyer about Status Change
-        const { sendNotification } = require('../services/notificationService');
         
         let statusMsgEn = '';
         let statusMsgHi = '';
@@ -453,6 +456,10 @@ router.patch('/orders/:id/status', protect, async (req, res) => {
                                 dbItem.stockQty = dbItem.variants.reduce((sum, v) => sum + (v.stockQty || 0), 0);
                                 
                                 await dbItem.save();
+                                
+                                // Bhai, variant stock check karein
+                                checkAndNotifyLowStock(dbItem._id).catch(() => {});
+
                                 console.log(`[DEBUG-STOCK] VARIANT SUCCESS: ${item.name} (${item.variantLabel}) New Variant Stock: ${dbItem.variants[vIdx].stockQty}, Total Stock: ${dbItem.stockQty}`);
                             } else {
                                 console.log(`[DEBUG-STOCK] VARIANT FAILED: Variant matching label "${item.variantLabel}" not found for item ${item.name}`);
@@ -466,6 +473,10 @@ router.patch('/orders/:id/status', protect, async (req, res) => {
                             const totalBefore = dbItem.stockQty || 0;
                             dbItem.stockQty = Math.max(0, totalBefore - qtyToDeduct);
                             await dbItem.save();
+                            
+                            // Bhai, low stock notification check
+                            checkAndNotifyLowStock(dbItem._id).catch(() => {});
+
                             console.log(`[DEBUG-STOCK] MAIN SUCCESS: ${item.name} New Stock: ${dbItem.stockQty}`);
                         } else {
                             console.log(`[DEBUG-STOCK] MAIN FAILED: Item not found in DB for Ref ID: ${item.itemRef}`);
@@ -730,7 +741,6 @@ router.post('/checkout', protect, async (req, res) => {
 
             // Notify Shop Partner (unless it's the admin or same as buyer)
             if (resolvedOwnerId.toString() !== req.user.id) {
-                const { sendNotification } = require('../services/notificationService');
                 await sendNotification(resolvedOwnerId, {
                     title: 'New Online Order',
                     messageEn: `You have received a new order for ${ownerItems.length} items. Total: ₹${finalAmount}`,
@@ -742,6 +752,9 @@ router.post('/checkout', protect, async (req, res) => {
             // Update item stock
             for (const it of ownerItems) {
                 await Item.findByIdAndUpdate(it.id, { $inc: { stockQty: -it.qty } });
+                
+                // Bhai, check low stock for every item deduction
+                checkAndNotifyLowStock(it.id).catch(() => {});
             }
         }
 
@@ -1560,6 +1573,9 @@ router.post('/pos/verify-otp', protect, async (req, res) => {
                 item.stockQty = Math.max(0, (item.stockQty || 0) - qty);
             }
             await item.save();
+            
+            // Bhai, check level for POS stock deduction
+            checkAndNotifyLowStock(item._id).catch(() => {});
         }
 
         // 6. Create Ledger Entries (Bahi-Khata)
@@ -1626,23 +1642,34 @@ router.post('/pos/verify-otp', protect, async (req, res) => {
 router.get('/ledger/dashboard', protect, async (req, res) => {
     try {
         const shopId = req.user.id;
-        const logs = await Ledger.find({ shopId });
+        const { startDate, endDate } = req.query;
+        
+        let query = { shopId: new mongoose.Types.ObjectId(shopId) };
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+
+        const logs = await Ledger.find(query);
 
         const stats = {
             totalCash: 0,
             totalWallet: 0,
-            totalDue: 0,
+            totalDue: 0, // Shop Udhaar (Personal)
+            totalAgriCredit: 0, // Agri-Credit (Platform)
             totalRecovery: 0
         };
 
         logs.forEach(log => {
             if (log.method === 'CASH') stats.totalCash += log.amount;
             if (log.method === 'WALLET') stats.totalWallet += log.amount;
+            if (log.method === 'DUE') stats.totalAgriCredit += log.amount;
             
             // Bhai, sirf wahi udhaar gino jo shop ki apni zimmedari (SHOP_DUE) hai
             if (log.method === 'SHOP_DUE') stats.totalDue += log.amount;
             
-            // Sirf wahi recovery gino jo shop ne khud ki hai (Auto-repayment/Auto-Recovery platform ka hai)
+            // Bhai, sirf wahi recovery gino jo shop ne khud ki hai (Manual Recovery)
             if (log.method === 'RECOVERY' && !log.note?.toLowerCase().includes('auto')) {
                 stats.totalRecovery += log.amount;
                 stats.totalDue -= log.amount;
@@ -1651,7 +1678,44 @@ router.get('/ledger/dashboard', protect, async (req, res) => {
 
         res.json(stats);
     } catch (error) {
+        console.error('Ledger Dashboard error:', error);
         res.status(500).json({ error: 'Failed to fetch ledger stats' });
+    }
+});
+
+// @route   GET /api/shop/ledger/history
+// @desc    Get detailed transaction history for the shop
+router.get('/ledger/history', protect, async (req, res) => {
+    try {
+        const shopId = req.user.id;
+        const { startDate, endDate, method, page = 1, limit = 50 } = req.query;
+
+        let query = { shopId };
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+        if (method && method !== 'ALL') {
+            query.method = method;
+        }
+
+        const logs = await Ledger.find(query)
+            .populate('farmerId', 'name phone')
+            .populate({
+                path: 'orderId',
+                populate: {
+                    path: 'items.productId',
+                    select: 'name price image'
+                }
+            })
+            .sort({ createdAt: -1 })
+            .limit(Number(limit))
+            .skip((Number(page) - 1) * Number(limit));
+
+        res.json(logs);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch history' });
     }
 });
 
@@ -1703,6 +1767,26 @@ router.get('/ledger/dues', protect, async (req, res) => {
     } catch (error) {
         console.error('Fetch Dues error:', error);
         res.status(500).json({ error: 'Failed to fetch dues' });
+    }
+});
+
+// @route   GET /api/shop/ledger/dues/:farmerId/details
+// @desc    Get detailed debt history for a specific farmer
+router.get('/ledger/dues/:farmerId/details', protect, async (req, res) => {
+    try {
+        const { farmerId } = req.params;
+        const shopId = req.user.id;
+
+        const details = await Ledger.find({
+            shopId,
+            farmerId,
+            method: { $in: ['SHOP_DUE', 'RECOVERY'] }
+        })
+        .sort({ createdAt: -1 });
+
+        res.json(details);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch farmer due details' });
     }
 });
 

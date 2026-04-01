@@ -19,10 +19,17 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
     <script>
         tailwind.config = {
             theme: {
-                extend: {
+                fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
                     colors: {
                         brand: {
                             green: '#16A34A',
@@ -34,7 +41,7 @@
         };
     </script>
     <style>
-        .custom-scroll::-webkit-scrollbar {
+    .custom-scroll::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
@@ -843,7 +850,7 @@
 
     <!-- ========== BUYER TRADING PAGE SCRIPT ========== -->
     <script>
-        const API_BASE = 'https://demo.ranx24.com/api';
+        
         const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
         function fixImageUrl(url) {

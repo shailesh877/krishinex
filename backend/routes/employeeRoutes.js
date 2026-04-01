@@ -14,6 +14,7 @@ const LabourJob = require('../models/LabourJob');
 const SellRequest = require('../models/SellRequest');
 const FieldTask = require('../models/FieldTask');
 const FranchiseSale = require('../models/FranchiseSale');
+const FieldLead = require('../models/FieldLead');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -72,6 +73,15 @@ const uploadChatMedia = multer({
     storage: chatMediaStorage,
     limits: { fileSize: 20 * 1024 * 1024 }, // 20MB for audio/video
 });
+
+const leadPhotoStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        cb(null, `lead_${Date.now()}${ext}`);
+    }
+});
+const uploadLeadPhoto = multer({ storage: leadPhotoStorage });
 
 // @route   GET /api/employee/dashboard
 // @desc    Get dashboard statistics for specific Employee
@@ -623,14 +633,72 @@ router.delete('/admin/:id', protect, checkModule('employees'), async (req, res) 
     }
 });
 
+// @route   GET /api/employee/farmer-lookup
+// @desc    Lookup farmer by cardNumber (16 digits) or phone (10 digits)
+// @access  Private (Employee/Field Executive)
+router.get('/farmer-lookup', protect, async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.status(400).json({ error: 'Search query is required' });
+
+        const farmers = await User.find({
+            $or: [
+                { cardNumber: query },
+                { phone: new RegExp(query) }
+            ]
+        }).select('name phone address walletBalance profilePhotoUrl cardNumber role');
+
+        if (!farmers || farmers.length === 0) return res.status(404).json({ error: 'No user found' });
+
+        // Map roles for cleaner display if needed, but let's return all and filter in next step
+        res.json(farmers);
+    } catch (error) {
+        console.error('Farmer lookup error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// @route   GET /api/employee/recharge-history
+// @desc    Get recharge history for the logged in employee
+// @access  Private (Employee/Field Executive)
+router.get('/recharge-history', protect, async (req, res) => {
+    try {
+        const history = await Transaction.find({
+            performedBy: req.user.id,
+            module: 'Platform'
+        })
+        .populate('recipient', 'name phone profilePhotoUrl')
+        .sort({ createdAt: -1 })
+        .limit(30);
+
+        res.json(history);
+    } catch (error) {
+        console.error('Recharge history error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// @route   GET /api/employee/recharge-stats
+// @desc    Get pending cash collection stats for the employee
+// @access  Private (Employee/Field Executive)
+router.get('/recharge-stats', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('collectedCash');
+        res.json({ pendingAmount: user.collectedCash || 0 });
+    } catch (error) {
+        console.error('Recharge stats error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // @route   POST /api/employee/recharge-farmer
-// @desc    Recharge farmer wallet via 11-digit cardNumber
+// @desc    Recharge farmer wallet via 11-digit cardNumber or 10-digit phone
 // @access  Private (Field Executive or Admin or Employee)
 router.post('/recharge-farmer', protect, async (req, res) => {
     try {
-        const { cardNumber, amount } = req.body;
-        if (!cardNumber || !amount || amount <= 0) {
-            return res.status(400).json({ error: 'Valid card number and amount are required' });
+        const { cardNumber, phone, amount } = req.body;
+        if ((!cardNumber && !phone) || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Valid card number or phone and amount are required' });
         }
 
         // Only allow field_executive, admin, or employee
@@ -638,45 +706,37 @@ router.post('/recharge-farmer', protect, async (req, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
-        const logMsg = `[${new Date().toISOString()}] RECHARGE_REQ: user=${req.user.id} card=${cardNumber} amt=${amount}\n`;
-        require('fs').appendFileSync('recharge_debug.log', logMsg);
-
-        console.log('[DEBUG] Recharge Farmer Request:', { cardNumber, amount, performedBy: req.user.id });
-
-        const farmer = await User.findOne({ cardNumber, role: { $in: ['farmer', 'buyer'] } });
+        const query = cardNumber ? { cardNumber } : { phone };
+        const farmer = await User.findOne({ ...query, role: { $in: ['farmer', 'buyer'] } });
+        
         if (!farmer) {
-            console.log('[DEBUG] Farmer not found for card:', cardNumber);
-            return res.status(404).json({ error: 'Farmer not found with this card number' });
+            return res.status(404).json({ error: 'Farmer not found' });
         }
 
-        console.log('[DEBUG] Found Farmer:', { name: farmer.name, oldBalance: farmer.walletBalance });
-
+        // 1. Update Farmer Wallet
         farmer.walletBalance = (farmer.walletBalance || 0) + Number(amount);
         await farmer.save();
 
-        console.log('[DEBUG] Farmer balance updated. Creating transaction...');
-
-        // Create transaction for Farmer
-        try {
-            const shortId = Date.now().toString().slice(-8).toUpperCase();
-            const employeeName = req.user.name || 'Field Executive';
-            
-            await Transaction.create({
-                transactionId: `RECH-${shortId}`,
-                recipient: farmer._id,
-                performedBy: req.user.id,
-                module: 'Platform',
-                amount: Number(amount),
-                type: 'Credit',
-                paymentMode: 'Cash',
-                status: 'Completed',
-                note: `Wallet Recharge by ${employeeName} (Partner App)`
-            });
-            console.log('[DEBUG] Transaction created successfully.');
-        } catch (txErr) {
-            console.error('[DEBUG] Transaction.create FAILED:', txErr);
-            throw txErr; // Re-throw to be caught by outer catch
+        // 2. Increment Employee Collection (if FE/Employee)
+        if (req.user.role === 'field_executive' || req.user.role === 'employee') {
+            await User.findByIdAndUpdate(req.user.id, { $inc: { collectedCash: Number(amount) } });
         }
+
+        // 3. Create Transaction for Farmer
+        const shortId = Date.now().toString().slice(-8).toUpperCase();
+        const employeeName = req.user.name || 'Field Executive';
+        
+        await Transaction.create({
+            transactionId: `RECH-${shortId}`,
+            recipient: farmer._id,
+            performedBy: req.user.id,
+            module: 'Platform',
+            amount: Number(amount),
+            type: 'Credit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            note: `Wallet Recharge by ${employeeName} (Partner App)`
+        });
 
         // 4. Dynamic Auto-Repayment (If farmer has debt and wallet balance, sweep it)
         const { processAutoRepayment } = require('../services/repaymentService');
@@ -691,8 +751,6 @@ router.post('/recharge-farmer', protect, async (req, res) => {
             farmerName: updatedFarmer.name
         });
     } catch (error) {
-        const errLog = `[${new Date().toISOString()}] RECHARGE_ERROR: ${error.message} - ${error.stack}\n`;
-        require('fs').appendFileSync('recharge_debug.log', errLog);
         console.error('Recharge farmer error:', error);
         res.status(500).json({ error: 'Server error during recharge: ' + error.message });
     }
@@ -722,18 +780,92 @@ router.get('/admin/recharge-logs', protect, checkModule('labour'), async (req, r
 // @route   PATCH /api/employee/admin/recharge-logs/:id/collect
 // @desc    Mark a cash recharge as collected by admin
 // @access  Private/Admin
-router.patch('/admin/recharge-logs/:id/collect', protect, checkModule('labour'), async (req, res) => {
+router.patch('/admin/recharge-logs/:id/collect', protect, async (req, res) => {
     try {
         const log = await Transaction.findById(req.params.id);
         if (!log) return res.status(404).json({ error: 'Transaction log not found' });
 
+        if (log.cashCollectedByAdmin) {
+            return res.status(400).json({ error: 'This transaction is already marked as collected' });
+        }
+
+        // 1. Mark as collected
         log.cashCollectedByAdmin = true;
         await log.save();
 
-        res.json({ message: 'Cash marked as collected', log });
+        // 2. Deduct from Field Executive's balance
+        if (log.performedBy) {
+            const executive = await User.findById(log.performedBy);
+            if (executive && (executive.role === 'field_executive' || executive.role === 'employee')) {
+                // Decrement the collectedCash by the recharge amount
+                const currentBalance = executive.collectedCash || 0;
+                const newBalance = Math.max(0, currentBalance - (log.amount || 0));
+                executive.collectedCash = newBalance;
+                await executive.save();
+
+                // 3. Create a DEBIT transaction for the Field Executive to show in their history
+                await Transaction.create({
+                    transactionId: `DEP-${Date.now().toString().slice(-8)}`,
+                    recipient: log.recipient, // Current recipient of original recharge
+                    performedBy: log.performedBy, // Executive
+                    module: 'Platform',
+                    amount: log.amount,
+                    type: 'Debit',
+                    payerName: 'Admin Office',
+                    paymentMode: 'Cash',
+                    status: 'Completed',
+                    note: `Cash Collected by Admin (Individual Recharge Ref: ${log.transactionId})`
+                });
+            }
+        }
+
+        res.json({ message: 'Cash marked as collected and balance updated', log });
     } catch (error) {
         console.error('Mark collection error:', error);
         res.status(500).json({ error: 'Failed to mark collection' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/field-executive/:id/reset-collection
+// @desc    Reset field executive's cash collection to 0 and mark all as collected
+// @access  Private/Admin
+router.patch('/admin/field-executive/:id/reset-collection', protect, checkModule('users'), async (req, res) => {
+    try {
+        const executiveId = req.params.id;
+        const executive = await User.findById(executiveId);
+        if (!executive) return res.status(404).json({ error: 'Executive not found' });
+
+        const amountToClear = executive.collectedCash || 0;
+
+        // 1. Reset collectedCash in User model
+        executive.collectedCash = 0;
+        await executive.save();
+
+        // 2. Mark all pending cash transactions as collected
+        await Transaction.updateMany(
+            { performedBy: executiveId, module: 'Platform', type: 'Credit', cashCollectedByAdmin: false },
+            { cashCollectedByAdmin: true }
+        );
+
+        // 3. Create a single DEBIT transaction for the Field Executive history
+        if (amountToClear > 0) {
+            await Transaction.create({
+                transactionId: `DEP-FULL-${Date.now().toString().slice(-8)}`,
+                performedBy: executiveId, // Executive
+                module: 'Platform',
+                amount: amountToClear,
+                type: 'Debit',
+                payerName: 'Admin Office',
+                paymentMode: 'Cash',
+                status: 'Completed',
+                note: `Full Wallet Cash Deposit to Admin Office`
+            });
+        }
+
+        res.json({ message: 'Collection reset successful and deposit recorded' });
+    } catch (error) {
+        console.error('Reset collection error:', error);
+        res.status(500).json({ error: 'Failed to reset collection' });
     }
 });
 
@@ -920,7 +1052,7 @@ router.get('/admin/soil-labs/stats', protect, checkModule('soil'), async (req, r
 router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) => {
     try {
         const labs = await User.find({ role: 'soil' })
-            .select('name businessName phone email address status employeeCode soilDetails createdAt aadhaarDocUrl')
+            .select('name businessName phone email address status employeeCode soilDetails createdAt aadhaarDocUrl businessLicenseUrl bankDetails')
             .sort({ createdAt: -1 });
 
         const result = await Promise.all(labs.map(async lab => {
@@ -938,6 +1070,8 @@ router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) =>
                 tatDays: (lab.soilDetails && lab.soilDetails.tatDays) ? lab.soilDetails.tatDays : 3,
                 testsDone: completedTests,
                 documentUrl: lab.aadhaarDocUrl || '',
+                businessLicenseUrl: lab.businessLicenseUrl || '',
+                bankDetails: lab.bankDetails || {},
                 joinedAt: lab.createdAt
             };
         }));
@@ -946,6 +1080,49 @@ router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) =>
     } catch (e) {
         console.error('Admin soil labs error:', e);
         res.status(500).json({ error: 'Failed to fetch soil labs' });
+    }
+});
+
+// @route   GET /api/employee/admin/users/:id
+// @desc    Get full user profile for admin (bank details, docs etc)
+// @access  Private/Admin
+router.get('/admin/users/:id', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .select('-password');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (e) {
+        console.error('Admin get user error:', e);
+        res.status(500).json({ error: 'Failed to fetch user' });
+    }
+});
+
+// @route   PUT /api/employee/admin/users/:id/bank-details
+// @desc    Admin: Update user bank details
+// @access  Private/Admin
+router.put('/admin/users/:id/bank-details', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { holderName, bankName, accountNumber, ifscCode, bankAddress } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const b = user.bankDetails || {};
+        user.bankDetails = {
+            holderName: holderName !== undefined ? holderName : b.holderName || '',
+            bankName: bankName !== undefined ? bankName : b.bankName || '',
+            accountNumber: accountNumber !== undefined ? accountNumber : b.accountNumber || '',
+            ifscCode: ifscCode !== undefined ? ifscCode : b.ifscCode || '',
+            bankAddress: bankAddress !== undefined ? bankAddress : b.bankAddress || '',
+            bankDocUrl: b.bankDocUrl || ''
+        };
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Bank details updated by admin', bankDetails: user.bankDetails });
+    } catch (e) {
+        console.error('Admin update bank details error:', e);
+        res.status(500).json({ error: 'Failed to update bank details' });
     }
 });
 
@@ -1146,20 +1323,49 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), as
         const { buyerId } = req.body;
         if (!buyerId) return res.status(400).json({ error: 'buyerId is required' });
 
-        // 1. Try finding as an existing Order first
-        let order = await Order.findById(req.params.id);
+        // 1. Try finding as an existing Order first (Re-assignment)
+        let order = await Order.findById(req.params.id).populate('sellRequestId');
         if (order) {
             order.assignedTo = buyerId;
-            order.status = 'accepted';
+            order.status = 'accepted'; 
+            order.assignedStatus = 'new'; // Reset so the new buyer sees it in Pending
+            order.cancelReason = ''; // Clear any previous cancel reason
             await order.save();
+            
+            // Send immediate notification to farmer on re-assignment
+            try {
+                if (order.sellRequestId) {
+                    const sReq = order.sellRequestId;
+                    const farmer = await User.findById(sReq.farmer);
+                    if (farmer && sReq.otp) {
+                        const buyer = await User.findById(buyerId);
+                        const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
+                        const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${order.crop}).`;
+                        const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - आपके ${order.crop} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
+                        
+                        const { sendNotification: sNotif } = require('../services/notificationService');
+                        const { sendOtp: sOtp } = require('../services/msg91');
+
+                        console.log(`[ORDER-ASSIGN-DEBUG] Sending Re-assign OTP to farmer ${farmer._id}`);
+                        await sNotif(farmer._id, { 
+                            title: `Order #${order._id.toString().slice(-6)} (OTP: ${sReq.otp})`, 
+                            messageEn: msgEn, 
+                            messageHi: msgHi, 
+                            type: 'crop_sale', 
+                            refId: order._id.toString() 
+                        });
+                        if (farmer.phone) await sOtp(farmer.phone.replace(/[^0-9]/g, ''), sReq.otp).catch(err => console.error('[ORDER-ASSIGN-DEBUG] SMS Error:', err.message));
+                    }
+                }
+            } catch (err) { console.error('[ORDER-ASSIGN-DEBUG] Notification error during re-assignment:', err); }
+
             const populated = await Order.findById(order._id).populate('assignedTo', 'name phone businessName');
-            return res.json({ message: 'Buyer assigned successfully', order: populated });
+            return res.json({ message: 'Buyer reassigned successfully', order: populated });
         }
 
-        // 2. If not an Order, check if it's a SellRequest (submitted by farmer)
+        // 2. If not an Order, check if it's a SellRequest (initial assignment)
         const sellReq = await SellRequest.findById(req.params.id).populate('farmer').populate('mandi');
         if (sellReq) {
-            // Parse price from string like "4 / KG (₹400 / Quintal)"
             const { newPrice, buyerId: bodyBuyerId } = req.body;
             const buyer = await User.findById(buyerId || bodyBuyerId);
             if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
@@ -1168,15 +1374,13 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), as
             const finalPrice = newPrice || parsePriceInQuintals(sellReq.expectedPrice);
 
             const settings = await Settings.getSettings();
-            // Prioritize locked rate from SellRequest, fallback to settings
             const bCommissionRate = sellReq.commissionRate || settings.commissions.buyerTrading || 0;
             const qty = parseQuantityInQuintals(sellReq.quantity);
             const cropPrice = qty * finalPrice;
             const commissionAmount = (cropPrice * bCommissionRate) / 100;
 
-            // Create an Order (for the buyer to see)
             const newOrder = new Order({
-                buyer: buyerId, // The partner who is buying
+                buyer: buyerId,
                 assignedTo: buyerId,
                 farmerName: sellReq.farmer ? sellReq.farmer.name : 'Unknown',
                 farmerMobile: sellReq.farmer ? sellReq.farmer.phone : '',
@@ -1195,17 +1399,38 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), as
                 imageUrl: (sellReq.images && sellReq.images.length > 0) ? sellReq.images[0] : '',
                 note: sellReq.notes || '',
                 status: 'accepted',
-                assignedStatus: 'ok',
+                assignedStatus: 'new',
                 sellRequestId: sellReq._id
             });
             await newOrder.save();
 
-            // Mark SellRequest as accepted
             sellReq.status = 'accepted';
             sellReq.assignedTo = buyerId;
             sellReq.otp = otp;
             sellReq.adminPrice = finalPrice;
             await sellReq.save();
+
+            // Send immediate notification to farmer on initial assignment
+            try {
+                if (sellReq.farmer) {
+                    const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
+                    const msgEn = `OTP: ${otp} - ORDER: #${newOrder._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${sellReq.cropName}).`;
+                    const msgHi = `OTP: ${otp} - ऑर्डर: #${newOrder._id.toString().slice(-6)} - आपके ${sellReq.cropName} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
+                    
+                    const { sendNotification: sNotif } = require('../services/notificationService');
+                    const { sendOtp: sOtp } = require('../services/msg91');
+
+                    console.log(`[ORDER-ASSIGN-DEBUG] Sending Initial-Assign OTP to farmer ${sellReq.farmer._id}`);
+                    await sNotif(sellReq.farmer._id, { 
+                        title: `Order #${newOrder._id.toString().slice(-6)} (OTP: ${otp})`, 
+                        messageEn: msgEn, 
+                        messageHi: msgHi, 
+                        type: 'crop_sale', 
+                        refId: newOrder._id.toString() 
+                    });
+                    if (sellReq.farmer.phone) await sOtp(sellReq.farmer.phone.replace(/[^0-9]/g, ''), otp).catch(err => console.error('[ORDER-ASSIGN-DEBUG] SMS Error:', err.message));
+                }
+            } catch (err) { console.error('[ORDER-ASSIGN-DEBUG] Notification error during assignment:', err); }
 
             const populated = await Order.findById(newOrder._id).populate('assignedTo', 'name phone businessName');
             return res.json({ message: 'Buyer assigned and Order created', order: populated });
@@ -1215,6 +1440,56 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), as
     } catch (e) {
         console.error('Assign error:', e);
         res.status(500).json({ error: 'Failed to assign buyer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/crop-requests/:id/update-price
+// @desc    Update only the price of a crop request or order
+// @access  Private/Admin
+router.put('/admin/crop-requests/:id/update-price', protect, checkModule('doctor'), async (req, res) => {
+    try {
+        const { newPrice } = req.body;
+        if (newPrice === undefined || newPrice === null) {
+            return res.status(400).json({ error: 'newPrice is required' });
+        }
+
+        const finalPrice = parseFloat(newPrice);
+        if (isNaN(finalPrice)) return res.status(400).json({ error: 'Invalid price' });
+
+        // 1. Try finding as an Order first
+        let order = await Order.findById(req.params.id);
+        if (order) {
+            order.pricePerQuintal = finalPrice;
+            order.pricePerKg = finalPrice / 100;
+            
+            // Recalculate amount and commission
+            const qty = parseQuantityInQuintals(order.quantity);
+            order.amount = qty * finalPrice;
+            
+            // Use commission rate from order or settings
+            let bCommissionRate = order.commissionRate;
+            if (bCommissionRate === undefined || bCommissionRate === null) {
+                const settings = await Settings.getSettings();
+                bCommissionRate = settings.commissions.buyerTrading || 0;
+            }
+            order.commission = (order.amount * bCommissionRate) / 100;
+            
+            await order.save();
+            return res.json({ message: 'Price updated and totals recalculated', order });
+        }
+
+        // 2. If not an Order, check SellRequest
+        const sellReq = await SellRequest.findById(req.params.id);
+        if (sellReq) {
+            sellReq.adminPrice = finalPrice;
+            await sellReq.save();
+            return res.json({ message: 'SellRequest price updated', sellRequest: sellReq });
+        }
+
+        return res.status(404).json({ error: 'Request/Order not found' });
+    } catch (e) {
+        console.error('Update price error:', e);
+        res.status(500).json({ error: 'Failed to update price' });
     }
 });
 
@@ -1934,6 +2209,53 @@ router.get('/admin/labours', protect, checkModule('labour'), async (req, res) =>
     } catch (e) {
         console.error('Admin labourers fetch error:', e);
         res.status(500).json({ error: 'Failed to fetch labourers' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/update/:id
+// @desc    Admin: Update any field of a labourer (bypassing restriction)
+// @access  Private/Admin
+router.put('/admin/labour/update/:id', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user || user.role !== 'labour') return res.status(404).json({ error: 'Labourer not found' });
+
+        // Update basic fields
+        if (req.body.name) user.name = req.body.name;
+        if (req.body.phone) user.phone = req.body.phone;
+        if (req.body.email) user.email = req.body.email;
+        if (req.body.address) user.address = req.body.address;
+        if (req.body.aadhaarNumber) user.aadhaarNumber = req.body.aadhaarNumber;
+
+        // Update Bank Details
+        if (req.body.bankDetails) {
+            const b = req.body.bankDetails;
+            user.bankDetails = {
+                holderName: b.holderName || (user.bankDetails ? user.bankDetails.holderName : ''),
+                bankName: b.bankName || (user.bankDetails ? user.bankDetails.bankName : ''),
+                accountNumber: b.accountNumber || (user.bankDetails ? user.bankDetails.accountNumber : ''),
+                ifscCode: b.ifscCode || (user.bankDetails ? user.bankDetails.ifscCode : ''),
+                bankAddress: b.bankAddress || (user.bankDetails ? user.bankDetails.bankAddress : ''),
+                bankDocUrl: b.bankDocUrl || (user.bankDetails ? user.bankDetails.bankDocUrl : '')
+            };
+        }
+        
+        // Update Labour Details (Skills & Description)
+        if (user.role === 'labour') {
+            if (!user.labourDetails) user.labourDetails = { skills: [] };
+            if (req.body.skills !== undefined) {
+                user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
+            }
+            if (req.body.skillDescription !== undefined) {
+                user.labourDetails.skillDescription = req.body.skillDescription;
+            }
+            user.markModified('labourDetails');
+        }
+
+        await user.save();
+        res.json({ message: 'Labourer profile updated successfully by Admin', user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -3687,7 +4009,7 @@ router.get('/admin/dashboard-stats', protect, async (req, res) => {
             // 6. Farmers
             User.countDocuments({ role: 'buyer' }),
             User.countDocuments({ role: 'buyer', status: 'approved' }),
-            User.aggregate([{ $match: { role: 'buyer' } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }]),
+            User.aggregate([{ $match: { role: 'buyer', walletBalance: { $gte: -1000000, $lte: 100000000 } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }]),
 
             // 7. Internal
             User.countDocuments({ role: { $in: ['employee', 'admin'] } }),
@@ -4066,6 +4388,55 @@ router.put('/admin/franchise/approve-wallet/:id', protect, checkAdmin, async (re
         res.json({ message: `Recharge of ₹${amount} approved successfully` });
     } catch (e) {
         res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   POST /api/employee/leads/generate
+// @desc    Generate a new marketing lead (Farmer/Shop)
+// @access  Private (Employee/Field Executive)
+router.post('/leads/generate', protect, uploadLeadPhoto.single('photo'), async (req, res) => {
+    try {
+        const { category, mobile, address, farmerDetails, shopDetails } = req.body;
+        
+        if (!category || !mobile || !address) {
+            return res.status(400).json({ error: 'Category, Mobile and Address are required' });
+        }
+
+        const leadData = {
+            executive: req.user.id,
+            category,
+            mobile,
+            address,
+            photoUrl: req.file ? `uploads/${req.file.filename}` : ''
+        };
+
+        if (category === 'Kisan') {
+            leadData.farmerDetails = typeof farmerDetails === 'string' ? JSON.parse(farmerDetails) : farmerDetails;
+        } else {
+            leadData.shopDetails = typeof shopDetails === 'string' ? JSON.parse(shopDetails) : shopDetails;
+        }
+
+        const lead = new FieldLead(leadData);
+        await lead.save();
+
+        res.json({ message: 'Lead generated successfully', lead });
+    } catch (error) {
+        console.error('Lead generate error:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
+    }
+});
+
+// @route   GET /api/employee/admin/leads
+// @desc    Get all marketing leads for admin
+// @access  Private/Admin
+router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
+    try {
+        const leads = await FieldLead.find()
+            .populate('executive', 'name employeeCode')
+            .sort({ createdAt: -1 });
+        res.json(leads);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch leads' });
     }
 });
 

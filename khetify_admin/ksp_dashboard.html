@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <script src="js/auth.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KSP Partner Dashboard | KrishiNex</title>
@@ -10,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <style>
-        body {
+    body {
             font-family: 'Outfit', sans-serif;
         }
 
@@ -285,7 +286,7 @@
     </div>
 
     <style>
-        @keyframes fadeIn {
+    @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: translateY(10px);
@@ -311,7 +312,7 @@
     </style>
 
     <script>
-        const API_BASE = 'https://demo.ranx24.com/api';
+        
         const AUTH_TOKEN = localStorage.getItem('kspToken');
         let selectedUser = null;
         let otpSent = false;

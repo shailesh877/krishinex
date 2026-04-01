@@ -62,6 +62,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  collectedCash: {
+    type: Number,
+    default: 0
+  },
   // Soil Lab specific fields
   soilDetails: {
     testTypes: [{
@@ -88,6 +92,10 @@ const userSchema = new mongoose.Schema({
     rating: {
       type: Number,
       default: 0
+    },
+    skillDescription: {
+      type: String,
+      default: ''
     }
   },
   maxDistanceKm: {
@@ -164,6 +172,13 @@ const userSchema = new mongoose.Schema({
   creditUsed: {
     type: Number,
     default: 0
+  },
+  loginOtp: {
+    type: String,
+    default: ''
+  },
+  loginOtpExpiry: {
+    type: Date
   },
   createdAt: {
     type: Date,

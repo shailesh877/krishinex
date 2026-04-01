@@ -1,7 +1,10 @@
 /**
- * auth.js - Global Session Management for KrishiNex Admin
- * This script ensures the user is authenticated and handles secure logout.
+ * auth.js - Global Session Management & Configuration for KrishiNex Admin
+ * This script ensures the user is authenticated and handles global API settings.
  */
+
+window.API_BASE = 'https://demo.ranx24.com/api';
+window.IMAGE_BASE = 'https://demo.ranx24.com';
 
 (function () {
     const AUTH_TOKEN = localStorage.getItem('employeeToken');

@@ -19,9 +19,17 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: {
@@ -78,7 +86,7 @@
       </div>
 
       <!-- Navigation -->
-                                                            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
@@ -393,678 +401,824 @@
         </div>
       </header>
 
-      <!-- ========== MAIN CONTENT (REPLACEABLE) ========== -->
+      <!-- ========== MAIN CONTENT (PREMIUM REDESIGN) ========== -->
       <main id="mainContent"
-        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+        class="flex-1 px-4 md:px-8 py-6 md:py-8 space-y-8 mx-auto w-full max-w-[1800px] pb-12 overflow-y-auto custom-scroll relative">
+
+        <!-- Decorative Subtle Background Glow -->
+        <div
+          class="fixed top-0 right-0 w-[800px] h-[800px] bg-gradient-to-tr from-emerald-100/40 via-sky-100/20 to-transparent rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3 z-0">
+        </div>
 
         <!-- ROW 1: 4 CORE MODULES -->
-        <section>
-          <div class="mb-4">
-            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
-              <i class="fas fa-layer-group text-emerald-600"></i>
-              Core Business Modules
+        <section class="relative z-10">
+          <div class="mb-5">
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg">
+                <i class="fas fa-layer-group text-[14px]"></i>
+              </span>
+              Core Business Operations
             </h2>
-            <p class="text-sm text-slate-600 font-semibold mt-1">Real-time stats from 4 primary revenue streams</p>
+            <p class="text-[13px] text-slate-500 font-semibold mt-1">Live metrics across 4 primary revenue streams</p>
           </div>
-          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+
+          <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <!-- KSP Franchise -->
             <div
-              class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-teal-50/40 to-white border-2 border-teal-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              class="group relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgb(20,184,166,0.12)] hover:-translate-y-1 transition-all duration-500 ease-out">
               <div
-                class="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-gradient-to-br from-teal-200/40 to-teal-100/20">
+                class="absolute inset-0 bg-gradient-to-br from-teal-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              <div class="relative px-5 py-5">
-                <div class="flex items-center justify-between mb-3">
+              <div class="relative p-6">
+                <div class="flex items-center justify-between mb-5">
                   <div
-                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-100 border-2 border-teal-200 shadow-md group-hover:scale-110 transition-transform">
-                    <i class="fas fa-store text-3xl text-teal-600"></i>
+                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fas fa-store text-xl"></i>
                   </div>
                   <span
-                    class="inline-flex items-center rounded-full bg-teal-50 px-2 py-1 text-[9px] font-black text-teal-700 border border-teal-200">MODULE
+                    class="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-1 text-[10px] uppercase font-black tracking-widest text-slate-500">Rev
                     1</span>
                 </div>
-                <p class="text-sm font-black text-teal-700 mb-2">KSP Franchise</p>
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Franchises</span>
-                    <span id="ksp-franchises" class="font-black text-slate-900">...</span>
+                <h3 class="text-sm font-black text-slate-800 mb-4 tracking-tight">KSP Franchise</h3>
+
+                <div class="space-y-3">
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Total Units</span>
+                    <span id="ksp-franchises" class="font-black text-lg leading-none text-slate-900">...</span>
                   </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Total Stock Value</span>
-                    <span id="ksp-stock" class="font-black text-teal-700">...</span>
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Stock Value</span>
+                    <span id="ksp-stock" class="font-black text-sm leading-none text-teal-600">...</span>
                   </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Sales Today</span>
-                    <span id="ksp-sales" class="font-black text-emerald-700">...</span>
+                  <div class="flex justify-between items-end">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Today's Sales</span>
+                    <span id="ksp-sales" class="font-black text-sm leading-none text-emerald-600">...</span>
                   </div>
                 </div>
-                <div class="mt-4 pt-3 border-t-2 border-teal-100">
-                  <a href="ksp_Franchise_managment.html"
-                    class="inline-flex items-center text-xs font-black text-teal-700 hover:text-teal-800 transition-colors group">
-                    View Details <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                  </a>
-                </div>
+
+                <!-- <a href="ksp_Franchise_managment.html"
+                  class="mt-5 flex items-center justify-center w-full py-2.5 rounded-xl border border-slate-200/60 bg-slate-50/50 text-xs font-bold text-slate-600 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 transition-all group/btn">
+                  Manage KSP <i
+                    class="fas fa-arrow-right ml-2 text-[10px] opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all"></i>
+                </a> -->
               </div>
             </div>
 
             <!-- Equipment Rentals -->
             <div
-              class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-orange-50/40 to-white border-2 border-orange-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              class="group relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgb(249,115,22,0.12)] hover:-translate-y-1 transition-all duration-500 ease-out">
               <div
-                class="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-gradient-to-br from-orange-200/40 to-orange-100/20">
+                class="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              <div class="relative px-5 py-5">
-                <div class="flex items-center justify-between mb-3">
+              <div class="relative p-6">
+                <div class="flex items-center justify-between mb-5">
                   <div
-                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-100 to-amber-100 border-2 border-orange-200 shadow-md group-hover:scale-110 transition-transform">
-                    <i class="fas fa-tractor text-3xl text-orange-600"></i>
+                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fas fa-tractor text-xl"></i>
                   </div>
                   <span
-                    class="inline-flex items-center rounded-full bg-orange-50 px-2 py-1 text-[9px] font-black text-orange-700 border border-orange-200">MODULE
+                    class="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-1 text-[10px] uppercase font-black tracking-widest text-slate-500">Rev
                     2</span>
                 </div>
-                <p class="text-sm font-black text-orange-700 mb-2">Equipment Rentals</p>
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Partners</span>
-                    <span id="eq-partners" class="font-black text-slate-900">...</span>
+                <h3 class="text-sm font-black text-slate-800 mb-4 tracking-tight">Equipment Rentals</h3>
+
+                <div class="space-y-3">
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Partners</span>
+                    <span id="eq-partners" class="font-black text-lg leading-none text-slate-900">...</span>
                   </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Machines</span>
-                    <span id="eq-machines" class="font-black text-orange-700">...</span>
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Fleet Size</span>
+                    <span id="eq-machines" class="font-black text-sm leading-none text-orange-600">...</span>
                   </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Active Bookings</span>
-                    <span id="eq-bookings" class="font-black text-emerald-700">...</span>
+                  <div class="flex justify-between items-end">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Live Bookings</span>
+                    <span id="eq-bookings" class="font-black text-sm leading-none text-emerald-600">...</span>
                   </div>
                 </div>
-                <div class="mt-4 pt-3 border-t-2 border-orange-100">
-                  <a href="machine_partners_management.html"
-                    class="inline-flex items-center text-xs font-black text-orange-700 hover:text-orange-800 transition-colors group">
-                    View Details <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                  </a>
-                </div>
+
+                <!-- <a href="machine_partners_management.html"
+                  class="mt-5 flex items-center justify-center w-full py-2.5 rounded-xl border border-slate-200/60 bg-slate-50/50 text-xs font-bold text-slate-600 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 transition-all group/btn">
+                  Manage Rentals <i
+                    class="fas fa-arrow-right ml-2 text-[10px] opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all"></i>
+                </a> -->
               </div>
             </div>
 
             <!-- Labour Aggregation -->
             <div
-              class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-purple-50/40 to-white border-2 border-purple-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              class="group relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgb(168,85,247,0.12)] hover:-translate-y-1 transition-all duration-500 ease-out">
               <div
-                class="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-gradient-to-br from-purple-200/40 to-purple-100/20">
+                class="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              <div class="relative px-5 py-5">
-                <div class="flex items-center justify-between mb-3">
+              <div class="relative p-6">
+                <div class="flex items-center justify-between mb-5">
                   <div
-                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 border-2 border-purple-200 shadow-md group-hover:scale-110 transition-transform">
-                    <i class="fas fa-people-group text-3xl text-purple-600"></i>
+                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fas fa-people-group text-xl"></i>
                   </div>
                   <span
-                    class="inline-flex items-center rounded-full bg-purple-50 px-2 py-1 text-[9px] font-black text-purple-700 border border-purple-200">MODULE
+                    class="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-1 text-[10px] uppercase font-black tracking-widest text-slate-500">Rev
                     3</span>
                 </div>
+                <h3 class="text-sm font-black text-slate-800 mb-4 tracking-tight">Labour Aggregation</h3>
 
-                <div class="space-y-1.5">
-                  <p class="text-sm font-black text-purple-700 mb-2">Labour Aggregation</p>
-                  <div class="space-y-1.5">
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-600 font-semibold">Registered</span>
-                      <span id="lab-registered" class="font-black text-slate-900">...</span>
-                    </div>
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-600 font-semibold">Active Workers</span>
-                      <span id="lab-active" class="font-black text-purple-700">...</span>
-                    </div>
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-600 font-semibold">Active Jobs</span>
-                      <span id="lab-jobs" class="font-black text-emerald-700">...</span>
-                    </div>
+                <div class="space-y-3">
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Registered</span>
+                    <span id="lab-registered" class="font-black text-lg leading-none text-slate-900">...</span>
                   </div>
-                  <div class="mt-4 pt-3 border-t-2 border-purple-100">
-                    <a href="labour_managment.html"
-                      class="inline-flex items-center text-xs font-black text-purple-700 hover:text-purple-800 transition-colors group">
-                      View Details <i
-                        class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Active Staff</span>
+                    <span id="lab-active" class="font-black text-sm leading-none text-purple-600">...</span>
+                  </div>
+                  <div class="flex justify-between items-end">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Active Jobs</span>
+                    <span id="lab-jobs" class="font-black text-sm leading-none text-emerald-600">...</span>
                   </div>
                 </div>
+
+                <!-- <a href="labour_managment.html"
+                  class="mt-5 flex items-center justify-center w-full py-2.5 rounded-xl border border-slate-200/60 bg-slate-50/50 text-xs font-bold text-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition-all group/btn">
+                  Manage Labour <i
+                    class="fas fa-arrow-right ml-2 text-[10px] opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all"></i>
+                </a> -->
               </div>
             </div>
+
             <!-- Buyer Trading -->
             <div
-              class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-blue-50/40 to-white border-2 border-blue-100 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+              class="group relative overflow-hidden rounded-3xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_40px_rgb(56,189,248,0.12)] hover:-translate-y-1 transition-all duration-500 ease-out">
               <div
-                class="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-gradient-to-br from-blue-200/40 to-blue-100/20">
+                class="absolute inset-0 bg-gradient-to-br from-sky-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               </div>
-              <div class="relative px-5 py-5">
-                <div class="flex items-center justify-between mb-3">
+              <div class="relative p-6">
+                <div class="flex items-center justify-between mb-5">
                   <div
-                    class="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 border-2 border-blue-200 shadow-md group-hover:scale-110 transition-transform">
-                    <i class="fas fa-handshake text-3xl text-blue-600"></i>
+                    class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                    <i class="fas fa-handshake text-xl"></i>
                   </div>
                   <span
-                    class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-[9px] font-black text-blue-700 border border-blue-200">MODULE
+                    class="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-1 text-[10px] uppercase font-black tracking-widest text-slate-500">Rev
                     4</span>
                 </div>
-                <p class="text-sm font-black text-blue-700 mb-2">Buyer Trading (B2B)</p>
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Buyers</span>
-                    <span id="buy-buyers" class="font-black text-slate-900">...</span>
+                <h3 class="text-sm font-black text-slate-800 mb-4 tracking-tight">Buyer Trading (B2B)</h3>
+
+                <div class="space-y-3">
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Active Buyers</span>
+                    <span id="buy-buyers" class="font-black text-lg leading-none text-slate-900">...</span>
                   </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Total Orders</span>
-                    <span id="buy-orders" class="font-black text-blue-700">...</span>
+                  <div class="flex justify-between items-end border-b border-slate-100/80 pb-2">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Total Orders</span>
+                    <span id="buy-orders" class="font-black text-sm leading-none text-sky-600">...</span>
                   </div>
-                  <div class="flex justify-between text-xs">
-                    <span class="text-slate-600 font-semibold">Pending Payment</span>
-                    <span id="buy-pending" class="font-black text-rose-700">...</span>
+                  <div class="flex justify-between items-end">
+                    <span class="text-[11px] text-slate-500 font-bold uppercase tracking-wide">Pending Due</span>
+                    <span id="buy-pending" class="font-black text-sm leading-none text-rose-600">...</span>
                   </div>
                 </div>
-                <div class="mt-4 pt-3 border-t-2 border-blue-100">
-                  <a href="buyer_managment.html"
-                    class="inline-flex items-center text-xs font-black text-blue-700 hover:text-blue-800 transition-colors group">
-                    View Details <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                  </a>
-                </div>
+
+                <!-- <a href="buyer_managment.html"
+                  class="mt-5 flex items-center justify-center w-full py-2.5 rounded-xl border border-slate-200/60 bg-slate-50/50 text-xs font-bold text-slate-600 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 transition-all group/btn">
+                  Manage B2B <i
+                    class="fas fa-arrow-right ml-2 text-[10px] opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all"></i>
+                </a> -->
               </div>
             </div>
           </div>
         </section>
 
         <!-- ROW 2: SUPPORTING MODULES + USERS -->
-        <section>
-          <div class="mb-4">
-            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
-              <i class="fas fa-users-gear text-sky-600"></i>
-              Supporting Modules & Users
+        <section class="relative z-10 pt-4">
+          <div class="mb-5">
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg">
+                <i class="fas fa-users-gear text-[14px]"></i>
+              </span>
+              Ecosystem & Users
             </h2>
-            <p class="text-sm text-slate-600 font-semibold mt-1">Soil testing, farmers & internal team management</p>
+            <p class="text-[13px] text-slate-500 font-semibold mt-1">Metrics for service labs, platform users, and
+              internal operators</p>
           </div>
-          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+
+          <div class="grid gap-5 grid-cols-1 md:grid-cols-3">
             <!-- Soil Testing -->
             <div
-              class="rounded-2xl border-2 border-indigo-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
-              <div class="flex items-center justify-between mb-3">
+              class="rounded-3xl border border-indigo-100/60 bg-white/60 backdrop-blur-sm shadow-sm hover:shadow-[0_8px_30px_rgb(99,102,241,0.08)] hover:-translate-y-1 transition-all duration-300 p-6">
+              <div class="flex items-center gap-4 mb-5">
                 <div
-                  class="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center shadow-sm">
-                  <i class="fas fa-flask text-2xl text-indigo-600"></i>
+                  class="flex-shrink-0 h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 flex items-center justify-center shadow-inner">
+                  <i class="fas fa-flask text-2xl text-indigo-600 drop-shadow-sm"></i>
                 </div>
-                <span class="text-[10px] uppercase tracking-wider text-indigo-600 font-black">Service</span>
-              </div>
-              <p class="text-base font-black text-slate-900 mb-2">Soil Testing Labs</p>
-              <div class="space-y-1.5 mt-3">
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Total Labs</span>
-                  <span id="soil-labs" class="font-black text-slate-900">...</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Tests Done</span>
-                  <span id="soil-tests" class="font-black text-indigo-700">...</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">This Month</span>
-                  <span id="soil-month" class="font-black text-emerald-700">...</span>
+                <div>
+                  <h3 class="text-base font-black text-slate-900 tracking-tight">Soil Testing Network</h3>
+                  <span class="text-[10px] font-bold tracking-widest uppercase text-indigo-500">Service Line</span>
                 </div>
               </div>
-              <div class="mt-4">
-                <a href="soil_testing_patner.html"
-                  class="inline-flex items-center text-xs font-black text-indigo-700 hover:text-indigo-800 transition-colors group">
-                  Manage Labs <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+
+              <div class="grid grid-cols-3 gap-2 mb-5">
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Labs</p>
+                  <p id="soil-labs" class="text-lg font-black text-slate-800">...</p>
+                </div>
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Total Tests</p>
+                  <p id="soil-tests" class="text-lg font-black text-indigo-600">...</p>
+                </div>
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Monthly</p>
+                  <p id="soil-month" class="text-sm pt-0.5 font-black text-emerald-600">...</p>
+                </div>
               </div>
+              <!-- <a href="soil_testing_patner.html"
+                class="inline-flex items-center text-xs font-black tracking-wide text-indigo-600 hover:text-indigo-800 transition-colors group">
+                Manage Service <i
+                  class="fas fa-arrow-right ml-1.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all"></i>
+              </a> -->
             </div>
 
             <!-- Farmers/Users -->
             <div
-              class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
-              <div class="flex items-center justify-between mb-3">
+              class="rounded-3xl border border-emerald-100/60 bg-white/60 backdrop-blur-sm shadow-sm hover:shadow-[0_8px_30px_rgb(16,185,129,0.08)] hover:-translate-y-1 transition-all duration-300 p-6">
+              <div class="flex items-center gap-4 mb-5">
                 <div
-                  class="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center shadow-sm">
-                  <i class="fas fa-seedling text-2xl text-emerald-600"></i>
+                  class="flex-shrink-0 h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 flex items-center justify-center shadow-inner">
+                  <i class="fas fa-seedling text-2xl text-emerald-600 drop-shadow-sm"></i>
                 </div>
-                <span class="text-[10px] uppercase tracking-wider text-emerald-600 font-black">Users</span>
-              </div>
-              <p class="text-base font-black text-slate-900 mb-2">Farmers & End Users</p>
-              <div class="space-y-1.5 mt-3">
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Total Farmers</span>
-                  <span id="farm-total" class="font-black text-slate-900">...</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Active Users</span>
-                  <span id="farm-active" class="font-black text-emerald-700">...</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Wallet Active</span>
-                  <span id="farm-wallet" class="font-black text-sky-700">...</span>
+                <div>
+                  <h3 class="text-base font-black text-slate-900 tracking-tight">Farmers & Users</h3>
+                  <span class="text-[10px] font-bold tracking-widest uppercase text-emerald-500">Platform Base</span>
                 </div>
               </div>
-              <div class="mt-4">
-                <a href="users_managment.html"
-                  class="inline-flex items-center text-xs font-black text-emerald-700 hover:text-emerald-800 transition-colors group">
-                  Manage Users <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+
+              <div class="grid grid-cols-3 gap-2 mb-5">
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center col-span-1">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Farmers</p>
+                  <p id="farm-total" class="text-lg font-black text-slate-800">...</p>
+                </div>
+                <div
+                  class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center col-span-2 flex items-center justify-around">
+                  <div class="text-left">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Active</p>
+                    <p id="farm-active" class="text-lg font-black text-emerald-600">...</p>
+                  </div>
+                  <div class="w-px h-8 bg-slate-100"></div>
+                  <div class="text-right">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Wallet Holds</p>
+                    <p id="farm-wallet" class="text-sm pt-0.5 font-black text-slate-900">...</p>
+                  </div>
+                </div>
               </div>
+              <!-- <a href="users_managment.html"
+                class="inline-flex items-center text-xs font-black tracking-wide text-emerald-600 hover:text-emerald-800 transition-colors group">
+                Review Users <i
+                  class="fas fa-arrow-right ml-1.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all"></i>
+              </a> -->
             </div>
 
             <!-- Employees & Admins -->
             <div
-              class="rounded-2xl border-2 border-slate-200 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
-              <div class="flex items-center justify-between mb-3">
+              class="rounded-3xl border border-amber-100/60 bg-white/60 backdrop-blur-sm shadow-sm hover:shadow-[0_8px_30px_rgb(245,158,11,0.08)] hover:-translate-y-1 transition-all duration-300 p-6">
+              <div class="flex items-center gap-4 mb-5">
                 <div
-                  class="h-12 w-12 rounded-xl bg-gradient-to-br from-slate-100 to-indigo-100 flex items-center justify-center shadow-sm">
-                  <i class="fas fa-user-tie text-2xl text-indigo-600"></i>
+                  class="flex-shrink-0 h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 flex items-center justify-center shadow-inner">
+                  <i class="fas fa-user-shield text-2xl text-amber-600 drop-shadow-sm"></i>
                 </div>
-                <span class="text-[10px] uppercase tracking-wider text-indigo-600 font-black">Internal</span>
-              </div>
-              <p class="text-base font-black text-slate-900 mb-2">Employees & Admins</p>
-              <div class="space-y-1.5 mt-3">
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Total Staff</span>
-                  <span id="int-staff" class="font-black text-slate-900">...</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Field Executives</span>
-                  <span id="int-field" class="font-black text-sky-700">...</span>
-                </div>
-                <div class="flex justify-between text-xs">
-                  <span class="text-slate-600 font-semibold">Online Now</span>
-                  <span id="int-online" class="font-black text-emerald-700">...</span>
+                <div>
+                  <h3 class="text-base font-black text-slate-900 tracking-tight">Internal Personnel</h3>
+                  <span class="text-[10px] font-bold tracking-widest uppercase text-amber-500">Administration</span>
                 </div>
               </div>
-              <div class="mt-4">
-                <a href="employee_managment.html"
-                  class="inline-flex items-center text-xs font-black text-indigo-700 hover:text-indigo-800 transition-colors group">
-                  Manage Team <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+
+              <div class="grid grid-cols-3 gap-2 mb-5">
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Total Staff</p>
+                  <p id="int-staff" class="text-lg font-black text-slate-800">...</p>
+                </div>
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center">
+                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Field Execs</p>
+                  <p id="int-field" class="text-lg font-black text-amber-600">...</p>
+                </div>
+                <div class="bg-white rounded-2xl p-3 border border-slate-100 shadow-sm text-center">
+                  <p class="text-[10px] uppercase font-bold text-emerald-400 mb-1">Online</p>
+                  <p id="int-online"
+                    class="text-sm pt-0.5 font-black text-emerald-600 flex items-center justify-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>...
+                  </p>
+                </div>
               </div>
+              <!-- <a href="employee_managment.html"
+                class="inline-flex items-center text-xs font-black tracking-wide text-amber-600 hover:text-amber-800 transition-colors group">
+                Manage Staff <i
+                  class="fas fa-arrow-right ml-1.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all"></i>
+              </a> -->
             </div>
           </div>
         </section>
 
         <!-- ROW 3: TODAY'S KEY METRICS -->
-        <section>
-          <div class="mb-4">
-            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
-              <i class="fas fa-gauge-high text-amber-600"></i>
-              Today's Key Metrics
+        <section class="relative z-10 pt-4">
+          <div class="mb-5">
+            <h2 class="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white shadow-lg">
+                <i class="fas fa-chart-pie text-[14px]"></i>
+              </span>
+              Today's Performance
             </h2>
-            <p class="text-sm text-slate-600 font-semibold mt-1">Real-time performance indicators</p>
           </div>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-5 hover:shadow-lg transition-all">
-              <div class="flex items-center justify-between mb-3">
-                <div
-                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
-                  <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
-                </div>
-                <span class="text-[10px] uppercase tracking-wider text-emerald-600 font-black">Revenue</span>
+
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Revenue Widget -->
+            <div
+              class="rounded-3xl bg-slate-900 text-white p-6 shadow-2xl shadow-slate-900/20 relative overflow-hidden group">
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl group-hover:bg-emerald-500/30 transition-colors duration-500">
               </div>
-              <p id="today-revenue" class="text-2xl font-black text-slate-900 mb-1">...</p>
-              <p class="text-xs text-slate-600 font-semibold">Today's Total</p>
-              <div class="mt-3 pt-3 border-t border-emerald-100">
-                <p class="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
-                  <i class="fas fa-arrow-trend-up text-[8px]"></i> +18.2% vs yesterday
-                </p>
+              <div class="relative z-10 flex flex-col h-full justify-between">
+                <div class="flex justify-between items-start mb-6">
+                  <div
+                    class="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center backdrop-blur-sm border border-emerald-500/30">
+                    <i class="fas fa-indian-rupee-sign text-emerald-400"></i>
+                  </div>
+                  <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400 mt-1">Gross
+                    Revenue</span>
+                </div>
+                <div>
+                  <p id="today-revenue" class="text-3xl font-black tracking-tighter mb-1">...</p>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/20 text-[10px] font-black text-emerald-400">
+                      <i class="fas fa-arrow-trend-up"></i> +18.2%
+                    </span>
+                    <span class="text-[11px] text-slate-400 font-semibold">vs yesterday</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg transition-all">
-              <div class="flex items-center justify-between mb-3">
-                <div
-                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
-                  <i class="fas fa-box-open text-sky-600"></i>
-                </div>
-                <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">Orders</span>
+            <!-- Orders Widget -->
+            <div
+              class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-lg shadow-slate-200/40 relative overflow-hidden hover:border-sky-300 transition-colors group">
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-sky-50 rounded-full blur-2xl group-hover:bg-sky-100 transition-colors duration-500">
               </div>
-              <p id="today-orders" class="text-2xl font-black text-slate-900 mb-1">...</p>
-              <p class="text-xs text-slate-600 font-semibold">Active Orders</p>
-              <div class="mt-3 pt-3 border-t border-sky-100">
-                <p class="text-[10px] text-sky-700 font-bold">
-                  KSP: 120 • Equipment: 142 • Labour: 80
-                </p>
+              <div class="relative z-10 flex flex-col h-full justify-between">
+                <div class="flex justify-between items-start mb-6">
+                  <div
+                    class="h-10 w-10 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100">
+                    <i class="fas fa-box-open"></i>
+                  </div>
+                  <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Total Orders</span>
+                </div>
+                <div>
+                  <p id="today-orders" class="text-3xl font-black tracking-tighter text-slate-900 mb-1">...</p>
+                  <p class="text-[11px] text-slate-500 font-bold">Combined across modules</p>
+                </div>
               </div>
             </div>
 
-            <div class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-5 hover:shadow-lg transition-all">
-              <div class="flex items-center justify-between mb-3">
-                <div
-                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
-                  <i class="fas fa-shield-halved text-amber-600"></i>
-                </div>
-                <span class="text-[10px] uppercase tracking-wider text-amber-600 font-black">Pending</span>
+            <!-- Pending KYC Widget -->
+            <div
+              class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-lg shadow-slate-200/40 relative overflow-hidden hover:border-rose-300 transition-colors group">
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-rose-50 rounded-full blur-2xl group-hover:bg-rose-100 transition-colors duration-500">
               </div>
-              <p id="today-kyc" class="text-2xl font-black text-slate-900 mb-1">...</p>
-              <p class="text-xs text-slate-600 font-semibold">KYC Approvals</p>
-              <div class="mt-3 pt-3 border-t border-amber-100">
-                <p class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
-                  <i class="fas fa-exclamation-triangle text-[8px]"></i> 24 high priority
-                </p>
+              <div class="relative z-10 flex flex-col h-full justify-between">
+                <div class="flex justify-between items-start mb-6">
+                  <div
+                    class="h-10 w-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center border border-rose-100">
+                    <i class="fas fa-id-card"></i>
+                  </div>
+                  <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Pending KYC</span>
+                </div>
+                <div>
+                  <p id="today-kyc" class="text-3xl font-black tracking-tighter text-slate-900 mb-1">...</p>
+                  <p class="text-[11px] text-slate-500 font-bold flex items-center gap-1">
+                    <i class="fas fa-circle-exclamation text-rose-500"></i> Requires manual approval
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-5 hover:shadow-lg transition-all">
-              <div class="flex items-center justify-between mb-3">
-                <div
-                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
-                  <i class="fas fa-sack-dollar text-rose-600"></i>
-                </div>
-                <span class="text-[10px] uppercase tracking-wider text-rose-600 font-black">Payouts</span>
+            <!-- Payouts Widget -->
+            <div
+              class="rounded-3xl bg-white border border-slate-200/80 p-6 shadow-lg shadow-slate-200/40 relative overflow-hidden hover:border-indigo-300 transition-colors group">
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-indigo-50 rounded-full blur-2xl group-hover:bg-indigo-100 transition-colors duration-500">
               </div>
-              <p id="today-payouts" class="text-2xl font-black text-slate-900 mb-1">...</p>
-              <p class="text-xs text-slate-600 font-semibold">Pending Payouts</p>
-              <div class="mt-3 pt-3 border-t border-rose-100">
-                <p class="text-[10px] text-rose-700 font-bold">
-                  18 partners waiting
-                </p>
+              <div class="relative z-10 flex flex-col h-full justify-between">
+                <div class="flex justify-between items-start mb-6">
+                  <div
+                    class="h-10 w-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                    <i class="fas fa-money-bill-transfer"></i>
+                  </div>
+                  <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Pending
+                    Payouts</span>
+                </div>
+                <div>
+                  <p id="today-payouts" class="text-3xl font-black tracking-tighter text-slate-900 mb-1">...</p>
+                  <a href="finance_payouts_management.html"
+                    class="text-[11px] text-indigo-600 hover:text-indigo-800 font-black inline-flex items-center group-hover:underline">
+                    Clear Payouts <i class="fas fa-arrow-right ml-1 text-[8px]"></i>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- ROW 4: MODULE BREAKDOWN TABLE -->
-        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
-          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
-            <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <i class="fas fa-table-list text-emerald-600"></i>
-              All Modules Breakdown
-            </h2>
-            <p class="text-xs text-slate-600 font-semibold mt-1">
-              Complete overview: partners, transactions & revenue
-            </p>
-          </div>
+        <!-- ROW 4: MODULE BREAKDOWN TABLE
+        <section class="relative z-10 pt-4">
+          <div class="rounded-3xl bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+            <div class="px-8 py-6 border-b border-slate-100/80 bg-slate-50/30">
+              <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 shadow-inner">
+                  <i class="fas fa-table-list text-[11px]"></i>
+                </span>
+                Comprehensive Breakdown
+              </h2>
+              <p class="text-[12px] text-slate-500 font-semibold mt-1">
+                A unified view of partners, transactions, and status across all platforms
+              </p>
+            </div>
 
-          <div class="overflow-x-auto custom-scroll">
-            <table class="min-w-full border-separate border-spacing-0">
-              <thead class="sticky top-0 z-10 bg-slate-50">
-                <tr class="text-xs text-slate-700">
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Module</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Partners/Users</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Active</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">This Month</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Revenue</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- KSP Franchise -->
-                <tr class="hover:bg-teal-50/40 transition-colors border-b border-slate-100">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-store text-teal-600"></i>
+            <div class="overflow-x-auto custom-scroll p-4">
+              <table class="min-w-full border-separate border-spacing-y-2">
+                <thead>
+                  <tr class="text-[10px] uppercase tracking-widest text-slate-400 font-black">
+                    <th class="text-left px-5 py-3">Module Pipeline</th>
+                    <th class="text-right px-5 py-3">User Base</th>
+                    <th class="text-right px-5 py-3">Active Now</th>
+                    <th class="text-right px-5 py-3">M-o-M Growth</th>
+                    <th class="text-right px-5 py-3">Gross Rev</th>
+                    <th class="text-right px-5 py-3">System Status</th>
+                  </tr>
+                </thead>
+                <tbody class="text-sm">
+                   KSP Franchise -->
+        <!-- <tr class="group hover:bg-slate-50/50 transition-colors bg-white rounded-2xl shadow-sm border border-slate-100/50">
+                    <td class="px-5 py-4 rounded-l-2xl border-l border-t border-b border-slate-100/50">
+                      <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-xl bg-teal-50 flex items-center justify-center border border-teal-100/50 text-teal-600 group-hover:scale-110 transition-transform">
+                          <i class="fas fa-store"></i>
+                        </div>
+                        <div>
+                          <p class="text-[13px] font-black tracking-tight text-slate-900">KSP Franchise</p>
+                          <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Inventory & Sales</p>
+                        </div>
                       </div>
-                      <div>
-                        <p class="text-sm font-black text-slate-900">KSP Franchise</p>
-                        <p class="text-[10px] text-slate-500 font-semibold">Inventory & Sales</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">85</td>
-                  <td class="px-5 py-4 text-right font-bold text-emerald-700">78</td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">4,200</td>
-                  <td class="px-5 py-4 text-right font-black text-teal-700">₹18.6 L</td>
-                  <td class="px-5 py-4 text-right">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-check-circle mr-1"></i> Active
-                    </span>
-                  </td>
-                </tr>
+                    </td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center gap-1.5 font-black text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">85</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50">78</td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md">4,200</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-teal-600 border-t border-b border-slate-100/50 text-[15px]">₹18.6 L</td>
+                    <td class="px-5 py-4 text-right rounded-r-2xl border-r border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] uppercase tracking-widest font-black text-emerald-600 border border-emerald-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Active
+                      </span>
+                    </td>
+                  </tr> -->
 
-                <!-- Equipment -->
-                <tr class="hover:bg-orange-50/40 transition-colors border-b border-slate-100">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-tractor text-orange-600"></i>
+        <!-- Equipment -->
+        <!-- <tr class="group hover:bg-slate-50/50 transition-colors bg-white rounded-2xl shadow-sm border border-slate-100/50 mt-2">
+                    <td class="px-5 py-4 rounded-l-2xl border-l border-t border-b border-slate-100/50">
+                      <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center border border-orange-100/50 text-orange-600 group-hover:scale-110 transition-transform">
+                          <i class="fas fa-tractor"></i>
+                        </div>
+                        <div>
+                          <p class="text-[13px] font-black tracking-tight text-slate-900">Equipment Rentals</p>
+                          <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Machine Bookings</p>
+                        </div>
                       </div>
-                      <div>
-                        <p class="text-sm font-black text-slate-900">Equipment Rentals</p>
-                        <p class="text-[10px] text-slate-500 font-semibold">Machine Bookings</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">620</td>
-                  <td class="px-5 py-4 text-right font-bold text-emerald-700">540</td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">890</td>
-                  <td class="px-5 py-4 text-right font-black text-orange-700">₹24.2 L</td>
-                  <td class="px-5 py-4 text-right">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-check-circle mr-1"></i> Active
-                    </span>
-                  </td>
-                </tr>
+                    </td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center gap-1.5 font-black text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">620</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50">540</td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md">890</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-orange-600 border-t border-b border-slate-100/50 text-[15px]">₹24.2 L</td>
+                    <td class="px-5 py-4 text-right rounded-r-2xl border-r border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] uppercase tracking-widest font-black text-emerald-600 border border-emerald-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Active
+                      </span>
+                    </td>
+                  </tr>
 
-                <!-- Labour -->
-                <tr class="hover:bg-purple-50/40 transition-colors border-b border-slate-100">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-people-group text-purple-600"></i>
-                      </div>
-                      <div>
-                        <p class="text-sm font-black text-slate-900">Labour Aggregation</p>
-                        <p class="text-[10px] text-slate-500 font-semibold">Work Assignments</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">2,340</td>
-                  <td class="px-5 py-4 text-right font-bold text-emerald-700">1,820</td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">580</td>
-                  <td class="px-5 py-4 text-right font-black text-purple-700">₹8.7 L</td>
-                  <td class="px-5 py-4 text-right">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-check-circle mr-1"></i> Active
-                    </span>
-                  </td>
-                </tr>
+                   Labour -->
+        <!-- <tr
+          class="group hover:bg-slate-50/50 transition-colors bg-white rounded-2xl shadow-sm border border-slate-100/50 mt-2">
+          <td class="px-5 py-4 rounded-l-2xl border-l border-t border-b border-slate-100/50">
+            <div class="flex items-center gap-4">
+              <div
+                class="h-10 w-10 rounded-xl bg-purple-50 flex items-center justify-center border border-purple-100/50 text-purple-600 group-hover:scale-110 transition-transform">
+                <i class="fas fa-people-group"></i>
+              </div>
+              <div>
+                <p class="text-[13px] font-black tracking-tight text-slate-900">Labour Aggregation</p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Work Assignments</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+            <span
+              class="inline-flex items-center gap-1.5 font-black text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">2,340</span>
+          </td>
+          <td class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50">1,820</td>
+          <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+            <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md">580</span>
+          </td>
+          <td class="px-5 py-4 text-right font-black text-purple-600 border-t border-b border-slate-100/50 text-[15px]">
+            ₹8.7 L</td>
+          <td class="px-5 py-4 text-right rounded-r-2xl border-r border-t border-b border-slate-100/50">
+            <span
+              class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] uppercase tracking-widest font-black text-emerald-600 border border-emerald-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Active
+            </span>
+          </td>
+        </tr>  -->
 
-                <!-- Buyer Trading -->
-                <tr class="hover:bg-blue-50/40 transition-colors border-b border-slate-100">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-handshake text-blue-600"></i>
+        <!-- Buyer Trading -->
+        <!-- <tr class="group hover:bg-slate-50/50 transition-colors bg-white rounded-2xl shadow-sm border border-slate-100/50 mt-2">
+                    <td class="px-5 py-4 rounded-l-2xl border-l border-t border-b border-slate-100/50">
+                      <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-xl bg-sky-50 flex items-center justify-center border border-sky-100/50 text-sky-600 group-hover:scale-110 transition-transform">
+                          <i class="fas fa-handshake"></i>
+                        </div>
+                        <div>
+                          <p class="text-[13px] font-black tracking-tight text-slate-900">Buyer Trading</p>
+                          <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Crop Purchases (B2B)</p>
+                        </div>
                       </div>
-                      <div>
-                        <p class="text-sm font-black text-slate-900">Buyer Trading</p>
-                        <p class="text-[10px] text-slate-500 font-semibold">Crop Purchases (B2B)</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">1,860</td>
-                  <td class="px-5 py-4 text-right font-bold text-emerald-700">1,720</td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">1,420</td>
-                  <td class="px-5 py-4 text-right font-black text-blue-700">₹82.4 L</td>
-                  <td class="px-5 py-4 text-right">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-check-circle mr-1"></i> Active
-                    </span>
-                  </td>
-                </tr>
+                    </td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center gap-1.5 font-black text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">1,860</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50">1,720</td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md">1,420</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-sky-600 border-t border-b border-slate-100/50 text-[15px]">₹82.4 L</td>
+                    <td class="px-5 py-4 text-right rounded-r-2xl border-r border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] uppercase tracking-widest font-black text-emerald-600 border border-emerald-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Active
+                      </span>
+                    </td>
+                  </tr> -->
 
-                <!-- Soil Testing -->
-                <tr class="hover:bg-indigo-50/40 transition-colors border-b border-slate-100">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-flask text-indigo-600"></i>
+        <!-- Soil Testing -->
+        <!-- <tr class="group hover:bg-slate-50/50 transition-colors bg-white rounded-2xl shadow-sm border border-slate-100/50 mt-2">
+                    <td class="px-5 py-4 rounded-l-2xl border-l border-t border-b border-slate-100/50">
+                      <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100/50 text-indigo-600 group-hover:scale-110 transition-transform">
+                          <i class="fas fa-flask"></i>
+                        </div> -->
+        <!-- <div>
+                          <p class="text-[13px] font-black tracking-tight text-slate-900">Soil Testing</p>
+                          <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Lab Services</p>
+                        </div>
                       </div>
-                      <div>
-                        <p class="text-sm font-black text-slate-900">Soil Testing</p>
-                        <p class="text-[10px] text-slate-500 font-semibold">Lab Services</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">340</td>
-                  <td class="px-5 py-4 text-right font-bold text-emerald-700">310</td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">420</td>
-                  <td class="px-5 py-4 text-right font-black text-indigo-700">₹6.3 L</td>
-                  <td class="px-5 py-4 text-right">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-check-circle mr-1"></i> Active
-                    </span>
-                  </td>
-                </tr>
+                    </td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center gap-1.5 font-black text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">340</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50">310</td>
+                    <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+                      <span class="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-md">420</span>
+                    </td>
+                    <td class="px-5 py-4 text-right font-black text-indigo-600 border-t border-b border-slate-100/50 text-[15px]">₹6.3 L</td>
+                    <td class="px-5 py-4 text-right rounded-r-2xl border-r border-t border-b border-slate-100/50">
+                      <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] uppercase tracking-widest font-black text-emerald-600 border border-emerald-100">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Active
+                      </span>
+                    </td>
+                  </tr>
 
-                <!-- Farmers -->
-                <tr class="hover:bg-emerald-50/40 transition-colors">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-seedling text-emerald-600"></i>
-                      </div>
-                      <div>
-                        <p class="text-sm font-black text-slate-900">Farmers & End Users</p>
-                        <p class="text-[10px] text-slate-500 font-semibold">User Base</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">4,520</td>
-                  <td class="px-5 py-4 text-right font-bold text-emerald-700">4,120</td>
-                  <td class="px-5 py-4 text-right font-black text-slate-900">—</td>
-                  <td class="px-5 py-4 text-right font-black text-emerald-700">—</td>
-                  <td class="px-5 py-4 text-right">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-check-circle mr-1"></i> Active
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+                  Farmers -->
+        <!-- <tr
+          class="group hover:bg-slate-50/50 transition-colors bg-white rounded-2xl shadow-sm border border-slate-100/50 mt-2">
+          <td class="px-5 py-4 rounded-l-2xl border-l border-t border-b border-slate-100/50">
+            <div class="flex items-center gap-4">
+              <div
+                class="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100/50 text-emerald-600 group-hover:scale-110 transition-transform">
+                <i class="fas fa-seedling"></i>
+              </div>
+              <div>
+                <p class="text-[13px] font-black tracking-tight text-slate-900">Farmers & End Users</p>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">User Base</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+            <span
+              class="inline-flex items-center gap-1.5 font-black text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">4,520</span>
+          </td>
+          <td class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50">4,120</td>
+          <td class="px-5 py-4 text-right border-t border-b border-slate-100/50">
+            <span class="text-[11px] font-bold text-slate-300">—</span>
+          </td>
+          <td
+            class="px-5 py-4 text-right font-black text-emerald-600 border-t border-b border-slate-100/50 text-[15px]">—
+          </td>
+          <td class="px-5 py-4 text-right rounded-r-2xl border-r border-t border-b border-slate-100/50">
+            <span
+              class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[9px] uppercase tracking-widest font-black text-emerald-600 border border-emerald-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span> Active
+            </span>
+          </td>
+        </tr>
+        </tbody>
+        </table>
+    </div>
+  </div> -->
+        <!-- </section>  -->
 
         <!-- ROW 5: ALERTS & QUICK ACTIONS -->
-        <section class="grid gap-4 lg:grid-cols-3">
-          <!-- Pending Actions -->
-          <div class="rounded-2xl bg-white border-2 border-amber-200 shadow-lg p-5">
-            <div class="flex items-center gap-2 mb-4">
-              <div
-                class="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
-                <i class="fas fa-exclamation-triangle text-amber-600"></i>
-              </div>
-              <h3 class="text-sm font-black text-slate-900">⚡ Pending Actions</h3>
+        <!-- <section class="relative z-10 grid gap-5 lg:grid-cols-3 pt-4"> -->
+        <!-- Pending Actions -->
+        <!-- <div
+          class="rounded-3xl bg-white/80 backdrop-blur-xl border border-amber-200/50 shadow-[0_8px_30px_rgb(245,158,11,0.06)] p-6">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="h-10 w-10 rounded-xl bg-amber-50 border border-amber-100/50 flex items-center justify-center">
+              <i class="fas fa-bell text-amber-500"></i>
             </div>
-            <div class="space-y-2 max-h-72 overflow-y-auto custom-scroll">
-              <div
-                class="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100 hover:bg-amber-100 transition-all cursor-pointer">
-                <div>
-                  <p class="text-xs font-bold text-slate-900">58 KYC Approvals</p>
-                  <p class="text-[10px] text-slate-600 font-medium">24 high priority</p>
-                </div>
-                <i class="fas fa-chevron-right text-amber-600"></i>
-              </div>
-              <div
-                class="flex items-center justify-between p-3 rounded-lg bg-rose-50 border border-rose-100 hover:bg-rose-100 transition-all cursor-pointer">
-                <div>
-                  <p class="text-xs font-bold text-slate-900">18 Payout Requests</p>
-                  <p class="text-[10px] text-slate-600 font-medium">Equipment partners</p>
-                </div>
-                <i class="fas fa-chevron-right text-rose-600"></i>
-              </div>
-              <div
-                class="flex items-center justify-between p-3 rounded-lg bg-sky-50 border border-sky-100 hover:bg-sky-100 transition-all cursor-pointer">
-                <div>
-                  <p class="text-xs font-bold text-slate-900">12 Stock Alerts</p>
-                  <p class="text-[10px] text-slate-600 font-medium">Low stock at KSPs</p>
-                </div>
-                <i class="fas fa-chevron-right text-sky-600"></i>
-              </div>
-              <div
-                class="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-100 hover:bg-purple-100 transition-all cursor-pointer">
-                <div>
-                  <p class="text-xs font-bold text-slate-900">8 Field Collections</p>
-                  <p class="text-[10px] text-slate-600 font-medium">Cash to be deposited</p>
-                </div>
-                <i class="fas fa-chevron-right text-purple-600"></i>
-              </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900 tracking-tight">Action Alerts</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Requires Attention</p>
             </div>
           </div>
 
-          <!-- Recent Activity -->
-          <div class="rounded-2xl bg-white border-2 border-slate-200 shadow-lg p-5">
-            <div class="flex items-center gap-2 mb-4">
-              <div
-                class="h-8 w-8 rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center">
-                <i class="fas fa-clock text-slate-600"></i>
+          <div class="space-y-3 max-h-[300px] overflow-y-auto custom-scroll pr-2">
+            <div
+              class="group flex items-center justify-between p-3 rounded-2xl bg-amber-50/50 border border-amber-100/50 hover:bg-amber-100/50 transition-all cursor-pointer">
+              <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                <div>
+                  <p class="text-[12px] font-black text-slate-800 tracking-tight">58 KYC Approvals</p>
+                  <p class="text-[10px] text-slate-500 font-bold">24 high priority</p>
+                </div>
               </div>
-              <h3 class="text-sm font-black text-slate-900">📋 Recent Activity</h3>
-            </div>
-            <div id="activity-list" class="space-y-2 max-h-72 overflow-y-auto custom-scroll">
-              <!-- Activities will be loaded here -->
-              <div class="p-4 text-center text-slate-400 text-xs font-semibold">Loading activities...</div>
-            </div>
-          </div>
+              <div
+                class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center border border-amber-100 text-amber-500 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                <i class="fas fa-chevron-right text-[10px]"></i>
+              </div>
+            </div> -->
 
-          <!-- Quick Links -->
-          <div class="rounded-2xl bg-white border-2 border-slate-200 shadow-lg p-5">
-            <div class="flex items-center gap-2 mb-4">
-              <div
-                class="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 flex items-center justify-center">
-                <i class="fas fa-bolt text-emerald-600"></i>
-              </div>
-              <h3 class="text-sm font-black text-slate-900">⚡ Quick Access</h3>
-            </div>
-            <div class="space-y-2">
-              <a href="ksp_Franchise_managment.html"
-                class="flex items-center justify-between p-3 rounded-lg border-2 border-teal-100 bg-gradient-to-r from-teal-50 to-white hover:from-teal-100 hover:to-teal-50 hover:shadow-md transition-all">
-                <span class="text-xs font-bold text-teal-900 flex items-center gap-2">
-                  <i class="fas fa-boxes-stacked text-teal-600"></i> KSP Stock View
-                </span>
-                <i class="fas fa-arrow-right text-teal-600"></i>
-              </a>
-              <a href="machine_partners_management.html"
-                class="flex items-center justify-between p-3 rounded-lg border-2 border-orange-100 bg-gradient-to-r from-orange-50 to-white hover:from-orange-100 hover:to-orange-50 hover:shadow-md transition-all">
-                <span class="text-xs font-bold text-orange-900 flex items-center gap-2">
-                  <i class="fas fa-calendar-check text-orange-600"></i> Equipment Bookings
-                </span>
-                <i class="fas fa-arrow-right text-orange-600"></i>
-              </a>
-              <a href="buyer_managment.html"
-                class="flex items-center justify-between p-3 rounded-lg border-2 border-blue-100 bg-gradient-to-r from-blue-50 to-white hover:from-blue-100 hover:to-blue-50 hover:shadow-md transition-all">
-                <span class="text-xs font-bold text-blue-900 flex items-center gap-2">
-                  <i class="fas fa-money-check-dollar text-blue-600"></i> Payment Reconciliation
-                </span>
-                <i class="fas fa-arrow-right text-blue-600"></i>
-              </a>
-              <a href="finance_payouts_management.html"
-                class="flex items-center justify-between p-3 rounded-lg border-2 border-emerald-100 bg-gradient-to-r from-emerald-50 to-white hover:from-emerald-100 hover:to-emerald-50 hover:shadow-md transition-all">
-                <span class="text-xs font-bold text-emerald-900 flex items-center gap-2">
-                  <i class="fas fa-wallet text-emerald-600"></i> Partner Payouts
-                </span>
-                <i class="fas fa-arrow-right text-emerald-600"></i>
-              </a>
-              <a href="field_executive.html"
-                class="flex items-center justify-between p-3 rounded-lg border-2 border-purple-100 bg-gradient-to-r from-purple-50 to-white hover:from-purple-100 hover:to-purple-50 hover:shadow-md transition-all">
-                <span class="text-xs font-bold text-purple-900 flex items-center gap-2">
-                  <i class="fas fa-hand-holding-dollar text-purple-600"></i> Field Collections
-                </span>
-                <i class="fas fa-arrow-right text-purple-600"></i>
-              </a>
+        <!-- <div
+          class="group flex items-center justify-between p-3 rounded-2xl bg-rose-50/50 border border-rose-100/50 hover:bg-rose-100/50 transition-all cursor-pointer">
+          <div class="flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+            <div>
+              <p class="text-[12px] font-black text-slate-800 tracking-tight">18 Payout Requests</p>
+              <p class="text-[10px] text-slate-500 font-bold">Equipment partners</p>
             </div>
           </div>
-        </section>
-      </main>
+          <div
+            class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center border border-rose-100 text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all">
+            <i class="fas fa-chevron-right text-[10px]"></i>
+          </div>
+        </div>
+
+        <div
+          class="group flex items-center justify-between p-3 rounded-2xl bg-sky-50/50 border border-sky-100/50 hover:bg-sky-100/50 transition-all cursor-pointer">
+          <div class="flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-sky-500"></div>
+            <div>
+              <p class="text-[12px] font-black text-slate-800 tracking-tight">12 Stock Alerts</p>
+              <p class="text-[10px] text-slate-500 font-bold">Low stock at KSPs</p>
+            </div>
+          </div>
+          <div
+            class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center border border-sky-100 text-sky-500 group-hover:bg-sky-500 group-hover:text-white transition-all">
+            <i class="fas fa-chevron-right text-[10px]"></i>
+          </div>
+        </div>
+
+        <div
+          class="group flex items-center justify-between p-3 rounded-2xl bg-purple-50/50 border border-purple-100/50 hover:bg-purple-100/50 transition-all cursor-pointer">
+          <div class="flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+            <div>
+              <p class="text-[12px] font-black text-slate-800 tracking-tight">8 Field Collections</p>
+              <p class="text-[10px] text-slate-500 font-bold">Cash to be deposited</p>
+            </div>
+          </div>
+          <div
+            class="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center border border-purple-100 text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
+            <i class="fas fa-chevron-right text-[10px]"></i>
+          </div>
+        </div>
     </div>
+  </div>
+
+  Recent Activity -->
+        <!-- <div
+          class="rounded-3xl bg-white/80 backdrop-blur-xl border border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+              <i class="fas fa-clock-rotate-left text-slate-500"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900 tracking-tight">Activity Stream</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Live Platform Feed</p>
+            </div>
+          </div> -->
+
+        <!-- <div id="activity-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scroll pr-2"> -->
+        <!-- Activities dynamically injected here -->
+        <!-- <div class="flex flex-col items-center justify-center h-32 opacity-50">
+              <div class="w-6 h-6 border-2 border-slate-300 border-t-slate-800 rounded-full animate-spin mb-3"></div>
+              <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Connecting stream...</p>
+            </div>
+          </div>
+        </div> -->
+
+        <!-- Quick Access Links -->
+        <!-- <div
+          class="rounded-3xl bg-white/80 backdrop-blur-xl border border-emerald-100/50 shadow-[0_8px_30px_rgb(16,185,129,0.06)] p-6">
+          <div class="flex items-center gap-3 mb-5">
+            <div
+              class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 shadow-md shadow-emerald-500/20 text-white flex items-center justify-center">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900 tracking-tight">Quick Shortcuts</h3>
+              <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Jump to Module</p>
+            </div>
+          </div> -->
+
+        <!-- <div class="space-y-3">
+          <a href="ksp_Franchise_managment.html"
+            class="group flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-emerald-200 hover:shadow-md transition-all">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100">
+                <i class="fas fa-boxes-stacked text-[11px]"></i>
+              </div>
+              <span class="text-[12px] font-black tracking-tight text-slate-800">KSP Stock View</span>
+            </div>
+            <i
+              class="fas fa-arrow-right text-[10px] text-slate-400 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all"></i>
+          </a>
+
+          <a href="machine_partners_management.html"
+            class="group flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-orange-200 hover:shadow-md transition-all">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-100">
+                <i class="fas fa-calendar-check text-[11px]"></i>
+              </div>
+              <span class="text-[12px] font-black tracking-tight text-slate-800">Equipment Bookings</span>
+            </div>
+            <i
+              class="fas fa-arrow-right text-[10px] text-slate-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all"></i>
+          </a>
+
+          <a href="buyer_managment.html"
+            class="group flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-sky-200 hover:shadow-md transition-all">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center border border-sky-100">
+                <i class="fas fa-money-check-dollar text-[11px]"></i>
+              </div>
+              <span class="text-[12px] font-black tracking-tight text-slate-800">Payment Recon</span>
+            </div>
+            <i
+              class="fas fa-arrow-right text-[10px] text-slate-400 group-hover:text-sky-500 group-hover:translate-x-1 transition-all"></i>
+          </a> -->
+
+        <!-- <a href="finance_payouts_management.html"
+          class="group flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-indigo-200 hover:shadow-md transition-all">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+              <i class="fas fa-wallet text-[11px]"></i>
+            </div>
+            <span class="text-[12px] font-black tracking-tight text-slate-800">Partner Payouts</span>
+          </div>
+          <i
+            class="fas fa-arrow-right text-[10px] text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all"></i>
+        </a> -->
+    </div>
+  </div>
+  </section>
+  </main>
+  </div>
   </div>
 
   <!-- ========== SCRIPTS ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
     function toggleSidebar(force) {
@@ -1130,7 +1284,8 @@
 
         setVal('farm-total', data.farmers.total);
         setVal('farm-active', data.farmers.active);
-        setVal('farm-wallet', formatCurrency(data.farmers.walletTotal));
+        // Cap farmer wallet at 0 minimum to hide corrupted negative DB entries from testing
+        setVal('farm-wallet', formatCurrency(Math.max(0, data.farmers.walletTotal)));
 
         setVal('int-staff', data.internal.staff);
         setVal('int-field', data.internal.fieldEx);
@@ -1176,15 +1331,18 @@
     }
 
     function formatCurrency(amt) {
-      if (amt >= 10000000) return '₹' + (amt / 10000000).toFixed(1) + ' Cr';
-      if (amt >= 100000) return '₹' + (amt / 100000).toFixed(1) + ' L';
-      if (amt >= 1000) return '₹' + (amt / 1000).toFixed(1) + ' K';
-      return '₹' + amt;
+      if (amt === undefined || amt === null || isNaN(amt)) return '₹0';
+      const isNeg = amt < 0;
+      amt = Math.abs(amt);
+      const prefix = isNeg ? '-₹' : '₹';
+
+      if (amt >= 10000000) return prefix + (amt / 10000000).toFixed(2) + ' Cr';
+      if (amt >= 100000) return prefix + (amt / 100000).toFixed(2) + ' L';
+      if (amt >= 1000) return prefix + (amt / 1000).toFixed(1) + ' K';
+      return prefix + amt.toLocaleString('en-IN');
     }
   </script>
   <script src="js/sidebar-guard.js"></script>
 </body>
 
 </html>
-
-

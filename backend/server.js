@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-console.log('--- KHETIFY BACKEND V2.3 (SETTINGS FIX) ---');
+console.log('--- KHETIFY BACKEND V2.4 (FINAL DEBUG) ---');
 
 // DNS Fix for MongoDB SRV on some networks
 require('dns').setServers(['8.8.8.8', '1.1.1.1']);
@@ -82,36 +82,6 @@ const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI)
     .then(async () => {
         console.log('Connected to MongoDB');
-
-        // --- ONE-TIME LEDGER DATA FIX ---
-        try {
-            const db = mongoose.connection.db;
-
-            // 1. Platform Dues (Agri-Credit): Always a PAYMENT for the shop
-            const dueRes = await db.collection('ledgers').updateMany(
-                { method: 'DUE' },
-                { $set: { type: 'PAYMENT' } }
-            );
-
-            // 2. Shop Dues (Personal Responsibility): Always a DUE (Debt) for the shop
-            const shopDueRes = await db.collection('ledgers').updateMany(
-                { method: 'SHOP_DUE' },
-                { $set: { type: 'DUE' } }
-            );
-
-            // 3. CLEAN SLATE FIX: Move ALL existing 'RECOVERY' entries to 'PLATFORM_RECOVERY'
-            // Kyunki Shop Udhaar naya feature hai, toh purani saari recoveries platform wali hi hain.
-            // Inhe hatane se aapka personal bahi-khata ekdum clean ₹100 dikhayega.
-            const platRecRes = await db.collection('ledgers').updateMany(
-                { method: 'RECOVERY' },
-                { $set: { method: 'PLATFORM_RECOVERY', type: 'PAYMENT' } }
-            );
-
-            console.log(`[LEDGER-CLEAN-FIX] Agri-Credit=${dueRes.modifiedCount}, Shop-Credit=${shopDueRes.modifiedCount}, Recoveries-Reset=${platRecRes.modifiedCount}`);
-        } catch (err) {
-            console.error('[LEDGER-FIX] Failed:', err);
-        }
-        // --------------------------------
 
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`Server running on port ${PORT}`);

@@ -8,9 +8,16 @@
   <script src="js/auth.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: { green: '#16A34A', blue: '#0EA5E9' },
@@ -108,7 +115,7 @@
   </div>
 
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     const SERVER_URL = 'https://demo.ranx24.com';
     const token = localStorage.getItem('employeeToken');
 

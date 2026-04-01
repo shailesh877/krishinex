@@ -19,9 +19,16 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: {
@@ -506,7 +513,8 @@
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Assigned Area</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Active Tasks</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Completed</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Collections</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total Coll.</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-purple-600">Cash on Hand</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
                 </tr>
@@ -724,17 +732,19 @@
           </div>
         </section>
 
-        <!-- USER WALLET RECHARGES (CASH) -->
+        </section>
+
+        <!-- LEAD GENERATION TRACKING -->
         <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden mt-8">
-          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-teal-50/20">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-rose-50/20 to-pink-50/20">
             <div class="flex items-center justify-between">
               <div>
                 <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-                  <i class="fas fa-wallet text-emerald-600"></i>
-                  User Wallet Recharges (Cash)
+                  <i class="fas fa-megaphone text-rose-600"></i>
+                  Lead Generation Tracking
                 </h2>
                 <p class="text-xs text-slate-600 font-semibold mt-1">
-                  Recharges done by Field Executives via NexCard
+                  Marketing leads (Farmers & Shops) registered by Field Executives
                 </p>
               </div>
             </div>
@@ -746,13 +756,13 @@
                 <tr class="text-xs text-slate-700">
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Executive</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer (Recipient)</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Category</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Lead Name</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Mobile</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
                 </tr>
               </thead>
-              <tbody id="rechargeLogsTbody">
+              <tbody id="leadsTbody">
                 <!-- Populated dynamically -->
               </tbody>
             </table>
@@ -1198,7 +1208,7 @@
 
   <!-- ========== FIELD EXECUTIVES PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     // Note: In development, fallback to a hardcoded admin token if missing from localStorage
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
@@ -1215,6 +1225,7 @@
       fetchExecutives();
       fetchTasks();
       fetchRechargeLogs();
+      fetchLeads();
     });
 
 
@@ -1299,7 +1310,10 @@
             <div class="font-black text-emerald-700">${exec.completed || 0}</div>
           </td>
           <td class="px-5 py-4 text-right">
-            <div class="font-black text-purple-700">₹${(exec.collections || 0).toLocaleString()}</div>
+            <div class="font-black text-slate-700">₹${(exec.collections || 0).toLocaleString()}</div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-purple-700">₹${(exec.collectedCash || 0).toLocaleString()}</div>
           </td>
           <td class="px-5 py-4">
             <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border ${badgeClass}">
@@ -1307,9 +1321,17 @@
             </span>
           </td>
           <td class="px-5 py-4 text-right">
-            <button onclick="viewExecutive('${exec._id}', '${exec.name}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
-              <i class="fas fa-eye mr-1"></i> View
-            </button>
+            <div class="flex items-center justify-end gap-2">
+              <button onclick="collectCash('${exec._id}', '${exec.name}', ${exec.collectedCash || 0})" 
+                class="inline-flex items-center rounded-lg bg-purple-50 border-2 border-purple-200 px-3 py-1.5 text-[10px] text-purple-700 font-bold hover:bg-purple-100 transition-all ${exec.collectedCash > 0 ? '' : 'opacity-50 pointer-events-none'}" 
+                title="Collect Cash from FE">
+                <i class="fas fa-hand-holding-dollar mr-1"></i> Collect
+              </button>
+              <button onclick="viewExecutive('${exec._id}', '${exec.name}')" 
+                class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                <i class="fas fa-eye mr-1"></i> View
+              </button>
+            </div>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1700,6 +1722,33 @@
       document.getElementById('viewExecutiveModal').classList.add('hidden');
     }
 
+    // Collect Cash from Executive
+    async function collectCash(execId, name, amount) {
+      if (!confirm(`Are you sure you have received ₹${amount.toLocaleString()} from ${name}? This will reset their pending balance to 0.`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/field-executive/${execId}/reset-collection`, {
+          method: 'PATCH',
+          headers: { 
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (res.ok) {
+          showToast(`Successfully collected cash from ${name}`, 'success');
+          fetchExecutives();
+          if (typeof fetchDashboardData === 'function') fetchDashboardData();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Failed to reset collection', 'warning');
+        }
+      } catch (err) {
+        console.error('Collect cash error:', err);
+        showToast('Server error during collection', 'warning');
+      }
+    }
+
     // Show Toast
     function showToast(message, type = 'info') {
       const toast = document.getElementById('toast');
@@ -1728,7 +1777,175 @@
       toast.classList.remove('hidden');
       setTimeout(() => toast.classList.add('hidden'), 3500);
     }
+
+    // Lead Generation Logic
+    let allLeads = [];
+    async function fetchLeads() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/leads`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allLeads = data;
+          renderLeads(data);
+        }
+      } catch (err) {
+        console.error('Error fetching leads:', err);
+      }
+    }
+
+    function renderLeads(leads) {
+      const tbody = document.getElementById('leadsTbody');
+      tbody.innerHTML = '';
+      if (leads.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400 font-bold">No leads found</td></tr>`;
+        return;
+      }
+
+      leads.forEach(lead => {
+        const date = new Date(lead.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        const leadName = lead.category === 'Kisan' ? lead.farmerDetails?.name : lead.shopDetails?.shopName;
+        const badgeClass = lead.category === 'Kisan' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/50 transition-colors border-b border-slate-100';
+        tr.innerHTML = `
+          <td class="px-5 py-4 text-xs font-semibold text-slate-700">${date}</td>
+          <td class="px-5 py-4">
+            <div class="font-bold text-slate-900 text-sm">${lead.executive?.name || '---'}</div>
+            <div class="text-[10px] text-slate-500">${lead.executive?.employeeCode || ''}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold border ${badgeClass}">
+              ${lead.category}
+            </span>
+          </td>
+          <td class="px-5 py-4 font-bold text-slate-900 text-sm">${leadName || '---'}</td>
+          <td class="px-5 py-4 text-xs font-black text-slate-700">${lead.mobile}</td>
+          <td class="px-5 py-4 text-right">
+             <button onclick="viewLeadDetail('${lead._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                <i class="fas fa-eye mr-1"></i> View Detail
+             </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function viewLeadDetail(id) {
+       const lead = allLeads.find(l => l._id === id);
+       if (!lead) return;
+
+       document.getElementById('vl-category').textContent = lead.category;
+       document.getElementById('vl-mobile').textContent = lead.mobile;
+       document.getElementById('vl-address').textContent = lead.address;
+       
+       const detailsBox = document.getElementById('vl-details');
+       detailsBox.innerHTML = '';
+
+       if (lead.category === 'Kisan') {
+          const d = lead.farmerDetails || {};
+          detailsBox.innerHTML = `
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-50 p-3 rounded-xl">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Village</div>
+                 <div class="text-sm font-bold text-slate-900">${d.village || '---'}</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Land Size</div>
+                 <div class="text-sm font-bold text-slate-900">${d.landSize || '---'} Acre</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Current Crop</div>
+                 <div class="text-sm font-bold text-slate-900">${d.currentCrop || '---'}</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Needs NexCard?</div>
+                 <div class="text-sm font-bold text-slate-900">${d.needsNexCard || '---'}</div>
+              </div>
+            </div>
+          `;
+       } else {
+          const d = lead.shopDetails || {};
+          detailsBox.innerHTML = `
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-50 p-3 rounded-xl">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Owner Name</div>
+                 <div class="text-sm font-bold text-slate-900">${d.ownerName || '---'}</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Shop Category</div>
+                 <div class="text-sm font-bold text-slate-900">${d.shopCategory || '---'}</div>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl" style="grid-column: span 2">
+                 <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Interest Level</div>
+                 <div class="text-sm font-bold text-rose-600">${d.partnerInterest || '---'} Interest</div>
+              </div>
+            </div>
+          `;
+       }
+
+       const photoImg = document.getElementById('vl-photo');
+       if (lead.photoUrl) {
+          photoImg.src = `${API_BASE.replace('/api', '')}/${lead.photoUrl}`;
+          photoImg.classList.remove('hidden');
+       } else {
+          photoImg.classList.add('hidden');
+       }
+
+       document.getElementById('viewLeadModal').classList.remove('hidden');
+    }
+
+    function closeViewLeadModal() {
+       document.getElementById('viewLeadModal').classList.add('hidden');
+    }
   </script>
+  <!-- View Lead Modal -->
+  <div id="viewLeadModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+    <div class="flex min-h-screen items-center justify-center p-4">
+      <div class="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
+        <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white to-rose-50/30 flex justify-between items-center">
+          <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-id-card text-rose-600"></i>
+            Lead Details - <span id="vl-category" class="text-rose-600">---</span>
+          </h3>
+          <button onclick="closeViewLeadModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <!-- Details Part -->
+             <div class="space-y-4">
+                <div class="bg-slate-50 p-3 rounded-xl">
+                   <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Mobile Number</div>
+                   <div id="vl-mobile" class="text-sm font-bold text-slate-900">---</div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl">
+                   <div class="text-[10px] uppercase font-black text-slate-400 mb-1">Address</div>
+                   <div id="vl-address" class="text-sm font-bold text-slate-900">---</div>
+                </div>
+                <!-- Dynamic Category Fields -->
+                <div id="vl-details"></div>
+             </div>
+             <!-- Photo Part -->
+             <div class="flex flex-col items-center justify-center bg-slate-100 rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 p-2 min-h-[200px]">
+                <img id="vl-photo" src="" alt="Lead Photo" class="w-full h-full object-cover rounded-xl shadow-md hidden">
+                <div id="vl-no-photo" class="text-slate-400 text-center p-4">
+                   <i class="fas fa-camera text-3xl mb-2"></i>
+                   <p class="text-xs font-bold">No Photo Available</p>
+                </div>
+             </div>
+          </div>
+          <div class="mt-8 flex justify-end">
+             <button onclick="closeViewLeadModal()" class="px-6 py-2 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-slate-800 transition-all">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/sidebar-guard.js"></script>
 </body>
 

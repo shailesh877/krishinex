@@ -76,6 +76,77 @@ const sendNotification = async (userId, { title, messageEn, messageHi, type, ref
     }
 };
 
+/**
+ * Check if item stock is low and notify the owner
+ * @param {string} itemId - ID of the item to check
+ */
+const checkAndNotifyLowStock = async (itemId) => {
+    console.log(`[LOW-STOCK-CHECK] START: Processing Item ID: ${itemId}`);
+    try {
+        const Item = require('../models/Item');
+        const item = await Item.findById(itemId).populate('owner');
+        
+        if (!item) {
+            console.log(`[LOW-STOCK-CHECK] ABORT: Item not found for ID: ${itemId}`);
+            return null;
+        }
+        if (!item.owner) {
+            console.log(`[LOW-STOCK-CHECK] ABORT: Owner not found for Item: "${item.name}"`);
+            return null;
+        }
+
+        let isLow = false;
+        let alertMsgEn = '';
+        let alertMsgHi = '';
+
+        console.log(`[LOW-STOCK-CHECK] Item Name: "${item.name}", Total Stock: ${item.stockQty}, HasVariants: ${item.hasVariants}`);
+
+        if (item.hasVariants && item.variants && item.variants.length > 0) {
+            // Bhai, check if any variant is low (less than or equal to 5)
+            const lowVariants = item.variants.filter(v => (v.stockQty || 0) <= 5);
+            
+            console.log(`[LOW-STOCK-CHECK] Variants Count: ${item.variants.length}, Low Variants Found: ${lowVariants.length}`);
+            
+            if (lowVariants.length > 0) {
+                isLow = true;
+                const vLabels = lowVariants.map(v => v.label).join(', ');
+                alertMsgEn = `Low Stock Alert: Variants (${vLabels}) for "${item.name}" are below 5 units. Please restock!`;
+                alertMsgHi = `लो स्टॉक अलर्ट: "${item.name}" के वेरिएंट्स (${vLabels}) 5 यूनिट से कम हैं। कृपया स्टॉक अपडेट करें!`;
+            }
+        } else {
+            // Bhai, standard item check
+            const currentStock = item.stockQty || 0;
+            console.log(`[LOW-STOCK-CHECK] Main Stock: ${currentStock}`);
+            if (currentStock <= 5) {
+                isLow = true;
+                alertMsgEn = `Low Stock Alert: "${item.name}" has only ${currentStock} left. Please restock soon!`;
+                alertMsgHi = `लो स्टॉक अलर्ट: "${item.name}" में केवल ${currentStock} बचे हैं। कृपया जल्द ही स्टॉक अपडेट करें!`;
+            }
+        }
+        
+        if (isLow) {
+            console.log(`[LOW-STOCK-CHECK] TRIGGER: Sending notification to Owner ID: ${item.owner._id} (${item.owner.name})`);
+            
+            const result = await sendNotification(item.owner._id, {
+                title: '⚠️ Low Stock Alert',
+                messageEn: alertMsgEn,
+                messageHi: alertMsgHi,
+                type: 'low_stock',
+                refId: item._id.toString(),
+                data: { itemId: item._id.toString() }
+            });
+            console.log(`[LOW-STOCK-CHECK] SUCCESS: Notification sent for "${item.name}"`);
+            return result;
+        }
+        
+        console.log(`[LOW-STOCK-CHECK] NO-ACTION: Item "${item.name}" stock is sufficient.`);
+        return null;
+    } catch (error) {
+        console.error('[NOTIFY-SERVICE] Error in checkAndNotifyLowStock:', error);
+    }
+};
+
 module.exports = {
-    sendNotification
+    sendNotification,
+    checkAndNotifyLowStock
 };

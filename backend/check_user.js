@@ -1,26 +1,23 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
+require('dotenv').config();
 const User = require('./models/User');
 
-const MONGO_URI = process.env.MONGODB_URI;
-
-async function checkUser() {
-    try {
-        await mongoose.connect(MONGO_URI);
-        const user = await User.findOne({ email: 'test@employee.com' });
-        if (user) {
-            console.log('--- USER DATA ---');
-            console.log('Email:', user.email);
-            console.log('Role:', user.role);
-            console.log('Password (plain):', user.password);
-            console.log('-----------------');
-        } else {
-            console.log('User test@employee.com NOT FOUND');
-        }
-    } catch (err) {
-        console.error(err);
-    } finally {
-        mongoose.connection.close();
-    }
+async function run() {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to DB');
+    
+    const phone = '9648022011';
+    const users = await User.find({ phone: new RegExp(phone) });
+    
+    console.log(`Found ${users.length} users:`);
+    users.forEach(u => {
+        console.log(`- ID: ${u._id}, Name: ${u.name}, Role: ${u.role}, Phone: ${u.phone}`);
+    });
+    
+    process.exit(0);
 }
-checkUser();
+
+run().catch(err => {
+    console.error(err);
+    process.exit(1);
+});

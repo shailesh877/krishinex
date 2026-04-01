@@ -16,8 +16,20 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
   <script>
-    tailwind.config = { theme: { extend: { colors: { brand: { green: '#16A34A', blue: '#0EA5E9' } } } } };
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: { colors: { brand: { green: '#16A34A', blue: '#0EA5E9' } } }
+      }
+    };
   </script>
   <style>
     .custom-scroll::-webkit-scrollbar {
@@ -83,7 +95,7 @@
         </div>
       </div>
       <!-- Navigation -->
-                        <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -557,7 +569,8 @@ CASH COLLECTIONS TABLE
               <div>
                 <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2"><i
                     class="fas fa-handshake text-orange-600"></i> Equipment Providers (Partners)</h2>
-                <p class="text-xs text-slate-600 font-semibold mt-1">Manage partner registrations, machines, and KYC status</p>
+                <p class="text-xs text-slate-600 font-semibold mt-1">Manage partner registrations, machines, and KYC
+                  status</p>
               </div>
               <div class="flex gap-2">
                 <input id="searchPartner" oninput="filterPartnerTable()" placeholder="Search partner name/phone…"
@@ -641,11 +654,18 @@ CASH COLLECTIONS TABLE
   </div>
 
   <!-- PARTNER DETAIL MODAL -->
-  <div id="partnerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg" onclick="if(event.target===this)closePartnerModal()">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl border-2 border-slate-200 animate-[slideUp_0.3s_ease-out] overflow-hidden">
-      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white flex items-center justify-between">
-        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2"><i class="fas fa-id-card text-orange-600"></i> Partner 360° View</h2>
-        <button onclick="closePartnerModal()" class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"><i class="fas fa-times text-slate-700"></i></button>
+  <div id="partnerModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target===this)closePartnerModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl border-2 border-slate-200 animate-[slideUp_0.3s_ease-out] overflow-hidden">
+      <div
+        class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white flex items-center justify-between">
+        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2"><i
+            class="fas fa-id-card text-orange-600"></i> Partner 360° View</h2>
+        <button onclick="closePartnerModal()"
+          class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"><i
+            class="fas fa-times text-slate-700"></i></button>
       </div>
       <div id="partnerModalContent" class="px-6 py-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scroll">
         <!-- Content will be injected here -->
@@ -661,7 +681,7 @@ CASH COLLECTIONS TABLE
 
   <!-- SCRIPTS -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     const API = API_BASE + '/employee';
     const AUTH = localStorage.getItem('employeeToken');
     const H = { 'Authorization': `Bearer ${AUTH}`, 'Content-Type': 'application/json' };
@@ -709,7 +729,7 @@ CASH COLLECTIONS TABLE
       tbody.innerHTML = '';
       partners.forEach(p => {
         const joinedDate = p.joinedAt ? new Date(p.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
-        
+
         const statusColors = {
           'pending': 'bg-slate-100 border-slate-300 text-slate-700',
           'approved': 'bg-emerald-100 border-emerald-300 text-emerald-900',
@@ -758,16 +778,16 @@ CASH COLLECTIONS TABLE
     async function updatePartnerStatus(id, status) {
       if (!confirm(`Are you sure you want to set this partner to ${status}?`)) return;
       try {
-        const r = await fetch(`${API}/admin/rental/partners/${id}/status`, { 
-          method: 'PUT', 
-          headers: H, 
-          body: JSON.stringify({ status }) 
+        const r = await fetch(`${API}/admin/rental/partners/${id}/status`, {
+          method: 'PUT',
+          headers: H,
+          body: JSON.stringify({ status })
         });
         const d = await r.json();
-        if (r.ok) { 
-          toast(`Partner ${status} successfully`, 'success'); 
-          fetchPartners(); 
-          fetchStats(); 
+        if (r.ok) {
+          toast(`Partner ${status} successfully`, 'success');
+          fetchPartners();
+          fetchStats();
         } else {
           toast(d.error || 'Failed', 'error');
         }
@@ -794,7 +814,7 @@ CASH COLLECTIONS TABLE
       const profilePic = fixUrl(p.profilePhotoUrl);
       const docPic = fixUrl(p.documentUrl);
       const bank = p.bankDetails || {};
-      
+
       const statusColors = {
         'pending': 'bg-slate-100 text-slate-700',
         'approved': 'bg-emerald-100 text-emerald-900',
@@ -861,11 +881,22 @@ CASH COLLECTIONS TABLE
         <div>
           <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">Submitted Documents (KYC)</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Aadhaar/PAN Doc -->
             <div class="group relative rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-100 aspect-video">
               ${docPic ? `<img src="${docPic}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200?text=Document+Not+Found';">` : `<div class="flex items-center justify-center h-full text-slate-400 text-xs font-bold">Aadhaar/PAN Not Uploaded</div>`}
               ${docPic ? `<div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <a href="${docPic}" target="_blank" class="bg-white text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-xl">View Original</a>
+                 <a href="${docPic}" target="_blank" class="bg-white text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-xl">View Aadhaar/PAN</a>
               </div>` : ''}
+              <div class="absolute bottom-2 left-2 bg-slate-900/60 backdrop-blur px-2 py-1 rounded text-[8px] font-bold text-white uppercase">Aadhaar / PAN</div>
+            </div>
+
+            <!-- Cancelled Cheque / Passbook Doc -->
+            <div class="group relative rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-100 aspect-video">
+              ${bank.bankDocUrl ? `<img src="${fixUrl(bank.bankDocUrl)}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200?text=Cheque+Not+Found';">` : `<div class="flex items-center justify-center h-full text-slate-400 text-xs font-bold">Cheque/Passbook Not Uploaded</div>`}
+              ${bank.bankDocUrl ? `<div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                 <a href="${fixUrl(bank.bankDocUrl)}" target="_blank" class="bg-white text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-xl">View Original</a>
+              </div>` : ''}
+              <div class="absolute bottom-2 left-2 bg-amber-600/90 backdrop-blur px-2 py-1 rounded text-[8px] font-bold text-white uppercase">Cancelled Cheque / Passbook</div>
             </div>
           </div>
         </div>
@@ -1219,6 +1250,3 @@ CASH COLLECTIONS TABLE
 </body>
 
 </html>
-
-
-

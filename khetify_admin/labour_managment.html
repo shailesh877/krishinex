@@ -19,9 +19,17 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
   <script>
     tailwind.config = {
       theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
         extend: {
           colors: {
             brand: {
@@ -102,7 +110,7 @@
       </div>
 
       <!-- Navigation -->
-                        <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -368,12 +376,9 @@
               class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-purple-400 hover:bg-purple-50 transition-all shadow-sm"
               onclick="toggleSidebar()" aria-pressed="false">
               <div class="space-y-[5px]">
-                <span
-                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
-                <span
-                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
-                <span
-                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
               </div>
             </button>
 
@@ -597,121 +602,220 @@
             <i class="fas fa-user-circle text-purple-600"></i>
             Labour Profile
           </h2>
-          <button onclick="closeLabourProfile()"
+          <div class="flex items-center gap-2">
+            <button onclick="openEditLabour()"
+              class="inline-flex items-center rounded-xl bg-purple-600 px-4 py-2 text-xs font-black text-white hover:bg-purple-700 shadow-xl transition-all">
+              <i class="fas fa-edit mr-1"></i> Modify
+            </button>
+            <button onclick="closeLabourProfile()"
+              class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+              <i class="fas fa-times text-slate-700"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <div
+          class="inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 text-5xl mb-4 shadow-xl border-4 border-white">
+          <i class="fas fa-user text-purple-600"></i>
+        </div>
+        <p class="text-2xl font-black text-slate-900" id="labourProfileName">-</p>
+        <div class="flex items-center justify-center gap-2 mt-2">
+          <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-black rounded-full"
+            id="labourProfileId">-</span>
+          <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-black rounded-full"
+            id="labourProfileStatus">-</span>
+        </div>
+      </div>
+
+      <!-- CONTACT & KYC SECTION -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+            <i class="fas fa-address-card text-purple-500"></i> Contact & Identification
+          </h3>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-600 font-bold">Phone</span>
+              <span class="text-sm font-black text-slate-900" id="labourProfilePhone">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-600 font-bold">Aadhaar No.</span>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-black text-slate-900" id="labourProfileAadhaar">-</span>
+                <a id="labourProfileAadhaarDoc" href="#" target="_blank"
+                  class="hidden text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-200 hover:bg-slate-200 transition-all font-black"><i
+                    class="fas fa-file-pdf mr-1"></i> Doc</a>
+              </div>
+            </div>
+            <div class="flex justify-between items-center border-t border-slate-100 pt-2 mt-2">
+              <span class="text-xs text-slate-600 font-bold">Location</span>
+              <span class="text-sm font-black text-slate-900 truncate max-w-[150px]" id="labourProfileLocation">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+            <i class="fas fa-coins text-amber-500"></i> Wallet & Pricing
+          </h3>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-600 font-bold">Wallet Balance</span>
+              <span class="text-sm font-black text-green-600" id="labourProfileWallet">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-600 font-bold">Daily Rate</span>
+              <span class="text-sm font-black text-slate-900" id="labourProfileDailyRate">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-slate-600 font-bold">Hourly Rate</span>
+              <span class="text-sm font-black text-slate-900" id="labourProfileHourlyRate">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANK DETAILS SECTION -->
+      <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+        <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+          <i class="fas fa-university text-blue-500"></i> Bank Account Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-slate-600 font-bold">A/C Holder</span>
+            <span class="text-sm font-black text-slate-900" id="labourProfileAccHolder">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-slate-600 font-bold">Bank Name</span>
+            <span class="text-sm font-black text-slate-900" id="labourProfileBankName">-</span>
+          </div>
+          <div class="flex justify-between items-center border-t border-slate-100 pt-2">
+            <span class="text-xs text-slate-600 font-bold">Account No.</span>
+            <span class="text-sm font-black text-slate-900" id="labourProfileAccNo">-</span>
+          </div>
+          <div class="flex justify-between items-center border-t border-slate-100 pt-2">
+            <span class="text-xs text-slate-600 font-bold">IFSC Code</span>
+            <span class="text-sm font-black text-slate-900 uppercase" id="labourProfileIFSC">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS SECTION -->
+      <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4">
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <p class="text-[10px] text-slate-500 font-black uppercase">Jobs</p>
+            <p class="text-lg font-black text-purple-700" id="labourProfileJobs">-</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-500 font-black uppercase">Rating</p>
+            <div class="flex items-center justify-center gap-1">
+              <i class="fas fa-star text-amber-500 text-xs"></i>
+              <p class="text-lg font-black text-slate-900" id="labourProfileRating">-</p>
+            </div>
+          </div>
+          <div>
+            <p class="text-sm font-black text-slate-900 truncate px-2" id="labourProfileSkills">-</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SKILL DESCRIPTION SECTION -->
+      <div class="rounded-2xl border-2 border-slate-100 bg-white p-4">
+        <p class="text-[10px] text-slate-400 font-black uppercase mb-2 ml-1">Skill Description</p>
+        <p class="text-sm font-medium text-slate-700 italic bg-slate-50 p-3 rounded-xl border border-slate-100" id="labourProfileSkillDesc">
+          No description provided.
+        </p>
+      </div>
+
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeLabourProfile()"
+          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT LABOUR MODAL -->
+  <div id="editLabourModal"
+    class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeEditLabour()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-purple-50/30 to-white">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-edit text-purple-600"></i>
+            Edit Labour Profile
+          </h2>
+          <button onclick="closeEditLabour()"
             class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
             <i class="fas fa-times text-slate-700"></i>
           </button>
         </div>
       </div>
-
-        <div class="text-center">
-          <div
-            class="inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 text-5xl mb-4 shadow-xl border-4 border-white">
-            <i class="fas fa-user text-purple-600"></i>
-          </div>
-          <p class="text-2xl font-black text-slate-900" id="labourProfileName">-</p>
-          <div class="flex items-center justify-center gap-2 mt-2">
-            <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-black rounded-full" id="labourProfileId">-</span>
-            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-black rounded-full" id="labourProfileStatus">-</span>
-          </div>
-        </div>
-
-        <!-- CONTACT & KYC SECTION -->
+      <div class="px-6 py-6 space-y-6">
+        <!-- Basic Info -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
-            <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
-              <i class="fas fa-address-card text-purple-500"></i> Contact & Identification
-            </h3>
-            <div class="space-y-2">
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-slate-600 font-bold">Phone</span>
-                <span class="text-sm font-black text-slate-900" id="labourProfilePhone">-</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-slate-600 font-bold">Aadhaar No.</span>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-black text-slate-900" id="labourProfileAadhaar">-</span>
-                  <a id="labourProfileAadhaarDoc" href="#" target="_blank" class="hidden text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-lg border border-slate-200 hover:bg-slate-200 transition-all font-black"><i class="fas fa-file-pdf mr-1"></i> Doc</a>
-                </div>
-              </div>
-              <div class="flex justify-between items-center border-t border-slate-100 pt-2 mt-2">
-                <span class="text-xs text-slate-600 font-bold">Location</span>
-                <span class="text-sm font-black text-slate-900 truncate max-w-[150px]" id="labourProfileLocation">-</span>
-              </div>
-            </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Full Name</label>
+            <input type="text" id="editLabourName" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
           </div>
-
-          <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
-            <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
-              <i class="fas fa-coins text-amber-500"></i> Wallet & Pricing
-            </h3>
-            <div class="space-y-2">
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-slate-600 font-bold">Wallet Balance</span>
-                <span class="text-sm font-black text-green-600" id="labourProfileWallet">-</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-slate-600 font-bold">Daily Rate</span>
-                <span class="text-sm font-black text-slate-900" id="labourProfileDailyRate">-</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-slate-600 font-bold">Hourly Rate</span>
-                <span class="text-sm font-black text-slate-900" id="labourProfileHourlyRate">-</span>
-              </div>
-            </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Phone Number</label>
+            <input type="text" id="editLabourPhone" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Aadhaar Number</label>
+            <input type="text" id="editLabourAadhaar" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Location / Address</label>
+            <input type="text" id="editLabourLocation" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
           </div>
         </div>
 
-        <!-- BANK DETAILS SECTION -->
-        <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
-          <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+        <!-- Skill Description -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Skill Description (Publicly visible to Farmers)</label>
+          <textarea id="editLabourSkillDesc" rows="3" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none resize-none" placeholder="Describe the labor's expertise..."></textarea>
+        </div>
+
+        <div class="border-t-2 border-slate-100 pt-4">
+          <h3 class="text-xs font-black text-slate-400 uppercase mb-4 flex items-center gap-2">
             <i class="fas fa-university text-blue-500"></i> Bank Account Information
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
-            <div class="flex justify-between items-center">
-              <span class="text-xs text-slate-600 font-bold">A/C Holder</span>
-              <span class="text-sm font-black text-slate-900" id="labourProfileAccHolder">-</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">A/C Holder Name</label>
+              <input type="text" id="editLabourAccHolder" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-xs text-slate-600 font-bold">Bank Name</span>
-              <span class="text-sm font-black text-slate-900" id="labourProfileBankName">-</span>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Bank Name</label>
+              <input type="text" id="editLabourBankName" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
             </div>
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2">
-              <span class="text-xs text-slate-600 font-bold">Account No.</span>
-              <span class="text-sm font-black text-slate-900" id="labourProfileAccNo">-</span>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Account Number</label>
+              <input type="text" id="editLabourAccNo" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
             </div>
-            <div class="flex justify-between items-center border-t border-slate-100 pt-2">
-              <span class="text-xs text-slate-600 font-bold">IFSC Code</span>
-              <span class="text-sm font-black text-slate-900 uppercase" id="labourProfileIFSC">-</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- STATS SECTION -->
-        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4">
-          <div class="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p class="text-[10px] text-slate-500 font-black uppercase">Jobs</p>
-              <p class="text-lg font-black text-purple-700" id="labourProfileJobs">-</p>
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-500 font-black uppercase">Rating</p>
-              <div class="flex items-center justify-center gap-1">
-                <i class="fas fa-star text-amber-500 text-xs"></i>
-                <p class="text-lg font-black text-slate-900" id="labourProfileRating">-</p>
-              </div>
-            </div>
-            <div>
-              <p class="text-[10px] text-slate-500 font-black uppercase">Skills</p>
-              <p class="text-sm font-black text-slate-900 truncate px-2" id="labourProfileSkills">-</p>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">IFSC Code</label>
+              <input type="text" id="editLabourIFSC" class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
             </div>
           </div>
         </div>
-
-      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end">
-        <button onclick="closeLabourProfile()"
+      </div>
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeEditLabour()"
           class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
-          Close
+          Cancel
+        </button>
+        <button onclick="saveLabourProfile()"
+          class="inline-flex items-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-black text-white hover:bg-emerald-700 shadow-xl shadow-emerald-100 transition-all">
+          Save Changes
         </button>
       </div>
     </div>
@@ -797,7 +901,7 @@
 
   <!-- ========== LABOUR PAGE SCRIPT ========== -->
   <script>
-    const API_BASE = 'https://demo.ranx24.com/api';
+    
     const AUTH_TOKEN = localStorage.getItem('employeeToken');
     const userDataStr = localStorage.getItem('employeeUser');
     const userData = userDataStr ? JSON.parse(userDataStr) : null;
@@ -807,14 +911,15 @@
     let allLabourers = [];
     let currentJobToAssign = null;
     let allEmployees = [];
+    let currentLabour = null;
 
     window.addEventListener('DOMContentLoaded', function () {
       console.log('👷 Labour Aggregation Management Page Loaded');
-      
+
       // Update UI with actual user name
       if (typeof userData !== 'undefined' && userData) {
-          if (document.getElementById('sidebarUserName')) document.getElementById('sidebarUserName').textContent = userData.name;
-          if (document.getElementById('headerUserName')) document.getElementById('headerUserName').textContent = userData.name.split(' ')[0];
+        if (document.getElementById('sidebarUserName')) document.getElementById('sidebarUserName').textContent = userData.name;
+        if (document.getElementById('headerUserName')) document.getElementById('headerUserName').textContent = userData.name.split(' ')[0];
       }
 
       applyRBAC();
@@ -930,7 +1035,7 @@
           <td class="px-5 py-4">${availBadge}</td>
           <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${labour.jobsDone}</div></td>
           <td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-1"><i class="fas fa-star text-amber-500 text-xs"></i><span class="font-black text-slate-900">${labour.rating}</span></div></td>
-          <td class="px-5 py-4 text-right">${actionBtns}<button onclick="viewLabourProfile('${labour._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i> View</button></td>
+          <td class="px-5 py-4 text-right">${actionBtns}<button onclick="viewLabourProfile('${labour._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all mr-1" title="View"><i class="fas fa-eye"></i> View</button><button onclick="viewLabourProfile('${labour._id}'); setTimeout(openEditLabour, 100);" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-blue-600 font-bold hover:bg-blue-50 transition-all" title="Edit"><i class="fas fa-edit"></i> Edit</button></td>
         `;
         tbody.appendChild(tr);
       });
@@ -989,15 +1094,16 @@
     function viewLabourProfile(labourId) {
       const labour = allLabourers.find(l => l._id === labourId);
       if (!labour) return;
+      currentLabour = labour;
 
       document.getElementById('labourProfileName').textContent = labour.name;
       document.getElementById('labourProfileId').textContent = `ID: ${labour.labourCode}`;
       document.getElementById('labourProfileStatus').textContent = labour.status.toUpperCase();
       document.getElementById('labourProfileStatus').className = `px-3 py-1 text-[10px] font-black rounded-full ${labour.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
-      
+
       document.getElementById('labourProfilePhone').textContent = labour.phone || 'N/A';
       document.getElementById('labourProfileAadhaar').textContent = labour.aadhaarNumber || 'Not Provided';
-      
+
       const docLink = document.getElementById('labourProfileAadhaarDoc');
       if (labour.aadhaarDocUrl) {
         docLink.href = labour.aadhaarDocUrl;
@@ -1007,20 +1113,22 @@
       }
 
       document.getElementById('labourProfileLocation').textContent = labour.location || 'N/A';
-      
+
       document.getElementById('labourProfileWallet').textContent = `₹${(labour.walletBalance || 0).toLocaleString()}`;
       document.getElementById('labourProfileDailyRate').textContent = `₹${(labour.ratePerDay || 0).toLocaleString()}`;
       document.getElementById('labourProfileHourlyRate').textContent = `₹${(labour.ratePerHour || 0).toLocaleString()}`;
-      
+
       const bank = labour.bankDetails || {};
-      document.getElementById('labourProfileAccHolder').textContent = bank.accountHolderName || 'N/A';
+      document.getElementById('labourProfileAccHolder').textContent = bank.holderName || 'N/A';
       document.getElementById('labourProfileBankName').textContent = bank.bankName || 'N/A';
       document.getElementById('labourProfileAccNo').textContent = bank.accountNumber || 'N/A';
       document.getElementById('labourProfileIFSC').textContent = bank.ifscCode || 'N/A';
 
       document.getElementById('labourProfileJobs').textContent = labour.jobsDone || '0';
       document.getElementById('labourProfileRating').textContent = labour.rating || '0.0';
-      document.getElementById('labourProfileSkills').textContent = labour.skills.join(', ') || 'None';
+      const skills = Array.isArray(labour.skills) ? labour.skills.join(', ') : (labour.skills || 'None');
+      document.getElementById('labourProfileSkills').textContent = skills;
+      document.getElementById('labourProfileSkillDesc').textContent = (labour.labourDetails?.skillDescription) || 'No description provided.';
 
       document.getElementById('labourProfileModal').classList.remove('hidden');
     }
@@ -1046,6 +1154,67 @@
     }
 
     function closeLabourProfile() { document.getElementById('labourProfileModal').classList.add('hidden'); }
+
+    function openEditLabour() {
+      if (!currentLabour) return;
+      document.getElementById('editLabourName').value = currentLabour.name || '';
+      document.getElementById('editLabourPhone').value = currentLabour.phone || '';
+      document.getElementById('editLabourAadhaar').value = currentLabour.aadhaarNumber || '';
+      document.getElementById('editLabourLocation').value = currentLabour.address || '';
+      document.getElementById('editLabourSkillDesc').value = currentLabour.labourDetails?.skillDescription || '';
+
+      const bank = currentLabour.bankDetails || {};
+      document.getElementById('editLabourAccHolder').value = bank.holderName || '';
+      document.getElementById('editLabourBankName').value = bank.bankName || '';
+      document.getElementById('editLabourAccNo').value = bank.accountNumber || '';
+      document.getElementById('editLabourIFSC').value = bank.ifscCode || '';
+
+      document.getElementById('editLabourModal').classList.remove('hidden');
+    }
+
+    function closeEditLabour() {
+      document.getElementById('editLabourModal').classList.add('hidden');
+    }
+
+    async function saveLabourProfile() {
+      if (!currentLabour) return;
+      const payload = {
+        name: document.getElementById('editLabourName').value,
+        phone: document.getElementById('editLabourPhone').value,
+        aadhaarNumber: document.getElementById('editLabourAadhaar').value,
+        address: document.getElementById('editLabourLocation').value,
+        bankDetails: {
+          holderName: document.getElementById('editLabourAccHolder').value,
+          bankName: document.getElementById('editLabourBankName').value,
+          accountNumber: document.getElementById('editLabourAccNo').value,
+          ifscCode: document.getElementById('editLabourIFSC').value
+        },
+        skillDescription: document.getElementById('editLabourSkillDesc').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/update/${currentLabour._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('Labourer profile updated successfully', 'success');
+          closeEditLabour();
+          closeLabourProfile();
+          fetchLabourers();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Failed to update profile', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'warning');
+      }
+    }
 
     async function exportLabourers() {
       showToast('Starting download...', 'info');

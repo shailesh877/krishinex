@@ -99,19 +99,17 @@ const processAutoRepayment = async (userId, sourceReferenceId = null) => {
                         // kyunki shop ko uska paisa sale ke time pr hi admin se mil gya tha.
                         // Hum sirf record tab krenge jb shop ka personal udhaar recover ho (bhavishya ke liye).
                         
-                        /* 
                         await Ledger.create({
                              shopId: due._id, 
                              farmerId: farmer._id,
                              amount: recoveryForThisShop,
                              type: 'PAYMENT',
                              method: 'RECOVERY',
-                             note: `Auto-repayment from Farmer Wallet Balance`
+                             note: `Auto-repayment for Agri-Credit (Nex Credit)`
                         });
-                        */
 
                         remainingRepay -= recoveryForThisShop;
-                        console.log(`[REPAYMENT] Platform Recovery: ₹${recoveryForThisShop} for farmer ${farmer.name}. (Shop Ledger skipped to avoid double-payout/mismatch)`);
+                        console.log(`[REPAYMENT] Platform Recovery: ₹${recoveryForThisShop} for farmer ${farmer.name}. (Ledger entry created)`);
                     }
                 }
             } catch (ledgerErr) {

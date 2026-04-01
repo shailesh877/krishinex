@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const User = require('../models/User');
+const { sendAdminOtp } = require('../services/emailService');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -81,9 +82,9 @@ const { sendOtp, verifyOtp } = require('../services/msg91');
 const jwt = require('jsonwebtoken');
 
 // Utility to generate JWT token
-const generateToken = (userId, name, role) => {
+const generateToken = (userId, name, role, expiresIn = '30d') => {
     return jwt.sign({ id: userId, name, role }, process.env.JWT_SECRET, {
-        expiresIn: '30d',
+        expiresIn: expiresIn,
     });
 };
 
@@ -198,17 +199,13 @@ const bcrypt = require('bcryptjs');
 router.post('/login-employee', async (req, res) => {
     try {
         let { email, password } = req.body;
-        const fs = require('fs');
-        const logLine = `[${new Date().toISOString()}] Email=[${email}] Password=[${password}]\n`;
-        fs.appendFileSync('auth_debug.log', logLine);
 
-        console.log(`[AUTH-DEBUG] Login Attempt: Email=[${email}], Password=[${password}]`);
+        console.log(`[AUTH-DEBUG] Login Attempt: Email=[${email}]`);
 
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required.' });
         }
 
-        console.log('Login attempt:', { email, role: 'checked categories' });
         // Allow 'employee', 'admin', and 'field_executive' roles to login via email/password
         const user = await User.findOne({
             email,
@@ -216,10 +213,8 @@ router.post('/login-employee', async (req, res) => {
         });
 
         if (!user) {
-            console.log('Login Failed: User not found or role mismatch', { email });
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
-        console.log('User found:', { email: user.email, role: user.role });
 
         // Compare password: handles both hashed and plain text
         let isMatch = false;
@@ -230,14 +225,63 @@ router.post('/login-employee', async (req, res) => {
         }
 
         if (!isMatch) {
-            console.log('Login Failed: Password mismatch', { email });
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
-        const token = generateToken(user._id, user.name, user.role);
+        // TRIGGER 2FA for ALL Management Roles (Admin, Employee, Field Exec)
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        user.loginOtp = otp;
+        user.loginOtpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+        await user.save();
+
+        try {
+            await sendAdminOtp(user.email, otp);
+            return res.status(200).json({
+                requiresOtp: true,
+                message: 'OTP sent to your registered email.',
+                email: user.email
+            });
+        } catch (mailErr) {
+            console.error('Mail trigger failed:', mailErr);
+            // Return success anyway in dev if using mock
+            return res.status(200).json({
+                requiresOtp: true,
+                message: 'OTP triggered (check server logs if email fails).',
+                email: user.email
+            });
+        }
+    } catch (error) {
+        console.error('Employee Login error:', error);
+        res.status(500).json({ error: 'Server error during employee login.' });
+    }
+});
+
+// POST /api/auth/verify-otp-employee
+router.post('/verify-otp-employee', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required.' });
+
+        const user = await User.findOne({ 
+            email, 
+            role: { $in: ['admin', 'employee', 'field_executive'] } 
+        });
+        if (!user) return res.status(401).json({ error: 'Invalid request.' });
+
+        // Check OTP and Expiry
+        if (user.loginOtp !== otp || !user.loginOtpExpiry || new Date() > user.loginOtpExpiry) {
+            return res.status(401).json({ error: 'Invalid or expired OTP.' });
+        }
+
+        // Success -> Clear OTP and return token (12h session)
+        user.loginOtp = '';
+        user.loginOtpExpiry = undefined;
+        await user.save();
+
+        const token = generateToken(user._id, user.name, user.role, '12h');
 
         res.status(200).json({
-            message: 'Employee login successful',
+            message: 'Admin login successful',
             token,
             user: {
                 id: user._id,
@@ -248,8 +292,8 @@ router.post('/login-employee', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Employee Login error:', error);
-        res.status(500).json({ error: 'Server error during employee login.' });
+        console.error('Verify Admin OTP error:', error);
+        res.status(500).json({ error: 'Server error during OTP verification.' });
     }
 });
 

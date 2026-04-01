@@ -9,6 +9,7 @@ const User = require('../models/User');
 const Item = require('../models/Item');
 const FranchiseSale = require('../models/FranchiseSale');
 const Transaction = require('../models/Transaction');
+const { sendNotification, checkAndNotifyLowStock } = require('../services/notificationService');
 
 // Setup multer for Item images
 const uploadDir = path.join(__dirname, '../uploads/items');
@@ -160,6 +161,10 @@ router.put('/items/:id', protect, checkFranchise, upload.single('image'), async 
         }
 
         const updatedItem = await item.save();
+        
+        // Bhai, check low stock level
+        checkAndNotifyLowStock(updatedItem._id).catch(() => {});
+
         res.json(updatedItem);
     } catch (error) {
         console.error('Update Franchise Item error:', error);
@@ -263,6 +268,9 @@ router.post('/sales/record', protect, checkFranchise, async (req, res) => {
         for (const it of items) {
             if (it.itemRef) {
                 await Item.findByIdAndUpdate(it.itemRef, { $inc: { stockQty: -it.quantity } });
+                
+                // Bhai, check low stock for franchise sale
+                checkAndNotifyLowStock(it.itemRef).catch(() => {});
             }
         }
 

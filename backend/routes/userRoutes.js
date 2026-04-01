@@ -9,6 +9,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Transaction = require('../models/Transaction');
+const Ledger = require('../models/Ledger');
 
 // @route   GET /api/user/wallet
 // @desc    Get user wallet balance, number and transactions
@@ -32,6 +33,35 @@ router.get('/wallet', protect, async (req, res) => {
     } catch (error) {
         console.error('Fetch wallet error:', error);
         res.status(500).json({ error: 'Server error fetching wallet' });
+    }
+});
+
+// @route   GET /api/user/credit-data
+// @desc    Get user credit limit, usage and ledger transactions
+// @access  Private
+router.get('/credit-data', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('creditLimit creditUsed name cardNumber phone address');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Ledger entries where farmerId is this user
+        const transactions = await Ledger.find({ farmerId: req.user.id })
+            .populate('shopId', 'name businessName phone address')
+            .sort({ createdAt: -1 })
+            .limit(50);
+
+        res.json({
+            creditLimit: user.creditLimit || 0,
+            creditUsed: user.creditUsed || 0,
+            name: user.name,
+            cardNumber: user.cardNumber || '',
+            phone: user.phone,
+            address: user.address,
+            transactions
+        });
+    } catch (error) {
+        console.error('Fetch credit data error:', error);
+        res.status(500).json({ error: 'Server error fetching credit data' });
     }
 });
 
@@ -137,7 +167,8 @@ router.get('/profile', protect, async (req, res) => {
                     bankAddress: '',
                     bankDocUrl: ''
                 },
-                skills: user.labourDetails?.skills || []
+                skills: user.labourDetails?.skills || [],
+                skillDescription: user.labourDetails?.skillDescription || ''
             });
             console.log(`[DEBUG] Profile fetched for user ${req.user.id}: GST=${user.gstNumber}, LIC=${user.licenseNumber}`);
         } else {
@@ -206,9 +237,14 @@ router.put('/profile', protect, async (req, res) => {
             if (req.body.whatsappOn !== undefined) user.whatsappOn = req.body.whatsappOn;
 
             // Handle labour skills
-            if (user.role === 'labour' && req.body.skills !== undefined) {
+            if (user.role === 'labour') {
                 if (!user.labourDetails) user.labourDetails = { skills: [] };
-                user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
+                if (req.body.skills !== undefined) {
+                    user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
+                }
+                if (req.body.skillDescription !== undefined) {
+                    user.labourDetails.skillDescription = req.body.skillDescription;
+                }
                 user.markModified('labourDetails');
             }
 
@@ -260,6 +296,7 @@ router.put('/profile', protect, async (req, res) => {
                 bankDetails: updatedUser.bankDetails,
                 panNumber: updatedUser.panNumber,
                 skills: updatedUser.labourDetails?.skills || [],
+                skillDescription: updatedUser.labourDetails?.skillDescription || '',
                 message: 'Profile updated successfully'
             });
         } else {
