@@ -618,20 +618,35 @@
         <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
           <div
             class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
                 <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
                   <i class="fas fa-tasks text-purple-600"></i>
                   Assigned Tasks & Collections
                 </h2>
                 <p class="text-xs text-slate-600 font-semibold mt-1">
-                  Cash collection, KYC verification & farmer visits
+                  Cash collection / KYC verification / Farmer visits
                 </p>
               </div>
-              <button onclick="assignNewTask()"
-                class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-violet-600 shadow-md transition-all">
-                <i class="fas fa-plus mr-2"></i> Assign Task
-              </button>
+              <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div class="relative flex-1 md:w-64">
+                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                   <input type="text" id="taskSearch" oninput="filterTasks()" placeholder="Search tasks..." 
+                     class="w-full pl-9 pr-4 py-2 rounded-xl border-2 border-slate-100 focus:border-purple-400 outline-none text-xs font-bold transition-all">
+                </div>
+                <select id="taskStatusFilter" onchange="filterTasks()" 
+                  class="px-3 py-2 rounded-xl border-2 border-slate-100 focus:border-purple-400 outline-none text-[11px] font-black bg-white cursor-pointer">
+                  <option value="All">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <button onclick="assignNewTask()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-violet-600 shadow-md transition-all">
+                  <i class="fas fa-plus mr-2"></i> Assign Task
+                </button>
+              </div>
             </div>
           </div>
 
@@ -734,10 +749,37 @@
 
         </section>
 
+        <!-- RECENT COLLECTIONS -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden mt-8">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-teal-50/20">
+            <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <i class="fas fa-hand-holding-dollar text-emerald-600"></i>
+              Recent Cash Collections
+            </h2>
+          </div>
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50 text-xs text-slate-700">
+                <tr>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Executive</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Recipient</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Action</th>
+                </tr>
+              </thead>
+              <tbody id="rechargeLogsTbody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <!-- LEAD GENERATION TRACKING -->
         <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden mt-8">
           <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-rose-50/20 to-pink-50/20">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
                 <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
                   <i class="fas fa-megaphone text-rose-600"></i>
@@ -746,6 +788,13 @@
                 <p class="text-xs text-slate-600 font-semibold mt-1">
                   Marketing leads (Farmers & Shops) registered by Field Executives
                 </p>
+              </div>
+              <div class="flex items-center gap-3 w-full md:w-auto">
+                <div class="relative flex-1 md:w-64">
+                   <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                   <input type="text" id="leadSearch" oninput="filterLeads()" placeholder="Search leads by name or phone..." 
+                     class="w-full pl-9 pr-4 py-2 rounded-xl border-2 border-slate-100 focus:border-rose-400 outline-none text-xs font-bold transition-all">
+                </div>
               </div>
             </div>
           </div>
@@ -774,7 +823,7 @@
 
   <!-- Toast -->
   <div id="toast"
-    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    class="fixed bottom-6 right-6 z-[100] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
     <p id="toastMessage" class="text-sm font-bold"></p>
   </div>
 
@@ -800,18 +849,21 @@
 
         <!-- Form -->
         <form id="addExecutiveForm" onsubmit="submitAddExecutive(event)" class="p-6">
+          <div id="addExecError" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-[11px] font-bold animate-[slideUp_0.3s_ease-out]">
+            <i class="fas fa-circle-exclamation mr-1.5"></i> <span id="addExecErrorMsg">Error message here</span>
+          </div>
           <div class="space-y-4">
 
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
-                <input type="text" id="execName" required
+                <input type="text" id="execName" name="name" required
                   class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
                   placeholder="Rahul Verma">
               </div>
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Mobile Number *</label>
-                <input type="tel" id="execPhone" required pattern="[0-9]{10}"
+                <input type="tel" id="execPhone" name="phone" required pattern="[0-9]{10}"
                   class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
                   placeholder="9876543210">
               </div>
@@ -820,13 +872,13 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
-                <input type="email" id="execEmail"
+                <input type="email" id="execEmail" name="email"
                   class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
                   placeholder="rahul@krishinex.com">
               </div>
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Executive ID (Optional)</label>
-                <input type="text" id="execCode"
+                <input type="text" id="execCode" name="employeeCode"
                   class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
                   placeholder="FE001">
               </div>
@@ -834,14 +886,14 @@
 
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Assigned Area *</label>
-              <input type="text" id="execArea" required
+              <input type="text" id="execArea" name="assignedArea" required
                 class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
                 placeholder="E.g., Karnal District">
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Temporary Password *</label>
-              <input type="password" id="execPassword" required
+              <input type="password" id="execPassword" name="password" required
                 class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/20 outline-none transition-all placeholder:text-slate-400 font-semibold"
                 placeholder="••••••••">
             </div>
@@ -1077,99 +1129,146 @@
     </div>
   </div>
 
-  <!-- View Executive Details Modal -->
   <div id="viewExecutiveModal"
     class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
     <div class="flex min-h-screen items-center justify-center p-4">
-      <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out]">
+      <div class="w-full max-w-4xl rounded-3xl bg-white shadow-2xl overflow-hidden animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[90vh]">
 
         <!-- Header -->
-        <div
-          class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-cyan-50/30 to-sky-50/30 flex justify-between items-center">
-          <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
-            <div
-              class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
-              <i class="fas fa-id-card text-cyan-600"></i>
+        <div class="px-8 py-6 border-b-2 border-slate-100 bg-gradient-to-r from-white via-cyan-50/30 to-sky-50/30 flex justify-between items-center shrink-0">
+          <div class="flex items-center gap-4">
+            <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-500 flex items-center justify-center shadow-lg text-white text-2xl">
+              <i class="fas fa-user-tie"></i>
             </div>
-            Executive Profile
-          </h3>
-          <button onclick="closeViewExecutiveModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+            <div>
+              <h3 id="ve-name" class="text-xl font-black text-slate-900">Executive Name</h3>
+              <div class="flex items-center gap-3 mt-1">
+                <span id="ve-id" class="text-xs text-slate-500 font-bold tracking-tight bg-slate-100 px-2 py-0.5 rounded-lg">ID: ---</span>
+                <span id="ve-status-badge" class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border uppercase tracking-wider">
+                   Active
+                </span>
+              </div>
+            </div>
+          </div>
+          <button onclick="closeViewExecutiveModal()" class="h-10 w-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-slate-600 transition-all">
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
 
-        <!-- Body -->
-        <div class="p-6 space-y-5">
+        <!-- Tabs Navigation -->
+        <div class="px-8 border-b-2 border-slate-100 bg-white shrink-0">
+          <div class="flex gap-8">
+            <button onclick="switchExecTab('overview')" id="tab-btn-overview" class="exec-tab-btn py-4 text-xs font-black uppercase tracking-widest border-b-4 border-cyan-500 text-cyan-600 transition-all">Overview</button>
+            <button onclick="switchExecTab('tasks')" id="tab-btn-tasks" class="exec-tab-btn py-4 text-xs font-black uppercase tracking-widest border-b-4 border-transparent text-slate-400 hover:text-slate-600 transition-all">Task History</button>
+            <button onclick="switchExecTab('recharges')" id="tab-btn-recharges" class="exec-tab-btn py-4 text-xs font-black uppercase tracking-widest border-b-4 border-transparent text-slate-400 hover:text-slate-600 transition-all">Cash Logs</button>
+            <button onclick="switchExecTab('leads')" id="tab-btn-leads" class="exec-tab-btn py-4 text-xs font-black uppercase tracking-widest border-b-4 border-transparent text-slate-400 hover:text-slate-600 transition-all">Generated Leads</button>
+          </div>
+        </div>
 
-          <!-- Avatar + Name -->
-          <div class="flex items-center gap-4 pb-5 border-b-2 border-slate-100">
-            <div
-              class="h-16 w-16 rounded-2xl bg-gradient-to-br from-cyan-100 to-sky-200 flex items-center justify-center shadow-md text-2xl">
-              <i class="fas fa-user-tag text-cyan-600"></i>
-            </div>
-            <div>
-              <p id="ve-name" class="text-xl font-black text-slate-900">---</p>
-              <p id="ve-id" class="text-xs text-slate-500 font-semibold mt-0.5">ID: ---</p>
-              <span id="ve-status"
-                class="mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200">
-                <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
-              </span>
-            </div>
+        <!-- Body Content -->
+        <div class="flex-1 overflow-y-auto custom-scroll p-8">
+          
+          <!-- Tab: Overview -->
+          <div id="exec-tab-overview" class="exec-tab-content space-y-8">
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 space-y-6">
+                   <div>
+                      <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest mb-3 flex items-center gap-2">
+                        <i class="fas fa-address-card text-cyan-500"></i> Contact Information
+                      </p>
+                      <div class="grid grid-cols-2 gap-4">
+                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile</p>
+                            <p id="ve-phone" class="text-sm font-black text-slate-900">---</p>
+                         </div>
+                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Email</p>
+                            <p id="ve-email" class="text-sm font-black text-slate-900 truncate">---</p>
+                         </div>
+                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 col-span-2">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Assigned Operational Area</p>
+                            <div class="flex items-center gap-2">
+                               <i class="fas fa-map-location-dot text-indigo-500"></i>
+                               <p id="ve-area" class="text-sm font-black text-slate-900">---</p>
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+                <div class="space-y-4">
+                   <p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest mb-3 flex items-center gap-2">
+                     <i class="fas fa-chart-pie text-sky-500"></i> Performance KPI
+                   </p>
+                   <div class="bg-gradient-to-br from-cyan-500 to-sky-600 rounded-3xl p-6 text-white shadow-xl">
+                      <p class="text-[10px] font-bold opacity-80 uppercase tracking-wider mb-1">Lifetime Collection</p>
+                      <p id="ve-collections" class="text-3xl font-black">₹0</p>
+                      <div class="mt-6 pt-4 border-t border-white/20 grid grid-cols-2 gap-4">
+                         <div>
+                            <p class="text-[10px] opacity-70">Total Jobs</p>
+                            <p id="ve-total-tasks" class="text-lg font-black">0</p>
+                         </div>
+                         <div>
+                            <p class="text-[10px] opacity-70">Success Rate</p>
+                            <p id="ve-success-rate" class="text-lg font-black">0%</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+             </div>
           </div>
 
-          <!-- Contact Info -->
-          <div class="grid grid-cols-2 gap-4 pb-5 border-b-2 border-slate-100">
-            <div>
-              <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Mobile</p>
-              <div class="flex items-center gap-1.5">
-                <i class="fas fa-phone text-cyan-500 text-xs"></i>
-                <p id="ve-phone" class="text-sm font-bold text-slate-900">---</p>
-              </div>
-            </div>
-            <div>
-              <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Email</p>
-              <div class="flex items-center gap-1.5 overflow-hidden">
-                <i class="fas fa-envelope text-sky-500 text-xs flex-shrink-0"></i>
-                <p id="ve-email" class="text-sm font-bold text-slate-900 truncate">---</p>
-              </div>
-            </div>
+          <!-- Tab: Tasks -->
+          <div id="exec-tab-tasks" class="exec-tab-content hidden animate-[slideUp_0.3s_ease-out]">
+             <div class="rounded-2xl border-2 border-slate-100 overflow-hidden">
+                <table class="min-w-full">
+                   <thead class="bg-slate-50 border-b-2 border-slate-100">
+                      <tr class="text-[10px] text-slate-500 uppercase tracking-wider">
+                         <th class="px-5 py-3 text-left font-black">Task</th>
+                         <th class="px-5 py-3 text-left font-black">Type</th>
+                         <th class="px-5 py-3 text-left font-black">Status</th>
+                         <th class="px-5 py-3 text-right font-black">Date</th>
+                      </tr>
+                   </thead>
+                   <tbody id="ve-tasks-list">
+                      <!-- Rendered dynamically -->
+                   </tbody>
+                </table>
+             </div>
           </div>
 
-          <!-- Assigned Area -->
-          <div class="pb-5 border-b-2 border-slate-100">
-            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Assigned Area</p>
-            <div class="flex items-center gap-1.5">
-              <i class="fas fa-map-location-dot text-indigo-500 text-xs"></i>
-              <p id="ve-area" class="text-sm font-bold text-slate-900">---</p>
-            </div>
+          <!-- Tab: Recharges -->
+          <div id="exec-tab-recharges" class="exec-tab-content hidden animate-[slideUp_0.3s_ease-out]">
+             <div class="rounded-2xl border-2 border-slate-100 overflow-hidden">
+                <table class="min-w-full">
+                   <thead class="bg-slate-50 border-b-2 border-slate-100">
+                      <tr class="text-[10px] text-slate-500 uppercase tracking-wider">
+                         <th class="px-5 py-3 text-left font-black">Farmer</th>
+                         <th class="px-5 py-3 text-right font-black">Amount</th>
+                         <th class="px-5 py-3 text-center font-black">Admin Clearance</th>
+                         <th class="px-5 py-3 text-right font-black">Date</th>
+                      </tr>
+                   </thead>
+                   <tbody id="ve-recharges-list">
+                      <!-- Rendered dynamically -->
+                   </tbody>
+                </table>
+             </div>
           </div>
 
-          <!-- Performance Stats -->
-          <div>
-            <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-3">Performance</p>
-            <div class="grid grid-cols-3 gap-3">
-              <div class="rounded-xl bg-sky-50 border border-sky-100 p-3 text-center">
-                <p id="ve-active" class="text-2xl font-black text-sky-700">0</p>
-                <p class="text-[10px] text-sky-600 font-bold mt-0.5">Active Tasks</p>
-              </div>
-              <div class="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-center">
-                <p id="ve-completed" class="text-2xl font-black text-emerald-700">0</p>
-                <p class="text-[10px] text-emerald-600 font-bold mt-0.5">Completed</p>
-              </div>
-              <div class="rounded-xl bg-purple-50 border border-purple-100 p-3 text-center">
-                <p id="ve-collections" class="text-2xl font-black text-purple-700">₹0</p>
-                <p class="text-[10px] text-purple-600 font-bold mt-0.5">Collections</p>
-              </div>
-            </div>
+          <!-- Tab: Leads -->
+          <div id="exec-tab-leads" class="exec-tab-content hidden animate-[slideUp_0.3s_ease-out]">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="ve-leads-list">
+                <!-- Rendered dynamically as cards -->
+             </div>
           </div>
 
         </div>
 
         <!-- Footer -->
-        <div class="px-6 py-4 border-t-2 border-slate-100 bg-slate-50 flex justify-end">
+        <div class="px-8 py-5 border-t-2 border-slate-100 bg-slate-50 flex justify-end shrink-0">
           <button type="button" onclick="closeViewExecutiveModal()"
-            class="rounded-xl px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors">
-            Close
+            class="rounded-2xl px-8 py-2.5 text-xs font-black text-slate-600 bg-white border-2 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm">
+            Close Profile
           </button>
         </div>
 
@@ -1322,12 +1421,17 @@
           </td>
           <td class="px-5 py-4 text-right">
             <div class="flex items-center justify-end gap-2">
+              <button onclick="toggleExecutiveStatus('${exec._id}', '${exec.status}')" 
+                class="inline-flex items-center rounded-lg border-2 ${exec.status === 'approved' ? 'border-amber-200 text-amber-600 hover:bg-amber-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'} px-3 py-1.5 text-[10px] font-bold transition-all"
+                title="${exec.status === 'approved' ? 'Deactivate' : 'Activate'} Executive">
+                <i class="fas ${exec.status === 'approved' ? 'fa-user-slash' : 'fa-user-check'}"></i>
+              </button>
               <button onclick="collectCash('${exec._id}', '${exec.name}', ${exec.collectedCash || 0})" 
-                class="inline-flex items-center rounded-lg bg-purple-50 border-2 border-purple-200 px-3 py-1.5 text-[10px] text-purple-700 font-bold hover:bg-purple-100 transition-all ${exec.collectedCash > 0 ? '' : 'opacity-50 pointer-events-none'}" 
+                class="inline-flex items-center rounded-lg bg-white border-2 border-purple-200 px-3 py-1.5 text-[10px] text-purple-700 font-bold hover:bg-purple-50 transition-all ${exec.collectedCash > 0 ? '' : 'opacity-50 pointer-events-none'}" 
                 title="Collect Cash from FE">
                 <i class="fas fa-hand-holding-dollar mr-1"></i> Collect
               </button>
-              <button onclick="viewExecutive('${exec._id}', '${exec.name}')" 
+              <button onclick="viewExecutive('${exec._id}')" 
                 class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
                 <i class="fas fa-eye mr-1"></i> View
               </button>
@@ -1364,6 +1468,39 @@
       } catch (err) {
         console.error('Error fetching tasks:', err);
       }
+    }
+
+    // --- SEARCH & FILTER ---
+    function filterTasks() {
+      const query = document.getElementById('taskSearch').value.toLowerCase();
+      const status = document.getElementById('taskStatusFilter').value;
+      
+      const filtered = allTasks.filter(t => {
+        const matchesSearch = 
+           t.taskId.toLowerCase().includes(query) || 
+           t.partnerName.toLowerCase().includes(query) || 
+           (t.executive && t.executive.name.toLowerCase().includes(query));
+        
+        const matchesStatus = status === 'All' || t.status === status;
+        
+        return matchesSearch && matchesStatus;
+      });
+      
+      renderTasksTable(filtered);
+    }
+
+    function filterLeads() {
+      const query = document.getElementById('leadSearch').value.toLowerCase();
+      
+      const filtered = allLeads.filter(l => {
+        const name = (l.farmerDetails?.name || l.shopDetails?.ownerName || '').toLowerCase();
+        const phone = (l.mobile || '').toLowerCase();
+        const shop = (l.shopDetails?.shopName || '').toLowerCase();
+        
+        return name.includes(query) || phone.includes(query) || shop.includes(query);
+      });
+      
+      renderLeads(filtered);
     }
 
     // Render Tasks Table
@@ -1515,51 +1652,73 @@
 
     // Modal Submissions
 
-    // Add Executive
+    // --- ADD EXECUTIVE ---
     async function submitAddExecutive(e) {
       e.preventDefault();
-
       const btn = e.target.querySelector('button[type="submit"]');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-      btn.disabled = true;
-
-      const payload = {
-        name: document.getElementById('execName').value.trim(),
-        phone: document.getElementById('execPhone').value.trim(),
-        email: document.getElementById('execEmail').value.trim(),
-        employeeCode: document.getElementById('execCode').value.trim(),
-        assignedArea: document.getElementById('execArea').value.trim(),
-        password: document.getElementById('execPassword').value
-      };
+      const errorDiv = document.getElementById('addExecError');
+      const errorMsg = document.getElementById('addExecErrorMsg');
 
       try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating...';
+        errorDiv.classList.add('hidden');
+
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
         const res = await fetch(`${API_BASE}/field/executives/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${AUTH_TOKEN}`
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(data)
         });
 
-        const data = await res.json();
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Failed to create executive');
 
-        if (res.ok) {
-          showToast('Executive added successfully!', 'success');
-          closeAddExecutiveModal();
-          e.target.reset();
-          fetchDashboardData();
-          fetchExecutives();
-        } else {
-          showToast(data.error || 'Failed to add executive', 'warning');
-        }
+        showToast('Field Executive created successfully!', 'success');
+        closeAddExecutiveModal();
+        e.target.reset();
+        fetchDashboardData();
+        fetchExecutives();
       } catch (err) {
-        console.error(err);
-        showToast('Network error while adding executive', 'warning');
+        console.error('Create executive error:', err);
+        errorMsg.textContent = err.message;
+        errorDiv.classList.remove('hidden');
+        showToast(err.message, 'warning');
       } finally {
-        btn.innerHTML = originalText;
         btn.disabled = false;
+        btn.innerHTML = 'Create Executive';
+      }
+    }
+
+    async function toggleExecutiveStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'approved' ? 'blocked' : 'approved';
+      const actionText = newStatus === 'approved' ? 'Activate' : 'Deactivate';
+
+      if (!confirm(`Are you sure you want to ${actionText} this executive?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/field/executives/${id}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Failed to update status');
+
+        showToast(`Executive ${actionText}d successfully!`, 'success');
+        fetchExecutives();
+      } catch (err) {
+        console.error('Toggle status error:', err);
+        showToast(err.message, 'error');
       }
     }
 
@@ -1631,9 +1790,7 @@
       document.getElementById('assignTaskModal').classList.add('hidden');
     }
 
-    function viewExecutive(id, name) {
-      showToast(`View Details for ${name} under construction`, 'info');
-    }
+
 
     function viewTask(taskId) {
       const task = allTasks.find(t => t.taskId === taskId);
@@ -1690,32 +1847,100 @@
       document.getElementById('viewTaskModal').classList.add('hidden');
     }
 
-    function viewExecutive(id) {
-      const exec = allExecutives.find(e => e._id === id);
-      if (!exec) {
-        showToast('Executive details not found', 'warning');
-        return;
+    async function viewExecutive(id) {
+      const modal = document.getElementById('viewExecutiveModal');
+      
+      try {
+        // Show loading state or at least open modal
+        modal.classList.remove('hidden');
+        switchExecTab('overview');
+        
+        const res = await fetch(`${API_BASE}/field/executives/${id}/performance`, {
+           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch performance data');
+
+        const { executive, tasks, recharges, leads, stats } = data;
+
+        // Header & Overview
+        document.getElementById('ve-name').textContent = executive.name;
+        document.getElementById('ve-id').textContent = `ID: ${executive.employeeCode || 'N/A'}`;
+        document.getElementById('ve-phone').textContent = executive.phone || '---';
+        document.getElementById('ve-email').textContent = executive.email || 'No email provided';
+        document.getElementById('ve-area').textContent = executive.assignedArea || 'Not Assigned';
+        
+        const statusBadge = document.getElementById('ve-status-badge');
+        if (executive.status === 'approved') {
+           statusBadge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200 uppercase tracking-wider';
+           statusBadge.textContent = 'Active';
+        } else {
+           statusBadge.className = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-rose-50 text-rose-700 border-rose-200 uppercase tracking-wider';
+           statusBadge.textContent = 'Blocked';
+        }
+
+        // Stats
+        document.getElementById('ve-collections').textContent = `₹${stats.totalCollections.toLocaleString()}`;
+        document.getElementById('ve-total-tasks').textContent = stats.totalTasks;
+        const rate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0;
+        document.getElementById('ve-success-rate').textContent = `${rate}%`;
+
+        // Tasks Tab
+        const tasksList = document.getElementById('ve-tasks-list');
+        tasksList.innerHTML = tasks.length ? tasks.map(t => `
+           <tr class="border-b border-slate-100 text-xs">
+              <td class="px-5 py-3 font-bold text-slate-900">${t.partnerName}</td>
+              <td class="px-5 py-3 text-slate-500 font-semibold">${t.taskType}</td>
+              <td class="px-5 py-3 font-black ${t.status === 'Completed' ? 'text-emerald-600' : 'text-amber-500'}">${t.status}</td>
+              <td class="px-5 py-3 text-right text-slate-400 font-bold">${new Date(t.createdAt).toLocaleDateString()}</td>
+           </tr>
+        `).join('') : '<tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 font-bold">No tasks assigned yet</td></tr>';
+
+        // Recharges Tab
+        const rechargesList = document.getElementById('ve-recharges-list');
+        rechargesList.innerHTML = recharges.length ? recharges.map(r => `
+           <tr class="border-b border-slate-100 text-xs">
+              <td class="px-5 py-3 font-bold text-slate-900">${r.recipient?.name || '---'}</td>
+              <td class="px-5 py-3 text-right font-black text-indigo-600">₹${r.amount.toLocaleString()}</td>
+              <td class="px-5 py-3 text-center">
+                 <i class="fas ${r.cashCollectedByAdmin ? 'fa-check-circle text-emerald-500' : 'fa-clock text-amber-400'}"></i>
+              </td>
+              <td class="px-5 py-3 text-right text-slate-400 font-bold">${new Date(r.createdAt).toLocaleDateString()}</td>
+           </tr>
+        `).join('') : '<tr><td colspan="4" class="px-5 py-8 text-center text-slate-400 font-bold">No cash recharges found</td></tr>';
+
+        // Leads Tab
+        const leadsList = document.getElementById('ve-leads-list');
+        leadsList.innerHTML = leads.length ? leads.map(l => `
+           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+              <div class="flex justify-between items-start mb-2">
+                 <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-lg ${l.category === 'Kisan' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}">${l.category}</span>
+                 <span class="text-[10px] text-slate-400 font-bold">${new Date(l.createdAt).toLocaleDateString()}</span>
+              </div>
+              <p class="text-sm font-black text-slate-900">${l.category === 'Kisan' ? l.farmerDetails?.name : l.shopDetails?.shopName}</p>
+              <p class="text-[11px] text-slate-500 font-bold mt-1"><i class="fas fa-phone mr-1"></i> ${l.mobile}</p>
+           </div>
+        `).join('') : '<div class="col-span-2 py-8 text-center text-slate-400 font-bold">No leads generated yet</div>';
+
+      } catch (err) {
+        console.error('View executive error:', err);
+        showToast(err.message, 'error');
+        modal.classList.add('hidden');
       }
+    }
 
-      document.getElementById('ve-name').textContent = exec.name;
-      document.getElementById('ve-id').textContent = `ID: ${exec.employeeCode || 'N/A'}`;
-      document.getElementById('ve-phone').textContent = exec.phone || '---';
-      document.getElementById('ve-email').textContent = exec.email || 'No email provided';
-      document.getElementById('ve-area').textContent = exec.assignedArea || 'Not Assigned';
-      document.getElementById('ve-active').textContent = exec.activeTasks || 0;
-      document.getElementById('ve-completed').textContent = exec.completed || 0;
-      document.getElementById('ve-collections').textContent = `₹${(exec.collections || 0).toLocaleString()}`;
+    function switchExecTab(tabId) {
+      // Buttons
+      document.querySelectorAll('.exec-tab-btn').forEach(btn => {
+        btn.classList.remove('border-cyan-500', 'text-cyan-600');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      document.getElementById(`tab-btn-${tabId}`).classList.add('border-cyan-500', 'text-cyan-600');
+      document.getElementById(`tab-btn-${tabId}`).classList.remove('border-transparent', 'text-slate-400');
 
-      const statusEl = document.getElementById('ve-status');
-      if (exec.status === 'approved') {
-        statusEl.className = 'mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-emerald-50 text-emerald-700 border-emerald-200';
-        statusEl.innerHTML = '<i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active';
-      } else {
-        statusEl.className = 'mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black border bg-amber-50 text-amber-700 border-amber-200';
-        statusEl.innerHTML = '<i class="fas fa-circle-dot mr-1 text-[8px]"></i> Inactive';
-      }
-
-      document.getElementById('viewExecutiveModal').classList.remove('hidden');
+      // Content
+      document.querySelectorAll('.exec-tab-content').forEach(content => content.classList.add('hidden'));
+      document.getElementById(`exec-tab-${tabId}`).classList.remove('hidden');
     }
 
     function closeViewExecutiveModal() {
@@ -1770,7 +1995,7 @@
         textColor = 'text-sky-900';
       }
 
-      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
       toastMessage.className = `text-sm font-bold ${textColor}`;
       toastMessage.textContent = message;
 

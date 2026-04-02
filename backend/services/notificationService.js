@@ -4,21 +4,30 @@ const fs = require('fs');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 
-let firebaseApp;
-const serviceAccountPath = path.join(__dirname, '../config/serviceAccountKey.json');
+const FIREBASE_CONFIG = process.env.FIREBASE_SERVICE_ACCOUNT;
 
-if (fs.existsSync(serviceAccountPath)) {
+if (FIREBASE_CONFIG) {
+    try {
+        const serviceAccount = JSON.parse(FIREBASE_CONFIG);
+        firebaseApp = admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+        console.log('[FIREBASE] Firebase Admin SDK initialized from Environment Variable.');
+    } catch (error) {
+        console.error('[FIREBASE] Error parsing FIREBASE_SERVICE_ACCOUNT from Env:', error);
+    }
+} else if (fs.existsSync(serviceAccountPath)) {
     try {
         const serviceAccount = require(serviceAccountPath);
         firebaseApp = admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
         });
-        console.log('[FIREBASE] Firebase Admin SDK initialized.');
+        console.log('[FIREBASE] Firebase Admin SDK initialized from serviceAccountKey.json.');
     } catch (error) {
-        console.error('[FIREBASE] Error initializing Firebase Admin SDK:', error);
+        console.error('[FIREBASE] Error initializing Firebase Admin SDK from file:', error);
     }
 } else {
-    console.warn('[FIREBASE] serviceAccountKey.json not found. Push notifications will be disabled.');
+    console.warn('[FIREBASE] Firebase credentials not found (JSON file or Env Var). Push notifications disabled.');
 }
 
 /**

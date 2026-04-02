@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const OLD_IP = '192.168.1.10';
+const OLD_IP = 'demo.ranx24.com';
 const NEW_IP = 'demo.ranx24.com';
 
 function walkSync(dir, filelist = []) {

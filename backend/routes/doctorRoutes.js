@@ -95,16 +95,21 @@ router.get('/admin/all', protect, async (req, res) => {
 // @access  Private (Employee)
 router.patch('/admin/:id/status', protect, async (req, res) => {
     try {
-        const { status } = req.body;
+        const { status, resolvedNote } = req.body;
         const validStatuses = ['Pending', 'Contacted', 'Resolved', 'Cancelled'];
 
         if (!validStatuses.includes(status)) {
             return res.status(400).json({ error: 'Invalid status' });
         }
 
+        const updateData = { status };
+        if (status === 'Resolved' && resolvedNote) {
+            updateData.resolvedNote = resolvedNote;
+        }
+
         const consultation = await DoctorConsultation.findByIdAndUpdate(
             req.params.id,
-            { status },
+            updateData,
             { new: true }
         );
 

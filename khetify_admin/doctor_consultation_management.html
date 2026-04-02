@@ -59,6 +59,11 @@
     .custom-scroll::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
   </style>
 </head>
 
@@ -456,6 +461,34 @@
       </div>
   </div>
 
+  <!-- Resolve Modal -->
+  <div id="resolveModal" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform duration-300">
+          <div class="px-6 py-4 border-b-2 border-slate-100 flex items-center justify-between bg-emerald-50/50">
+              <h3 class="text-lg font-black text-emerald-900 flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> Resolve Consultation
+              </h3>
+              <button onclick="closeResolveModal()" class="h-10 w-10 rounded-xl hover:bg-white text-slate-400 transition-all">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          <div class="p-6 space-y-4">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Add Resolution Note / Advice for Farmer</p>
+              <textarea id="resolveNoteTextarea" placeholder="आपका परामर्श सफल रहा। हमने आवश्यक जानकारी प्रदान कर दी है।" 
+                class="w-full h-32 p-4 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-sm font-semibold transition-all resize-none bg-slate-50 shadow-inner"></textarea>
+              
+              <div class="flex gap-3">
+                  <button onclick="closeResolveModal()" class="flex-1 h-12 rounded-2xl bg-slate-100 text-slate-600 font-black text-xs hover:bg-slate-200 transition-all">
+                    CANCEL
+                  </button>
+                  <button onclick="submitResolution()" class="flex-[2] h-12 rounded-2xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i> SUBMIT RESOLUTION
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+
   <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300">
     <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
       <i class="fas fa-check-circle text-emerald-400" id="toastIcon"></i>
@@ -613,7 +646,18 @@
         document.getElementById('stat-resolved').innerText = data.filter(i => i.status === 'Resolved').length;
     }
 
+    let currentResolvingId = null;
+
     async function updateStatus(id, status) {
+        if (status === 'Resolved') {
+            currentResolvingId = id;
+            document.getElementById('resolveNoteTextarea').value = "आपका परामर्श सफल रहा। हमने आवश्यक जानकारी प्रदान कर दी है।";
+            const resModal = document.getElementById('resolveModal');
+            resModal.classList.remove('hidden');
+            setTimeout(() => resModal.firstElementChild.classList.remove('scale-95'), 10);
+            return;
+        }
+
         try {
             const res = await fetch(`${API_BASE}/doctor/admin/${id}/status`, {
                 method: 'PATCH',
@@ -630,6 +674,40 @@
                 if (detailModalOpen) closeModal();
             } else {
                 showToast('Failed to update status', true);
+            }
+        } catch (err) {
+            showToast('Connection error', true);
+        }
+    }
+
+    function closeResolveModal() {
+        const resModal = document.getElementById('resolveModal');
+        resModal.firstElementChild.classList.add('scale-95');
+        setTimeout(() => resModal.classList.add('hidden'), 200);
+        currentResolvingId = null;
+    }
+
+    async function submitResolution() {
+        if (!currentResolvingId) return;
+        const resolvedNote = document.getElementById('resolveNoteTextarea').value.trim();
+        
+        try {
+            const res = await fetch(`${API_BASE}/doctor/admin/${currentResolvingId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: 'Resolved', resolvedNote })
+            });
+
+            if (res.ok) {
+                showToast('Consultation resolved with note');
+                closeResolveModal();
+                fetchConsultations();
+                if (detailModalOpen) closeModal();
+            } else {
+                showToast('Failed to resolve', true);
             }
         } catch (err) {
             showToast('Connection error', true);
@@ -655,6 +733,7 @@
     let detailModalOpen = false;
     function openDetailModal(itemOrId) {
         const item = typeof itemOrId === 'string' ? allConsultations.find(i => i._id === itemOrId) : itemOrId;
+        console.log('Opening Detail Modal for Item:', item);
         if (!item) return;
 
         const modal = document.getElementById('detailModal');
@@ -708,6 +787,18 @@
                 </div>
             </div>
 
+            ${item.status === 'Resolved' ? `
+            <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-100">
+                <p class="text-[10px] font-black text-emerald-700 uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-comment-dots"></i> Resolution Note (By Admin)
+                </p>
+                <div class="text-sm font-black text-emerald-900 leading-relaxed pl-4 py-2 border-l-4 border-emerald-500 bg-white/50 rounded-r-xl">
+                    ${item.resolvedNote || '<span class="text-slate-400 italic font-normal text-xs uppercase opacity-60 tracking-wider">No resolution note provided.</span>'}
+                </div>
+            </div>
+            ` : ''}
+
+            ${(item.status !== 'Resolved' && item.status !== 'Cancelled') ? `
             <div class="bg-sky-50 p-5 rounded-2xl border-2 border-sky-100 border-dashed">
                 <p class="text-[11px] font-black text-sky-600 uppercase mb-3 flex items-center gap-2">
                     <i class="fas fa-wand-magic-sparkles"></i> Quick Admin Actions
@@ -724,6 +815,7 @@
                     </button>
                 </div>
             </div>
+            ` : ''}
         `;
 
         modal.classList.remove('hidden');

@@ -521,6 +521,9 @@
                 </p>
               </div>
               <div class="flex gap-2">
+                <input id="cropSearchInput" type="text" placeholder="🔍 Search farmer / crop / location"
+                  oninput="filterCropRequests()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-64 hover:border-slate-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all outline-none" />
                 <select id="cropFilter" onchange="filterCropRequests()"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold hover:border-slate-300 transition-all">
                   <option value="all">All Crops</option>
@@ -554,6 +557,7 @@
             <table class="min-w-full border-separate border-spacing-0">
               <thead class="sticky top-0 z-10 bg-slate-50">
                 <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200 uppercase tracking-tighter">Request ID</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Crop & Qty</th>
@@ -760,175 +764,174 @@
         </div>
 
         <!-- Body -->
-        <div class="px-6 py-6 overflow-y-auto custom-scroll space-y-6">
-          <!-- Main Info & Stats -->
-          <div class="flex flex-col md:flex-row gap-6">
-            <div class="flex-shrink-0 text-center space-y-3">
-              <div id="p-photo" class="h-32 w-32 rounded-3xl bg-emerald-100 flex items-center justify-center border-4 border-white shadow-xl mx-auto overflow-hidden">
-                <i class="fas fa-user text-emerald-600 text-5xl"></i>
-              </div>
-              <div>
-                <p class="text-xl font-black text-slate-900" id="profileName">-</p>
-                <p class="text-xs text-slate-500 font-bold" id="profileId">-</p>
-              </div>
-              <div id="profileStatusBadge"></div>
+        <div class="px-6 py-6 overflow-y-auto custom-scroll space-y-6 bg-slate-50/30">
+          <!-- TOP SECTION: Profile Card -->
+          <div class="bg-white rounded-3xl border-2 border-slate-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <div id="p-photo" class="h-28 w-28 rounded-3xl bg-emerald-50 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden shrink-0">
+              <i class="fas fa-user text-emerald-200 text-5xl"></i>
             </div>
-
-            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p class="text-[10px] uppercase font-black text-slate-400 mb-1">Contact Details</p>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <i class="fas fa-phone text-emerald-600 text-xs w-4"></i>
-                    <p class="text-sm font-bold text-slate-700" id="profileMobile">-</p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <i class="fas fa-envelope text-sky-600 text-xs w-4"></i>
-                    <p class="text-sm font-bold text-slate-700 truncate" id="profileEmail">-</p>
-                  </div>
-                  <div class="flex items-start gap-2">
-                    <i class="fas fa-map-marker-alt text-rose-600 text-xs w-4 mt-1"></i>
-                    <p class="text-sm font-bold text-slate-700" id="profileLocation">-</p>
-                  </div>
-                </div>
+            <div class="flex-1 space-y-2">
+              <div class="flex flex-wrap items-center gap-3">
+                <input type="text" id="profileNameInput" class="bg-transparent text-2xl font-black text-slate-900 border-b-2 border-transparent focus:border-emerald-500 outline-none w-full md:w-auto" value="-">
+                <div id="profileStatusBadge"></div>
               </div>
-
-              <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p class="text-[10px] uppercase font-black text-slate-400 mb-1">Financial Overview</p>
-                <div class="space-y-2">
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-500">Wallet Bal:</span>
-                    <span class="text-sm font-black text-emerald-700" id="profileWallet">-</span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-500">Wallet ID:</span>
-                    <span class="text-[10px] font-mono font-bold text-slate-700" id="profileWalletId">-</span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-slate-500">Total Activities:</span>
-                    <span class="text-sm font-black text-slate-800" id="profileTotalOrders">0</span>
-                  </div>
-                  <div class="flex justify-between items-center bg-blue-50 p-2 rounded-lg border border-blue-100">
-                    <span class="text-xs font-bold text-blue-700">Available Agri-Credit:</span>
-                    <span class="text-sm font-black text-blue-800" id="profileAvailableCredit">₹0</span>
-                  </div>
-                  <div class="mt-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-                    <div class="flex justify-between items-center">
-                      <span class="text-xs font-black text-emerald-800">Card Number:</span>
-                      <span class="text-sm font-black text-emerald-900 tracking-widest" id="profileCardNumber">-</span>
-                    </div>
-                    <div id="manualCardInputDiv" class="hidden mt-2">
-                        <input type="text" id="manualCardNumber" maxlength="16" placeholder="Enter 16-digit card number"
-                               class="w-full px-3 py-1.5 text-xs font-black border-2 border-emerald-200 rounded-lg focus:outline-none focus:border-emerald-500 transition-all">
-                        <p class="text-[9px] text-emerald-600 font-bold mt-1 leading-none">* Enter manually or leave blank for automatic (16 digits)</p>
-                    </div>
-                  </div>
-                  <div class="mt-3 p-3 bg-sky-50 rounded-lg border border-sky-100">
-                    <p class="text-[10px] text-sky-700 font-black mb-2 uppercase tracking-wider">Seasonal Agri-Credit Limit</p>
-                    <div class="flex gap-2">
-                       <div class="relative flex-1">
-                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</span>
-                         <input type="number" id="modalCreditLimitInput" 
-                           class="w-full pl-7 pr-3 py-1.5 rounded-lg border-2 border-sky-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-50 outline-none font-black text-slate-900 text-sm transition-all"
-                           placeholder="Set limit">
-                       </div>
-                       <button onclick="updateCreditLimit()" class="bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-lg text-xs font-black shadow-md transition-all">
-                         Update
-                       </button>
-                    </div>
-                    <p class="text-[9px] text-sky-600 font-bold mt-1.5">Note: This is the maximum credit (Wallet + Udhaar) allowed for the season.</p>
-                  </div>
+              <p id="profileId" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">-</p>
+              
+              <div class="flex flex-wrap gap-4 pt-1">
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                  <i class="fas fa-phone text-emerald-500 text-[10px]"></i>
+                  <input type="text" id="profileMobileInput" class="bg-transparent text-xs font-black text-slate-700 outline-none w-24" value="-">
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- KYC & Documents Section -->
-          <div>
-            <div class="flex items-center gap-2 mb-4">
-              <div class="h-1 bg-emerald-500 flex-1 rounded-full"></div>
-              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest px-2">KYC & Documents</h3>
-              <div class="h-1 bg-emerald-500 flex-1 rounded-full"></div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Aadhaar Card -->
-              <div class="rounded-2xl border-2 border-slate-100 bg-white p-4 flex items-center justify-between hover:border-emerald-200 transition-all">
-                <div class="flex items-center gap-4">
-                  <div class="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <i class="fas fa-id-card text-xl"></i>
-                  </div>
-                  <div>
-                    <p class="text-xs font-black text-slate-900">Aadhaar Card</p>
-                    <p class="text-[11px] text-slate-500 font-bold" id="profileAadhaar">Not Provided</p>
-                  </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                  <i class="fas fa-envelope text-sky-500 text-[10px]"></i>
+                  <input type="text" id="profileEmailInput" class="bg-transparent text-xs font-black text-slate-700 outline-none w-40" value="-">
                 </div>
-                <button id="viewAadhaarBtn" class="hidden h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black hover:bg-slate-800 transition-all flex items-center gap-2">
-                  <i class="fas fa-eye"></i> View Doc
-                </button>
-              </div>
-
-              <!-- PAN Card -->
-              <div class="rounded-2xl border-2 border-slate-100 bg-white p-4 flex items-center justify-between hover:border-sky-200 transition-all">
-                <div class="flex items-center gap-4">
-                  <div class="h-12 w-12 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
-                    <i class="fas fa-address-card text-xl"></i>
-                  </div>
-                  <div>
-                    <p class="text-xs font-black text-slate-900">PAN Card</p>
-                    <p class="text-[11px] text-slate-500 font-bold" id="profilePan">Not Provided</p>
-                  </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                  <i class="fas fa-map-marker-alt text-rose-500 text-[10px]"></i>
+                  <input type="text" id="profileLocationInput" class="bg-transparent text-xs font-black text-slate-700 outline-none w-40" value="-">
                 </div>
-                <button id="viewPanBtn" class="hidden h-9 px-4 rounded-xl bg-slate-900 text-white text-[10px] font-black hover:bg-slate-800 transition-all flex items-center gap-2">
-                  <i class="fas fa-eye"></i> View Doc
+                <button onclick="updateFarmerProfile()" class="ml-auto px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg shadow-md hover:bg-emerald-700 transition-all flex items-center gap-2">
+                  <i class="fas fa-save"></i> UPDATE PROFILE
                 </button>
               </div>
             </div>
           </div>
 
+          <!-- MIDDLE SECTION: Stats & Controls -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left: Financial Stats -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-4 text-white shadow-emerald-100 shadow-xl">
+                  <p class="text-[9px] font-black uppercase opacity-80 tracking-wider mb-1">Wallet Balance</p>
+                  <div class="flex items-baseline gap-1">
+                    <span id="profileWallet" class="text-2xl font-black">-</span>
+                  </div>
+                  <p id="profileWalletId" class="text-[9px] font-mono opacity-60 mt-1 truncate">-</p>
+                </div>
+                <div class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl p-4 text-white shadow-sky-100 shadow-xl">
+                  <p class="text-[9px] font-black uppercase opacity-80 tracking-wider mb-1">Available Agri-Credit</p>
+                  <p id="profileAvailableCredit" class="text-2xl font-black">₹0</p>
+                  <p class="text-[9px] opacity-60 mt-1 font-bold">Limit: <span id="profileTotalOrders">0</span> Activities</p>
+                </div>
+              </div>
+
+              <!-- Credit Management -->
+              <div class="bg-white rounded-2xl border-2 border-slate-100 p-5 space-y-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                   <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Seasonal Credit Management</h4>
+                   <i class="fas fa-shield-halved text-slate-300"></i>
+                </div>
+                <div class="flex gap-3">
+                  <div class="relative flex-1">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xs">₹</span>
+                    <input type="number" id="modalCreditLimitInput" 
+                      class="w-full pl-8 pr-4 py-3 rounded-xl border-2 border-slate-100 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 outline-none font-black text-slate-900 text-sm transition-all"
+                      placeholder="Enter new limit">
+                  </div>
+                  <button onclick="updateCreditLimit()" class="px-6 rounded-xl bg-slate-900 text-white text-xs font-black shadow-lg hover:bg-black transition-all active:scale-95">
+                    Update Limit
+                  </button>
+                </div>
+                <p class="text-[9px] text-slate-400 font-bold italic leading-tight">Setting this limit controls the maximum combined balance (Wallet + Credit) for crop sell & rental activities.</p>
+              </div>
+            </div>
+
+            <!-- Right: Identity & Card -->
+            <div class="lg:col-span-5 space-y-4">
+               <div class="bg-white rounded-2xl border-2 border-slate-100 p-5 space-y-4 shadow-sm h-full">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">KrishiNex Digital Card</h4>
+                    <i class="fas fa-credit-card text-emerald-500"></i>
+                  </div>
+                  
+                  <div class="bg-slate-900 rounded-xl p-4 text-white relative overflow-hidden group">
+                     <div class="absolute -right-4 -top-4 h-24 w-24 bg-emerald-500/20 rounded-full blur-2xl group-hover:bg-emerald-500/30 transition-all"></div>
+                     <p class="text-[9px] font-black opacity-60 tracking-widest mb-3">DIGITAL CARD NO.</p>
+                     <p id="profileCardNumber" class="text-lg font-black tracking-[0.2em] font-mono mb-4 text-emerald-400">-</p>
+                     <div id="manualCardInputDiv" class="hidden">
+                        <input type="text" id="manualCardNumber" maxlength="16" placeholder="Edit 16-digit Card #" 
+                               class="w-full bg-slate-800 border-none rounded-lg px-3 py-2 text-xs font-black text-white focus:ring-1 focus:ring-emerald-500 transition-all outline-none">
+                     </div>
+                  </div>
+                  <p class="text-[9px] text-slate-400 font-bold leading-tight">Card number is required for Mandi transactions and offline equipment rentals.</p>
+               </div>
+            </div>
           </div>
 
-          <!-- Bank Details Section -->
-          <div class="mb-8">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="h-1 bg-sky-500 flex-1 rounded-full"></div>
-              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest px-2">Bank Account Info</h3>
-              <div class="h-1 bg-sky-500 flex-1 rounded-full"></div>
+          <!-- LOWER SECTION: Tabs/Sections -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- KYC Documents -->
+            <div class="space-y-4 font-black">
+              <h4 class="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-file-shield text-emerald-500"></i> KYC & Verify Info
+              </h4>
+              <div class="space-y-3">
+                <div class="bg-white rounded-2xl border-2 border-slate-100 p-4 flex items-center justify-between shadow-sm hover:border-emerald-200 transition-all">
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                      <i class="fas fa-id-card"></i>
+                    </div>
+                    <div>
+                      <p class="text-[10px] text-slate-400 uppercase font-black">Aadhaar Card</p>
+                      <p id="profileAadhaar" class="text-xs font-black text-slate-700">Not Provided</p>
+                    </div>
+                  </div>
+                  <button id="viewAadhaarBtn" class="hidden h-8 px-4 rounded-lg bg-emerald-600 text-white text-[9px] font-black hover:bg-emerald-700 transition-all">VIEW DOC</button>
+                </div>
+
+                <div class="bg-white rounded-2xl border-2 border-slate-100 p-4 flex items-center justify-between shadow-sm hover:border-sky-200 transition-all">
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
+                      <i class="fas fa-address-card"></i>
+                    </div>
+                    <div>
+                      <p class="text-[10px] text-slate-400 uppercase font-black">PAN Card</p>
+                      <p id="profilePan" class="text-xs font-black text-slate-700">Not Provided</p>
+                    </div>
+                  </div>
+                  <button id="viewPanBtn" class="hidden h-8 px-4 rounded-lg bg-sky-600 text-white text-[9px] font-black hover:bg-sky-700 transition-all">VIEW DOC</button>
+                </div>
+              </div>
             </div>
-            
-            <div class="rounded-2xl border-2 border-sky-100 bg-sky-50/30 p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            <!-- Bank Details -->
+            <div class="space-y-4">
+              <h4 class="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2 font-black">
+                <i class="fas fa-bank text-sky-500"></i> Settlement Bank
+              </h4>
+              <div class="bg-white rounded-2xl border-2 border-slate-100 p-5 shadow-sm grid grid-cols-2 gap-y-4 gap-x-2">
               <div>
-                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">Holder Name</p>
-                <p class="text-sm font-black text-slate-900" id="bankHolder">-</p>
+                <p class="text-[9px] text-slate-400 font-black uppercase">Holder</p>
+                <input type="text" id="bankHolderInput" class="w-full bg-transparent text-xs font-black text-slate-700 border-b border-transparent focus:border-sky-500 outline-none" value="-">
               </div>
               <div>
-                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">Bank Name</p>
-                <p class="text-sm font-black text-slate-900" id="bankName">-</p>
+                <p class="text-[9px] text-slate-400 font-black uppercase">Bank</p>
+                <input type="text" id="bankNameInput" class="w-full bg-transparent text-xs font-black text-slate-700 border-b border-transparent focus:border-sky-500 outline-none" value="-">
               </div>
               <div>
-                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">A/C Number</p>
-                <p class="text-sm font-black text-emerald-700 font-mono" id="bankAcc">-</p>
+                <p class="text-[9px] text-slate-400 font-black uppercase">A/C Number</p>
+                <input type="text" id="bankAccInput" class="w-full bg-transparent text-xs font-black text-emerald-700 font-mono border-b border-transparent focus:border-emerald-500 outline-none" value="-">
               </div>
               <div>
-                <p class="text-[10px] text-slate-500 font-black uppercase mb-1">IFSC Code</p>
-                <p class="text-sm font-black text-sky-700 font-mono" id="bankIfsc">-</p>
+                <p class="text-[9px] text-slate-400 font-black uppercase">IFSC Code</p>
+                <input type="text" id="bankIfscInput" class="w-full bg-transparent text-xs font-black text-sky-700 font-mono border-b border-transparent focus:border-sky-500 outline-none" value="-">
+              </div>
               </div>
             </div>
           </div>
 
-          <!-- Farmer's Recent Activities -->
+          <!-- FOOTER SECTION: Recent Requests -->
           <div class="space-y-4">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="h-1 bg-amber-500 flex-1 rounded-full"></div>
-              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest px-2">Recent Crop Sell Requests</h3>
-              <div class="h-1 bg-amber-500 flex-1 rounded-full"></div>
-            </div>
-            
-            <div id="profileRecentRequests" class="space-y-3">
+            <h4 class="text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-2 font-black">
+              <i class="fas fa-wheat-awn text-amber-500"></i> Recent Crop Sell Activity
+            </h4>
+            <div id="profileRecentRequests" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2 custom-scroll">
               <!-- Dynamically populated -->
-              <p class="text-xs text-slate-400 italic text-center py-4">No recent crop sell requests found.</p>
+              <p class="text-xs text-slate-400 italic text-center py-8 bg-white rounded-2xl border-2 border-dashed col-span-2">No recent crop sell requests found.</p>
             </div>
           </div>
+        </div>
         </div>
 
         <!-- Footer -->
@@ -1105,8 +1108,8 @@
         // Clear previous modal state
         document.getElementById('p-photo').innerHTML = '';
         
-        // Populate Header Info
-        document.getElementById('profileName').textContent = farmer.name || 'Unknown';
+        // Populate Header Info (Inputs)
+        document.getElementById('profileNameInput').value = farmer.name || '';
         document.getElementById('profileId').textContent = `Farmer ID: ${farmer._id}`;
         
         // Profile Photo
@@ -1127,11 +1130,13 @@
         } else {
           statusBadge.innerHTML = `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1 text-[8px]"></i> Pending Approval</span>`;
         }
-
-        // Contact & Misc
-        document.getElementById('profileMobile').textContent = farmer.phone || 'N/A';
-        document.getElementById('profileEmail').textContent = farmer.email || 'No email provided';
-        document.getElementById('profileLocation').textContent = farmer.location || 'N/A';
+        
+        // Contact & Misc (Inputs)
+        document.getElementById('profileMobileInput').value = farmer.phone || '';
+        document.getElementById('profileEmailInput').value = farmer.email || '';
+        document.getElementById('profileLocationInput').value = farmer.location || '';
+        
+        // Wallet & Stats
         document.getElementById('profileWallet').textContent = `₹${(farmer.walletBalance || 0).toLocaleString()}`;
         document.getElementById('profileWalletId').textContent = farmer.walletNumber || 'NONE';
         document.getElementById('profileTotalOrders').textContent = farmer.totalOrders || 0;
@@ -1157,12 +1162,12 @@
           panBtn.classList.add('hidden');
         }
 
-        // Bank Details
+        // Bank Details (Inputs)
         const bank = farmer.bankDetails || {};
-        document.getElementById('bankHolder').textContent = bank.holderName || '—';
-        document.getElementById('bankName').textContent = bank.bankName || '—';
-        document.getElementById('bankAcc').textContent = bank.accountNumber || '—';
-        document.getElementById('bankIfsc').textContent = bank.ifscCode || '—';
+        document.getElementById('bankHolderInput').value = bank.holderName || '';
+        document.getElementById('bankNameInput').value = bank.bankName || '';
+        document.getElementById('bankAccInput').value = bank.accountNumber || '';
+        document.getElementById('bankIfscInput').value = bank.ifscCode || '';
 
         // --- Populate Recent Requests ---
         const requestList = document.getElementById('profileRecentRequests');
@@ -1356,10 +1361,24 @@
       function filterCropRequests() {
         const cropVal = document.getElementById('cropFilter')?.value || 'all';
         const statusVal = document.getElementById('cropStatusFilter')?.value || 'all';
+        const searchTerm = (document.getElementById('cropSearchInput')?.value || '').toLowerCase();
+
         const filtered = allCropRequests.filter(req => {
           const matchCrop = cropVal === 'all' || req.crop === cropVal;
           const matchStatus = statusVal === 'all' || req.status === statusVal;
-          return matchCrop && matchStatus;
+          
+          const farmerName = (req.farmerName || '').toLowerCase();
+          const location = (req.location || '').toLowerCase();
+          const crop = (req.crop || '').toLowerCase();
+          const reqId = (req._id || '').toLowerCase();
+
+          const matchesSearch = !searchTerm || 
+                                farmerName.includes(searchTerm) || 
+                                location.includes(searchTerm) || 
+                                crop.includes(searchTerm) ||
+                                reqId.includes(searchTerm);
+
+          return matchCrop && matchStatus && matchesSearch;
         });
         renderCropRequests(filtered);
       }
@@ -1370,9 +1389,10 @@
         const rows = document.querySelectorAll('#usersTableBody tr.user-row');
         rows.forEach(row => {
           const name = (row.dataset.name || '').toLowerCase();
+          const phone = (row.dataset.phone || '').toLowerCase();
           const location = (row.dataset.location || '').toLowerCase();
           const status = row.dataset.status || '';
-          const matchesSearch = !searchTerm || name.includes(searchTerm) || location.includes(searchTerm);
+          const matchesSearch = !searchTerm || name.includes(searchTerm) || phone.includes(searchTerm) || location.includes(searchTerm);
           const matchesStatus = statusFilter === 'all' || status === statusFilter;
           row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
         });
@@ -1476,6 +1496,7 @@
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100 user-row cursor-pointer';
           tr.dataset.name = (farmer.name || '').toLowerCase();
+          tr.dataset.phone = (farmer.phone || '').toString().toLowerCase();
           tr.dataset.location = (farmer.location || '').toLowerCase();
           tr.dataset.status = farmer.status || 'pending';
           tr.onclick = (e) => {
@@ -1588,6 +1609,52 @@
         } catch (e) { showToast('Network error', 'warning'); }
       }
 
+      async function updateFarmerProfile() {
+        if (!currentProfileUserId) return;
+        
+        const payload = {
+          name: document.getElementById('profileNameInput').value.trim(),
+          phone: document.getElementById('profileMobileInput').value.trim(),
+          email: document.getElementById('profileEmailInput').value.trim(),
+          address: document.getElementById('profileLocationInput').value.trim(),
+          bankDetails: {
+            holderName: document.getElementById('bankHolderInput').value.trim(),
+            bankName: document.getElementById('bankNameInput').value.trim(),
+            accountNumber: document.getElementById('bankAccInput').value.trim(),
+            ifscCode: document.getElementById('bankIfscInput').value.trim()
+          }
+        };
+
+        if (!payload.name || !payload.phone) {
+          showToast('Name and Phone are required', 'warning');
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/user/admin/profile/${currentProfileUserId}`, {
+            method: 'PATCH',
+            headers: { 
+              'Authorization': `Bearer ${AUTH_TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+          
+          if (res.ok) {
+            showToast('Farmer profile updated successfully', 'success');
+            fetchFarmers(); // Refresh table
+            // Update local cache to reflect changes in current modal view if needed
+            const farmer = allFarmers.find(f => f._id === currentProfileUserId);
+            if (farmer) Object.assign(farmer, payload);
+          } else {
+            const data = await res.json();
+            showToast(data.error || 'Failed to update profile', 'warning');
+          }
+        } catch (e) {
+          showToast('Network error', 'warning');
+        }
+      }
+
       async function fetchStats() {
         try {
           const res = await fetch(`${API_BASE}/employee/admin/farmers/stats`, {
@@ -1653,7 +1720,11 @@
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100';
+          const shortId = req._id ? req._id.toString().substring(req._id.length - 6).toUpperCase() : 'N/A';
           tr.innerHTML = `
+            <td class="px-5 py-4">
+              <div class="font-black text-slate-400 text-[10px] tracking-widest bg-slate-50 px-2 py-1 rounded inline-block">#${shortId}</div>
+            </td>
             <td class="px-5 py-4">
               <div onclick="event.stopPropagation(); viewUserProfileV360('${req.farmerId}')" class="font-bold text-slate-900 cursor-pointer hover:text-emerald-600 hover:underline flex items-center gap-1.5 group/fn">
                 ${req.farmerName}

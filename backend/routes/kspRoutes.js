@@ -3,6 +3,7 @@ const router = express.Router();
 const KSPApplication = require('../models/KSPApplication');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const Settings = require('../models/Settings');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { protect } = require('../middleware/authMiddleware');
@@ -111,7 +112,7 @@ router.post('/search', protect, async (req, res) => {
     if (!query) return res.status(400).json({ error: 'Query is required' });
 
     const users = await User.find({
-      role: 'farmer',
+      role: { $in: ['farmer', 'buyer', 'equipment', 'soil', 'shop', 'ksp', 'labour'] },
       $or: [
         { phone: new RegExp(query, 'i') },
         { name: new RegExp(query, 'i') },
@@ -189,19 +190,34 @@ router.post('/withdraw/confirm', protect, async (req, res) => {
       return res.status(400).json({ error: 'Insufficient farmer balance' });
     }
 
-    // Atomic Balance Swap
+    // 1. Fetch KSP Commission from Settings
+    const settings = await Settings.getSettings();
+    const kspCommissionPercent = settings.commissions.ksp || 0;
+    const commissionAmt = (amt * kspCommissionPercent) / 100;
+
+    // 2. Atomic Balance Updates
+    // Farmer pays the principal
     farmer.walletBalance -= amt;
-    ksp.walletBalance += amt;
+
+    // KSP Partner receives principal + commission from Admin
+    ksp.walletBalance += (amt + commissionAmt);
+
+    // Admin pays the commission
+    const admin = await User.findOne({ role: 'admin' });
+    if (admin) {
+      admin.walletBalance = (admin.walletBalance || 0) - commissionAmt;
+      await admin.save();
+    }
 
     await farmer.save();
     await ksp.save();
 
-    // Create Transactions
+    // 3. Create Transactions
     const saleId = `KSP-WDL-${Date.now()}`;
 
-    // Debit for Farmer
+    // Debit for Farmer (Principal)
     await Transaction.create({
-      transactionId: `${saleId}-D`,
+      transactionId: `${saleId}-F-D`,
       recipient: farmer._id,
       module: 'KSP',
       amount: amt,
@@ -212,24 +228,47 @@ router.post('/withdraw/confirm', protect, async (req, res) => {
       note: `Cash withdrawal from KSP: ${ksp.name}`
     });
 
-    // Credit for KSP
+    // Credit for KSP (Principal + Commission)
     await Transaction.create({
-      transactionId: `${saleId}-C`,
+      transactionId: `${saleId}-K-C`,
       recipient: ksp._id,
       module: 'KSP',
-      amount: amt,
+      amount: amt + commissionAmt,
       type: 'Credit',
       paymentMode: 'Cash',
       status: 'Completed',
       performedBy: ksp._id,
-      note: `Cash given to farmer: ${farmer.name}`
+      note: `Cash given to farmer: ${farmer.name} (Principal: ₹${amt}, Comm: ₹${commissionAmt})`
     });
 
-    res.json({ success: true, message: 'Withdrawal successful' });
+    // Debit for Admin (Commission Only)
+    if (admin) {
+      await Transaction.create({
+        transactionId: `${saleId}-A-D`,
+        recipient: admin._id,
+        module: 'KSP',
+        amount: commissionAmt,
+        type: 'Debit',
+        paymentMode: 'NexCard Wallet',
+        status: 'Completed',
+        performedBy: ksp._id,
+        note: `KSP Withdrawal Commission paid to ${ksp.name} for farmer ${farmer.name}`
+      });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Withdrawal successful',
+      data: {
+        principal: amt,
+        commission: commissionAmt,
+        totalCredited: amt + commissionAmt
+      }
+    });
 
   } catch (error) {
     console.error('KSP Withdraw Confirm Error:', error);
-    res.status(500).json({ error: 'Withdrawal failed' });
+    res.status(500).json({ error: 'Withdrawal failed: ' + error.message });
   }
 });
 

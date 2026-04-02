@@ -22,7 +22,8 @@
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
 
 
   <script>
@@ -124,7 +125,7 @@
       </div>
 
       <!-- Navigation -->
-                  <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -794,6 +795,7 @@
             class="w-full h-10 rounded-xl border-2 border-slate-200 px-3 text-sm focus:border-teal-500 focus:ring-0 outline-none transition-all"
             placeholder="Min 6 characters">
         </div>
+        <div id="add-f-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold animate-pulse"></div>
         <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
           <button type="button" onclick="closeAddFranchiseModal()"
             class="px-5 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
@@ -840,12 +842,13 @@
 
   <!-- ========== KSP FRANCHISE PAGE SCRIPT ========== -->
   <script>
-    
     const AUTH_TOKEN = (localStorage.getItem('employeeToken') || '').replace(/["']/g, "").trim();
     const H = {
       'Authorization': `Bearer ${AUTH_TOKEN}`,
       'Content-Type': 'application/json'
     };
+
+    let _allFranchises = [];
 
     // Page Load
     window.addEventListener('DOMContentLoaded', function () {
@@ -876,16 +879,12 @@
       }
     }
 
-    async function populateFranchiseDropdown() {
-      try {
-        const res = await fetch(`${API_BASE}/employee/admin/franchises`, { headers: H });
-        const kspList = await res.json();
-        const select = document.getElementById('ksp-select-inventory');
-        select.innerHTML = '<option value="all">All Franchises</option>';
-        kspList.forEach(k => {
-          select.insertAdjacentHTML('beforeend', `<option value="${k._id}">${k.franchiseName} - ${k.location}</option>`);
-        });
-      } catch (e) { }
+    function populateFranchiseDropdown() {
+      const select = document.getElementById('ksp-select-inventory');
+      select.innerHTML = '<option value="all">All Franchises</option>';
+      _allFranchises.forEach(k => {
+        select.insertAdjacentHTML('beforeend', `<option value="${k._id}">${k.franchiseName} - ${k.location}</option>`);
+      });
     }
 
     async function fetchInventory(kspId = 'all') {
@@ -897,62 +896,30 @@
         const fertBox = document.getElementById('inventory-fert-list');
         const seedBox = document.getElementById('inventory-seed-list');
         const toolBox = document.getElementById('inventory-tool-list');
+        fertBox.innerHTML = ''; seedBox.innerHTML = ''; toolBox.innerHTML = '';
 
-        fertBox.innerHTML = '';
-        seedBox.innerHTML = '';
-        toolBox.innerHTML = '';
-
-        if (items.length === 0) {
-          fertBox.innerHTML = '<p class="text-xs text-slate-400 p-2">No data</p>';
-          seedBox.innerHTML = '<p class="text-xs text-slate-400 p-2">No data</p>';
-          toolBox.innerHTML = '<p class="text-xs text-slate-400 p-2">No data</p>';
-          return;
-        }
-
-        items.forEach(i => {
-          let targetBox = toolBox;
-          let alertColorClass = '';
-          let theme = { border: 'border-slate-100', text: 'text-slate-700', alert: '' };
-
-          if (i.category === 'fert') {
-            targetBox = fertBox;
-            theme = { border: 'border-emerald-100', text: 'text-emerald-700', lightBgc: 'bg-white' };
-          } else if (i.category === 'seed') {
-            targetBox = seedBox;
-            theme = { border: 'border-sky-100', text: 'text-sky-700', lightBgc: 'bg-white' };
-          } else {
-            theme = { border: 'border-amber-100', text: 'text-amber-700', lightBgc: 'bg-white' };
-          }
-
-          // Check Low Stock
-          let isLow = false;
-          if (i.stockQty < 10) {
-            isLow = true;
-            theme.border = 'border-rose-200';
-            theme.text = 'text-rose-700';
-            theme.lightBgc = 'bg-rose-50 animate-pulse-warning border-2';
-            theme.alert = `<p class="text-[9px] text-rose-600 font-bold mt-0.5"><i class="fas fa-triangle-exclamation"></i> Low Stock</p>`;
-          }
-
-          const html = `
-             <div class="flex justify-between items-center p-2 rounded-lg ${theme.lightBgc || 'bg-white border'} ${theme.border}">
-               <div class="flex flex-col">
-                 <span class="text-xs font-semibold text-slate-900">${i.name}</span>
-                 ${kspId === 'all' && i.ownerName ? `<span class="text-[9px] text-slate-500 line-clamp-1">${i.ownerName}</span>` : ''}
-               </div>
-               <div class="text-right">
-                 <span class="font-black ${theme.text}">${i.stockQty} ${i.unit}</span>
-                 ${theme.alert}
-               </div>
-             </div>
-           `;
-          targetBox.insertAdjacentHTML('beforeend', html);
+        items.forEach(item => {
+          const card = `
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 border-l-4 ${item.stock < 5 || item.stockQty < 5 ? 'border-l-rose-500' : 'border-l-emerald-500'}">
+              <div class="flex justify-between items-start">
+                <p class="text-[11px] font-black text-slate-800 line-clamp-1">${item.productName || item.name}</p>
+                <p class="text-[10px] font-black ${item.stock < 5 || item.stockQty < 5 ? 'text-rose-600' : 'text-emerald-600'}">${item.stock || item.stockQty} Units</p>
+              </div>
+              <div class="flex justify-between mt-2">
+                <p class="text-[9px] text-slate-500 font-bold">${item.brand || 'No Brand'}</p>
+                <p class="text-[9px] text-slate-900 font-black">${formatCurrency(item.price)}</p>
+              </div>
+            </div>
+          `;
+          if (item.category === 'Fertilizer' || item.category === 'fert') fertBox.insertAdjacentHTML('beforeend', card);
+          else if (item.category === 'Seed' || item.category === 'seed') seedBox.insertAdjacentHTML('beforeend', card);
+          else toolBox.insertAdjacentHTML('beforeend', card);
         });
 
-      } catch (e) {
-        console.error(e);
-        showToast('Error loading inventory', 'warning');
-      }
+        if (!fertBox.innerHTML) fertBox.innerHTML = '<p class="text-xs text-slate-400 italic p-2">No Stock</p>';
+        if (!seedBox.innerHTML) seedBox.innerHTML = '<p class="text-xs text-slate-400 italic p-2">No Stock</p>';
+        if (!toolBox.innerHTML) toolBox.innerHTML = '<p class="text-xs text-slate-400 italic p-2">No Stock</p>';
+      } catch (e) { console.error(e); }
     }
 
     async function fetchLedger(paymentMode = 'all') {
@@ -1074,307 +1041,312 @@
       try {
         const res = await fetch(`${API_BASE}/employee/admin/franchises`, { headers: H });
         if (!res.ok) throw new Error('Failed to fetch franchises');
-        const kspList = await res.json();
-        const tbody = document.getElementById('franchiseTableBody');
-        tbody.innerHTML = '';
-
-        if (kspList.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-sm text-slate-500 font-semibold">No Franchises Found</td></tr>`;
-          return;
-        }
-
-        kspList.forEach(k => {
-          const isLowStock = k.lowStockCount > 0;
-          const storeIcon = isLowStock
-            ? `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-rose-100 to-amber-100 flex items-center justify-center shadow-sm animate-pulse-warning"><i class="fas fa-store text-rose-600"></i></div>`
-            : `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm"><i class="fas fa-store text-teal-600"></i></div>`;
-
-          const stockText = isLowStock
-            ? `<div class="font-black text-rose-700">${formatCurrency(k.stockValue)}</div><div class="text-[10px] text-rose-600 font-bold flex items-center justify-end gap-1"><i class="fas fa-triangle-exclamation text-[8px]"></i> Low (${k.lowStockCount})</div>`
-            : `<div class="font-black text-slate-900">${formatCurrency(k.stockValue)}</div>`;
-
-          const statusBadge = k.status === 'approved'
-            ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`
-            : `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
-
-          const rowUrl = `viewFranchise('${k._id}', '${k.franchiseName.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${k.location.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')`;
-
-          const rowHTML = `
-            <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
-              <td class="px-5 py-4">
-                <div class="flex items-center gap-3">
-                  ${storeIcon}
-                  <div>
-                    <div class="font-black text-slate-900">${k.franchiseName}</div>
-                    <div class="text-[10px] text-slate-500 font-medium">ID: KSP-${k._id.substring(18).toUpperCase()}</div>
-                  </div>
-                </div>
-              </td>
-              <td class="px-5 py-4">
-                <div class="font-semibold text-slate-900">${k.ownerName}</div>
-                <div class="text-[10px] text-slate-500">${k.phone}</div>
-              </td>
-              <td class="px-5 py-4">
-                <div class="font-semibold text-slate-900">${k.location}</div>
-              </td>
-              <td class="px-5 py-4 text-right">${stockText}</td>
-              <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">${formatCurrency(k.walletBalance)}</div></td>
-              <td class="px-5 py-4 text-right"><div class="font-black text-teal-700">${formatCurrency(k.salesThisMonth)}</div></td>
-              <td class="px-5 py-4">${statusBadge}</td>
-              <td class="px-5 py-4 text-right">
-                <button onclick="${rowUrl}" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
-                  <i class="fas fa-eye mr-1"></i> View
-                </button>
-              </td>
-            </tr>
-          `;
-          tbody.insertAdjacentHTML('beforeend', rowHTML);
-        });
-      } catch (e) {
-        console.error(e);
-        showToast('Error loading franchises', 'warning');
-      }
-    }
-
-    // Show Toast
-
-    async function generateWalletId(id, name) {
-      if (!confirm(`Generate a unique 11-digit Wallet Number for ${name}?`)) return;
-      try {
-        const res = await fetch(`${API_BASE}/employee/admin/ksp/generate-wallet/${id}`, {
-          method: "PUT",
-          headers: H
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Wallet ID Generated: ${data.walletNumber}`, "success");
-
-          // Update modal UI without closing it
-          const walletNumEl = document.getElementById("modal-wallet-number");
-          const walletActionEl = document.getElementById("modal-wallet-action");
-          if (walletNumEl) walletNumEl.textContent = data.walletNumber;
-          if (walletActionEl) walletActionEl.innerHTML = "";
-
-          fetchFranchises();
-        } else {
-          showToast(data.error || "Generation failed", "warning");
-        }
-      } catch (e) { showToast("Network error", "warning"); }
-    }
-
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      const toastMessage = document.getElementById('toastMessage');
-      if (!toast) return;
-
-      let bgColor = 'bg-white';
-      let borderColor = 'border-slate-300';
-      let textColor = 'text-slate-900';
-
-      if (type === 'success') {
-        bgColor = 'bg-white';
-        borderColor = 'border-emerald-200';
-        textColor = 'text-emerald-800';
-      } else if (type === 'warning') {
-        bgColor = 'bg-rose-50';
-        borderColor = 'border-rose-200';
-        textColor = 'text-rose-800';
-      }
-
-      toast.className = `fixed bottom-4 right-4 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-0 ${bgColor} ${borderColor} ${textColor}`;
-      toastMessage.textContent = message;
-      toast.classList.remove('hidden');
-
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-        setTimeout(() => {
-          toast.classList.add('hidden');
-          toast.classList.remove('translate-y-20', 'opacity-0');
-        }, 300);
-      }, 3000);
-    }
-
-    // ===== CSV DOWNLOAD — BASE64 FORCE (Most Reliable) =====
-    async function downloadCSV(endpoint, extraParams, filename) {
-      try {
-        if (!AUTH_TOKEN) {
-          alert("Session Expired! Please login again.");
-          return;
-        }
-
-        const params = new URLSearchParams(extraParams);
-        params.append('_v', Date.now()); // Cache bust
-        params.append('token', AUTH_TOKEN); // Add token for auth middleware fallback
-        const url = `${API_BASE}/${endpoint}?${params.toString()}`;
-
-        showToast('Generating Secure CSV...', 'info');
-
-        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
-        if (!res.ok) throw new Error('Failed to fetch export');
-
-        const arrayBuffer = await res.arrayBuffer();
-
-        // CRITICAL BUGFIX FOR MS EDGE: Edge sometimes ignores the <a> download attribute on vanilla Blobs
-        // and names the downloaded file after the Blob's UUID. Wrapping it in a File object explicitly forces
-        // the filename metadata into the stream header, bypassing the Microsoft Edge UUID bug.
-        const file = new File([arrayBuffer], filename, { type: "text/csv;charset=utf-8;" });
-        const urlObj = window.URL.createObjectURL(file);
-
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = urlObj;
-        a.download = file.name; // Use the inherent file metadata name
-        document.body.appendChild(a);
-        a.click();
-
-        setTimeout(() => {
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(urlObj);
-          showToast('File Saved Successfully!', 'success');
-        }, 1000);
-
-      } catch (e) {
-        console.error(e);
-        alert('Critical: Export server unreachable.');
-      }
-    }
-
-    // Export Franchises
-    function exportFranchises() {
-      downloadCSV('export', {}, 'KSP_Franchises.csv');
-    }
-
-    // ===== FRANCHISE FILTER (State + Search) =====
-    let _allFranchises = []; // cached list for filtering
-    const _origFetchFranchises = fetchFranchises;
-    // Override fetchFranchises to cache the data
-    fetchFranchises = async function () {
-      try {
-        const res = await fetch(`${API_BASE}/employee/admin/ksp/franchises`, { headers: H });
-        if (!res.ok) throw new Error('Refresh needed');
         _allFranchises = await res.json();
-        console.log('ALL FRANCHISES LOADED:', _allFranchises);
-        renderFranchiseRows(_allFranchises);
+        renderFranchises(_allFranchises);
       } catch (e) {
         console.error(e);
         showToast('Error loading franchises', 'warning');
       }
-    };
+    }
 
-    function renderFranchiseRows(kspList) {
+    function renderFranchises(list) {
       const tbody = document.getElementById('franchiseTableBody');
       tbody.innerHTML = '';
-      if (kspList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-sm text-slate-500 font-semibold">No Franchises Found</td></tr>`;
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-slate-400 font-medium">No franchises found matching your search.</td></tr>`;
         return;
       }
-      kspList.forEach(k => {
+
+      list.forEach(k => {
         const isLowStock = k.lowStockCount > 0;
         const storeIcon = isLowStock
           ? `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-rose-100 to-amber-100 flex items-center justify-center shadow-sm animate-pulse-warning"><i class="fas fa-store text-rose-600"></i></div>`
           : `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm"><i class="fas fa-store text-teal-600"></i></div>`;
+
         const stockText = isLowStock
           ? `<div class="font-black text-rose-700">${formatCurrency(k.stockValue)}</div><div class="text-[10px] text-rose-600 font-bold flex items-center justify-end gap-1"><i class="fas fa-triangle-exclamation text-[8px]"></i> Low (${k.lowStockCount})</div>`
           : `<div class="font-black text-slate-900">${formatCurrency(k.stockValue)}</div>`;
+
         const statusBadge = k.status === 'approved'
           ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`
           : `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
+
         const escapedName = (k.franchiseName || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
         const escapedLoc = (k.location || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
-            <td class="px-5 py-4"><div class="flex items-center gap-3">${storeIcon}<div><div class="font-black text-slate-900">${k.franchiseName}</div><div class="text-[10px] text-slate-500 font-medium">ID: KSP-${k._id.substring(18).toUpperCase()}</div></div></div></td>
-            <td class="px-5 py-4"><div class="font-semibold text-slate-900">${k.ownerName}</div><div class="text-[10px] text-slate-500">${k.phone}</div></td>
-            <td class="px-5 py-4 text-center">
-              <div class="text-xs font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded shadow-sm inline-block">${k.walletNumber || "—"}</div>
+        const rowHTML = `
+          <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100 text-xs text-slate-700">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                ${storeIcon}
+                <div>
+                  <div class="font-black text-slate-900 line-clamp-1">${k.franchiseName}</div>
+                  <div class="text-[10px] text-slate-500 font-medium">ID: KSP-${k._id.substring(18).toUpperCase()}</div>
+                </div>
+              </div>
             </td>
-            <td class="px-5 py-4"><div class="font-semibold text-slate-900">${k.location}</div></td>
+            <td class="px-5 py-4 font-bold text-slate-800">${k.ownerName}</td>
+            <td class="px-5 py-4 text-center font-mono font-black text-emerald-700">${k.walletNumber || '---'}</td>
+            <td class="px-5 py-4 font-semibold text-slate-600">${k.location}</td>
             <td class="px-5 py-4 text-right">${stockText}</td>
-            <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">${formatCurrency(k.walletBalance)}</div></td>
-            <td class="px-5 py-4 text-right"><div class="font-black text-teal-700">${formatCurrency(k.salesThisMonth)}</div></td>
+            <td class="px-5 py-4 text-right font-black text-emerald-600">${formatCurrency(k.walletBalance)}</td>
+            <td class="px-5 py-4 text-right font-black text-teal-600">${formatCurrency(k.salesThisMonth)}</td>
             <td class="px-5 py-4">${statusBadge}</td>
             <td class="px-5 py-4 text-right">
-              <button onclick="viewFranchise('${k._id}', '${escapedName}', '${escapedLoc}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i> View</button>
+              <button onclick="viewFranchise('${k._id}', '${escapedName}', '${escapedLoc}')" class="h-8 w-8 rounded-lg border-2 border-slate-200 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all">
+                <i class="fas fa-eye text-xs"></i>
+              </button>
             </td>
           </tr>
-        `);
+        `;
+        tbody.insertAdjacentHTML('beforeend', rowHTML);
       });
     }
 
-    // ===== VIEW FRANCHISE DETAILS =====
+    function filterFranchises() {
+      const state = document.getElementById('franchise-state-filter').value;
+      const term = document.getElementById('franchise-search').value.toLowerCase();
+
+      const filtered = _allFranchises.filter(k => {
+        const matchesState = (state === 'all' || k.location.toLowerCase().includes(state.toLowerCase()));
+        const matchesTerm = (
+          (k.franchiseName || '').toLowerCase().includes(term) ||
+          (k.ownerName || '').toLowerCase().includes(term) ||
+          (k.location || '').toLowerCase().includes(term) ||
+          (k.phone || '').includes(term)
+        );
+        return matchesState && matchesTerm;
+      });
+
+      renderFranchises(filtered);
+    }
+
+
+
+    async function downloadCSV(endpoint, extraParams, filename) {
+      try {
+        const params = new URLSearchParams(extraParams);
+        params.append('_v', Date.now());
+        const res = await fetch(`${API_BASE}/${endpoint}?${params.toString()}`, { headers: H });
+        if (!res.ok) throw new Error('Failed to fetch');
+        const buffer = await res.arrayBuffer();
+        const file = new File([buffer], filename, { type: "text/csv;charset=utf-8;" });
+        const url = window.URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 1000);
+      } catch (e) { console.error(e); showToast('Export failed', 'warning'); }
+    }
+
+    function exportFranchises() { downloadCSV('export', { type: 'ksp' }, 'Franchises.csv'); }
+
+    // ===== FRANCHISE FILTER (State + Search) =====
+
+
+
+
+    // ===== VIEW FRANCHISE DETAILS (360 PROFILE) =====
     function viewFranchise(id, name, location) {
+      document.getElementById('franchise-modal')?.remove(); // Cleanup existing
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm';
       modal.id = 'franchise-modal';
       modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
       modal.innerHTML = `
         <div class="bg-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-lg mx-4 overflow-hidden animate-[slideInRight_0.2s_ease-out]">
-          <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-b-2 border-slate-100">
-            <h3 class="text-lg font-black text-slate-900 flex items-center gap-2"><i class="fas fa-store text-teal-600"></i> ${name}</h3>
-            <p class="text-xs text-slate-500 font-semibold mt-0.5"><i class="fas fa-map-marker-alt mr-1"></i> ${location}</p>
-          </div>
-          <div class="p-6 space-y-3">
-            <div id="modal-wallet-row" class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200">
-               <div>
-                  <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Wallet / NexCard No.</p>
-                  <p class="text-sm font-black text-slate-900" id="modal-wallet-number">Loading...</p>
-               </div>
-               <div id="modal-wallet-action"></div>
+          <div class="px-6 py-4 bg-gradient-to-r from-teal-50 to-emerald-50 border-b-2 border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-black text-slate-900 flex items-center gap-2"><i class="fas fa-store text-teal-600"></i> ${name}</h3>
+              <p class="text-xs text-slate-500 font-semibold mt-0.5"><i class="fas fa-map-marker-alt mr-1"></i> ${location}</p>
             </div>
-            <p class="text-sm text-slate-600"><strong>Franchise ID:</strong> <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${id}</span></p>
+            <button onclick="document.getElementById('franchise-modal').remove();" class="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all shadow-sm"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scroll">
+            <div id="modal-wallet-row" class="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
+               <div class="flex-1">
+                  <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider">NexCard Wallet ID (16 Digits)</p>
+                  <input type="text" id="edit-wallet-number" maxlength="16" placeholder="Enter 16-digit Wallet ID" class="w-full bg-transparent border-none outline-none text-xs font-black text-emerald-700 font-mono mt-0.5" />
+               </div>
+               <div id="modal-wallet-action">
+                  <button onclick="updateFranchiseWalletId('${id}')" class="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 shadow-md active:scale-95 transition-all" title="Save Wallet ID">
+                      <i class="fas fa-check"></i>
+                  </button>
+               </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
-              <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center cursor-pointer hover:bg-emerald-100 transition-all" onclick="viewFranchiseTransactions('${id}', '${name}')">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">Stock Items</p>
-                <p class="text-lg font-black text-emerald-700 mt-1" id="modal-stock-count">Loading...</p>
-                <p class="text-[8px] text-emerald-600 font-bold mt-1">View Records <i class="fas fa-chevron-right ml-0.5"></i></p>
+              <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-center cursor-pointer hover:bg-emerald-100 hover:shadow-md transition-all group" onclick="viewFranchiseTransactions('${id}', '${name}')">
+                <p class="text-[10px] text-slate-500 font-black uppercase">Stock Items</p>
+                <p class="text-xl font-black text-emerald-800 mt-1" id="modal-stock-count">0</p>
+                <p class="text-[9px] text-emerald-600 font-black mt-2 group-hover:translate-x-1 transition-transform">Records <i class="fas fa-arrow-right ml-1"></i></p>
               </div>
-              <div class="rounded-xl bg-sky-50 border border-sky-200 p-3 text-center cursor-pointer hover:bg-sky-100 transition-all" onclick="viewFranchiseTransactions('${id}', '${name}')">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">Transactions</p>
-                <p class="text-lg font-black text-sky-700 mt-1" id="modal-txn-count">Loading...</p>
-                <p class="text-[8px] text-sky-600 font-bold mt-1">View Records <i class="fas fa-chevron-right ml-0.5"></i></p>
+              <div class="rounded-2xl bg-sky-50 border border-sky-200 p-4 text-center cursor-pointer hover:bg-sky-100 hover:shadow-md transition-all group" onclick="viewFranchiseTransactions('${id}', '${name}')">
+                <p class="text-[10px] text-slate-500 font-black uppercase">Recent Txns</p>
+                <p class="text-xl font-black text-sky-800 mt-1" id="modal-txn-count">0</p>
+                <p class="text-[9px] text-sky-600 font-black mt-2 group-hover:translate-x-1 transition-transform">History <i class="fas fa-arrow-right ml-1"></i></p>
               </div>
             </div>
 
-            <div class="mt-4 p-4 rounded-xl border-2 border-brand-blue/20 bg-brand-blue/5">
-                <p class="text-[10px] text-brand-blue font-black uppercase mb-2 flex items-center gap-1"><i class="fas fa-plus-circle"></i> Direct Wallet Recharge</p>
-                <div class="flex gap-2">
-                    <input type="number" id="direct-recharge-amount" placeholder="Amount (â‚¹)" class="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-bold focus:ring-2 focus:ring-brand-blue focus:border-brand-blue outline-none transition-all" />
-                    <button onclick="rechargeFranchise('${id}', '${name.replace(/'/g, "\\'")}')" class="bg-brand-blue text-white px-4 py-2 rounded-lg text-xs font-black shadow-md hover:bg-sky-600 transition-all active:scale-95">Recharge</button>
+            <!-- Wallet Controls -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3.5 rounded-2xl border-2 border-emerald-100 bg-emerald-50/20">
+                  <p class="text-[10px] text-emerald-700 font-black uppercase mb-2 flex items-center gap-1.5"><i class="fas fa-arrow-up"></i> Admin Credit</p>
+                  <div class="space-y-2">
+                      <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400 font-bold text-[10px]">₹</span>
+                          <input type="number" id="direct-recharge-amount" placeholder="Amount" class="w-full pl-6 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-black outline-none focus:border-emerald-400 transition-all" />
+                      </div>
+                      <button onclick="rechargeFranchise('${id}', '${name.replace(/'/g, "\\'")}')" class="w-full bg-emerald-600 text-white py-2 rounded-xl text-[10px] font-black shadow-md shadow-emerald-100 active:scale-95 transition-all">RECHARGE</button>
+                  </div>
+              </div>
+              <div class="p-3.5 rounded-2xl border-2 border-rose-100 bg-rose-50/20">
+                  <p class="text-[10px] text-rose-700 font-black uppercase mb-2 flex items-center gap-1.5"><i class="fas fa-arrow-down"></i> Admin Debit</p>
+                  <div class="space-y-2">
+                      <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 font-bold text-[10px]">₹</span>
+                          <input type="number" id="direct-debit-amount" placeholder="Amount" class="w-full pl-6 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-black outline-none focus:border-rose-400 transition-all" />
+                      </div>
+                      <button onclick="debitFranchise('${id}', '${name.replace(/'/g, "\\'")}')" class="w-full bg-rose-600 text-white py-2 rounded-xl text-[10px] font-black shadow-md shadow-rose-100 active:scale-95 transition-all">DEBIT</button>
+                  </div>
+              </div>
+            </div>
+
+            <!-- Profile Edit Section -->
+            <div class="border-2 border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-white">
+                <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full px-5 py-3 bg-slate-50 text-left text-[11px] font-black text-slate-700 flex justify-between items-center hover:bg-slate-100 transition-all group">
+                    <span class="flex items-center gap-2"><i class="fas fa-user-edit text-slate-400 group-hover:text-slate-900"></i> EDIT FRANCHISE PROFILE</span>
+                    <i class="fas fa-chevron-down text-slate-400 transition-transform group-hover:text-slate-900"></i>
+                </button>
+                <div class="hidden p-5 space-y-4 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Business Name</label>
+                            <input type="text" id="edit-biz-name" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Owner Name</label>
+                            <input type="text" id="edit-owner-name" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Mobile No.</label>
+                            <input type="text" id="edit-phone" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Email ID</label>
+                            <input type="email" id="edit-email" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Address / Detailed Location</label>
+                            <textarea id="edit-address" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <button onclick="updateFranchiseProfile('${id}')" class="w-full bg-slate-900 text-white py-3 rounded-xl text-xs font-black shadow-lg hover:bg-black transition-all active:scale-[0.98]">Update Profile Information</button>
                 </div>
             </div>
 
-            <p class="text-[10px] text-slate-400 text-center mt-2 font-medium italic">Click outside to close</p>
+            <!-- KYC Uploads -->
+            <div class="border-2 border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-white">
+                <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full px-5 py-3 bg-slate-50 text-left text-[11px] font-black text-slate-700 flex justify-between items-center hover:bg-slate-100 transition-all group">
+                    <span class="flex items-center gap-2"><i class="fas fa-file-shield text-slate-400 group-hover:text-slate-900"></i> KYC & DOCUMENTS UPLOAD</span>
+                    <i class="fas fa-chevron-down text-slate-400 transition-transform group-hover:text-slate-900"></i>
+                </button>
+                <div class="hidden p-5 space-y-4 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Profile Photo</label>
+                            <div class="relative group h-28 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden hover:bg-slate-100/50 hover:border-slate-300 transition-all">
+                                <img id="preview-photo" class="absolute inset-0 w-full h-full object-cover hidden z-20 cursor-zoom-in" />
+                                <i class="fas fa-camera text-slate-300 text-2xl group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[8px] text-slate-400 font-black mt-2">CHOOSE IMAGE</span>
+                                <input type="file" onchange="previewImg(this, 'preview-photo')" id="up-photo" class="absolute inset-x-0 bottom-0 h-1/2 opacity-0 cursor-pointer z-30" />
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Aadhaar Card</label>
+                            <div class="relative group h-28 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden hover:bg-slate-100/50 hover:border-slate-300 transition-all">
+                                <img id="preview-aadhaar" class="absolute inset-0 w-full h-full object-cover hidden z-20 cursor-zoom-in" />
+                                <i class="fas fa-id-card text-slate-300 text-2xl group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[8px] text-slate-400 font-black mt-2">CHOOSE DOC</span>
+                                <input type="file" onchange="previewImg(this, 'preview-aadhaar')" id="up-aadhaar" class="absolute inset-x-0 bottom-0 h-1/2 opacity-0 cursor-pointer z-30" />
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">PAN Card</label>
+                            <div class="relative group h-28 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden hover:bg-slate-100/50 hover:border-slate-300 transition-all">
+                                <img id="preview-pan" class="absolute inset-0 w-full h-full object-cover hidden z-20 cursor-zoom-in" />
+                                <i class="fas fa-address-card text-slate-300 text-2xl group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[8px] text-slate-400 font-black mt-2">CHOOSE DOC</span>
+                                <input type="file" onchange="previewImg(this, 'preview-pan')" id="up-pan" class="absolute inset-x-0 bottom-0 h-1/2 opacity-0 cursor-pointer z-30" />
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Shop/Biz License</label>
+                            <div class="relative group h-28 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden hover:bg-slate-100/50 hover:border-slate-300 transition-all">
+                                <img id="preview-license" class="absolute inset-0 w-full h-full object-cover hidden z-20 cursor-zoom-in" />
+                                <i class="fas fa-file-contract text-slate-300 text-2xl group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[8px] text-slate-400 font-black mt-2">CHOOSE DOC</span>
+                                <input type="file" onchange="previewImg(this, 'preview-license')" id="up-license" class="absolute inset-x-0 bottom-0 h-1/2 opacity-0 cursor-pointer z-30" />
+                            </div>
+                        </div>
+                    </div>
+                    <button id="btn-upload-docs" onclick="uploadFranchiseDocs('${id}')" class="w-full bg-emerald-600 text-white py-3 rounded-xl text-xs font-black shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload & Verify Documents
+                    </button>
+                    <p class="text-[9px] text-slate-400 text-center font-bold">Files should be JPG/PNG/PDF, max 5MB.</p>
+                </div>
+            </div>
           </div>
-          <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-wrap justify-end gap-2">
+          <div class="px-6 py-4 bg-slate-50 border-t-2 border-slate-100 flex items-center justify-between">
             <div id="modal-franchise-actions" class="flex gap-2"></div>
-            <button onclick="fetchInventory('${id}'); document.getElementById('ksp-select-inventory').value='${id}'; document.getElementById('inventory-section').scrollIntoView({ behavior: 'smooth' }); document.getElementById('franchise-modal').remove();" class="inline-flex items-center rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-sky-600 hover:to-sky-700 transition-all"><i class="fas fa-warehouse mr-1.5"></i> View Stock</button>
-            <button onclick="document.getElementById('franchise-modal').remove();" class="inline-flex items-center rounded-xl border-2 border-slate-200 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">Close</button>
+            <button onclick="document.getElementById('franchise-modal').remove();" class="text-xs font-black text-slate-400 hover:text-slate-600 transition-all">Dismiss</button>
           </div>
         </div>
       `;
       document.body.appendChild(modal);
 
-      fetch(`${API_BASE}/employee/admin/ksp/franchises`, { headers: H }).then(r => r.ok ? r.json() : []).then(list => {
-        console.log('MODAL LIST FETCHED:', list);
+      fetch(`${API_BASE}/employee/admin/franchises?_t=${Date.now()}`, { headers: H }).then(r => r.ok ? r.json() : []).then(list => {
         const k = list.find(x => x._id === id);
-        console.log('MODAL FRANCHISE FOUND:', k);
         if (k) {
-          const numEl = document.getElementById("modal-wallet-number");
-          const actionEl = document.getElementById("modal-wallet-action");
+          document.getElementById('edit-biz-name').value = k.franchiseName || '';
+          document.getElementById('edit-owner-name').value = k.ownerName || '';
+          document.getElementById('edit-phone').value = k.phone || '';
+          document.getElementById('edit-email').value = k.email || '';
+          document.getElementById('edit-address').value = k.location || '';
 
-          numEl.textContent = k.walletNumber || "Not Generated";
+          const setPreview = (url, targetId) => {
+            const img = document.getElementById(targetId);
+            if (!url || !img) return;
+            const fullUrl = url.startsWith('http') ? url : `${IMAGE_BASE}/${url}`;
+            const isPdf = url.toLowerCase().endsWith('.pdf');
+            
+            if (isPdf) {
+                img.parentElement.innerHTML = `<div class="absolute inset-0 bg-slate-900 flex flex-col items-center justify-center text-white p-4 text-center">
+                    <i class="fas fa-file-pdf text-3xl mb-2 text-rose-400"></i>
+                    <a href="${fullUrl}" target="_blank" class="text-[10px] font-black underline hover:text-rose-300">VIEW PDF DOCUMENT</a>
+                </div>`;
+            } else {
+                img.src = fullUrl;
+                img.classList.remove('hidden');
+                // Make it clickable for full view
+                img.style.cursor = 'zoom-in';
+                img.onclick = () => window.open(fullUrl, '_blank');
+            }
+          };
 
-          if (!k.walletNumber || k.walletNumber.length < 11) {
-            actionEl.innerHTML = `<button onclick="generateWalletId('${id}', '${name.replace(/'/g, "\\'")}')" class="bg-brand-blue text-white px-3 py-1.5 rounded-lg text-[10px] font-black shadow-sm transition-all active:scale-95 hover:bg-sky-600"><i class="fas fa-bolt mr-1"></i> Generate</button>`;
-          } else {
-            actionEl.innerHTML = "";
-          }
+          if (k.profilePhotoUrl) setPreview(k.profilePhotoUrl, 'preview-photo');
+          if (k.aadhaarDocUrl) setPreview(k.aadhaarDocUrl, 'preview-aadhaar');
+          if (k.panDocUrl) setPreview(k.panDocUrl, 'preview-pan');
+          if (k.businessLicenseUrl) setPreview(k.businessLicenseUrl, 'preview-license');
+
+          const walletInp = document.getElementById('edit-wallet-number');
+          if (walletInp) walletInp.value = k.walletNumber || "";
 
           const actionBox = document.getElementById('modal-franchise-actions');
           if (k.status === 'approved') {
-            actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-4 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-1.5"></i> Block</button>`;
+            actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="h-9 px-4 rounded-xl border-2 border-rose-200 bg-rose-50 text-[10px] font-black text-rose-700 hover:bg-rose-100 transition-all flex items-center gap-2"><i class="fas fa-ban"></i> Block Account</button>`;
           } else {
-            actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all"><i class="fas fa-check mr-1.5"></i> Approve</button>`;
+            actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-[10px] font-black text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center gap-2"><i class="fas fa-check"></i> Approve Franchise</button>`;
           }
         }
       });
@@ -1392,279 +1364,223 @@
     async function approveFranchise(id, name) {
       if (!confirm(`Approve KSP Franchise: ${name}?`)) return;
       try {
-        const res = await fetch(`/api/employee/admin/approve/${id}`, {
-          method: 'PUT',
-          headers: H
-        });
-        if (res.ok) {
-          showToast(`${name} approved`, 'success');
-          document.getElementById('franchise-modal')?.remove();
-          fetchFranchises();
-        } else {
-          showToast('Approval failed', 'warning');
-        }
+        const res = await fetch(`${API_BASE}/employee/admin/approve/${id}`, { method: 'PUT', headers: H });
+        if (res.ok) { showToast(`${name} approved`, 'success'); document.getElementById('franchise-modal')?.remove(); fetchFranchises(); }
+        else { showToast('Approval failed', 'warning'); }
       } catch (e) { showToast('Network error', 'warning'); }
     }
 
     async function blockFranchise(id, name) {
       if (!confirm(`Block KSP Franchise: ${name}?`)) return;
       try {
-        const res = await fetch(`/api/employee/admin/block/${id}`, {
-          method: 'PUT',
-          headers: H
-        });
-        if (res.ok) {
-          showToast(`${name} blocked`, 'success');
-          document.getElementById('franchise-modal')?.remove();
-          fetchFranchises();
-        } else {
-          showToast('Blocking failed', 'warning');
-        }
+        const res = await fetch(`${API_BASE}/employee/admin/block/${id}`, { method: 'PUT', headers: H });
+        if (res.ok) { showToast(`${name} blocked`, 'success'); document.getElementById('franchise-modal')?.remove(); fetchFranchises(); }
+        else { showToast('Blocking failed', 'warning'); }
       } catch (e) { showToast('Network error', 'warning'); }
     }
 
-    // ===== VIEW WALLET DETAILS =====
-    async function viewWallet(id) {
+    async function rechargeFranchise(id, name) {
+      const amount = document.getElementById('direct-recharge-amount').value;
+      if (!amount || amount <= 0) return showToast('Enter valid amount', 'warning');
+      if (!confirm(`Directly Recharge ₹${amount} into ${name}'s wallet?`)) return;
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/franchise/wallets`, { headers: H });
-        if (!res.ok) throw new Error('Failed to load wallets');
-        const wallets = await res.json();
-
-        const w = wallets.find(x => x._id === id);
-        if (!w) return showToast('Wallet not found', 'warning');
-
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm';
-        modal.id = 'wallet-detail-modal';
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-        modal.innerHTML = `
-          <div class="bg-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-md mx-4 overflow-hidden animate-[slideUp_0.3s_ease-out]">
-            <div class="px-6 py-4 bg-emerald-50 border-b-2 border-emerald-100 flex items-center justify-between">
-              <h3 class="text-lg font-black text-emerald-900 flex items-center gap-2"><i class="fas fa-wallet text-emerald-600"></i> Wallet Details</h3>
-              <button onclick="document.getElementById('wallet-detail-modal').remove()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="p-6 space-y-6">
-              <div class="text-center">
-                <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1">Current Balance</p>
-                <p class="text-4xl font-black text-emerald-700">${formatCurrency(w.walletBalance)}</p>
-              </div>
-              
-              <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
-                <div class="flex justify-between items-center">
-                  <span class="text-xs text-slate-500 font-bold">Franchise</span>
-                  <span class="text-xs text-slate-900 font-black">${w.franchiseName}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-xs text-slate-500 font-bold">Status</span>
-                  <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${w.requestStatus === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${w.requestStatus === 'PENDING' ? 'Pending Recharge' : 'Active'}</span>
-                </div>
-                ${w.requestStatus === 'PENDING' ? `
-                  <div class="flex justify-between items-center pt-2 border-t border-slate-200">
-                    <span class="text-xs text-amber-700 font-bold">Pending Amount</span>
-                    <span class="text-sm text-amber-700 font-black">${formatCurrency(w.rechargeRequest)}</span>
-                  </div>
-                ` : ''}
-              </div>
-
-              ${w.requestStatus === 'PENDING' ? `
-                <button onclick="document.getElementById('wallet-detail-modal').remove(); approveRecharge('${w._id}', '${w.rechargeRequest}')" class="w-full h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2">
-                  <i class="fas fa-check-circle"></i> Approve Recharge Now
-                </button>
-              ` : `
-                <button onclick="document.getElementById('wallet-detail-modal').remove()" class="w-full h-11 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all">
-                  Close Details
-                </button>
-              `}
-            </div>
-          </div>
-        `;
-        document.body.appendChild(modal);
-      } catch (e) {
-        showToast('Error loading wallet details', 'warning');
-      }
-    }
-
-    // ===== APPROVE RECHARGE =====
-    async function approveRecharge(franchiseId, amount) {
-      if (!confirm(`Approve wallet recharge of ₹${Number(amount).toLocaleString('en-IN')} for this franchise?`)) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/employee/admin/franchise/approve-wallet/${franchiseId}`, {
-          method: 'PUT',
-          headers: H
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/direct-recharge`, {
+          method: 'POST',
+          headers: H,
+          body: JSON.stringify({ id, amount })
         });
-
-
+        const data = await res.json();
         if (res.ok) {
-          const data = await res.json();
-          showToast(data.message || 'Recharge Approved!', 'success');
-          // Refresh everything to reflect new balance
-          fetchStats();
-          fetchWallets();
+          showToast(`Recharge Successful!`, 'success');
+          document.getElementById('franchise-modal')?.remove();
+          fetchFranchises(); fetchWallets();
+        } else { showToast(data.error || 'Recharge failed', 'warning'); }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    async function debitFranchise(id, name) {
+      const amount = document.getElementById('direct-debit-amount').value;
+      if (!amount || amount <= 0) return showToast('Enter valid amount', 'warning');
+      if (!confirm(`Deduct (Debit) ₹${amount} from ${name}'s wallet?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/direct-debit`, {
+          method: 'POST',
+          headers: H,
+          body: JSON.stringify({ id, amount })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Debit Successful!`, 'success');
+          document.getElementById('franchise-modal')?.remove();
+          fetchFranchises(); fetchWallets();
+        } else { showToast(data.error || 'Debit failed', 'warning'); }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    async function updateFranchiseProfile(id) {
+      const payload = {
+        franchiseName: document.getElementById('edit-biz-name').value,
+        ownerName: document.getElementById('edit-owner-name').value,
+        phone: document.getElementById('edit-phone').value,
+        email: document.getElementById('edit-email').value,
+        location: document.getElementById('edit-address').value,
+        walletNumber: document.getElementById('edit-wallet-number').value
+      };
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/profile/${id}`, {
+          method: 'PATCH',
+          headers: H,
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast('Profile updated successfully!', 'success');
           fetchFranchises();
-        } else {
-          const errData = await res.json().catch(() => ({ error: 'Endpoint Not Found (404)' }));
-          showToast(errData.error || 'Approval failed', 'warning');
-          if (res.status === 404) {
-            alert("ALERT: Backend server needs a RESTART to pick up the new Wallet approval routes!");
-          }
+        } else { showToast('Profile update failed', 'warning'); }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    async function updateFranchiseWalletId(id) {
+      const walletNumber = document.getElementById('edit-wallet-number').value;
+      if (walletNumber && walletNumber.length !== 16) {
+          return showToast('Wallet ID must be exactly 16 digits', 'warning');
+      }
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/profile/${id}`, {
+          method: 'PATCH',
+          headers: H,
+          body: JSON.stringify({ walletNumber })
+        });
+        if (res.ok) {
+          showToast('Wallet ID saved successfully!', 'success');
+          fetchFranchises();
+        } else { showToast('Update failed', 'warning'); }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    function previewImg(input, targetId) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.getElementById(targetId);
+          img.src = e.target.result;
+          img.classList.remove('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    async function uploadFranchiseDocs(id) {
+      const btn = document.getElementById('btn-upload-docs');
+      const photo = document.getElementById('up-photo').files[0];
+      const aadhaar = document.getElementById('up-aadhaar').files[0];
+      const pan = document.getElementById('up-pan').files[0];
+      const license = document.getElementById('up-license').files[0];
+      if (!photo && !aadhaar && !pan && !license) return showToast('Choose at least one file', 'warning');
+      const fd = new FormData();
+      if (photo) fd.append('profilePhoto', photo);
+      if (aadhaar) fd.append('aadhaarDoc', aadhaar);
+      if (pan) fd.append('panDoc', pan);
+      if (license) fd.append('businessLicense', license);
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/upload/${id}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: fd
+        });
+        if (res.ok) { 
+           showToast('Documents uploaded successfully!', 'success'); 
+           // Refresh modal to show new documents
+           const nameHeader = document.querySelector('#franchise-modal h3');
+           const locHeader = document.querySelector('#franchise-modal p');
+           if (nameHeader && locHeader) {
+               const name = nameHeader.textContent.replace(' ', '').trim(); // Remove icon gap
+               const loc = locHeader.textContent.trim();
+               // We need the ID too, which we have from the function argument 'id'
+               viewFranchise(id, name, loc);
+           } else {
+               fetchFranchises(); // Fallback
+           }
         }
-      } catch (e) {
-        console.error(e);
-        showToast('Server Error during approval', 'warning');
-      }
+        else { showToast('Upload failed', 'warning'); }
+      } catch (e) { showToast('Network error', 'warning'); }
+      finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Upload & Verify Documents'; }
     }
 
-    // ===== EXPORT LEDGER =====
-    function exportLedger() {
-      const mode = document.getElementById('ledger-payment-mode').value;
-      downloadCSV('export', { type: 'ledger', paymentMode: mode }, 'KSP_Ledger.csv');
+    async function generateWalletId(id, name) {
+      if (!confirm(`Generate unique Wallet ID for ${name}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/generate-wallet/${id}`, { method: 'PUT', headers: H });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`ID Generated: ${data.walletNumber}`, 'success');
+          document.getElementById('franchise-modal')?.remove();
+          fetchFranchises(); fetchWallets();
+        }
+      } catch (e) { showToast('Error generating ID', 'warning'); }
     }
 
-    // ===== EXPORT WALLETS =====
-    function exportWallets() {
-      downloadCSV('export', { type: 'wallets' }, 'KSP_Wallets.csv');
-    }
-
-    // Check Low Stock Alerts
-    function checkLowStockAlerts(lowStockCount) {
-      if (lowStockCount > 0) {
-        console.warn(`⚠️ ${lowStockCount} franchises have low stock`);
-      }
-    }
-
-    // Show Toast
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      const toastMessage = document.getElementById('toastMessage');
-
-      let bgColor = 'bg-white';
-      let borderColor = 'border-slate-300';
-      let textColor = 'text-slate-900';
-
-      if (type === 'success') {
-        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
-        borderColor = 'border-emerald-300';
-        textColor = 'text-emerald-900';
-      } else if (type === 'warning') {
-        bgColor = 'bg-gradient-to-r from-amber-50 to-amber-100';
-        borderColor = 'border-amber-300';
-        textColor = 'text-amber-900';
-      } else if (type === 'info') {
-        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
-        borderColor = 'border-sky-300';
-        textColor = 'text-sky-900';
-      }
-
-      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
-      toastMessage.className = `text-sm font-bold ${textColor}`;
-      toastMessage.textContent = message;
-
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3500);
-    }
-
-    // ===== ADD FRANCHISE LOGIC =====
-    function openAddFranchiseModal() {
-      document.getElementById('add-franchise-form').reset();
-      document.getElementById('add-franchise-modal').classList.remove('hidden');
-    }
-
-    function closeAddFranchiseModal() {
-      document.getElementById('add-franchise-modal').classList.add('hidden');
+    function showToast(msg, type = 'info') {
+      const t = document.getElementById('toast');
+      const tm = document.getElementById('toastMessage');
+      t.className = `fixed bottom-6 right-6 z-[200] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] bg-white border-slate-300`;
+      if (type === 'success') t.className += ' bg-emerald-50 border-emerald-300 text-emerald-900';
+      if (type === 'warning') t.className += ' bg-amber-50 border-amber-300 text-amber-900';
+      tm.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
     }
 
     async function submitNewFranchise(e) {
       e.preventDefault();
       const btn = document.getElementById('add-f-submit-btn');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-      btn.disabled = true;
-
+      const errEl = document.getElementById('add-f-error');
+      errEl.classList.add('hidden');
+      
       const payload = {
-        name: document.getElementById('add-f-name').value.trim(),
-        phone: document.getElementById('add-f-phone').value.trim(),
-        businessName: document.getElementById('add-f-bname').value.trim(),
-        email: document.getElementById('add-f-email').value.trim(),
-        address: document.getElementById('add-f-address').value.trim(),
+        name: document.getElementById('add-f-name').value,
+        phone: document.getElementById('add-f-phone').value,
+        businessName: document.getElementById('add-f-bname').value,
+        email: document.getElementById('add-f-email').value,
+        address: document.getElementById('add-f-address').value,
         password: document.getElementById('add-f-pass').value
       };
-
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREATING...';
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/franchises`, {
-          method: 'POST',
-          headers: H,
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          showToast('Franchise created successfully!', 'success');
-          closeAddFranchiseModal();
-          fetchStats();
-          fetchFranchises();
-        } else {
-          showToast(data.error || 'Failed to create franchise', 'warning');
+        const res = await fetch(`${API_BASE}/employee/admin/franchises`, { method: 'POST', headers: H, body: JSON.stringify(payload) });
+        const d = await res.json();
+        if (res.ok) { 
+           showToast('Franchise Created Successfully!', 'success'); 
+           document.getElementById('add-franchise-modal').classList.add('hidden'); 
+           fetchFranchises(); 
+           document.getElementById('add-franchise-form').reset();
         }
-      } catch (err) {
-        showToast('Network error while saving', 'warning');
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        else { 
+           errEl.textContent = d.error || 'Failed to create franchise. Please try again.';
+           errEl.classList.remove('hidden');
+           showToast(d.error || 'Failed', 'warning'); 
+        }
+      } catch (e) { 
+         errEl.textContent = 'Network error. Please check your connection.';
+         errEl.classList.remove('hidden');
+      } finally { 
+         btn.disabled = false; 
+         btn.innerHTML = '<i class="fas fa-save"></i> Save Franchise';
       }
     }
 
-    // Helper: Format currency
+    function openAddFranchiseModal() { document.getElementById('add-franchise-modal').classList.remove('hidden'); }
+    function closeAddFranchiseModal() { document.getElementById('add-franchise-modal').classList.add('hidden'); }
     function formatCurrency(amount) {
+      if (!amount) return '₹0';
       if (amount >= 10000000) return '₹' + (amount / 10000000).toFixed(1) + ' Cr';
       if (amount >= 100000) return '₹' + (amount / 100000).toFixed(1) + ' L';
       if (amount >= 1000) return '₹' + (amount / 1000).toFixed(1) + ' K';
       return '₹' + amount;
     }
 
-    // Keyboard Shortcuts
-    document.addEventListener('keydown', function (e) {
-      if (document.activeElement.tagName === 'INPUT') return;
-
-      if (e.key === 's' || e.key === 'S') {
-        // Press 'S' for stock view
-        console.log('Quick access: Stock view');
-      }
-
-      if (e.key === 'w' || e.key === 'W') {
-        // Press 'W' for wallet
-        console.log('Quick access: Wallet management');
-      }
-    });
-
-    // ===== DIRECT RECHARGE =====
-    async function rechargeFranchise(id, name) {
-      const amount = document.getElementById('direct-recharge-amount').value;
-      if (!amount || amount <= 0) return showToast('Enter valid amount', 'warning');
-
-      if (!confirm(`Directly Recharge â‚¹${amount} into ${name}'s wallet?`)) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/employee/admin/ksp/direct-recharge`, {
-          method: 'POST',
-          headers: { ...H, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, amount })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          showToast(`Recharge Successful! New Balance: â‚¹${data.newBalance}`, 'success');
-          document.getElementById('franchise-modal')?.remove();
-          fetchFranchises();
-        } else {
-          showToast(data.error || 'Recharge failed', 'warning');
-        }
-      } catch (e) {
-        showToast('Network error', 'warning');
-      }
-    }
-
-    // ===== VIEW TRANSACTION HISTORY =====
     async function viewFranchiseTransactions(id, name) {
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md';
@@ -1674,64 +1590,52 @@
             <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden animate-[zoomIn_0.3s_ease-out]">
                 <div class="px-8 py-6 bg-slate-900 text-white flex justify-between items-center">
                     <div>
-                        <h3 class="text-xl font-black flex items-center gap-2"><i class="fas fa-history text-brand-blue"></i> Transaction History</h3>
-                        <p class="text-xs text-slate-400 font-bold mt-1 uppercase tracking-widest">${name}</p>
+                        <h3 class="text-xl font-black flex items-center gap-2"><i class="fas fa-history text-brand-blue"></i> History: ${name}</h3>
                     </div>
-                    <button onclick="document.getElementById('txn-history-modal').remove()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-800 hover:bg-slate-700 transition-all text-slate-400"><i class="fas fa-times"></i></button>
+                    <button onclick="document.getElementById('txn-history-modal').remove()" class="text-slate-400 h-10 w-10 flex items-center justify-center rounded-full hover:bg-slate-800 transition-all"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="p-0 max-h-[70vh] overflow-y-auto custom-scroll">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 bg-slate-50 z-10 border-b-2 border-slate-100">
-                            <tr class="text-[10px] text-slate-500 font-black uppercase tracking-wider">
-                                <th class="px-8 py-4">Date & Time</th>
-                                <th class="px-8 py-4">Type</th>
-                                <th class="px-8 py-4">Amount</th>
-                                <th class="px-8 py-4">Note / Details</th>
-                            </tr>
+                <div class="p-0 max-h-[60vh] overflow-y-auto custom-scroll">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 sticky top-0 font-black text-[10px] uppercase text-slate-500 border-b border-slate-100">
+                            <tr><th class="px-8 py-4">Date & Time</th><th class="px-8 py-4">Type</th><th class="px-8 py-4">Amount</th><th class="px-8 py-4">Note</th></tr>
                         </thead>
-                        <tbody id="modal-txn-list" class="divide-y divide-slate-50">
-                            <tr><td colspan="4" class="px-8 py-12 text-center text-slate-400 font-bold"><i class="fas fa-spinner fa-spin mr-2"></i> Loading transactions...</td></tr>
+                        <tbody id="modal-txn-list" class="text-xs divide-y divide-slate-100">
+                            <tr><td colspan="4" class="px-8 py-12 text-center text-slate-400 font-bold"><i class="fas fa-spinner fa-spin mr-2"></i> Loading...</td></tr>
                         </tbody>
                     </table>
-                </div>
-                <div class="px-8 py-4 bg-slate-50 border-t border-slate-100 text-right">
-                    <button onclick="document.getElementById('txn-history-modal').remove()" class="px-6 py-2.5 rounded-xl border-2 border-slate-300 text-slate-700 text-xs font-black hover:bg-slate-100 transition-all">Close History</button>
                 </div>
             </div>
         `;
       document.body.appendChild(modal);
-
       try {
         const res = await fetch(`${API_BASE}/employee/admin/ksp/transactions/${id}`, { headers: H });
-        const data = await res.json();
-        const list = document.getElementById('modal-txn-list');
-        if (res.ok && data.length > 0) {
-          list.innerHTML = data.map(t => `
-                    <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="px-8 py-5">
-                            <div class="text-xs font-black text-slate-900">${new Date(t.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                            <div class="text-[9px] text-slate-400 font-bold mt-0.5">${new Date(t.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
-                        </td>
-                        <td class="px-8 py-5">
-                            <span class="inline-flex items-center px-2 py-1 rounded-md text-[9px] font-black uppercase ${t.type === 'Recharge' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-brand-blue/10 text-brand-blue border border-brand-blue/20'}">
-                                <i class="fas ${t.type === 'Recharge' ? 'fa-plus-circle' : 'fa-shopping-bag'} mr-1"></i> ${t.type}
-                            </span>
-                        </td>
-                        <td class="px-8 py-5">
-                            <div class="text-xs font-black ${t.type === 'Recharge' ? 'text-emerald-700' : 'text-slate-900'}">${formatCurrency(t.amount)}</div>
-                        </td>
-                        <td class="px-8 py-5">
-                            <div class="text-[10px] text-slate-600 font-bold leading-relaxed max-w-[200px] truncate" title="${t.note}">${t.note}</div>
-                        </td>
-                    </tr>
-                `).join('');
-        } else {
-          list.innerHTML = `<tr><td colspan="4" class="px-8 py-12 text-center text-slate-400 font-bold italic">No transaction records found.</td></tr>`;
-        }
+        const txns = await res.json();
+        document.getElementById('modal-txn-list').innerHTML = txns.map(t => `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-8 py-5">
+                        <div class="font-black text-slate-900 text-[11px]">${new Date(t.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                        <div class="text-[9px] text-slate-400 font-bold mt-0.5">${new Date(t.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+                    </td>
+                    <td class="px-8 py-5">
+                       <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${t.type === 'Recharge' ? 'bg-emerald-50 text-emerald-700' : 'bg-sky-50 text-sky-700'}">
+                        ${t.type}
+                       </span>
+                    </td>
+                    <td class="px-8 py-5 font-black text-slate-900">${formatCurrency(t.amount)}</td>
+                    <td class="px-8 py-5 text-slate-500 font-bold text-[10px] italic">${t.note || '---'}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="4" class="p-10 text-center text-slate-400 italic">No transactions found</td></tr>';
       } catch (e) {
-        document.getElementById('modal-txn-list').innerHTML = `<tr><td colspan="4" class="px-8 py-12 text-center text-rose-500 font-bold italic">Failed to load transaction history.</td></tr>`;
+        document.getElementById('modal-txn-list').innerHTML = '<tr><td colspan="4" class="p-10 text-center text-rose-500 font-bold">Error loading history</td></tr>';
       }
     }
+
+    // ===== EXPORT HELPERS =====
+    function exportLedger() {
+      const mode = document.getElementById('ledger-payment-mode').value;
+      downloadCSV('export', { type: 'ledger', paymentMode: mode }, 'KSP_Ledger.csv');
+    }
+    function exportWallets() { downloadCSV('export', { type: 'wallets' }, 'KSP_Wallets.csv'); }
 
   </script>
   <script src="js/sidebar-guard.js"></script>

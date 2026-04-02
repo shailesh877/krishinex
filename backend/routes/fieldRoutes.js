@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const FieldTask = require('../models/FieldTask');
+const FieldLead = require('../models/FieldLead');
+const Transaction = require('../models/Transaction');
 const { protect, checkAdmin } = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
 
@@ -237,6 +239,78 @@ router.patch('/tasks/:id/status', protect, async (req, res) => {
     } catch (error) {
         console.error('Error updating task status:', error);
         res.status(500).json({ error: 'Server error updating status' });
+    }
+});
+
+// @route   PATCH /api/field/executives/:id/status
+// @desc    Activate/Deactivate a Field Executive
+// @access  Private/Admin
+router.patch('/executives/:id/status', protect, checkAdmin, async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!['approved', 'blocked'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status. Use approved or blocked.' });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user || user.role !== 'field_executive') {
+            return res.status(404).json({ error: 'Field Executive not found' });
+        }
+
+        user.status = status;
+        await user.save();
+
+        res.json({ message: `Executive status updated to ${status}`, status: user.status });
+    } catch (error) {
+        console.error('Error updating executive status:', error);
+        res.status(500).json({ error: 'Server error updating status' });
+    }
+});
+
+// @route   GET /api/field/executives/:id/performance
+// @desc    Get 360-degree performance data for an executive
+// @access  Private/Admin
+router.get('/executives/:id/performance', protect, checkAdmin, async (req, res) => {
+    try {
+        const execId = req.params.id;
+
+        // 1. Basic Info & User Check
+        const executive = await User.findById(execId).select('-password');
+        if (!executive || executive.role !== 'field_executive') {
+            return res.status(404).json({ error: 'Field Executive not found' });
+        }
+
+        // 2. Fetch Tasks (Assigned vs Completed)
+        const tasks = await FieldTask.find({ executive: execId }).sort({ createdAt: -1 });
+
+        // 3. Fetch Recharge history (from Transaction model)
+        const recharges = await Transaction.find({
+            performedBy: execId,
+            type: 'Credit',
+            paymentMode: 'Cash'
+        }).populate('recipient', 'name phone animate').sort({ createdAt: -1 });
+
+        // 4. Fetch Leads history
+        const leads = await FieldLead.find({ executive: execId }).sort({ createdAt: -1 });
+
+        res.json({
+            executive,
+            tasks,
+            recharges,
+            leads,
+            stats: {
+                totalTasks: tasks.length,
+                completedTasks: tasks.filter(t => t.status === 'Completed').length,
+                pendingTasks: tasks.filter(t => t.status === 'Pending').length,
+                totalCollections: tasks
+                    .filter(t => t.taskType === 'Cash Collection' && t.status === 'Completed')
+                    .reduce((sum, t) => sum + t.amount, 0),
+                leadsGenerated: leads.length
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching executive performance:', error);
+        res.status(500).json({ error: 'Server error fetching performance data' });
     }
 });
 

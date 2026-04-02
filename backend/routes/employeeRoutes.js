@@ -851,6 +851,7 @@ router.patch('/admin/field-executive/:id/reset-collection', protect, checkModule
         if (amountToClear > 0) {
             await Transaction.create({
                 transactionId: `DEP-FULL-${Date.now().toString().slice(-8)}`,
+                recipient: executiveId, // Setting executive as recipient for wallet deposit
                 performedBy: executiveId, // Executive
                 module: 'Platform',
                 amount: amountToClear,
@@ -3234,23 +3235,37 @@ router.get('/admin/kyc/details/:id', protect, checkAdmin, async (req, res) => {
 // @access  Private/Admin
 router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
     try {
-        const { action, remarks } = req.body; // action: 'approve' or 'reject'
-        if (!['approve', 'reject'].includes(action)) {
+        const { action, remarks, name, businessName, phone } = req.body;
+        if (!['approve', 'reject', 'pending'].includes(action)) {
             return res.status(400).json({ error: 'Invalid action' });
         }
 
-        const status = action === 'approve' ? 'approved' : 'rejected';
         const user = await User.findById(req.params.id);
-
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        user.status = status;
+        // Update profile data if provided
+        if (name) user.name = name;
+        if (businessName) user.businessName = businessName;
+        if (phone) user.phone = phone;
+
+        // Update KYC Status
+        if (action === 'approve') {
+            user.status = 'approved';
+            user.kycStatus = 'verified';
+        } else if (action === 'reject') {
+            user.status = 'rejected';
+            user.kycStatus = 'rejected';
+        } else {
+            user.status = 'pending';
+            user.kycStatus = 'pending';
+        }
+
         user.kycRemarks = remarks || '';
         user.kycVerifiedAt = new Date();
         user.kycVerifiedBy = req.user.id;
 
         await user.save();
-        res.json({ message: `Partner ${status} successfully`, user: { _id: user._id, status: user.status } });
+        res.json({ message: `KYC updated to ${user.status} successfully`, user: { _id: user._id, status: user.status } });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Verification failed' });
@@ -3425,7 +3440,12 @@ router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
                 walletNumber: f.walletNumber,
                 salesThisMonth,
                 status: f.status,
-                lowStockCount
+                lowStockCount,
+                profilePhotoUrl: f.profilePhotoUrl,
+                aadhaarDocUrl: f.aadhaarDocUrl,
+                panDocUrl: f.panDocUrl,
+                businessLicenseUrl: f.businessLicenseUrl,
+                email: f.email
             };
         });
 
@@ -3752,7 +3772,7 @@ router.get('/admin/finance/stats', protect, checkModule('finance'), async (req, 
             status: { $in: ['Pending', 'Completed'] },
             type: 'Payout'
         }).select('referenceId').lean();
-        const paidRefIds = new Set(allTransactions.map(t => t.referenceId.toString()));
+        const paidRefIds = new Set(allTransactions.filter(t => t.referenceId).map(t => t.referenceId.toString()));
 
         // Calculate Pending Equipment
         completedRentals.forEach(r => {
@@ -3847,7 +3867,7 @@ router.get('/admin/finance/pending', protect, checkModule('finance'), async (req
 
         // Pre-fetch all paid transactions to filter them out
         const allTransactions = await Transaction.find({ status: { $in: ['Pending', 'Completed'] } }).select('referenceId').lean();
-        const paidRefIds = new Set(allTransactions.map(t => t.referenceId.toString()));
+        const paidRefIds = new Set(allTransactions.filter(t => t.referenceId).map(t => t.referenceId.toString()));
 
         // 1. Equipment Rentals
         if (!module || module === 'all' || module === 'equipment') {
@@ -3869,7 +3889,8 @@ router.get('/admin/finance/pending', protect, checkModule('finance'), async (req
                         amountType: 'Payout',
                         bankDetails: r.owner?.bankDetails ? `${r.owner.bankDetails.bankName} - ${r.owner.bankDetails.accountNumber.slice(-4)}` : 'No Bank Added',
                         bankIfsc: r.owner?.bankDetails?.ifscCode || '',
-                        status: 'Pending'
+                        status: 'Pending',
+                        createdAt: r.createdAt
                     });
                 }
             });
@@ -3893,9 +3914,10 @@ router.get('/admin/finance/pending', protect, checkModule('finance'), async (req
                         subtext: `${l.workType} - ${l.hoursWorked > 0 ? l.hoursWorked + ' Hrs' : l.acresCovered + ' Acres'}`,
                         amountDue: amount,
                         amountType: 'Payout',
-                        bankDetails: l.labour?.bankDetails ? `${r.labour.bankDetails.bankName} - ${r.labour.bankDetails.accountNumber.slice(-4)}` : 'No Bank Added',
+                        bankDetails: l.labour?.bankDetails ? `${l.labour.bankDetails.bankName} - ${l.labour.bankDetails.accountNumber.slice(-4)}` : 'No Bank Added',
                         bankIfsc: l.labour?.bankDetails?.ifscCode || '',
-                        status: 'Pending'
+                        status: 'Pending',
+                        createdAt: l.createdAt
                     });
                 }
             });
@@ -3921,7 +3943,8 @@ router.get('/admin/finance/pending', protect, checkModule('finance'), async (req
                         amountType: 'Collection', // Indicates we need to COLLECT this money
                         bankDetails: o.assignedTo?.phone || 'No Phone', // Usually follow up via phone for collection
                         bankIfsc: '',
-                        status: 'Overdue'
+                        status: 'Overdue',
+                        createdAt: o.createdAt
                     });
                 }
             });
@@ -4598,7 +4621,7 @@ router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (r
 router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
     try {
         const franchises = await User.find({ role: 'ksp' })
-            .select('name businessName phone address status walletBalance walletNumber createdAt')
+            .select('name businessName phone address status walletBalance walletNumber createdAt email profilePhotoUrl aadhaarDocUrl panDocUrl businessLicenseUrl')
             .sort({ createdAt: -1 });
 
         const result = await Promise.all(franchises.map(async f => {
@@ -4622,7 +4645,12 @@ router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (re
                 walletNumber: f.walletNumber || null,
                 stockValue: 0, // Placeholder
                 lowStockCount,
-                salesThisMonth
+                salesThisMonth,
+                profilePhotoUrl: f.profilePhotoUrl,
+                aadhaarDocUrl: f.aadhaarDocUrl,
+                panDocUrl: f.panDocUrl,
+                businessLicenseUrl: f.businessLicenseUrl,
+                email: f.email
             };
         }));
 
@@ -4702,7 +4730,117 @@ router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) 
         res.json(combined);
     } catch (e) {
         console.error(e);
-        res.status(500).json({ error: 'Failed to fetch transactions' });
+        res.status(500).json({ error: 'Failed to fetch franchise history' });
+    }
+});
+
+// @route   POST /api/employee/admin/ksp/direct-debit
+// @desc    Admin directly debits from a KSP wallet
+router.post('/admin/ksp/direct-debit', protect, checkAdmin, async (req, res) => {
+    try {
+        const { id, amount, note } = req.body;
+        if (!id || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid ID or amount' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        
+        if (user.walletBalance < amount) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        user.walletBalance = (user.walletBalance || 0) - Number(amount);
+        await user.save();
+
+        // Create transaction record
+        await Transaction.create({
+            transactionId: 'DEBT' + Date.now().toString().substring(6),
+            recipient: id,
+            module: 'KSP',
+            amount: Number(amount),
+            type: 'Debit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            performedBy: req.user._id,
+            note: note || 'Direct admin debit'
+        });
+
+        res.json({ success: true, newBalance: user.walletBalance });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Debit failed' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/ksp/profile/:id
+// @desc    Update KSP franchise profile details
+router.patch('/admin/ksp/profile/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { name, ownerName, businessName, franchiseName, phone, email, address, location, walletNumber } = req.body;
+        const up = {};
+        if (name || ownerName) up.name = name || ownerName;
+        if (businessName || franchiseName) up.businessName = businessName || franchiseName;
+        if (phone) up.phone = phone;
+        if (email) up.email = email;
+        if (address || location) up.address = address || location;
+        if (walletNumber !== undefined) up.walletNumber = walletNumber;
+
+        const franchise = await User.findOneAndUpdate(
+            { _id: req.params.id, role: 'ksp' },
+            up,
+            { new: true }
+        ).select('-password');
+
+        if (!franchise) return res.status(404).json({ error: 'Franchise not found' });
+        res.json({ success: true, franchise });
+    } catch (e) {
+        console.error('Update franchise error:', e);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// Setup multer for franchise uploads
+const franchiseUploads = path.join(__dirname, '../uploads/ksp');
+if (!fs.existsSync(franchiseUploads)) fs.mkdirSync(franchiseUploads, { recursive: true });
+
+const franchiseStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, franchiseUploads),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        cb(null, `ksp_${req.params.id}_${file.fieldname}_${Date.now()}${ext}`);
+    }
+});
+const uploadFranchiseDoc = multer({ storage: franchiseStorage });
+
+// @route   POST /api/employee/admin/ksp/upload/:id
+// @desc    Upload documents/photo for KSP franchise
+router.post('/admin/ksp/upload/:id', protect, checkAdmin, uploadFranchiseDoc.fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'aadhaarDoc', maxCount: 1 },
+    { name: 'panDoc', maxCount: 1 },
+    { name: 'businessLicense', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const updateData = {};
+        if (req.files) {
+            if (req.files.profilePhoto) updateData.profilePhotoUrl = `uploads/ksp/${req.files.profilePhoto[0].filename}`;
+            if (req.files.aadhaarDoc) updateData.aadhaarDocUrl = `uploads/ksp/${req.files.aadhaarDoc[0].filename}`;
+            if (req.files.panDoc) updateData.panDocUrl = `uploads/ksp/${req.files.panDoc[0].filename}`;
+            if (req.files.businessLicense) updateData.businessLicenseUrl = `uploads/ksp/${req.files.businessLicense[0].filename}`;
+        }
+
+        const franchise = await User.findOneAndUpdate(
+            { _id: req.params.id, role: 'ksp' },
+            updateData,
+            { new: true }
+        ).select('-password');
+
+        if (!franchise) return res.status(404).json({ error: 'Franchise not found' });
+        res.json({ success: true, franchise });
+    } catch (e) {
+        console.error('Upload franchise doc error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
     }
 });
 

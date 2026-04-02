@@ -29,6 +29,9 @@ const doctorConsultationSchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Contacted', 'Resolved', 'Cancelled'],
         default: 'Pending'
+    },
+    resolvedNote: {
+        type: String
     }
 }, { timestamps: true });
 

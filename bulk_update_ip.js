@@ -6,8 +6,11 @@ const EXCLUDES = ['node_modules', '.git', '.next', 'build', 'dist', 'bin', 'obj'
 
 // Replacement mapping
 const REPLACEMENTS = [
-    { old: 'http://192.168.1.10:5500', new: 'https://demo.ranx24.com' },
-    { old: '192.168.1.10', new: 'demo.ranx24.com' }
+    { old: 'https://demo.ranx24.com', new: 'https://demo.ranx24.com' },
+    { old: 'https://demo.ranx24.com', new: 'https://demo.ranx24.com' },
+    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' },
+    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' },
+    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' }
 ];
 
 function walk(dir) {
@@ -22,7 +25,7 @@ function walk(dir) {
             }
         } else {
             const ext = path.extname(file).toLowerCase();
-            if (['.html', '.js', '.ts', '.tsx', '.ps1', '.env', '.json', '.md'].includes(ext)) {
+            if (['.html', '.js', '.ts', '.tsx', '.ps1', '.env', '.json', '.md'].includes(ext) || file === '.env') {
                 let content = fs.readFileSync(fullPath, 'utf8');
                 let updated = false;
 

@@ -752,18 +752,31 @@
         <!-- Body -->
         <div class="px-6 py-6 space-y-6">
           
-          <!-- Top Row -->
-          <div class="flex items-start justify-between">
-            <div>
-              <h2 id="kycModalName" class="text-2xl font-black text-slate-900">...</h2>
+          <!-- Top Row (Editable) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Full Name / Business Name</label>
+                <input type="text" id="kycModalNameInput" class="w-full text-xl font-black text-slate-900 border-b-2 border-slate-100 focus:border-emerald-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter name">
+              </div>
               <div class="flex items-center gap-2 mt-2">
                 <span id="kycModalRole" class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 uppercase">...</span>
-                <span id="kycModalStatus" class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-700 uppercase">...</span>
+                <select id="kycModalStatusSelect" class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black uppercase outline-none cursor-pointer border-2 border-transparent focus:border-slate-300 transition-all">
+                  <option value="pending">Pending</option>
+                  <option value="approve">Approved</option>
+                  <option value="reject">Rejected</option>
+                </select>
               </div>
             </div>
-            <div class="text-right">
-              <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Contact Details</p>
-              <p id="kycModalPhone" class="text-base font-black text-slate-800">...</p>
+            <div class="space-y-4">
+              <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Mobile Number</label>
+                <input type="text" id="kycModalPhoneInput" class="w-full text-lg font-black text-slate-800 border-b-2 border-slate-100 focus:border-sky-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter phone">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Admin Remarks</label>
+                <textarea id="kycModalRemarksInput" rows="2" class="w-full text-sm font-semibold text-slate-700 italic border-b-2 border-slate-100 focus:border-amber-500 outline-none transition-all py-1 bg-transparent" placeholder="Add verification remarks..."></textarea>
+              </div>
             </div>
           </div>
 
@@ -778,20 +791,20 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div id="kycModalVerifiedRow" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
               <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><i class="fas fa-calendar-check text-slate-400"></i> Verification Date</p>
               <p id="kycModalVerifiedAt" class="text-sm font-black text-slate-800">...</p>
-            </div>
-            <div class="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
-              <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 flex items-center gap-1"><i class="fas fa-comment-dots text-slate-400"></i> Admin Remarks</p>
-              <p id="kycModalRemarks" class="text-sm font-semibold text-slate-700 italic">...</p>
             </div>
           </div>
 
         </div>
         
-        <div id="kycModalActions" class="bg-slate-50 px-6 py-4 flex justify-end gap-3 rounded-b-3xl border-t border-slate-100 hidden">
+        <div id="kycModalActions" class="bg-slate-50 px-6 py-4 flex justify-end gap-3 rounded-b-3xl border-t border-slate-100">
+           <button onclick="closeKycProfileModal()" class="px-6 py-2.5 rounded-xl border-2 border-slate-300 text-slate-700 font-black text-xs hover:bg-slate-100 transition-all">Cancel</button>
+           <button id="saveKycBtn" onclick="saveKycProfile()" class="px-8 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-black text-xs hover:shadow-lg hover:from-emerald-700 hover:to-emerald-800 transition-all active:scale-95">
+             Update Profile & Status
+           </button>
         </div>
       </div>
     </div>
@@ -1127,23 +1140,39 @@
         const user = await res.json();
         
         document.getElementById('kycModalUserId').textContent = `ID: ${user._id ? user._id.toString().substring(18).toUpperCase() : 'N/A'}`;
-        document.getElementById('kycModalName').textContent = user.businessName || user.name || 'Unknown User';
+        document.getElementById('kycModalNameInput').value = user.businessName || user.name || '';
+        document.getElementById('kycModalPhoneInput').value = user.phone || '';
+        document.getElementById('kycModalRemarksInput').value = user.kycRemarks || '';
         
         document.getElementById('kycModalRole').textContent = (user.role || 'user').toUpperCase();
         
-        const statusEl = document.getElementById('kycModalStatus');
-        statusEl.textContent = (user.status || 'pending').toUpperCase();
-        statusEl.className = `inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
-          user.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
-          user.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+        const statusSelect = document.getElementById('kycModalStatusSelect');
+        const currentStatus = user.status || 'pending';
+        statusSelect.value = currentStatus === 'approved' ? 'approve' : (currentStatus === 'rejected' ? 'reject' : 'pending');
+        
+        // Dynamic status styling
+        statusSelect.className = `inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black uppercase outline-none cursor-pointer border-2 transition-all ${
+          currentStatus === 'approved' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
+          currentStatus === 'rejected' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-amber-100 text-amber-700 border-amber-200'
         }`;
+
+        statusSelect.onchange = () => {
+          const val = statusSelect.value;
+          statusSelect.className = `inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black uppercase outline-none cursor-pointer border-2 transition-all ${
+            val === 'approve' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
+            val === 'reject' ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-amber-100 text-amber-700 border-amber-200'
+          }`;
+        };
         
-        document.getElementById('kycModalPhone').textContent = user.phone || 'N/A';
+        const verifiedRow = document.getElementById('kycModalVerifiedRow');
+        if (user.kycVerifiedAt) {
+          verifiedRow.classList.remove('hidden');
+          document.getElementById('kycModalVerifiedAt').textContent = new Date(user.kycVerifiedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } else {
+          verifiedRow.classList.add('hidden');
+        }
         
-        const verifiedAt = user.kycVerifiedAt ? new Date(user.kycVerifiedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Pending / Not Verified';
-        document.getElementById('kycModalVerifiedAt').textContent = verifiedAt;
-        
-        document.getElementById('kycModalRemarks').textContent = user.kycRemarks || 'No remarks provided.';
+        currentKycUserId = userId; // Store globally for saving
         
         // Documents Container
         const docsContainer = document.getElementById('kycModalDocuments');
@@ -1172,26 +1201,56 @@
         }
         docsContainer.innerHTML = docsHtml;
         
-        const actionsContainer = document.getElementById('kycModalActions');
-        if (user.status === 'pending' || user.status === 'under review') {
-          actionsContainer.innerHTML = `
-            <button onclick="rejectKYC('${user._id}', '${user.name || user.businessName}')" class="px-4 py-2 rounded-xl border-2 border-slate-200 text-slate-700 font-bold text-[11px] hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-all">
-              <i class="fas fa-times mr-1"></i> Reject
-            </button>
-            <button onclick="approveKYC('${user._id}', '${user.name || user.businessName}')" class="px-4 py-2 rounded-xl bg-emerald-500 text-white font-black text-[11px] hover:bg-emerald-600 shadow-md transition-all">
-              <i class="fas fa-check mr-1"></i> Approve
-            </button>
-          `;
-          actionsContainer.classList.remove('hidden');
-        } else {
-          actionsContainer.innerHTML = '';
-          actionsContainer.classList.add('hidden');
-        }
-
         document.getElementById('kycProfileModal').classList.remove('hidden');
       } catch (e) {
         console.error(e);
         showToast('Could not fetch history', 'info');
+      }
+    }
+
+    let currentKycUserId = null;
+
+    async function saveKycProfile() {
+      if (!currentKycUserId) return;
+      
+      const payload = {
+        action: document.getElementById('kycModalStatusSelect').value,
+        remarks: document.getElementById('kycModalRemarksInput').value.trim(),
+        name: document.getElementById('kycModalNameInput').value.trim(),
+        phone: document.getElementById('kycModalPhoneInput').value.trim()
+      };
+
+      if (!payload.name || !payload.phone) {
+        showToast('Name and Phone are required', 'warning');
+        return;
+      }
+
+      const saveBtn = document.getElementById('saveKycBtn');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/kyc/verify/${currentKycUserId}`, {
+          method: 'PUT',
+          headers: H,
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('KYC Profile & Status updated successfully', 'success');
+          closeKycProfileModal();
+          fetchKYCList();
+          fetchStats();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Update failed', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error', 'warning');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
       }
     }
 

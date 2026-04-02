@@ -513,13 +513,31 @@
                   Equipment partners, Buyers, Labour - consolidated view
                 </p>
               </div>
-              <div class="flex gap-2">
+              <div class="flex flex-wrap gap-2 items-center">
+                <div class="relative">
+                  <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <input type="text" id="payoutSearch" placeholder="Search partner..." 
+                    class="h-9 w-44 pl-8 pr-3 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none">
+                </div>
+                <!-- Date Filter -->
+                <div class="flex items-center gap-1.5 bg-white border-2 border-slate-200 rounded-xl px-2 h-9">
+                  <input type="date" id="payoutDateFrom" class="text-[10px] font-bold text-slate-600 outline-none bg-transparent">
+                  <span class="text-slate-300">-</span>
+                  <input type="date" id="payoutDateTo" class="text-[10px] font-bold text-slate-600 outline-none bg-transparent">
+                </div>
                 <select id="payoutModuleFilter"
-                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold focus:border-emerald-400 outline-none transition-all">
                   <option value="all">All Modules</option>
                   <option value="equipment">Equipment</option>
                   <option value="labour">Labour</option>
-                  <option value="buyer">Buyer Trading</option>
+                  <option value="buyertrading">Buyer Collection</option>
+                </select>
+                <select id="payoutStatusFilter"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold focus:border-emerald-400 outline-none transition-all text-amber-600">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="completed">Completed</option>
                 </select>
                 <button onclick="approveBulkPayouts()"
                   class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all">
@@ -686,10 +704,23 @@
                   Payment history across all modules
                 </p>
               </div>
-              <button
-                class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-green-600 shadow-md transition-all">
-                <i class="fas fa-download mr-2"></i> Export
-              </button>
+              <div class="flex flex-wrap gap-2 items-center">
+                <div class="relative">
+                  <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <input type="text" id="transactionSearch" placeholder="Search ID, Recipient..." 
+                    class="h-9 w-48 pl-8 pr-3 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold focus:border-emerald-400 outline-none transition-all">
+                </div>
+                <!-- Date Filter -->
+                <div class="flex items-center gap-1.5 bg-white border-2 border-slate-200 rounded-xl px-2 h-9">
+                  <input type="date" id="transactionDateFrom" class="text-[10px] font-bold text-slate-600 outline-none bg-transparent">
+                  <span class="text-slate-300">-</span>
+                  <input type="date" id="transactionDateTo" class="text-[10px] font-bold text-slate-600 outline-none bg-transparent">
+                </div>
+                <button id="exportFinanceBtn"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-green-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
             </div>
           </div>
 
@@ -872,15 +903,55 @@
 
     async function fetchPendingPayouts() {
       try {
-        const moduleFilter = document.getElementById('payoutModuleFilter')?.value || 'all';
-        const res = await fetch(`${API_BASE}/employee/admin/finance/pending?module=${moduleFilter.toLowerCase()}`, {
+        // Fetch all pending payouts once to allow efficient client-side filtering
+        const res = await fetch(`${API_BASE}/employee/admin/finance/pending?module=all`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         if (res.ok) {
           allPendingPayouts = await res.json();
-          renderPendingTable(allPendingPayouts);
+          applyPayoutFilters();
         }
       } catch (e) { console.error('Pending payouts fetch error:', e); }
+    }
+
+    function applyPayoutFilters() {
+      const searchTerm = document.getElementById('payoutSearch').value.toLowerCase();
+      const moduleFilter = document.getElementById('payoutModuleFilter').value.toLowerCase();
+      const statusFilter = document.getElementById('payoutStatusFilter').value.toLowerCase();
+      const dateFrom = document.getElementById('payoutDateFrom').value;
+      const dateTo = document.getElementById('payoutDateTo').value;
+
+      const filtered = allPendingPayouts.filter(item => {
+        // Search Filter
+        const matchesSearch = !searchTerm || 
+          item.partnerName.toLowerCase().includes(searchTerm) || 
+          (item.partnerId && item.partnerId.toLowerCase().includes(searchTerm));
+        
+        // Module Filter
+        const matchesModule = moduleFilter === 'all' || item.module.toLowerCase() === moduleFilter;
+        
+        // Status Filter
+        const matchesStatus = statusFilter === 'all' || item.status.toLowerCase() === statusFilter;
+
+        // Date Filter (assuming 'period' or some date field exists, if not we skip for now or use createdAt if available)
+        // For payouts, the period is usually just a month. Let's check if there's a specific date.
+        // If not, we'll just skip date filtering for payouts or use a placeholder logic.
+        // Actually, let's assume item.date or item.createdAt exists if we want to filter by date.
+        let matchesDate = true;
+        if (dateFrom || dateTo) {
+          const itemDate = new Date(item.createdAt || item.date);
+          if (dateFrom && itemDate < new Date(dateFrom)) matchesDate = false;
+          if (dateTo) {
+            const toDate = new Date(dateTo);
+            toDate.setHours(23, 59, 59, 999);
+            if (itemDate > toDate) matchesDate = false;
+          }
+        }
+
+        return matchesSearch && matchesModule && matchesStatus && matchesDate;
+      });
+
+      renderPendingTable(filtered);
     }
 
     function renderPendingTable(items) {
@@ -951,9 +1022,38 @@
         });
         if (res.ok) {
           allTransactions = await res.json();
-          renderTransactionsTable(allTransactions);
+          applyTransactionFilters();
         }
       } catch (e) { console.error('Ledger fetch error:', e); }
+    }
+
+    function applyTransactionFilters() {
+      const searchTerm = document.getElementById('transactionSearch').value.toLowerCase();
+      const dateFrom = document.getElementById('transactionDateFrom').value;
+      const dateTo = document.getElementById('transactionDateTo').value;
+
+      const filtered = allTransactions.filter(t => {
+        // Search Filter
+        const matchesSearch = !searchTerm || 
+          t.transactionId.toLowerCase().includes(searchTerm) || 
+          t.recipientName.toLowerCase().includes(searchTerm) ||
+          (t.recipientId && t.recipientId.toLowerCase().includes(searchTerm));
+
+        // Date Filter
+        let matchesDate = true;
+        const itemDate = new Date(t.date);
+        if (dateFrom && itemDate < new Date(dateFrom)) matchesDate = false;
+        if (dateTo) {
+           // To include the full end date, we set it to end of day
+           const toDate = new Date(dateTo);
+           toDate.setHours(23, 59, 59, 999);
+           if (itemDate > toDate) matchesDate = false;
+        }
+
+        return matchesSearch && matchesDate;
+      });
+
+      renderTransactionsTable(filtered);
     }
 
     function renderTransactionsTable(transactions) {
@@ -1113,9 +1213,18 @@
     window.addEventListener('DOMContentLoaded', function () {
       console.log('💰 Live Finance API initializing...');
 
-      // Ensure payout filter has correct listener
-      const filter = document.getElementById('payoutModuleFilter');
-      if (filter) filter.addEventListener('change', fetchPendingPayouts);
+      // Event Listeners for Filters
+      const payoutFilters = ['payoutSearch', 'payoutDateFrom', 'payoutDateTo', 'payoutModuleFilter', 'payoutStatusFilter'];
+      payoutFilters.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', applyPayoutFilters);
+      });
+
+      const transactionFilters = ['transactionSearch', 'transactionDateFrom', 'transactionDateTo'];
+      transactionFilters.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', applyTransactionFilters);
+      });
 
       const buttons = document.querySelectorAll('button');
       buttons.forEach(b => {

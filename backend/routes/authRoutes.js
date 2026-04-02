@@ -228,7 +228,23 @@ router.post('/login-employee', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
-        // TRIGGER 2FA for ALL Management Roles (Admin, Employee, Field Exec)
+        // Field Executives login directly without OTP
+        if (user.role === 'field_executive') {
+            const token = generateToken(user._id, user.name, user.role, '30d');
+            return res.status(200).json({
+                message: 'Login successful',
+                token,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    role: user.role,
+                    email: user.email,
+                    employeeModules: user.employeeModules || []
+                }
+            });
+        }
+
+        // TRIGGER 2FA for Admin and other Employee Roles
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
         user.loginOtp = otp;
         user.loginOtpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins

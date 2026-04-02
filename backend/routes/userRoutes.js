@@ -814,5 +814,41 @@ router.put('/admin/credit/:id', protect, checkModule('users'), async (req, res) 
     }
 });
 
+// @route   PATCH /api/user/admin/profile/:id
+// @desc    Admin: Update farmer profile details including bank info
+// @access  Private (Admin Only)
+router.patch('/admin/profile/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { name, phone, email, address, village, bankDetails } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Farmer not found' });
+
+        if (name) user.name = name;
+        if (phone) user.phone = phone;
+        if (email) user.email = email;
+        if (address) user.address = address;
+        if (village) user.village = village;
+
+        if (bankDetails) {
+            const b = user.bankDetails || {};
+            user.bankDetails = {
+                holderName: bankDetails.holderName !== undefined ? bankDetails.holderName : b.holderName,
+                bankName: bankDetails.bankName !== undefined ? bankDetails.bankName : b.bankName,
+                accountNumber: bankDetails.accountNumber !== undefined ? bankDetails.accountNumber : b.accountNumber,
+                ifscCode: bankDetails.ifscCode !== undefined ? bankDetails.ifscCode : b.ifscCode,
+                bankAddress: b.bankAddress,
+                bankDocUrl: b.bankDocUrl
+            };
+            user.markModified('bankDetails');
+        }
+
+        await user.save();
+        res.json({ message: 'Profile updated successfully', user });
+    } catch (error) {
+        console.error('Admin Profile Update error:', error);
+        res.status(500).json({ error: 'Update failed' });
+    }
+});
+
 module.exports = router;
 
