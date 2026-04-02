@@ -282,10 +282,23 @@
             class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
             <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
           </span>
+                  <a href="users_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
+            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
           <span class="truncate font-semibold">Farmers & Users</span>
         </a>
 
-        <a href="field_executive.html"
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a><a href="field_executive.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
           <span
             class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
@@ -756,8 +769,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
               <div>
-                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Full Name / Business Name</label>
-                <input type="text" id="kycModalNameInput" class="w-full text-xl font-black text-slate-900 border-b-2 border-slate-100 focus:border-emerald-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter name">
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Full Name</label>
+                <input type="text" id="kycModalNameInput" class="w-full text-base font-black text-slate-900 border-b-2 border-slate-100 focus:border-emerald-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter name">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Business Name</label>
+                <input type="text" id="kycModalBusinessNameInput" class="w-full text-base font-black text-slate-900 border-b-2 border-slate-100 focus:border-emerald-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter business name">
               </div>
               <div class="flex items-center gap-2 mt-2">
                 <span id="kycModalRole" class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 uppercase">...</span>
@@ -771,7 +788,11 @@
             <div class="space-y-4">
               <div>
                 <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Mobile Number</label>
-                <input type="text" id="kycModalPhoneInput" class="w-full text-lg font-black text-slate-800 border-b-2 border-slate-100 focus:border-sky-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter phone">
+                <input type="text" id="kycModalPhoneInput" class="w-full text-base font-black text-slate-800 border-b-2 border-slate-100 focus:border-sky-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter phone">
+              </div>
+              <div>
+                <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Address / Location</label>
+                <input type="text" id="kycModalAddressInput" class="w-full text-base font-black text-slate-800 border-b-2 border-slate-100 focus:border-sky-500 outline-none transition-all py-1 bg-transparent" placeholder="Enter address">
               </div>
               <div>
                 <label class="text-[10px] text-slate-500 font-bold uppercase mb-1 block">Admin Remarks</label>
@@ -1050,11 +1071,12 @@
           const res = await fetch(`${API_BASE}/employee/admin/kyc/verify/${userId}`, {
             method: 'PUT',
             headers: H,
-            body: JSON.stringify({ action: 'approve', remarks: 'Approved by admin' })
+            body: JSON.stringify({ action: 'approve', remarks: 'Approved by admin quick-action' })
           });
           if (!res.ok) throw new Error('Approval failed');
           showToast(`KYC approved for ${userName}`, 'success');
-          setTimeout(() => location.reload(), 1500);
+          fetchKYCList();
+          fetchStats();
         } catch (e) {
           showToast('Failed to approve', 'info');
         }
@@ -1073,7 +1095,8 @@
           });
           if (!res.ok) throw new Error('Rejection failed');
           showToast(`KYC rejected for ${userName}: ${reason}`, 'info');
-          setTimeout(() => location.reload(), 1500);
+          fetchKYCList();
+          fetchStats();
         } catch (e) {
           showToast('Failed to reject', 'info');
         }
@@ -1140,8 +1163,10 @@
         const user = await res.json();
         
         document.getElementById('kycModalUserId').textContent = `ID: ${user._id ? user._id.toString().substring(18).toUpperCase() : 'N/A'}`;
-        document.getElementById('kycModalNameInput').value = user.businessName || user.name || '';
+        document.getElementById('kycModalNameInput').value = user.name || '';
+        document.getElementById('kycModalBusinessNameInput').value = user.businessName || '';
         document.getElementById('kycModalPhoneInput').value = user.phone || '';
+        document.getElementById('kycModalAddressInput').value = user.address || '';
         document.getElementById('kycModalRemarksInput').value = user.kycRemarks || '';
         
         document.getElementById('kycModalRole').textContent = (user.role || 'user').toUpperCase();
@@ -1217,7 +1242,9 @@
         action: document.getElementById('kycModalStatusSelect').value,
         remarks: document.getElementById('kycModalRemarksInput').value.trim(),
         name: document.getElementById('kycModalNameInput').value.trim(),
-        phone: document.getElementById('kycModalPhoneInput').value.trim()
+        businessName: document.getElementById('kycModalBusinessNameInput').value.trim(),
+        phone: document.getElementById('kycModalPhoneInput').value.trim(),
+        address: document.getElementById('kycModalAddressInput').value.trim()
       };
 
       if (!payload.name || !payload.phone) {

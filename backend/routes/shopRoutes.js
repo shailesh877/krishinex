@@ -1705,7 +1705,7 @@ router.get('/ledger/history', protect, async (req, res) => {
             .populate({
                 path: 'orderId',
                 populate: {
-                    path: 'items.productId',
+                    path: 'items.itemRef',
                     select: 'name price image'
                 }
             })
@@ -1781,6 +1781,13 @@ router.get('/ledger/dues/:farmerId/details', protect, async (req, res) => {
             shopId,
             farmerId,
             method: { $in: ['SHOP_DUE', 'RECOVERY'] }
+        })
+        .populate({
+            path: 'orderId',
+            populate: {
+                path: 'items.itemRef',
+                select: 'name price'
+            }
         })
         .sort({ createdAt: -1 });
 

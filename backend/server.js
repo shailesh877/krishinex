@@ -22,12 +22,16 @@ const corsOptions = {
         const allowedOrigins = [
             'https://krishinex.com',
             'https://admin.krishinex.com',
+            'https://demo.ranx24.com',
             'http://localhost:3000',
             'http://localhost:3001',
             'http://localhost:5173',
             'http://demo.ranx24.com:3000',
             'http://demo.ranx24.com:3001',
-            'http://demo.ranx24.com:5173'
+            'http://demo.ranx24.com:5173',
+            'https://demo.ranx24.com:3000',
+            'https://demo.ranx24.com:3001',
+            'https://demo.ranx24.com:5173'
         ];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);

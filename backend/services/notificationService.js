@@ -5,10 +5,16 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 
 const FIREBASE_CONFIG = process.env.FIREBASE_SERVICE_ACCOUNT;
+const serviceAccountPath = path.join(__dirname, '../serviceAccountKey.json');
+let firebaseApp;
 
 if (FIREBASE_CONFIG) {
     try {
         const serviceAccount = JSON.parse(FIREBASE_CONFIG);
+        // Bhai, fix escaped newlines in private_key if they exist
+        if (serviceAccount.private_key) {
+            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+        }
         firebaseApp = admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
         });

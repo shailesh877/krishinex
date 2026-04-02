@@ -3231,7 +3231,7 @@ router.get('/admin/kyc/details/:id', protect, checkAdmin, async (req, res) => {
 });
 
 // @route   PUT /api/employee/admin/kyc/verify/:id
-// @desc    Approve or Reject KYC for a partner
+// @desc    Approve or Reject KYC for a partner (supports profile edits)
 // @access  Private/Admin
 router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
     try {
@@ -3243,15 +3243,18 @@ router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        // Update profile data if provided
+        // Update profile data if provided (Correction during KYC)
         if (name) user.name = name;
         if (businessName) user.businessName = businessName;
         if (phone) user.phone = phone;
+        if (req.body.address) user.address = req.body.address;
 
         // Update KYC Status
         if (action === 'approve') {
             user.status = 'approved';
             user.kycStatus = 'verified';
+            user.kycVerifiedAt = new Date();
+            user.kycVerifiedBy = req.user.id;
         } else if (action === 'reject') {
             user.status = 'rejected';
             user.kycStatus = 'rejected';
@@ -3260,14 +3263,15 @@ router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
             user.kycStatus = 'pending';
         }
 
-        user.kycRemarks = remarks || '';
-        user.kycVerifiedAt = new Date();
-        user.kycVerifiedBy = req.user.id;
+        if (remarks !== undefined) user.kycRemarks = remarks;
 
         await user.save();
-        res.json({ message: `KYC updated to ${user.status} successfully`, user: { _id: user._id, status: user.status } });
+        res.json({ 
+            message: `KYC updated to ${user.status} successfully`, 
+            user: { _id: user._id, status: user.status, name: user.name, phone: user.phone } 
+        });
     } catch (e) {
-        console.error(e);
+        console.error('[KYC-VERIFY] Error:', e);
         res.status(500).json({ error: 'Verification failed' });
     }
 });
@@ -5007,6 +5011,68 @@ router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
         res.json(leads);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch leads' });
+    }
+});
+
+// @route   GET /api/employee/admin/all-nex-cards
+// @desc    Get all users who have a Nex Card issued
+// @access  Private/Admin
+router.get('/admin/all-nex-cards', protect, checkAdmin, async (req, res) => {
+    try {
+        const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
+        const users = await User.find({ 
+            role: { $in: eligibleRoles },
+            $or: [
+                { cardNumber: { $exists: true, $ne: '' } },
+                { walletNumber: { $exists: true, $ne: '' } }
+            ]
+        })
+            .select('name role phone cardNumber walletNumber businessName status createdAt')
+            .sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        console.error('[NEX-CARD-LIST] Error:', error);
+        res.status(500).json({ error: 'Failed to fetch Nex Cards' });
+    }
+});
+
+// @route   GET /api/employee/admin/export-nex-cards
+// @desc    Export all Nex Card users to CSV
+// @access  Private/Admin
+router.get('/admin/export-nex-cards', protect, checkAdmin, async (req, res) => {
+    try {
+        const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
+        const users = await User.find({ 
+            role: { $in: eligibleRoles },
+            $or: [
+                { cardNumber: { $exists: true, $ne: '' } },
+                { walletNumber: { $exists: true, $ne: '' } }
+            ]
+        })
+            .select('name role phone cardNumber walletNumber businessName status createdAt')
+            .sort({ createdAt: -1 });
+
+        let csv = 'Name,Role,Phone,Nex Card No.,Business Name,Status,Created At\n';
+        users.forEach(u => {
+            const cardNum = u.cardNumber || u.walletNumber || '';
+            const row = [
+                `"${u.name}"`,
+                `"${u.role}"`,
+                `"${u.phone}"`,
+                `"${cardNum}"`,
+                `"${u.businessName || ''}"`,
+                `"${u.status}"`,
+                `"${u.createdAt.toISOString()}"`
+            ];
+            csv += row.join(',') + '\n';
+        });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=NexCards_Export.csv');
+        res.status(200).send(csv);
+    } catch (error) {
+        console.error('[NEX-CARD-EXPORT] Error:', error);
+        res.status(500).json({ error: 'Failed to export Nex Cards' });
     }
 });
 

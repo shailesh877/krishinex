@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Dynamic Advisory Management - KrishiNex Admin</title>
+  <title>KrishiNex Admin – Nex Card Management</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Security Headers -->
@@ -23,7 +23,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
 
   <script>
     tailwind.config = {
@@ -45,17 +44,14 @@
       width: 6px;
       height: 6px;
     }
-
     .custom-scroll::-webkit-scrollbar-track {
       background: #f1f5f9;
       border-radius: 10px;
     }
-
     .custom-scroll::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
     }
-
     .custom-scroll::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
@@ -65,11 +61,10 @@
 <body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900">
   <div class="min-h-screen flex">
     <!-- MOBILE OVERLAY -->
-    <div id="mobile-backdrop"
-      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
-      onclick="toggleSidebar(false)"></div>
+    <div id="mobile-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar(false)"></div>
 
-    <!-- ========== SIDEBAR ========== -->
+    <!-- SIDEBAR (Simplified for direct include or copy-paste from other pages) -->
+    <!-- Note: In a real app we'd use a component or include. For now, we'll keep the structure consistent. -->
     <aside id="sidebar"
       class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
       <!-- Brand -->
@@ -85,7 +80,7 @@
       </div>
 
       <!-- Navigation -->
-                        <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -195,12 +190,12 @@
         </a>
 
         <a href="suggestion_management.html"
-          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
           <span
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
-            <i class="fas fa-lightbulb text-emerald-600"></i>
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
           </span>
-          <span class="truncate font-black">Dynamic Advisory</span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
         </a>
 
         <a href="doctor_consultation_management.html"
@@ -258,23 +253,19 @@
             class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
             <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
           </span>
-                  <a href="users_managment.html"
-          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 hover:text-emerald-700 transition-all duration-200">
-          <span
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-green-100 transition-all">
-            <i class="fas fa-seedling text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
-          </span>
           <span class="truncate font-semibold">Farmers & Users</span>
         </a>
 
         <a href="nex_card_management.html"
-          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
           <span
-            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
-            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-id-card text-emerald-600"></i>
           </span>
-          <span class="truncate font-semibold">Nex Card Management</span>
-        </a><a href="field_executive.html"
+          <span class="truncate font-black">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
           <span
             class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
@@ -332,217 +323,210 @@
           <span class="truncate font-semibold">Settings</span>
         </a>
       </nav>
-
-      <!-- Sidebar Footer -->
-      <div
-        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
-        <div class="flex items-center gap-3">
-          <div
-            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
-            <i class="fas fa-crown text-white text-sm"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
-            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
-          </div>
-          <button onclick="logoutSession()"
-            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
-            title="Logout Session">
-            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
-          </button>
-        </div>
-      </div>
     </aside>
 
-    <!-- ========== MAIN AREA ========== -->
+    <!-- MAIN AREA -->
     <div class="flex-1 flex flex-col md:ml-64">
       <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
         <div class="flex items-center justify-between px-4 md:px-6 h-16">
           <div class="flex items-center gap-3">
-            <button class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white">
-              <i class="fas fa-bars"></i>
-            </button>
             <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <i class="fas fa-lightbulb text-emerald-600"></i>
-              Dynamic Advisory Management
+              <i class="fas fa-id-card text-emerald-600"></i>
+              Nex Card Management
             </h1>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="exportCards()" class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 px-4 text-xs text-white font-black hover:from-emerald-600 hover:to-sky-600 shadow-md transition-all">
+                <i class="fas fa-download mr-2"></i> Export to CSV
+            </button>
           </div>
         </div>
       </header>
 
-      <main class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
-        <!-- Add New Advisory -->
-        <section class="bg-white rounded-2xl border-2 border-slate-200 shadow-xl p-6">
-          <h2 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
-            <i class="fas fa-plus-circle text-emerald-600"></i>
-            Add New Advisory Suggestion
-          </h2>
-          <form id="suggestionForm" class="space-y-4">
-            <div class="space-y-1">
-              <label class="text-[11px] font-black text-slate-500 uppercase">Advisory Image (Recommended Size: 1200x600)</label>
-              <input type="file" id="image" accept="image/*" required
-                class="w-full h-11 px-4 py-2 rounded-xl border-2 border-slate-200 bg-slate-50/50 text-sm font-semibold focus:border-emerald-400 transition-all outline-none">
+      <main class="flex-1 px-4 md:px-6 py-5 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+        <!-- SEARCH & FILTER -->
+        <div class="flex flex-wrap gap-3 items-center justify-between">
+            <div class="flex gap-2">
+                <input id="searchInput" type="text" placeholder="🔍 Search by Name, Phone or Card #" oninput="filterCards()"
+                  class="h-10 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-72 hover:border-slate-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all outline-none" />
+                <select id="roleFilter" onchange="filterCards()" class="h-10 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold hover:border-slate-300 transition-all">
+                    <option value="all">All Roles</option>
+                    <option value="farmer">Farmer</option>
+                    <option value="buyer">Crop Buyer</option>
+                    <option value="ksp">KSP Partner</option>
+                    <option value="shop">Shop Partner</option>
+                    <option value="equipment">Equipment Partner</option>
+                    <option value="soil">Soil Lab</option>
+                </select>
             </div>
-            <div class="flex justify-end">
-              <button type="submit"
-                class="inline-flex items-center h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-sky-500 px-8 text-sm text-white font-black hover:from-emerald-600 hover:to-sky-600 shadow-lg hover:shadow-emerald-200 transition-all transform active:scale-95">
-                <i class="fas fa-paper-plane mr-2"></i> Publish Advisory
-              </button>
+            <div class="text-xs font-bold text-slate-500 bg-white px-4 py-2 rounded-xl border-2 border-slate-200 shadow-sm">
+                Total Active Cards: <span id="cardCount" class="text-emerald-600 font-black">0</span>
             </div>
-          </form>
-        </section>
+        </div>
 
-        <!-- Active Advisories Table -->
-        <section class="bg-white rounded-2xl border-2 border-slate-200 shadow-xl overflow-hidden">
-          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
-            <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
-              <i class="fas fa-list-check text-emerald-600"></i>
-              Active Advisories
-            </h2>
-          </div>
-          <div class="overflow-x-auto">
+        <!-- CARDS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="overflow-auto custom-scroll" style="max-height: 700px;">
             <table class="min-w-full border-separate border-spacing-0">
-              <thead class="bg-slate-50">
-                <tr class="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Advisory Image</th>
-                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Date Published</th>
-                  <th class="text-right px-6 py-4 border-b-2 border-slate-200">Action</th>
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200 uppercase tracking-tighter">User Details</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Role</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Nex Card No.</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Business / Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Joined Date</th>
                 </tr>
               </thead>
-              <tbody id="suggestionBody" class="divide-y divide-slate-100">
-                <!-- Data rows -->
+              <tbody id="cardsTbody" class="divide-y divide-slate-100">
+                <!-- Populated dynamically -->
               </tbody>
             </table>
-            <div id="emptyState" class="hidden p-12 text-center bg-slate-50/50">
-              <i class="fas fa-lightbulb text-slate-200 text-6xl mb-4"></i>
-              <p class="text-slate-400 font-bold">No active advisories found.</p>
-            </div>
           </div>
         </section>
       </main>
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300">
-    <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
-      <i class="fas fa-check-circle text-emerald-400"></i>
-      <span id="toastMsg" class="text-sm font-black"></span>
-    </div>
-  </div>
-
   <script>
-    
-    const token = localStorage.getItem('employeeToken');
+    let allCards = [];
 
-    if (!token) {
-      window.location.replace('login.html');
+    async function fetchCards() {
+        const tbody = document.getElementById('cardsTbody');
+        tbody.innerHTML = '<tr><td colspan="6" class="px-5 py-10 text-center text-slate-400 font-bold italic">Loading Nex Cards...</td></tr>';
+
+        try {
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/employee/admin/all-nex-cards`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch cards');
+
+            allCards = await response.json();
+            renderCards(allCards);
+        } catch (error) {
+            console.error(error);
+            tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-10 text-center text-red-500 font-bold">Error: ${error.message}</td></tr>`;
+        }
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toastMsg').innerText = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
-    }
+    function renderCards(cards) {
+        const tbody = document.getElementById('cardsTbody');
+        document.getElementById('cardCount').textContent = cards.length;
 
-    async function fetchSuggestions() {
-      try {
-        const res = await fetch(`${API_BASE}/suggestions/all`);
-        const data = await res.json();
-        
-        const tbody = document.getElementById('suggestionBody');
-        const emptyState = document.getElementById('emptyState');
-        tbody.innerHTML = '';
-
-        if (data.length === 0) {
-          emptyState.classList.remove('hidden');
-          return;
+        if (cards.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="px-5 py-10 text-center text-slate-400 font-bold">No active Nex Cards found.</td></tr>';
+            return;
         }
 
-        emptyState.classList.add('hidden');
-        data.forEach(item => {
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-slate-50/80 transition-colors';
-          tr.innerHTML = `
-            <td class="px-6 py-5">
-              ${item.imageUrl ? `<img src="https://demo.ranx24.com/${item.imageUrl}" class="h-16 w-32 object-cover rounded-xl border-2 border-white shadow-lg" />` : '<span class="text-slate-300 italic text-[10px]">No Image</span>'}
-            </td>
-            <td class="px-6 py-5 text-xs font-black text-slate-500">
-              ${new Date(item.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
-              <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Status: Active</p>
-            </td>
-            <td class="px-6 py-5 text-right">
-              <button onclick="deleteSuggestion('${item._id}')" 
-                class="h-10 w-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-90">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } catch (err) {
-        showToast('Failed to load suggestions');
-      }
+        tbody.innerHTML = cards.map(u => `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-black text-xs uppercase shadow-sm">
+                            ${u.name.substring(0, 2)}
+                        </div>
+                        <div>
+                            <p class="text-sm font-black text-slate-900">${u.name}</p>
+                            <p class="text-[10px] text-slate-500 font-bold">${u.phone}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-5 py-4">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getRoleColor(u.role)}">
+                        ${u.role}
+                    </span>
+                </td>
+                <td class="px-5 py-4">
+                    <p class="text-sm font-mono font-black text-emerald-700 tracking-tighter cursor-pointer hover:underline" title="Click to Copy" onclick="copyText('${u.cardNumber || u.walletNumber}')">
+                        ${u.cardNumber || u.walletNumber}
+                    </p>
+                </td>
+                <td class="px-5 py-4 text-xs font-semibold text-slate-600">
+                    <p class="font-bold">${u.businessName || 'Individual'}</p>
+                </td>
+                <td class="px-5 py-4">
+                    <span class="px-2 py-1 rounded-lg text-[10px] font-black uppercase ${u.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                        ${u.status}
+                    </span>
+                </td>
+                <td class="px-5 py-4 text-[11px] font-bold text-slate-500">
+                    ${new Date(u.createdAt).toLocaleDateString()}
+                </td>
+            </tr>
+        `).join('');
     }
 
-    document.getElementById('suggestionForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
+    function getRoleColor(role) {
+        switch(role) {
+            case 'farmer': return 'bg-green-100 text-green-700';
+            case 'ksp': return 'bg-blue-100 text-blue-700';
+            case 'shop': return 'bg-teal-100 text-teal-700';
+            case 'equipment': return 'bg-orange-100 text-orange-700';
+            case 'soil': return 'bg-indigo-100 text-indigo-700';
+            default: return 'bg-slate-100 text-slate-700';
+        }
+    }
+
+    function filterCards() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const role = document.getElementById('roleFilter').value;
+
+        const filtered = allCards.filter(u => {
+            const cardNum = (u.cardNumber || u.walletNumber || '').toLowerCase();
+            const matchesSearch = u.name.toLowerCase().includes(query) || 
+                                u.phone.includes(query) || 
+                                cardNum.includes(query);
+            const matchesRole = role === 'all' || u.role === role;
+            return matchesSearch && matchesRole;
+        });
+
+        renderCards(filtered);
+    }
+
+    function copyText(text) {
+        navigator.clipboard.writeText(text);
+        alert('Copied to clipboard: ' + text);
+    }
+
+    async function exportCards() {
+        try {
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/employee/admin/export-nex-cards`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) throw new Error('Export failed');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `NexCards_Report_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (error) {
+            alert('Error exporting CSV: ' + error.message);
+        }
+    }
+
+    function toggleSidebar(show) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (show === undefined) show = sidebar.classList.contains('-translate-x-full');
       
-      const fileInput = document.getElementById('image');
-      if (!fileInput.files[0]) {
-        showToast('Please select an image first');
-        return;
-      }
-      formData.append('image', fileInput.files[0]);
-
-      try {
-        const res = await fetch(`${API_BASE}/suggestions`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-
-        if (res.ok) {
-          showToast('Advisory Image Successfully Published!');
-          document.getElementById('suggestionForm').reset();
-          fetchSuggestions();
-        } else {
-          const err = await res.json();
-          showToast(err.error || 'Failed to publish');
-        }
-      } catch (err) {
-        showToast('Connection Refused');
-      }
-    });
-
-    async function deleteSuggestion(id) {
-      if (!confirm('Are you sure you want to PERMANENTLY delete this advisory?')) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/suggestions/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (res.ok) {
-          showToast('Advisory Removed');
-          fetchSuggestions();
-        } else {
-          showToast('Failed to delete');
-        }
-      } catch (err) {
-        showToast('Connection Error');
+      if (show) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
       }
     }
 
-    fetchSuggestions();
+    document.addEventListener('DOMContentLoaded', fetchCards);
   </script>
-  <script src="js/sidebar-guard.js"></script>
 </body>
 </html>
-
