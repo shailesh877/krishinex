@@ -306,6 +306,8 @@ router.patch('/bookings/:id/status', protect, async (req, res) => {
             {
                 status: newStatus,
                 completionOTP: generatedOTP,
+                platformCommission: jobToUpdate.platformCommission || 0, // In case not set yet
+                ownerPayout: jobToUpdate.ownerPayout || 0,
                 ...(cancelReason && { cancelReason })
             },
             { new: true }
@@ -321,11 +323,19 @@ router.patch('/bookings/:id/status', protect, async (req, res) => {
             // Commission logic soon...
 
             if (labourer && farmer) {
-                const amount = job.amount || 0;
                 const settings = await Settings.getSettings();
                 const commPercent = settings.commissions.labour || 0;
+                const amount = job.amount || 0;
                 const commissionAmount = Math.round(amount * (commPercent / 100));
                 const payoutAmount = amount - commissionAmount;
+
+                // Sync the job document if not already set or different
+                if (job.platformCommission !== commissionAmount || job.ownerPayout !== payoutAmount) {
+                    await LabourJob.findByIdAndUpdate(job._id, {
+                        platformCommission: commissionAmount,
+                        ownerPayout: payoutAmount
+                    });
+                }
 
                 // 1. DEDUCT from Farmer Wallet
                 farmer.walletBalance = (farmer.walletBalance || 0) - amount;

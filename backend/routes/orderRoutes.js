@@ -186,213 +186,212 @@ router.get('/assigned', protect, async (req, res) => {
 // @access  Private
 router.patch('/:id/assigned-status', protect, async (req, res) => {
     try {
-        const { assignedStatus, cancelReason } = req.body;
-        console.log(`[ORDER-DEBUG] Updating status: ID=${req.params.id}, User=${req.user.id}, Status=${assignedStatus}`);
+        const { assignedStatus, cancelReason, quantity, pricePerQuintal, otp } = req.body;
+        console.log(`[KHETIFY-ASSIGN-STATUS] REQ_ID=${req.params.id} STATUS=${assignedStatus}`);
+        console.log(`[KHETIFY-ASSIGN-STATUS] BODY:`, JSON.stringify(req.body, null, 2));
 
         const validStatuses = ['new', 'ok', 'delivered', 'cancelled'];
         if (!validStatuses.includes(assignedStatus)) {
             return res.status(400).json({ error: 'Invalid status' });
         }
 
-        const update = { assignedStatus };
-        if (assignedStatus === 'cancelled' && cancelReason) {
-            update.cancelReason = cancelReason;
+        // Fetch order once at the start 
+        const order = await Order.findOne({ _id: req.params.id, assignedTo: req.user.id }).populate('sellRequestId');
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found or not assigned to you' });
         }
 
+        // 1. Handle Quantity/Price Modifications (Partner adjustment)
+        if (quantity || pricePerQuintal) {
+            if (quantity) order.quantity = quantity;
+            if (pricePerQuintal) {
+                order.pricePerQuintal = parseFloat(pricePerQuintal);
+                order.pricePerKg = order.pricePerQuintal / 100;
+            }
+            
+            // Recalculate amount and commission immediately
+            const settings = await Settings.getSettings();
+            const rate = order.commissionRate || (settings.commissions?.buyerTrading || 0);
+            const qtlValue = parseQuantityInQuintals(order.quantity);
+            const baseVal = qtlValue * order.pricePerQuintal;
+            
+            order.amount = baseVal;
+            order.commission = (baseVal * rate) / 100;
+            order.commissionRate = rate;
+            
+            // IMMEDIATE SYNC: Sync these values to the linked SellRequest so Admin/Farmer see them
+            if (order.sellRequestId) {
+                const sReqUpdate = {
+                    adminPrice: order.pricePerQuintal,
+                    quantity: order.quantity
+                };
+                await SellRequest.findByIdAndUpdate(order.sellRequestId._id, sReqUpdate);
+                console.log(`[ORDER-SYNC-DEBUG] Synced SellRequest #${order.sellRequestId._id} with Qty=${order.quantity}, Price=${order.pricePerQuintal}`);
+            }
+
+            console.log(`[ORDER-EDIT-DEBUG] Applied: Qty=${order.quantity}, Price=${order.pricePerQuintal}, Amt=${order.amount}`);
+        }
+
+        // 2. Handle Status Specific Logic
         if (assignedStatus === 'ok') {
-            console.log(`[ORDER-OK-DEBUG] START: Order ID=${req.params.id}, User=${req.user.id}`);
-            try {
-                // Find order first 
-                let order = await Order.findById(req.params.id);
-                if (!order) {
-                    console.log(`[ORDER-OK-DEBUG] ERROR: Order not found even by ID`);
-                } else {
-                    console.log(`[ORDER-OK-DEBUG] FOUND ORDER: assignedTo=${order.assignedTo}, req.user.id=${req.user.id}`);
-                    // Populate manually if needed
-                    order = await Order.findById(req.params.id).populate('sellRequestId');
+            console.log(`[ORDER-OK-DEBUG] Processing acceptance for #${order._id}`);
+            if (order.sellRequestId) {
+                const sReq = order.sellRequestId;
+                if (sReq.otp && sReq.farmer) {
+                    const { sendNotification: sNotif } = require('../services/notificationService');
+                    const { sendOtp: sOtp } = require('../services/msg91');
+                    const farmerUser = await User.findById(sReq.farmer);
                     
-                    if (!order.sellRequestId) {
-                        console.log(`[ORDER-OK-DEBUG] ERROR: SellRequest NOT linked`);
-                    } else {
-                        const sReq = order.sellRequestId;
-                        console.log(`[ORDER-OK-DEBUG] SREQ: OTP=${sReq.otp}, FarmerID=${sReq.farmer}`);
+                    if (farmerUser) {
+                        const buyerName = req.user.businessName || req.user.name;
+                        const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${buyerName} has accepted your sell request for ${order.crop}.`;
+                        const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - व्यापारी ${buyerName} ने ${order.crop} के लिए आपके बेचने के अनुरोध को स्वीकार कर लिया है।`;
 
-                        if (sReq.otp && sReq.farmer) {
-                            const { sendNotification: sNotif } = require('../services/notificationService');
-                            const { sendOtp: sOtp } = require('../services/msg91');
-                            const farmerUser = await User.findById(sReq.farmer);
-                            
-                            if (farmerUser) {
-                                const buyerName = req.user.businessName || req.user.name;
-                                const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${buyerName} has accepted your sell request for ${order.crop}.`;
-                                const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - व्यापारी ${buyerName} ने ${order.crop} के लिए आपके बेचने के अनुरोध को स्वीकार कर लिया है।`;
+                        await sNotif(farmerUser._id, {
+                            title: `Order #${order._id.toString().slice(-6)} (OTP: ${sReq.otp})`,
+                            messageEn: msgEn,
+                            messageHi: msgHi,
+                            type: 'crop_sale',
+                            refId: order._id.toString()
+                        });
 
-                                console.log(`[ORDER-OK-DEBUG] SENDING PUSH to ${farmerUser._id}`);
-                                await sNotif(farmerUser._id, {
-                                    title: `Order #${order._id.toString().slice(-6)} (OTP: ${sReq.otp})`,
-                                    messageEn: msgEn,
-                                    messageHi: msgHi,
-                                    type: 'crop_sale',
-                                    refId: order._id.toString()
-                                });
-
-                                if (farmerUser.phone) {
-                                    const cleanPhone = farmerUser.phone.replace(/[^0-9]/g, '');
-                                    console.log(`[ORDER-OK-DEBUG] SENDING SMS to ${cleanPhone}`);
-                                    await sOtp(cleanPhone, sReq.otp).catch(err => {
-                                        console.error(`[ORDER-OK-DEBUG] SMS ERR: ${err.message}`);
-                                    });
-                                }
-                            } else {
-                                console.log(`[ORDER-OK-DEBUG] ERROR: Farmer record not found`);
-                            }
+                        if (farmerUser.phone) {
+                            const cleanPhone = farmerUser.phone.replace(/[^0-9]/g, '');
+                            await sOtp(cleanPhone, sReq.otp).catch(err => console.error(`SMS Error: ${err.message}`));
                         }
                     }
                 }
-            } catch (err) {
-                console.error(`[ORDER-OK-DEBUG] FATAL: ${err.message}`);
             }
-            console.log(`[ORDER-OK-DEBUG] END`);
-        }
-        
-        if (assignedStatus === 'delivered') {
-            // Check if this is a Crop Sell Order (linked to SellRequest)
-            const order = await Order.findOne({ _id: req.params.id, assignedTo: req.user.id }).populate('sellRequestId');
-            if (!order) return res.status(404).json({ error: 'Order not found' });
+            order.assignedStatus = 'ok';
+        } 
+        else if (assignedStatus === 'delivered') {
+            if (!order.sellRequestId) {
+                return res.status(400).json({ error: 'This order is not linked to a farmer sell request.' });
+            }
 
-            if (order.sellRequestId) {
-                const { otp } = req.body;
-                if (!otp || otp !== order.sellRequestId.otp) {
-                    return res.status(400).json({ error: 'Invalid OTP. Please ask the farmer for the 4-digit code.' });
-                }
+            // OTP Verification
+            if (!otp || otp !== order.sellRequestId.otp) {
+                return res.status(400).json({ error: 'Invalid OTP. Please ask the farmer for the 4-digit code.' });
+            }
 
-                // OTP Verified! Complete the process.
-                update.status = 'completed';
-                
-                // Update SellRequest
-                await SellRequest.findByIdAndUpdate(order.sellRequestId._id, { status: 'completed' });
+            // Process Wallet Transactions using Updated Order Values
+            const settings = await Settings.getSettings();
+            const commissionRate = order.commissionRate || (settings.commissions.buyerTrading || 0);
+            
+            const quantityInQtl = parseQuantityInQuintals(order.quantity);
+            const price = order.pricePerQuintal || 0;
+            const baseAmount = quantityInQtl * price;
+            const commissionAmount = (baseAmount * commissionRate) / 100;
 
-                // Get settings for commission
-                const settings = await Settings.getSettings();
-                const commissionRate = settings.commissions.buyerTrading || 0;
+            console.log(`[DELIVERY-FINAL] Order=#${order._id}, Qty=${order.quantity}(${quantityInQtl}), Price=${price}, Final_Amt=${baseAmount}`);
 
-                const quantityInQtl = parseQuantityInQuintals(order.quantity);
-                const price = order.pricePerQuintal || 0;
-                const baseAmount = quantityInQtl * price;
-                const commissionAmount = (baseAmount * commissionRate) / 100;
-                const totalDeduction = baseAmount + commissionAmount;
+            // Pre-update the order object for persistence
+            order.farmerAmount = baseAmount;
+            order.pricePerQuintal = price;
+            order.pricePerKg = price / 100;
+            order.amount = baseAmount; 
+            order.amountReceived = baseAmount + commissionAmount;
+            order.commission = commissionAmount;
+            order.commissionRate = commissionRate;
 
-                const buyer = await User.findById(req.user.id);
-                if (buyer) {
-                    buyer.walletBalance = (buyer.walletBalance || 0) - totalDeduction;
-                    await buyer.save();
+            const buyer = await User.findById(req.user.id);
+            if (buyer) {
+                buyer.walletBalance = (buyer.walletBalance || 0) - order.amountReceived;
+                await buyer.save();
 
-                    // Create Buyer Transaction (Debit - Base Amount)
+                // Transactions
+                await Transaction.create({
+                    transactionId: `BUY-DEL-${order._id}-${Date.now()}`,
+                    recipient: buyer._id,
+                    module: 'BuyerTrading',
+                    amount: baseAmount,
+                    type: 'Debit',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: order._id,
+                    note: `Purchase of ${order.crop} (${quantityInQtl} Qtl) - Sent to Farmer`
+                });
+
+                if (commissionAmount > 0) {
                     await Transaction.create({
-                        transactionId: `BUY-OTP-${order._id}-${Date.now()}`,
+                        transactionId: `BUY-COMM-${order._id}-${Date.now()}`,
                         recipient: buyer._id,
                         module: 'BuyerTrading',
-                        amount: baseAmount,
+                        amount: commissionAmount,
                         type: 'Debit',
                         paymentMode: 'NexCard Wallet',
                         status: 'Completed',
                         referenceId: order._id,
-                        note: `Payment for ${order.crop} (${quantityInQtl} Qtl) - Sent to Farmer`
+                        note: `Trading Commission (${commissionRate}%)`
                     });
-
-                    // Create Buyer Transaction (Debit - Commission)
-                    if (commissionAmount > 0) {
-                        await Transaction.create({
-                            transactionId: `BUY-COMM-${order._id}-${Date.now()}`,
-                            recipient: buyer._id,
-                            module: 'BuyerTrading',
-                            amount: commissionAmount,
-                            type: 'Debit',
-                            paymentMode: 'NexCard Wallet',
-                            status: 'Completed',
-                            referenceId: order._id,
-                            note: `Trading Commission (${commissionRate}%) for ${order.crop}`
-                        });
-                    }
                 }
+            }
 
-                const farmer = await User.findById(order.sellRequestId.farmer);
-                if (farmer) {
-                    farmer.walletBalance = (farmer.walletBalance || 0) + baseAmount;
-                    await farmer.save();
+            const farmer = await User.findById(order.sellRequestId.farmer);
+            if (farmer) {
+                farmer.walletBalance = (farmer.walletBalance || 0) + baseAmount;
+                await farmer.save();
 
-                    // Create Farmer Transaction (Credit)
+                await Transaction.create({
+                    transactionId: `SELL-DEL-${order._id}-${Date.now()}`,
+                    recipient: farmer._id,
+                    module: 'BuyerTrading',
+                    amount: baseAmount,
+                    type: 'Credit',
+                    paymentMode: 'NexCard Wallet',
+                    status: 'Completed',
+                    referenceId: order._id,
+                    note: `Sale of ${order.crop} (${quantityInQtl} Qtl)`
+                });
+                
+                const { processAutoRepayment } = require('../services/repaymentService');
+                await processAutoRepayment(farmer._id, order._id).catch(e => console.error('Repayment error:', e));
+            }
+
+            // Credit Admin
+            if (commissionAmount > 0) {
+                const admin = await User.findOne({ role: 'admin' });
+                if (admin) {
+                    admin.walletBalance = (admin.walletBalance || 0) + commissionAmount;
+                    await admin.save();
                     await Transaction.create({
-                        transactionId: `SELL-OTP-${order._id}-${Date.now()}`,
-                        recipient: farmer._id,
+                        transactionId: `ADM-COMM-${order._id}-${Date.now()}`,
+                        recipient: admin._id,
                         module: 'BuyerTrading',
-                        amount: baseAmount,
+                        amount: commissionAmount,
                         type: 'Credit',
                         paymentMode: 'NexCard Wallet',
                         status: 'Completed',
                         referenceId: order._id,
-                        note: `Payment for ${order.crop} (${quantityInQtl} Qtl) - From Trader`
+                        note: `Commission from #${order._id.toString().slice(-6)}`
                     });
                 }
-
-                // 4. Dynamic Auto-Repayment (If farmer has debt and wallet balance, sweep it)
-                const { processAutoRepayment } = require('../services/repaymentService');
-                await processAutoRepayment(farmer._id, order._id);
-
-                // Credit Admin with commission
-                if (commissionAmount > 0) {
-                    const admin = await User.findOne({ role: 'admin' });
-                    if (admin) {
-                        admin.walletBalance = (admin.walletBalance || 0) + commissionAmount;
-                        await admin.save();
-
-                        // Create Admin Transaction (Credit)
-                        await Transaction.create({
-                            transactionId: `ADM-COMM-${order._id}-${Date.now()}`,
-                            recipient: admin._id,
-                            module: 'BuyerTrading',
-                            amount: commissionAmount,
-                            type: 'Credit',
-                            paymentMode: 'NexCard Wallet',
-                            status: 'Completed',
-                            referenceId: order._id,
-                            note: `Trading Commission (${commissionRate}%) from ${buyer?.name || 'Partner'} for order #${order._id}`
-                        });
-                    }
-                }
-                // Save calculated values to Order
-                order.commission = commissionAmount;
-                order.commissionRate = commissionRate;
-                
-                // Track update
-                order.assignedStatus = 'delivered';
-                order.status = 'completed';
-                await order.save();
-
-                return res.json({ message: 'Order delivered and payments processed', order });
-            } else {
-                update.status = 'completed';
             }
+
+            order.assignedStatus = 'delivered';
+            order.status = 'completed';
+            
+            // Sync SellRequest with final delivered values
+            if (order.sellRequestId) {
+                await SellRequest.findByIdAndUpdate(order.sellRequestId._id, { 
+                    status: 'completed',
+                    adminPrice: price, 
+                    quantity: order.quantity // Sync the final quantity string (e.g. "800 KG")
+                });
+            }
+        } 
+        else if (assignedStatus === 'cancelled') {
+            order.assignedStatus = 'cancelled';
+            if (cancelReason) order.cancelReason = cancelReason;
         }
 
-        const order = await Order.findOneAndUpdate(
-            { _id: req.params.id, assignedTo: req.user.id },
-            update,
-            { new: true }
-        );
+        await order.save();
+        console.log(`[KHETIFY-SAVE-SUCCESS] Order=#${order._id} Qty="${order.quantity}" Price=${order.pricePerQuintal} Amt=${order.amount} Comm=${order.commission}`);
+        res.json({ message: 'Order status updated successfully', order });
 
-        if (!order) {
-            console.log(`[ORDER-DEBUG] Order not found for update: ID=${req.params.id}, User=${req.user.id}`);
-            return res.status(404).json({ error: 'Order not found or not assigned to you' });
-        }
-
-        console.log(`[ORDER-DEBUG] Status updated successfully for ID=${order._id}`);
-        res.json({ message: 'Status updated', order });
     } catch (error) {
         console.error('Assigned status update error:', error);
-        const logEntry = `[${new Date().toISOString()}] UPDATE_ERROR: ${error.message}\nStack: ${error.stack}\n`;
-        try { require('fs').appendFileSync('order_debug.log', logEntry); } catch (i) { }
-        res.status(500).json({ error: 'Failed to update status', details: error.message });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 });
 

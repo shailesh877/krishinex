@@ -12,7 +12,7 @@
   <meta http-equiv="Expires" content="0" />
 
   <!-- Authentication Check -->
-  <script src="js/auth.js"></script>
+  <script src="js/auth.js?v=1.0.1"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -557,13 +557,30 @@
         <!-- JOB HISTORY & PERFORMANCE -->
         <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
           <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
-            <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
-              <i class="fas fa-history text-emerald-600"></i>
-              Job History & Performance
-            </h2>
-            <p class="text-xs text-slate-600 font-semibold mt-1">
-              Completed jobs, hours worked, acres covered & farmer ratings
-            </p>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-history text-emerald-600"></i>
+                  Job History & Performance
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Completed jobs, hours worked, acres covered & farmer ratings
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 items-center">
+                <input id="jobSearchInput" type="text" placeholder="🔍 Search Labour/Farmer"
+                  oninput="filterJobsTable()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-48 focus:border-emerald-400 outline-none" />
+                <div class="flex items-center gap-1 bg-white rounded-xl border-2 border-slate-200 px-2 h-9">
+                  <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
+                  <input id="jobStartDate" type="date" onchange="filterJobsTable()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer" title="Start Date" />
+                  <span class="text-slate-300">→</span>
+                  <input id="jobEndDate" type="date" onchange="filterJobsTable()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer" title="End Date" />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="overflow-auto custom-scroll" style="max-height: 400px;">
@@ -575,6 +592,8 @@
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Work Type</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Hours / Acres</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-emerald-600">Commission</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-purple-600">Payout</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Rating</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
@@ -594,40 +613,47 @@
   <div id="labourProfileModal"
     class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
     onclick="if(event.target === this) closeLabourProfile()">
-    <div
-      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
-      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-purple-50/30 to-white">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
-            <i class="fas fa-user-circle text-purple-600"></i>
-            Labour Profile
-          </h2>
-          <div class="flex items-center gap-2">
-            <button onclick="openEditLabour()"
-              class="inline-flex items-center rounded-xl bg-purple-600 px-4 py-2 text-xs font-black text-white hover:bg-purple-700 shadow-xl transition-all">
-              <i class="fas fa-edit mr-1"></i> Modify
-            </button>
-            <button onclick="closeLabourProfile()"
-              class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
-              <i class="fas fa-times text-slate-700"></i>
-            </button>
+      <div id="labourModalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col h-[85vh] border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+        <!-- Modal Header -->
+        <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-purple-50/30 to-white">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+              <i class="fas fa-user-circle text-purple-600"></i>
+              Labour Profile
+            </h2>
+            <div class="flex items-center gap-2">
+              <button onclick="openEditLabour()"
+                class="inline-flex items-center rounded-xl bg-purple-600 px-4 py-2 text-xs font-black text-white hover:bg-purple-700 shadow-xl transition-all">
+                <i class="fas fa-edit mr-1"></i> Modify
+              </button>
+              <button onclick="closeLabourProfile()"
+                class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+                <i class="fas fa-times text-slate-700"></i>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="text-center">
-        <div
-          class="inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 text-5xl mb-4 shadow-xl border-4 border-white">
-          <i class="fas fa-user text-purple-600"></i>
+        <!-- Tab Navigation -->
+        <div class="flex border-b-2 border-slate-200 bg-slate-50/50 px-6">
+          <button onclick="switchLabourTab('overview')" id="ltab-overview" class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-purple-500 text-purple-600 transition-all">Overview</button>
+          <button onclick="switchLabourTab('jobs')" id="ltab-jobs" class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Job History</button>
+          <button onclick="switchLabourTab('wallet')" id="ltab-wallet" class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Wallet & Payouts</button>
         </div>
-        <p class="text-2xl font-black text-slate-900" id="labourProfileName">-</p>
-        <div class="flex items-center justify-center gap-2 mt-2">
-          <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-black rounded-full"
-            id="labourProfileId">-</span>
-          <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-black rounded-full"
-            id="labourProfileStatus">-</span>
-        </div>
-      </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
+          <!-- Overview Tab -->
+          <div id="lcontent-overview" class="labour-tab-content space-y-6">
+            <div class="text-center">
+              <div class="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 text-4xl mb-3 shadow-xl border-4 border-white overflow-hidden" id="labourProfilePhotoContainer">
+                <i class="fas fa-user text-purple-600"></i>
+              </div>
+              <p class="text-xl font-black text-slate-900" id="labourProfileName">-</p>
+              <div class="flex items-center justify-center gap-2 mt-1">
+                <span class="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black rounded-full" id="labourProfileId">-</span>
+                <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full" id="labourProfileStatus">-</span>
+              </div>
+            </div>
 
       <!-- CONTACT & KYC SECTION -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -730,11 +756,51 @@
         </p>
       </div>
 
-      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end gap-3">
-        <button onclick="closeLabourProfile()"
-          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
-          Close
-        </button>
+          </div>
+
+          <!-- Jobs Tab -->
+          <div id="lcontent-jobs" class="labour-tab-content hidden space-y-4">
+             <div class="overflow-x-auto rounded-3xl border-2 border-slate-100 bg-white">
+                <table class="w-full text-[11px]">
+                   <thead class="bg-slate-50 text-slate-500 font-black uppercase tracking-wider">
+                      <tr>
+                         <th class="px-4 py-3 text-left">Job ID & Type</th>
+                         <th class="px-4 py-3 text-left">Farmer</th>
+                         <th class="px-4 py-3 text-right">Metrics</th>
+                         <th class="px-4 py-3 text-right">Amount</th>
+                         <th class="px-4 py-3 text-left">Status</th>
+                      </tr>
+                   </thead>
+                   <tbody id="labourSpecificJobsBody"></tbody>
+                </table>
+             </div>
+          </div>
+
+          <!-- Wallet Tab -->
+          <div id="lcontent-wallet" class="labour-tab-content hidden space-y-6">
+             <div id="labourWalletDashboard"></div>
+             <div class="bg-white rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b-2 border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                   <h3 class="text-[10px] font-black text-slate-900 uppercase">Transaction History</h3>
+                </div>
+                <div class="overflow-x-auto">
+                   <table class="w-full text-[11px]">
+                      <thead class="bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider">
+                         <tr>
+                            <th class="px-4 py-3 text-left">Date</th>
+                            <th class="px-4 py-3 text-left">ID</th>
+                            <th class="px-4 py-3 text-left">Type</th>
+                            <th class="px-4 py-3 text-right">Amount</th>
+                            <th class="px-4 py-3 text-left">Mode</th>
+                            <th class="px-4 py-3 text-left">Note</th>
+                         </tr>
+                      </thead>
+                      <tbody id="labourWalletHistoryBody"></tbody>
+                   </table>
+                </div>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1055,7 +1121,7 @@
       const tbody = document.getElementById('jobHistoryTableBody');
       tbody.innerHTML = '';
       if (jobs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-500 font-bold">No jobs found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-slate-500 font-bold">No jobs found.</td></tr>`;
         return;
       }
 
@@ -1064,7 +1130,11 @@
         const to = job.toDate ? new Date(job.toDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
         const dateRange = from === 'N/A' ? 'N/A' : `${from} – ${to}`;
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-emerald-50/30 transition-colors border-b border-slate-100";
+        tr.className = "hover:bg-emerald-50/30 transition-colors border-b border-slate-100 job-history-row";
+        
+        // Add data for filtering
+        tr.dataset.search = `${job.labourName} ${job.farmerName} ${job._id}`.toLowerCase();
+        tr.dataset.date = job.fromDate || '';
 
         let statusBadge = '';
         if (job.status === 'Completed') statusBadge = `<span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-900 border-2 border-emerald-300"><i class="fas fa-circle-check mr-1"></i> Completed</span>`;
@@ -1080,7 +1150,9 @@
               ${job.priceType === 'hourly' ? (job.hours || job.hoursWorked || 0) + ' hrs' : (job.priceType === 'daily' ? (job.days || 1) + ' days' : (job.acresCovered || 0) + ' acres')}
             </div>
           </td>
-          <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">₹${job.amount || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">₹${job.amount || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-emerald-600">₹${job.platformCommission || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-purple-600">₹${job.ownerPayout || 0}</div></td>
           <td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-1"><i class="fas fa-star text-amber-500 text-sm"></i><span class="font-black text-slate-900">${job.rating || 0}</span></div></td>
           <td class="px-5 py-4">${statusBadge}</td>
           <td class="px-5 py-4 text-right">
@@ -1091,46 +1163,243 @@
       });
     }
 
+    function filterJobsTable() {
+       const search = document.getElementById('jobSearchInput').value.toLowerCase();
+       const start = document.getElementById('jobStartDate').value;
+       const end = document.getElementById('jobEndDate').value;
+
+       document.querySelectorAll('.job-history-row').forEach(row => {
+          const matchSearch = row.dataset.search.includes(search);
+          
+          let jobDate = null;
+          if (row.dataset.date) {
+             try {
+                // Handle different potential date formats
+                const d = new Date(row.dataset.date);
+                if (!isNaN(d.getTime())) {
+                   jobDate = d.toISOString().split('T')[0];
+                }
+             } catch(e) {}
+          }
+          
+          let matchDate = true;
+          if (start && jobDate && jobDate < start) matchDate = false;
+          if (end && jobDate && jobDate > end) matchDate = false;
+          if ((start || end) && !jobDate) matchDate = false;
+
+          row.style.display = (matchSearch && matchDate) ? '' : 'none';
+       });
+    }
+
+    function switchLabourTab(tabName) {
+       document.querySelectorAll('.labour-tab-content').forEach(c => c.classList.add('hidden'));
+       document.getElementById(`lcontent-${tabName}`).classList.remove('hidden');
+       ['overview', 'jobs', 'wallet'].forEach(t => {
+          const btn = document.getElementById(`ltab-${t}`);
+          if (!btn) return;
+          if (t === tabName) {
+             btn.classList.replace('border-transparent', 'border-purple-500');
+             btn.classList.replace('text-slate-500', 'text-purple-600');
+          } else {
+             btn.classList.replace('border-purple-500', 'border-transparent');
+             btn.classList.replace('text-purple-600', 'text-slate-500');
+          }
+       });
+       if (tabName === 'jobs') loadLabourJobs(currentLabour._id);
+       if (tabName === 'wallet') loadLabourWallet(currentLabour._id);
+    }
+
+    async function loadLabourJobs(id) {
+       const body = document.getElementById('labourSpecificJobsBody');
+       body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading history…</td></tr>`;
+       try {
+          const r = await fetch(`${API_BASE}/employee/admin/labour/partners/${id}/jobs`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error);
+          
+          if (d.length === 0) {
+             body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold uppercase tracking-widest">No jobs found</td></tr>`;
+             return;
+          }
+
+          body.innerHTML = d.map(j => `
+            <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+               <td class="px-4 py-3">
+                  <div class="font-black text-slate-900">#${j._id.substring(18).toUpperCase()}</div>
+                  <div class="text-[9px] font-bold text-purple-600 uppercase mt-0.5">${j.workType}</div>
+               </td>
+               <td class="px-4 py-3">
+                  <div class="font-bold text-slate-700">${j.farmer?.name || 'Farmer'}</div>
+                  <div class="text-[9px] text-slate-400 font-semibold">${j.farmer?.phone || 'N/A'}</div>
+               </td>
+               <td class="px-4 py-3 text-right font-black text-slate-900">
+                  ${j.priceType === 'hourly' ? (j.hoursWorked || j.hours || 0) + ' hrs' : (j.priceType === 'daily' ? (j.days || 1) + ' days' : (j.acresCovered || 0) + ' acres')}
+               </td>
+               <td class="px-4 py-3 text-right">
+                  <div class="font-black text-emerald-600">₹${j.amount}</div>
+                  <div class="text-[8px] font-bold text-slate-400">Payout: ₹${j.ownerPayout || 0}</div>
+               </td>
+               <td class="px-4 py-3">
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${j.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${j.status}</span>
+               </td>
+            </tr>`).join('');
+       } catch (e) { showToast(e.message, 'warning'); }
+    }
+
+    async function loadLabourWallet(id) {
+       const dashboard = document.getElementById('labourWalletDashboard');
+       const body = document.getElementById('labourWalletHistoryBody');
+       dashboard.innerHTML = `<div class="p-8 text-center text-purple-500"><i class="fas fa-circle-notch fa-spin"></i></div>`;
+       body.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400 uppercase">Loading history…</td></tr>`;
+
+       try {
+          const r = await fetch(`${API_BASE}/employee/admin/labour/partners/${id}/wallet`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error);
+
+          dashboard.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                  <div class="relative z-10">
+                     <p class="text-[9px] font-bold text-purple-300 uppercase tracking-widest mb-1">Total Balance</p>
+                     <h2 class="text-4xl font-black mb-4">₹${d.balance.toLocaleString()}</h2>
+                     <div class="flex gap-2">
+                        <button onclick="toggleLTxnForm('Credit')" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-lg"><i class="fas fa-plus mr-1"></i> Credit</button>
+                        <button onclick="toggleLTxnForm('Debit')" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-lg"><i class="fas fa-minus mr-1"></i> Debit (Payout)</button>
+                     </div>
+                  </div>
+                  <i class="fas fa-coins absolute -right-4 -bottom-4 text-8xl text-white/5 transform -rotate-12"></i>
+               </div>
+               <div id="lTxnFormContainer" class="hidden bg-slate-50 rounded-3xl border-2 border-slate-200 p-4 animate-[fadeIn_0.2s_ease-out]">
+                  <div class="flex justify-between items-center mb-3">
+                     <h4 id="lTxnFormTitle" class="text-[10px] font-black text-slate-900 uppercase">Manual Entry</h4>
+                     <button onclick="toggleLTxnForm()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-[10px]"></i></button>
+                  </div>
+                  <div class="space-y-2">
+                     <input id="ltxn_amt" type="number" placeholder="Amount" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-purple-400">
+                     <input id="ltxn_note" type="text" placeholder="Remark/Note" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-purple-400">
+                     <select id="ltxn_mode" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-purple-400">
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="UPI / PhonePe">UPI / PhonePe</option>
+                        <option value="Cash">Cash</option>
+                     </select>
+                     <button id="ltxn_submit_btn" onclick="submitLabourWalletTxn()" class="w-full h-8 rounded-lg bg-purple-900 text-white text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all">Record Entry</button>
+                  </div>
+               </div>
+            </div>`;
+
+          if (d.transactions.length === 0) {
+             body.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400 uppercase">No history available</td></tr>`;
+          } else {
+             body.innerHTML = d.transactions.map(t => {
+                const isCredit = t.type === 'Credit' || t.type === 'Collection';
+                return `
+                  <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                     <td class="px-4 py-3 font-semibold text-slate-400">${new Date(t.createdAt).toLocaleDateString()}</td>
+                     <td class="px-4 py-3 font-black text-slate-900">${t.transactionId.split('-').pop()}</td>
+                     <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span>
+                     </td>
+                     <td class="px-4 py-3 text-right font-black ${isCredit ? 'text-emerald-600' : 'text-rose-600'}">${isCredit ? '+' : '-'}₹${t.amount}</td>
+                     <td class="px-4 py-3 font-bold text-slate-500">${t.paymentMode}</td>
+                     <td class="px-4 py-3 text-slate-400 font-semibold truncate max-w-[100px]">${t.note || '-'}</td>
+                  </tr>`;
+             }).join('');
+          }
+       } catch (e) { showToast(e.message, 'warning'); }
+    }
+
+    let lTxnType = null;
+    function toggleLTxnForm(type) {
+       const container = document.getElementById('lTxnFormContainer');
+       if (!type || (lTxnType === type && !container.classList.contains('hidden'))) {
+          container.classList.add('hidden');
+          return;
+       }
+       lTxnType = type;
+       document.getElementById('lTxnFormTitle').innerText = `${type} Transaction`;
+       document.getElementById('ltxn_submit_btn').innerText = `Record ${type}`;
+       container.classList.remove('hidden');
+    }
+
+    async function submitLabourWalletTxn() {
+       const amt = document.getElementById('ltxn_amt').value;
+       const note = document.getElementById('ltxn_note').value;
+       const mode = document.getElementById('ltxn_mode').value;
+       const btn = document.getElementById('ltxn_submit_btn');
+
+       if (!amt || amt <= 0) return showToast('Enter valid amount', 'warning');
+       btn.disabled = true;
+       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing…';
+
+       try {
+          const r = await fetch(`${API_BASE}/employee/admin/labour/partners/${currentLabour._id}/wallet/transaction`, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+             body: JSON.stringify({ type: lTxnType, amount: amt, note, paymentMode: mode })
+          });
+          const d = await r.json();
+          if (r.ok) {
+             showToast(`₹${amt} ${lTxnType}ed successfully`, 'success');
+             loadLabourWallet(currentLabour._id);
+          } else throw new Error(d.error);
+       } catch (e) { showToast(e.message, 'warning'); }
+       finally { btn.disabled = false; btn.innerText = `Record ${lTxnType}`; }
+    }
+
     function viewLabourProfile(labourId) {
-      const labour = allLabourers.find(l => l._id === labourId);
-      if (!labour) return;
-      currentLabour = labour;
+       const labour = allLabourers.find(l => l._id === labourId);
+       if (!labour) return;
+       currentLabour = labour;
+       
+       switchLabourTab('overview');
 
-      document.getElementById('labourProfileName').textContent = labour.name;
-      document.getElementById('labourProfileId').textContent = `ID: ${labour.labourCode}`;
-      document.getElementById('labourProfileStatus').textContent = labour.status.toUpperCase();
-      document.getElementById('labourProfileStatus').className = `px-3 py-1 text-[10px] font-black rounded-full ${labour.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
+       const fixUrl = (u) => {
+          if (!u) return null;
+          if (u.startsWith('http')) return u;
+          const base = API_BASE.split('/api')[0];
+          return base + (u.startsWith('/') ? u : '/' + u);
+       };
 
-      document.getElementById('labourProfilePhone').textContent = labour.phone || 'N/A';
-      document.getElementById('labourProfileAadhaar').textContent = labour.aadhaarNumber || 'Not Provided';
+       const photo = fixUrl(labour.profilePhotoUrl);
+       const container = document.getElementById('labourProfilePhotoContainer');
+       container.innerHTML = photo ? `<img src="${photo}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-purple-600"></i>`;
 
-      const docLink = document.getElementById('labourProfileAadhaarDoc');
-      if (labour.aadhaarDocUrl) {
-        docLink.href = labour.aadhaarDocUrl;
-        docLink.classList.remove('hidden');
-      } else {
-        docLink.classList.add('hidden');
-      }
+       document.getElementById('labourProfileName').textContent = labour.name;
+       document.getElementById('labourProfileId').textContent = `ID: ${labour.labourCode}`;
+       document.getElementById('labourProfileStatus').textContent = labour.status.toUpperCase();
+       document.getElementById('labourProfileStatus').className = `px-3 py-1 text-[10px] font-black rounded-full ${labour.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
 
-      document.getElementById('labourProfileLocation').textContent = labour.location || 'N/A';
+       document.getElementById('labourProfilePhone').textContent = labour.phone || 'N/A';
+       document.getElementById('labourProfileAadhaar').textContent = labour.aadhaarNumber || 'Not Provided';
 
-      document.getElementById('labourProfileWallet').textContent = `₹${(labour.walletBalance || 0).toLocaleString()}`;
-      document.getElementById('labourProfileDailyRate').textContent = `₹${(labour.ratePerDay || 0).toLocaleString()}`;
-      document.getElementById('labourProfileHourlyRate').textContent = `₹${(labour.ratePerHour || 0).toLocaleString()}`;
+       const docLink = document.getElementById('labourProfileAadhaarDoc');
+       if (labour.aadhaarDocUrl) {
+         docLink.href = fixUrl(labour.aadhaarDocUrl);
+         docLink.classList.remove('hidden');
+       } else {
+         docLink.classList.add('hidden');
+       }
 
-      const bank = labour.bankDetails || {};
-      document.getElementById('labourProfileAccHolder').textContent = bank.holderName || 'N/A';
-      document.getElementById('labourProfileBankName').textContent = bank.bankName || 'N/A';
-      document.getElementById('labourProfileAccNo').textContent = bank.accountNumber || 'N/A';
-      document.getElementById('labourProfileIFSC').textContent = bank.ifscCode || 'N/A';
+       document.getElementById('labourProfileLocation').textContent = labour.location || 'N/A';
 
-      document.getElementById('labourProfileJobs').textContent = labour.jobsDone || '0';
-      document.getElementById('labourProfileRating').textContent = labour.rating || '0.0';
-      const skills = Array.isArray(labour.skills) ? labour.skills.join(', ') : (labour.skills || 'None');
-      document.getElementById('labourProfileSkills').textContent = skills;
-      document.getElementById('labourProfileSkillDesc').textContent = (labour.labourDetails?.skillDescription) || 'No description provided.';
+       document.getElementById('labourProfileWallet').textContent = `₹${(labour.walletBalance || 0).toLocaleString()}`;
+       document.getElementById('labourProfileDailyRate').textContent = `₹${(labour.ratePerDay || 0).toLocaleString()}`;
+       document.getElementById('labourProfileHourlyRate').textContent = `₹${(labour.ratePerHour || 0).toLocaleString()}`;
 
-      document.getElementById('labourProfileModal').classList.remove('hidden');
+       const bank = labour.bankDetails || {};
+       document.getElementById('labourProfileAccHolder').textContent = bank.holderName || 'N/A';
+       document.getElementById('labourProfileBankName').textContent = bank.bankName || 'N/A';
+       document.getElementById('labourProfileAccNo').textContent = bank.accountNumber || 'N/A';
+       document.getElementById('labourProfileIFSC').textContent = bank.ifscCode || 'N/A';
+
+       document.getElementById('labourProfileJobs').textContent = labour.jobsDone || '0';
+       document.getElementById('labourProfileRating').textContent = labour.rating || '0.0';
+       const skills = Array.isArray(labour.skills) ? labour.skills.join(', ') : (labour.skills || 'None');
+       document.getElementById('labourProfileSkills').textContent = skills;
+       document.getElementById('labourProfileSkillDesc').textContent = (labour.labourDetails?.skillDescription) || 'No description provided.';
+
+       document.getElementById('labourProfileModal').classList.remove('hidden');
     }
 
     async function approveLabour(id) {

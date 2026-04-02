@@ -75,4 +75,18 @@ router.put('/status/:id', protect, checkAdmin, async (req, res) => {
     }
 });
 
+// @route   PUT /api/leads/admin/update/:id
+// @desc    Update lead details (Admin only)
+// @access  Private/Admin
+router.put('/admin/update/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const lead = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
+        res.json(lead);
+    } catch (error) {
+        console.error('Update lead detail error:', error);
+        res.status(500).json({ error: 'Failed to update lead data' });
+    }
+});
+
 module.exports = router;

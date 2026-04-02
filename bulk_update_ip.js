@@ -6,9 +6,8 @@ const EXCLUDES = ['node_modules', '.git', '.next', 'build', 'dist', 'bin', 'obj'
 
 // Replacement mapping
 const REPLACEMENTS = [
-    { old: 'https://demo.ranx24.com', new: 'https://demo.ranx24.com' },
-    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' },
-    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' }
+    { old: 'http://192.168.1.10:5500', new: 'https://demo.ranx24.com' },
+    { old: '192.168.1.10', new: 'demo.ranx24.com' }
 ];
 
 function walk(dir) {

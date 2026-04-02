@@ -1,33 +1,28 @@
-# KrishiNex Admin - Global URL Update Script
-# This script ensures all HTML files use the production API URL fallback.
+# KrishiNex Admin - CLEAN Global Fix Script
+# This script ensures all HTML files load the latest 'js/auth.js' with Cache-Busting.
 
-$productionApi = "https://demo.ranx24.com/api"
-$productionImage = "https://demo.ranx24.com"
-
-Write-Host "🚀 Starting Global URL Update for KrishiNex..." -ForegroundColor Cyan
+Write-Host "🚀 Starting CLEAN Global Fix for KrishiNex..." -ForegroundColor Cyan
 
 # Get all HTML files in the current directory and subdirectories
 $htmlFiles = Get-ChildItem -Filter *.html -Recurse
+
+# A simple version number to force browser to refresh auth.js
+$v = "1.0.1"
 
 foreach ($file in $htmlFiles) {
     Write-Host "Processing: $($file.Name)" -ForegroundColor Gray
     $content = Get-Content $file.FullName -Raw
 
-    # 1. Update existing API_BASE fallbacks
-    $content = $content -replace "window\.API_BASE\s*\|\|\s*''", "window.API_BASE || '$productionApi'"
-    $content = $content -replace "window\.API_BASE\s*\|\|\s*\"\"", "window.API_BASE || '$productionApi'"
+    # 1. REMOVE any previous hardcoded fallbacks (Cleaning up my earlier fix)
+    $content = $content -replace "\s*// Fallback for API Base if auth\.js fails to load\n\s*const apiBase = window\.API_BASE \|\| 'https://demo\.ranx24\.com/api';", ""
+    $content = $content -replace "window\.API_BASE \|\| 'https://demo\.ranx24\.com/api'", "API_BASE"
+    $content = $content -replace "const apiBase = API_BASE;", "" # Removing extra variables if any
 
-    # 2. Add explicit config if script tag is missing but needed
-    if ($content -like "*`${API_BASE}*" -and $content -notlike "*window.API_BASE =*") {
-        # Inject at the top of the script tag
-        $content = $content -replace "<script\s*src=`"js/auth\.js`"`s*></script>", "<script src=`"js/auth.js`"></script>`n  <script>window.API_BASE = '$productionApi'; window.IMAGE_BASE = '$productionImage';</script>"
-    }
-
-    # 3. Final safety: replace any direct ${API_BASE} calls with the fallback logic if not already done
-    # (Matches ${API_BASE}/path and replaces with ${window.API_BASE || '...'}/path)
-    $content = $content -replace '`\${API_BASE}', "`${window.API_BASE || '$productionApi'}"
+    # 2. UPDATE <script> tag with Cache-Buster
+    # This ensures the browser doesn't use an old cached version of auth.js
+    $content = $content -replace '<script\s*src=["'']js/auth\.js(\?v=[\d\.]+)?["'']\s*></script>', "<script src=`"js/auth.js?v=$v`"></script>"
 
     Set-Content $file.FullName $content -NoNewline
 }
-
-Write-Host "✅ All files updated! Please upload the contents and restart your server." -ForegroundColor Green
+Write-Host "✅ All files cleaned and updated with Cache-Busting version $v!" -ForegroundColor Green
+Write-Host "💡 Now upload the HTML files to krishinex.com/khetify_admin/" -ForegroundColor White

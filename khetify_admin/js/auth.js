@@ -13,13 +13,17 @@ console.log('[DEBUG] Admin API Base Initialized:', window.API_BASE);
     const LOGIN_PAGE = 'login.html';
     const DASHBOARD_PAGE = 'index.html';
 
-    const isLoginPage = window.location.pathname.includes(LOGIN_PAGE);
+    const path = window.location.pathname.toLowerCase();
+    const isLoginPage = path.includes(LOGIN_PAGE) || path.endsWith('/login') || path.endsWith('/login/');
+
+    console.log('[DEBUG] Auth Check:', { path, isLoginPage, hasToken: !!AUTH_TOKEN });
 
     // 1. Immediate Session Check
     if (!AUTH_TOKEN && !isLoginPage) {
+        console.warn('[AUTH] No token found, redirecting to login...');
         window.location.replace(LOGIN_PAGE);
     } else if (AUTH_TOKEN && isLoginPage) {
-        // Automatically move to dashboard if already logged in
+        console.info('[AUTH] Token found on login page, moving to dashboard...');
         window.location.replace(DASHBOARD_PAGE);
     }
 

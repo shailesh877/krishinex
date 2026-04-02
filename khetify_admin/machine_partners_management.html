@@ -12,7 +12,7 @@
   <meta http-equiv="Expires" content="0" />
 
   <!-- Authentication Check -->
-  <script src="js/auth.js"></script>
+  <script src="js/auth.js?v=1.0.1"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -667,8 +667,77 @@ CASH COLLECTIONS TABLE
           class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"><i
             class="fas fa-times text-slate-700"></i></button>
       </div>
-      <div id="partnerModalContent" class="px-6 py-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scroll">
-        <!-- Content will be injected here -->
+      <div id="partnerModalContent" class="px-0 py-0 overflow-hidden flex flex-col h-[80vh]">
+        <!-- Tab Navigation -->
+        <div class="flex border-b-2 border-slate-200 bg-slate-50/50 px-6">
+          <button onclick="switchPartnerTab('overview')" id="tab-overview" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-orange-500 text-orange-600 transition-all">Overview</button>
+          <button onclick="switchPartnerTab('machines')" id="tab-machines" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Machines</button>
+          <button onclick="switchPartnerTab('bookings')" id="tab-bookings" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Bookings History</button>
+          <button onclick="switchPartnerTab('wallet')" id="tab-wallet" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Wallet & Payouts</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-6">
+          <!-- Overview Tab -->
+          <div id="content-overview" class="tab-content space-y-6"></div>
+          
+          <!-- Machines Tab -->
+          <div id="content-machines" class="tab-content hidden space-y-4">
+            <div id="machinesList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div class="col-span-full py-12 text-center text-slate-400 font-bold">
+                 <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Loading machines…
+               </div>
+            </div>
+          </div>
+
+          <!-- Bookings Tab -->
+          <div id="content-bookings" class="tab-content hidden space-y-4">
+            <div class="overflow-x-auto rounded-xl border-2 border-slate-100 bg-white">
+              <table class="min-w-full border-separate border-spacing-0">
+                <thead class="bg-slate-50">
+                  <tr class="text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Booking ID</th>
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Farmer</th>
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Machine</th>
+                    <th class="px-4 py-3 text-right border-b-2 border-slate-100">Amount</th>
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="partnerBookingsBody">
+                  <tr>
+                    <td colspan="5" class="py-12 text-center text-slate-400 font-bold">
+                      <i class="fas fa-circle-notch fa-spin mr-2"></i>Loading history…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Wallet Tab -->
+          <div id="content-wallet" class="tab-content hidden space-y-6">
+             <div id="walletBalanceCard"></div>
+             <div class="bg-white rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b-2 border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                   <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Transaction History</h3>
+                </div>
+                <div class="overflow-x-auto">
+                   <table class="w-full text-[11px]">
+                      <thead class="bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider">
+                         <tr>
+                            <th class="px-4 py-3 text-left">Date</th>
+                            <th class="px-4 py-3 text-left">Ref ID</th>
+                            <th class="px-4 py-3 text-left">Type</th>
+                            <th class="px-4 py-3 text-right">Amount</th>
+                            <th class="px-4 py-3 text-left">Mode</th>
+                            <th class="px-4 py-3 text-left">Note</th>
+                         </tr>
+                      </thead>
+                      <tbody id="walletHistoryBody"></tbody>
+                   </table>
+                </div>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -794,18 +863,28 @@ CASH COLLECTIONS TABLE
       } catch (e) { toast('Network error', 'error'); }
     }
 
+    let currentPartnerId = null;
+
     function openPartnerModal(id) {
       const p = allPartners.find(x => x._id === id);
       if (!p) return;
+      currentPartnerId = id;
+      
       const modal = document.getElementById('partnerModal');
-      const content = document.getElementById('partnerModalContent');
+      const overviewContainer = document.getElementById('content-overview');
+      const machinesList = document.getElementById('machinesList');
+      const bookingsBody = document.getElementById('partnerBookingsBody');
 
-      // Robust URL builder using global API_BASE
+      // Reset contents
+      machinesList.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Loading machines…</div>`;
+      bookingsBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading history…</td></tr>`;
+      
+      switchPartnerTab('overview');
+
       const fixUrl = (u) => {
         if (!u) return null;
         if (u.startsWith('http')) return u;
-        // Prepend backend URL if it's a relative path
-        const base = API_BASE.split('/api')[0]; // e.g., https://demo.ranx24.com
+        const base = API_BASE.split('/api')[0];
         const path = u.startsWith('/') ? u : '/' + u;
         if (!path.includes('/uploads/')) return base + '/uploads' + path;
         return base + path;
@@ -821,13 +900,12 @@ CASH COLLECTIONS TABLE
         'blocked': 'bg-slate-900 text-white'
       };
 
-      content.innerHTML = `
+      overviewContainer.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Profile Info -->
           <div class="space-y-4">
             <div class="flex items-center gap-4">
               <div class="h-20 w-20 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-200">
-                ${profilePic ? `<img src="${profilePic}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Error';">` : `<i class="fas fa-user text-slate-300 text-4xl flex items-center justify-center h-full"></i>`}
+                ${profilePic ? `<img src="${profilePic}" class="h-full w-full object-cover">` : `<i class="fas fa-user text-slate-300 text-4xl flex items-center justify-center h-full"></i>`}
               </div>
               <div>
                 <h3 class="text-lg font-black text-slate-900">${p.name}</h3>
@@ -835,18 +913,40 @@ CASH COLLECTIONS TABLE
                 <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black mt-1 ${statusColors[p.status] || ''}">${p.status.toUpperCase()}</span>
               </div>
             </div>
-            
+            <!-- Business Details Form -->
             <div class="bg-slate-50 rounded-2xl p-4 border-2 border-slate-100">
-               <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Business Details</div>
-               <div class="space-y-2">
-                 <div class="flex justify-between"><span class="text-xs text-slate-500 font-bold">Location:</span> <span class="text-xs text-slate-900 font-black">${p.location || 'N/A'}</span></div>
-                 <div class="flex justify-between"><span class="text-xs text-slate-500 font-bold">Email:</span> <span class="text-xs text-slate-900 font-black">${p.email || 'N/A'}</span></div>
-                 <div class="flex justify-between"><span class="text-xs text-slate-500 font-bold">Joined:</span> <span class="text-xs text-slate-900 font-black">${new Date(p.joinedAt).toLocaleDateString()}</span></div>
+               <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 flex justify-between items-center">
+                  <span>Business Details</span>
+                  <button onclick="savePartnerProfile('${p._id}')" class="bg-slate-900 text-white px-3 py-1 rounded-lg text-[10px] hover:bg-black transition-all shadow-sm">
+                    <i class="fas fa-save mr-1"></i> Save Profile
+                  </button>
+               </div>
+               <div class="space-y-3">
+                 <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Owner Name</label>
+                    <input id="edit_name" type="text" value="${p.name || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                 </div>
+                 <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Business Name</label>
+                    <input id="edit_biz" type="text" value="${p.businessName || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                 </div>
+                 <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Mobile</label>
+                        <input id="edit_phone" type="text" value="${p.phone || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                    </div>
+                    <div>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Email</label>
+                        <input id="edit_email" type="text" value="${p.email || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                    </div>
+                 </div>
+                 <div>
+                    <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Address/Location</label>
+                    <input id="edit_addr" type="text" value="${p.location || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                 </div>
                </div>
             </div>
           </div>
-
-          <!-- Bank Details -->
           <div class="bg-orange-50/50 rounded-2xl p-5 border-2 border-orange-100">
             <div class="text-[10px] font-black text-orange-400 uppercase tracking-wider mb-3 flex justify-between items-center">
               <span>Bank Information</span>
@@ -855,65 +955,315 @@ CASH COLLECTIONS TABLE
               </button>
             </div>
             <div class="space-y-3">
-              <div>
-                <label class="text-[10px] font-bold text-slate-500 block mb-1">Account Holder</label>
-                <input id="edit_holder" type="text" value="${bank.holderName || p.name || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none">
-              </div>
-              <div>
-                <label class="text-[10px] font-bold text-slate-500 block mb-1">Bank Name</label>
-                <input id="edit_bank" type="text" value="${bank.bankName || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none">
-              </div>
-              <div>
-                <label class="text-[10px] font-bold text-slate-500 block mb-1">Account Number</label>
-                <input id="edit_acc" type="text" value="${bank.accountNumber || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none">
-              </div>
-              <div class="grid grid-cols-1">
-                <div>
-                  <label class="text-[10px] font-bold text-slate-500 block mb-1">IFSC</label>
-                  <input id="edit_ifsc" type="text" value="${bank.ifscCode || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none">
-                </div>
-              </div>
+              <div><input id="edit_holder" type="text" value="${bank.holderName || p.name || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+              <div><input id="edit_bank" type="text" value="${bank.bankName || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+              <div><input id="edit_acc" type="text" value="${bank.accountNumber || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+              <div><input id="edit_ifsc" type="text" value="${bank.ifscCode || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
             </div>
           </div>
         </div>
-
-        <!-- Documents Section -->
-        <div>
-          <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">Submitted Documents (KYC)</div>
+        <div class="pt-4">
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">KYC Documents</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Aadhaar/PAN Doc -->
             <div class="group relative rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-100 aspect-video">
-              ${docPic ? `<img src="${docPic}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200?text=Document+Not+Found';">` : `<div class="flex items-center justify-center h-full text-slate-400 text-xs font-bold">Aadhaar/PAN Not Uploaded</div>`}
-              ${docPic ? `<div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <a href="${docPic}" target="_blank" class="bg-white text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-xl">View Aadhaar/PAN</a>
-              </div>` : ''}
+              ${docPic ? `<img src="${docPic}" class="h-full w-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-400 text-xs font-bold">Aadhaar/PAN N/A</div>`}
               <div class="absolute bottom-2 left-2 bg-slate-900/60 backdrop-blur px-2 py-1 rounded text-[8px] font-bold text-white uppercase">Aadhaar / PAN</div>
             </div>
-
-            <!-- Cancelled Cheque / Passbook Doc -->
             <div class="group relative rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-100 aspect-video">
-              ${bank.bankDocUrl ? `<img src="${fixUrl(bank.bankDocUrl)}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200?text=Cheque+Not+Found';">` : `<div class="flex items-center justify-center h-full text-slate-400 text-xs font-bold">Cheque/Passbook Not Uploaded</div>`}
-              ${bank.bankDocUrl ? `<div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                 <a href="${fixUrl(bank.bankDocUrl)}" target="_blank" class="bg-white text-slate-900 px-4 py-2 rounded-xl text-xs font-black shadow-xl">View Original</a>
-              </div>` : ''}
-              <div class="absolute bottom-2 left-2 bg-amber-600/90 backdrop-blur px-2 py-1 rounded text-[8px] font-bold text-white uppercase">Cancelled Cheque / Passbook</div>
+              ${bank.bankDocUrl ? `<img src="${fixUrl(bank.bankDocUrl)}" class="h-full w-full object-cover">` : `<div class="flex items-center justify-center h-full text-slate-400 text-xs font-bold">Cheque/Passbook N/A</div>`}
+              <div class="absolute bottom-2 left-2 bg-amber-600/90 backdrop-blur px-2 py-1 rounded text-[8px] font-bold text-white uppercase">Bank Proof</div>
             </div>
           </div>
         </div>
-
-        <!-- Action Summary -->
-        <div class="flex items-center justify-between p-4 bg-slate-900 rounded-2xl text-white">
-           <div>
-             <p class="text-[10px] font-bold text-slate-400 uppercase">Performance Summary</p>
-             <p class="text-sm font-black">${p.machineCount} Machines · ${p.totalBookings} Total Bookings</p>
-           </div>
+        <div class="flex items-center justify-between p-4 bg-slate-900 rounded-2xl text-white mt-6">
+           <div><p class="text-[10px] font-bold text-slate-400 uppercase">Performance</p><p class="text-sm font-black">${p.machineCount || 0} Machines · ${p.totalBookings || 0} Bookings</p></div>
            <div class="flex gap-2">
-              ${p.status !== 'approved' ? `<button onclick="updatePartnerStatus('${p._id}', 'approved'); closePartnerModal()" class="px-4 py-2 bg-emerald-500 rounded-xl text-xs font-black hover:bg-emerald-600 transition-all">Approve KYC</button>` : ''}
-              ${p.status !== 'blocked' ? `<button onclick="updatePartnerStatus('${p._id}', 'blocked'); closePartnerModal()" class="px-4 py-2 bg-rose-500 rounded-xl text-xs font-black hover:bg-rose-600 transition-all">Block Partner</button>` : ''}
+              ${p.status !== 'approved' ? `<button onclick="updatePartnerStatus('${p._id}', 'approved'); closePartnerModal()" class="px-4 py-2 bg-emerald-500 rounded-xl text-xs font-black">Approve KYC</button>` : ''}
+              ${p.status !== 'blocked' ? `<button onclick="updatePartnerStatus('${p._id}', 'blocked'); closePartnerModal()" class="px-4 py-2 bg-rose-500 rounded-xl text-xs font-black">Block</button>` : ''}
            </div>
         </div>
       `;
+
       modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    async function savePartnerProfile(id) {
+       const btn = event.currentTarget;
+       const original = btn.innerHTML;
+       btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+       btn.disabled = true;
+
+       const b = {
+          name: document.getElementById('edit_name').value,
+          businessName: document.getElementById('edit_biz').value,
+          phone: document.getElementById('edit_phone').value,
+          email: document.getElementById('edit_email').value,
+          address: document.getElementById('edit_addr').value
+       };
+       try {
+          const r = await fetch(`${API}/admin/rental/partners/${id}/profile`, {
+             method: 'PUT',
+             headers: H,
+             body: JSON.stringify(b)
+          });
+          const d = await r.json();
+          if (r.ok) {
+             toast('Profile updated successfully', 'success');
+             // Update local allPartners so the list is refreshed
+             const idx = allPartners.findIndex(x => x._id === id);
+             if (idx !== -1) {
+                allPartners[idx] = { ...allPartners[idx], ...b, location: b.address };
+                fetchPartners(); // Re-render table
+             }
+          } else toast(d.error || 'Failed', 'error');
+       } catch (e) { toast('Network error', 'error'); }
+       finally {
+          btn.innerHTML = original;
+          btn.disabled = false;
+       }
+    }
+
+    function switchPartnerTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById(`content-${tabName}`).classList.remove('hidden');
+      ['overview', 'machines', 'bookings', 'wallet'].forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (!btn) return;
+        if (t === tabName) {
+          btn.classList.replace('border-transparent', 'border-orange-500');
+          btn.classList.replace('text-slate-500', 'text-orange-600');
+        } else {
+          btn.classList.replace('border-orange-500', 'border-transparent');
+          btn.classList.replace('text-orange-600', 'text-slate-500');
+        }
+      });
+      if (tabName === 'machines') loadPartnerMachines(currentPartnerId);
+      if (tabName === 'bookings') loadPartnerBookings(currentPartnerId);
+      if (tabName === 'wallet') loadPartnerWallet(currentPartnerId);
+    }
+
+    async function loadPartnerWallet(id) {
+       const balanceCard = document.getElementById('walletBalanceCard');
+       const historyBody = document.getElementById('walletHistoryBody');
+       
+       balanceCard.innerHTML = `<div class="p-8 text-center"><i class="fas fa-circle-notch fa-spin text-orange-500"></i></div>`;
+       historyBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400">Loading wallet history…</td></tr>`;
+
+       try {
+          const r = await fetch(`${API}/admin/rental/partners/${id}/wallet`, { headers: H });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error);
+
+          balanceCard.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Balance</p>
+                  <h2 class="text-4xl font-black mb-4">₹${d.balance.toLocaleString()}</h2>
+                  <div class="flex gap-2">
+                    <button onclick="toggleTxnForm('Credit')" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg"><i class="fas fa-plus mr-1"></i> Add Credit</button>
+                    <button onclick="toggleTxnForm('Debit')" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg"><i class="fas fa-minus mr-1"></i> Apply Debit</button>
+                  </div>
+                </div>
+                <i class="fas fa-wallet absolute -right-4 -bottom-4 text-8xl text-white/5 transform -rotate-12"></i>
+              </div>
+              <div id="txnFormContainer" class="hidden bg-slate-50 rounded-3xl border-2 border-slate-200 p-4 animate-[fadeIn_0.2s_ease-out]">
+                 <div class="flex justify-between items-center mb-3">
+                    <h4 id="txnFormTitle" class="text-[10px] font-black text-slate-900 uppercase">New Transaction</h4>
+                    <button onclick="toggleTxnForm()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-[10px]"></i></button>
+                 </div>
+                 <div class="space-y-2">
+                    <input id="txn_amt" type="number" placeholder="Amount" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-orange-400">
+                    <input id="txn_note" type="text" placeholder="Remark/Note" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-orange-400">
+                    <select id="txn_mode" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-orange-400">
+                       <option value="Bank Transfer">Bank Transfer</option>
+                       <option value="UPI">UPI / GPay</option>
+                       <option value="Cash">Cash</option>
+                    </select>
+                    <button id="txn_submit_btn" onclick="submitWalletTransaction()" class="w-full h-8 rounded-lg bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">Submit</button>
+                 </div>
+              </div>
+            </div>`;
+
+          if (!d.transactions || d.transactions.length === 0) {
+             historyBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400 uppercase tracking-widest">No transactions found</td></tr>`;
+          } else {
+             historyBody.innerHTML = d.transactions.map(t => {
+                const isCredit = t.type === 'Credit' || t.type === 'Collection';
+                const amtColor = isCredit ? 'text-emerald-600' : 'text-rose-600';
+                const amtSign = isCredit ? '+' : '-';
+                return `
+                  <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                     <td class="px-4 py-3 font-semibold text-slate-500">${new Date(t.createdAt).toLocaleDateString()}</td>
+                     <td class="px-4 py-3 font-black text-slate-900">${t.transactionId}</td>
+                     <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span>
+                     </td>
+                     <td class="px-4 py-3 text-right font-black ${amtColor}">${amtSign}₹${t.amount}</td>
+                     <td class="px-4 py-3 font-bold text-slate-600">${t.paymentMode}</td>
+                     <td class="px-4 py-3 text-slate-500 font-semibold">${t.note || '-'}</td>
+                  </tr>`;
+             }).join('');
+          }
+       } catch (e) {
+          toast(e.message, 'error');
+       }
+    }
+
+    let currentTxnType = null;
+    function toggleTxnForm(type) {
+       const container = document.getElementById('txnFormContainer');
+       if (!type || (currentTxnType === type && !container.classList.contains('hidden'))) {
+          container.classList.add('hidden');
+          return;
+       }
+       currentTxnType = type;
+       document.getElementById('txnFormTitle').innerText = `${type} Funds`;
+       document.getElementById('txn_submit_btn').innerHTML = `Submit ${type}`;
+       container.classList.remove('hidden');
+    }
+
+    async function submitWalletTransaction() {
+       const amt = document.getElementById('txn_amt').value;
+       const note = document.getElementById('txn_note').value;
+       const mode = document.getElementById('txn_mode').value;
+       const btn = document.getElementById('txn_submit_btn');
+
+       if (!amt || amt <= 0) return toast('Invalid amount', 'error');
+
+       btn.disabled = true;
+       btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing…';
+
+       try {
+          const r = await fetch(`${API}/admin/rental/partners/${currentPartnerId}/wallet/transaction`, {
+             method: 'POST',
+             headers: H,
+             body: JSON.stringify({ type: currentTxnType, amount: amt, note, paymentMode: mode })
+          });
+          const d = await r.json();
+          if (r.ok) {
+             toast(`₹${amt} ${currentTxnType}ed successfully`, 'success');
+             loadPartnerWallet(currentPartnerId); // Refresh view
+          } else toast(d.error || 'Failed', 'error');
+       } catch (e) { toast('Network error', 'error'); }
+       finally {
+          btn.disabled = false;
+          btn.innerHTML = `Submit ${currentTxnType}`;
+       }
+    }
+
+    async function loadPartnerMachines(id) {
+      const container = document.getElementById('machinesList');
+      if (container.dataset.loadedId === id) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/partners/${id}/machines`, { headers: H });
+        const data = await r.json();
+        const getImg = (u) => API_BASE.split('/api')[0] + '/' + u;
+
+        if (!data || data.length === 0) {
+          container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-bold">No machines.</div>`;
+          return;
+        }
+        container.innerHTML = data.map(m => `
+          <div class="bg-white rounded-2xl border-2 border-slate-100 p-4 transition-all hover:border-orange-200 shadow-sm flex flex-col gap-3">
+            <div class="flex gap-4">
+              <div class="h-20 w-20 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-50 flex-shrink-0">
+                <img src="${getImg(m.images[0])}" class="h-full w-full object-cover">
+              </div>
+              <div class="flex-1">
+                 <div class="flex justify-between items-start">
+                   <h4 class="text-sm font-black text-slate-900">${m.name}</h4>
+                   <span class="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-black text-slate-600 uppercase">${m.category}</span>
+                 </div>
+                 <div class="text-[10px] text-slate-500 font-bold mt-1">
+                    <i class="fas fa-map-marker-alt text-orange-400 mr-1"></i> ${m.village || 'N/A'}
+                    <span class="mx-1">·</span>
+                    <i class="fas fa-route text-blue-400 mr-1"></i> ${m.distanceKm} KM Radius
+                 </div>
+                 <div class="grid grid-cols-2 gap-2 mt-3">
+                    <div class="bg-orange-50 p-1.5 rounded-lg border border-orange-100">
+                       <p class="text-[8px] font-bold text-orange-400 uppercase leading-none">Daily</p>
+                       <p class="text-[11px] font-black text-orange-700">₹${m.priceDay}</p>
+                    </div>
+                    <div class="bg-blue-50 p-1.5 rounded-lg border border-blue-100">
+                       <p class="text-[8px] font-bold text-blue-400 uppercase leading-none">Hourly</p>
+                       <p class="text-[11px] font-black text-blue-700">₹${m.priceHour}</p>
+                    </div>
+                 </div>
+              </div>
+            </div>
+            ${m.desc ? `<div class="bg-slate-50/50 p-2 rounded-xl text-[10px] text-slate-600 font-semibold italic border border-slate-100 line-clamp-2">"${m.desc}"</div>` : ''}
+          </div>
+        `).join('');
+        container.dataset.loadedId = id;
+      } catch (e) { container.innerHTML = 'Error'; }
+    }
+
+    async function loadPartnerBookings(id) {
+      const tbody = document.getElementById('partnerBookingsBody');
+      if (tbody.dataset.loadedId === id) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/partners/${id}/bookings`, { headers: H });
+        const data = await r.json();
+        if (!data || data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold">No history.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.map(b => {
+           const sc = b.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 
+                      b.status === 'Cancelled' ? 'bg-rose-100 text-rose-700' : 
+                      b.status === 'Accepted' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
+           
+           const fDate = new Date(b.fromDate).toLocaleDateString();
+           const tDate = new Date(b.toDate).toLocaleDateString();
+           const duration = b.priceType === 'daily' ? `${b.days} Days` : `${b.hours} Hours`;
+
+           return `
+            <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
+              <td class="px-4 py-4">
+                 <div class="text-[10px] font-black text-slate-500 mb-1">#${b._id.toString().slice(-6).toUpperCase()}</div>
+                 <div class="text-[9px] font-bold text-slate-400">${new Date(b.createdAt).toLocaleString([], {dateStyle:'short', timeStyle:'short'})}</div>
+              </td>
+              <td class="px-4 py-4">
+                 <div class="flex items-center gap-2">
+                    <div class="h-7 w-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                       <img src="${b.buyer && b.buyer.profilePhotoUrl ? API_BASE.split('/api')[0]+'/'+b.buyer.profilePhotoUrl : 'https://via.placeholder.com/50'}" class="h-full w-full object-cover">
+                    </div>
+                    <div>
+                       <div class="text-xs font-black text-slate-900">${b.buyer ? b.buyer.name : 'Unknown'}</div>
+                       <div class="text-[9px] text-slate-500 font-bold">${b.buyer ? b.buyer.phone : ''}</div>
+                    </div>
+                 </div>
+              </td>
+              <td class="px-4 py-4">
+                 <div class="text-xs font-black text-slate-800">${b.machine ? b.machine.name : 'Deleted Machine'}</div>
+                 <div class="flex items-center gap-2 mt-1">
+                    <span class="text-[10px] font-bold text-slate-500"><i class="far fa-calendar-alt mr-1"></i>${fDate} - ${tDate}</span>
+                    <span class="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 rounded text-slate-600">${duration}</span>
+                 </div>
+                 ${b.purpose ? `<div class="text-[9px] text-slate-400 italic mt-1">${b.purpose}</div>` : ''}
+              </td>
+              <td class="px-4 py-4 text-right">
+                 <div class="text-xs font-black text-slate-900">₹${b.totalAmount}</div>
+                 <div class="text-[9px] font-bold text-slate-400 mt-1">
+                    Net: <span class="text-emerald-600">₹${b.ownerPayout}</span>
+                 </div>
+                 <div class="text-[8px] text-orange-400 mt-0.5">Comm: ₹${b.platformCommission}</div>
+              </td>
+              <td class="px-4 py-4">
+                 <div class="flex flex-col items-start gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${sc}">${b.status}</span>
+                    ${b.paymentMode ? `<span class="text-[8px] font-black px-1.5 py-0.5 border border-slate-200 rounded text-slate-500"><i class="fas ${b.paymentMode === 'WALLET' ? 'fa-wallet' : 'fa-money-bill'} mr-1"></i>${b.paymentMode}</span>` : ''}
+                    ${b.status === 'Accepted' && b.completionOTP ? `<span class="text-[9px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">OTP: ${b.completionOTP}</span>` : ''}
+                 </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        tbody.dataset.loadedId = id;
+      } catch (e) { tbody.innerHTML = 'Error'; }
     }
 
     async function saveBankDetails(id) {

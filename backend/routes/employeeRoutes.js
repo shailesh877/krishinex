@@ -1599,6 +1599,8 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
                 email: b.email || '',
                 address: b.address,
                 status: b.status,
+                profilePhotoUrl: b.profilePhotoUrl || '',
+                aadhaarNumber: b.aadhaarNumber || '',
                 aadhaarDocUrl: b.aadhaarDocUrl || '',
                 joinedAt: b.createdAt,
                 totalOrders: orders.length,
@@ -1620,6 +1622,102 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
     } catch (e) {
         console.error('Buyers list error:', e);
         res.status(500).json({ error: 'Failed to fetch buyers' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer/:id/orders
+// @desc    Get all orders for a specific buyer
+// @access  Private/Admin
+router.get('/admin/buyer/:id/orders', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const orders = await Order.find({ buyer: req.params.id })
+            .sort({ createdAt: -1 });
+
+        const settings = await Settings.getSettings();
+        const commissionRate = settings.commissions.buyerTrading || 0;
+
+        const enriched = orders.map(o => {
+            const qty = parseQuantityInQuintals(o.quantity);
+            const cropPrice = qty * (o.pricePerQuintal || 0);
+            const commission = o.commission || (cropPrice * commissionRate / 100);
+            const totalPayable = cropPrice + commission;
+
+            return {
+                ...o.toObject(),
+                totalPayable,
+                orderId: `#ORD-${o._id.toString().slice(-6).toUpperCase()}`
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Fetch buyer orders error:', e);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer/:id/wallet
+// @desc    Get buyer wallet balance and B2B transactions
+// @access  Private/Admin
+router.get('/admin/buyer/:id/wallet', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('walletBalance name');
+        if (!user) return res.status(404).json({ error: 'Buyer not found' });
+
+        const transactions = await Transaction.find({ 
+            recipient: req.params.id,
+            module: 'BuyerTrading'
+        }).sort({ createdAt: -1 }).limit(100);
+
+        res.json({
+            balance: user.walletBalance || 0,
+            transactions
+        });
+    } catch (e) {
+        console.error('Fetch buyer wallet error:', e);
+        res.status(500).json({ error: 'Failed to fetch wallet data' });
+    }
+});
+
+// @route   POST /api/employee/admin/buyer/:id/wallet/transaction
+// @desc    Admin: Perform manual Credit/Debit on buyer wallet
+// @access  Private/Admin
+router.post('/admin/buyer/:id/wallet/transaction', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { type, amount, note, paymentMode } = req.body;
+        const amt = Number(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+        if (!['Credit', 'Debit'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Buyer not found' });
+
+        if (type === 'Debit' && (user.walletBalance || 0) < amt) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        if (type === 'Credit') user.walletBalance = (user.walletBalance || 0) + amt;
+        else user.walletBalance = (user.walletBalance || 0) - amt;
+
+        await user.save();
+
+        const txn = new Transaction({
+            transactionId: `TXN-B2B-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            recipient: user._id,
+            module: 'BuyerTrading',
+            amount: amt,
+            type: type === 'Credit' ? 'Credit' : 'Payout',
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            note: note || `Manual ${type} by Admin`,
+            performedBy: req.user.id
+        });
+        await txn.save();
+
+        res.json({ message: `Wallet ${type}ed successfully`, balance: user.walletBalance });
+    } catch (e) {
+        console.error('Buyer manual transaction error:', e);
+        res.status(500).json({ error: 'Failed to perform transaction' });
     }
 });
 
@@ -1668,16 +1766,18 @@ router.get('/admin/buyer/reconciliation', protect, checkModule('buyer'), async (
             .limit(100);
 
         const settings = await Settings.getSettings();
-        const commissionRate = settings.commissions.buyerTrading || 0;
+        const globalCommissionRate = settings.commissions.buyerTrading || 0;
 
         const enriched = orders.map(o => {
             const qty = parseQuantityInQuintals(o.quantity);
-            const cropPrice = qty * (o.pricePerQuintal || 0);
-            const commission = o.commission || (cropPrice * commissionRate / 100);
-            const totalPayable = cropPrice + commission;
-            const amountReceived = o.amountReceived || 0;
+            
+            // Prioritize explicitly saved values from the delivery/edit process
+            const commission = o.commission !== undefined && o.commission !== null ? o.commission : (qty * (o.pricePerQuintal || 0) * globalCommissionRate / 100);
+            const farmerPayout = o.farmerAmount || (qty * (o.pricePerQuintal || 0));
+            const totalPayable = o.amountReceived || (farmerPayout + commission);
+            
+            const amountReceived = o.amountReceived || 0; // Legacy or partial payments if any
             const pendingAmount = Math.max(0, totalPayable - amountReceived);
-            const farmerPayout = o.farmerAmount || 0;
 
             let settlement = o.settlement || 'pending';
             // Auto-derive if not explicitly set
@@ -1695,6 +1795,7 @@ router.get('/admin/buyer/reconciliation', protect, checkModule('buyer'), async (
                 crop: o.crop,
                 quantity: o.quantity,
                 totalPayable,
+                commission,
                 amountReceived,
                 pendingAmount,
                 farmerPayout,
@@ -2033,10 +2134,18 @@ router.get('/admin/shop/orders', protect, checkAdmin, async (req, res) => {
             .limit(100)
             .lean();
 
+        const Settings = require('../models/Settings');
+        const settings = await Settings.getSettings();
+        const shopCommissionPercent = settings.commissions.shop || 0;
+
         const enriched = orders.map(o => {
             const itemCount = o.items ? o.items.length : 0;
             const topItem = o.items && o.items.length > 0 ? o.items[0].name : 'Unknown Item';
             const itemString = itemCount > 1 ? `${topItem} + ${itemCount - 1} more` : topItem;
+
+            const totalAmount = o.totalAmount || 0;
+            const commissionAmount = Math.round((totalAmount * shopCommissionPercent) / 100);
+            const payoutAmount = totalAmount - commissionAmount;
 
             return {
                 _id: o._id,
@@ -2047,7 +2156,10 @@ router.get('/admin/shop/orders', protect, checkAdmin, async (req, res) => {
                 buyerLocation: o.buyer?.address || o.deliveryAddress?.fullAddress || 'No Address',
                 itemsSummary: itemString,
                 itemCount,
-                totalAmount: o.totalAmount || 0,
+                totalAmount,
+                commissionAmount,
+                payoutAmount,
+                paymentMode: o.paymentMode || 'CASH',
                 status: o.status,
                 createdAt: o.createdAt
             };
@@ -2057,6 +2169,112 @@ router.get('/admin/shop/orders', protect, checkAdmin, async (req, res) => {
     } catch (e) {
         console.error('Shop orders error:', e);
         res.status(500).json({ error: 'Failed to fetch shop orders' });
+    }
+});
+
+// @route   GET /api/employee/admin/shop/:id/360
+// @desc    Get complete shop details (360-degree view)
+router.get('/admin/shop/:id/360', protect, checkAdmin, async (req, res) => {
+    try {
+        const shopId = req.params.id;
+        const [shop, orders, transactions, inventory] = await Promise.all([
+            User.findById(shopId).lean(),
+            ShopOrder.find({ owner: shopId }).populate('buyer', 'name phone').sort({ createdAt: -1 }).limit(50).lean(),
+            Transaction.find({ recipient: shopId, module: 'Shop' }).sort({ createdAt: -1 }).limit(50).lean(),
+            require('../models/Item').find({ owner: shopId }).lean()
+        ]);
+
+        if (!shop) return res.status(404).json({ error: 'Shop partner not found' });
+
+        const totalSales = orders
+            .filter(o => o.status === 'DELIVERED')
+            .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+        const activeProducts = inventory.filter(p => (p.stockQty || 0) > 0).length;
+
+        res.json({
+            profile: {
+                _id: shop._id,
+                name: shop.name,
+                businessName: shop.businessName || shop.name,
+                phone: shop.phone,
+                email: shop.email || '',
+                address: shop.address,
+                status: shop.status,
+                profilePhotoUrl: shop.profilePhotoUrl || '',
+                aadhaarNumber: shop.aadhaarNumber || '',
+                aadhaarDocUrl: shop.aadhaarDocUrl || '',
+                panNumber: shop.panNumber || '',
+                panDocUrl: shop.panDocUrl || '',
+                gstNumber: shop.gstNumber || '',
+                licenseNumber: shop.licenseNumber || '',
+                businessLicenseUrl: shop.businessLicenseUrl || '',
+                walletBalance: shop.walletBalance || 0,
+                bankDetails: shop.bankDetails || {},
+                joinedAt: shop.createdAt
+            },
+            stats: {
+                totalOrders: orders.length,
+                totalSales,
+                activeProducts,
+                totalProducts: inventory.length
+            },
+            orders: orders.map(o => ({
+                _id: o._id,
+                buyerName: o.buyer?.name || 'Customer',
+                totalAmount: o.totalAmount,
+                status: o.status,
+                createdAt: o.createdAt
+            })),
+            transactions,
+            inventory: inventory.map(p => ({
+                _id: p._id,
+                name: p.name,
+                image: p.imageUrl || '',
+                price: p.price,
+                stock: p.stockQty,
+                category: p.category,
+                hasVariants: p.hasVariants || false,
+                variants: p.variants || []
+            }))
+        });
+    } catch (e) {
+        console.error('Shop 360 error:', e);
+        res.status(500).json({ error: 'Failed to fetch details' });
+    }
+});
+
+// @route   POST /api/employee/admin/shop/:id/wallet/transaction
+router.post('/admin/shop/:id/wallet/transaction', protect, checkAdmin, async (req, res) => {
+    try {
+        const { amount, type, note, paymentMode } = req.body;
+        const shop = await User.findById(req.params.id);
+        if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
+        const numAmount = Number(amount);
+        if (type === 'Credit') {
+            shop.walletBalance = (shop.walletBalance || 0) + numAmount;
+        } else {
+            shop.walletBalance = (shop.walletBalance || 0) - numAmount;
+        }
+
+        await shop.save();
+
+        const transaction = await Transaction.create({
+            transactionId: `ADM-SHOP-${Date.now()}-${req.params.id.slice(-4)}`,
+            recipient: shop._id,
+            module: 'Shop',
+            amount: numAmount,
+            type: type,
+            paymentMode: paymentMode || 'NexCard Wallet',
+            status: 'Completed',
+            performedBy: req.user.id,
+            note: note || `Admin manual ${type}`
+        });
+
+        res.json({ message: 'Transaction successful', balance: shop.walletBalance, transaction });
+    } catch (e) {
+        res.status(500).json({ error: 'Transaction failed' });
     }
 });
 
@@ -2286,6 +2504,10 @@ router.get('/admin/labour/jobs', protect, checkModule('labour'), async (req, res
                 hoursWorked: job.hoursWorked,
                 acresCovered: job.acresCovered,
                 amount: job.amount,
+                platformCommission: job.platformCommission || 0,
+                ownerPayout: job.ownerPayout || 0,
+                fromDate: job.fromDate,
+                toDate: job.toDate,
                 rating: job.rating,
                 status: job.status,
                 assignedTo: job.assignedTo?._id || null,
@@ -2705,6 +2927,216 @@ router.put('/admin/rental/partners/:id/bank', protect, checkModule('equipment'),
     } catch (e) {
         console.error('Partner bank update error:', e);
         res.status(500).json({ error: 'Failed to update bank details' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/partners/:id/profile
+// @desc    Update partner profile details (name, businessName, phone, email, address)
+// @access  Private/Admin
+router.put('/admin/rental/partners/:id/profile', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { name, businessName, phone, email, address } = req.body;
+        if (!name || !phone) return res.status(400).json({ error: 'Name and Phone are required' });
+
+        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+        partner.name = name;
+        partner.businessName = businessName;
+        partner.phone = phone;
+        partner.email = email;
+        partner.address = address || partner.address;
+
+        await partner.save();
+        res.json({ message: 'Profile updated successfully', partner });
+    } catch (e) {
+        console.error('Partner profile update error:', e);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/partners/:id/wallet
+// @desc    Get partner wallet balance and equipment transactions
+// @access  Private/Admin
+router.get('/admin/rental/partners/:id/wallet', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('walletBalance name');
+        if (!user) return res.status(404).json({ error: 'Partner not found' });
+
+        const transactions = await Transaction.find({ 
+            recipient: req.params.id,
+            module: 'Equipment'
+        }).sort({ createdAt: -1 }).limit(100);
+
+        res.json({
+            balance: user.walletBalance || 0,
+            transactions
+        });
+    } catch (e) {
+        console.error('Fetch partner wallet error:', e);
+        res.status(500).json({ error: 'Failed to fetch wallet data' });
+    }
+});
+
+// @route   POST /api/employee/admin/rental/partners/:id/wallet/transaction
+// @desc    Admin: Perform manual Credit/Debit on partner wallet
+// @access  Private/Admin
+router.post('/admin/rental/partners/:id/wallet/transaction', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { type, amount, note, paymentMode } = req.body;
+        const amt = Number(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+        if (!['Credit', 'Debit'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Partner not found' });
+
+        if (type === 'Debit' && user.walletBalance < amt) {
+            return res.status(400).json({ error: 'Insufficient wallet balance for this debit' });
+        }
+
+        // Update balance
+        if (type === 'Credit') user.walletBalance = (user.walletBalance || 0) + amt;
+        else user.walletBalance = (user.walletBalance || 0) - amt;
+
+        await user.save();
+
+        // Create transaction record
+        const txnId = `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const txn = new Transaction({
+            transactionId: txnId,
+            recipient: user._id,
+            module: 'Equipment',
+            amount: amt,
+            type: type === 'Credit' ? 'Credit' : 'Payout', // Map to model enum
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            note: note || `Manual ${type} by Admin`,
+            performedBy: req.user.id
+        });
+        await txn.save();
+
+        res.json({ 
+            message: `Wallet ${type}ed successfully`, 
+            balance: user.walletBalance,
+            transaction: txn 
+        });
+    } catch (e) {
+        console.error('Manual transaction error:', e);
+        res.status(500).json({ error: 'Failed to perform transaction' });
+    }
+});
+
+// ==========================================
+// LABOUR PARTNER MANAGEMENT (Admin)
+// ==========================================
+
+// @route   GET /api/employee/admin/labour/partners/:id/jobs
+// @desc    Get all jobs for a specific labourer
+// @access  Private/Admin
+router.get('/admin/labour/partners/:id/jobs', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const jobs = await LabourJob.find({ labour: req.params.id })
+            .populate('farmer', 'name phone profilePhotoUrl')
+            .sort({ createdAt: -1 });
+        res.json(jobs);
+    } catch (e) {
+        console.error('Fetch labourer jobs error:', e);
+        res.status(500).json({ error: 'Failed to fetch jobs' });
+    }
+});
+
+// @route   GET /api/employee/admin/labour/partners/:id/wallet
+// @desc    Get labourer wallet balance and transactions
+// @access  Private/Admin
+router.get('/admin/labour/partners/:id/wallet', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('walletBalance name');
+        if (!user) return res.status(404).json({ error: 'Labourer not found' });
+
+        const transactions = await Transaction.find({ 
+            recipient: req.params.id,
+            module: 'Labour'
+        }).sort({ createdAt: -1 }).limit(100);
+
+        res.json({
+            balance: user.walletBalance || 0,
+            transactions
+        });
+    } catch (e) {
+        console.error('Fetch labour wallet error:', e);
+        res.status(500).json({ error: 'Failed to fetch wallet data' });
+    }
+});
+
+// @route   POST /api/employee/admin/labour/partners/:id/wallet/transaction
+// @desc    Admin: Perform manual Credit/Debit on labour wallet
+// @access  Private/Admin
+router.post('/admin/labour/partners/:id/wallet/transaction', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { type, amount, note, paymentMode } = req.body;
+        const amt = Number(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+        if (!['Credit', 'Debit'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Labourer not found' });
+
+        if (type === 'Debit' && user.walletBalance < amt) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        if (type === 'Credit') user.walletBalance = (user.walletBalance || 0) + amt;
+        else user.walletBalance = (user.walletBalance || 0) - amt;
+
+        await user.save();
+
+        const txn = new Transaction({
+            transactionId: `TXN-LBR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            recipient: user._id,
+            module: 'Labour',
+            amount: amt,
+            type: type === 'Credit' ? 'Credit' : 'Payout',
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            note: note || `Manual ${type} by Admin`,
+            performedBy: req.user.id
+        });
+        await txn.save();
+
+        res.json({ message: `Wallet ${type}ed successfully`, balance: user.walletBalance });
+    } catch (e) {
+        console.error('Labour manual transaction error:', e);
+        res.status(500).json({ error: 'Failed to perform transaction' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/partners/:id/machines
+// @desc    Get all machines for a specific partner
+// @access  Private/Admin
+router.get('/admin/rental/partners/:id/machines', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const machines = await Machine.find({ owner: req.params.id }).sort({ createdAt: -1 });
+        res.json(machines);
+    } catch (e) {
+        console.error('Fetch partner machines error:', e);
+        res.status(500).json({ error: 'Failed to fetch machines' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/partners/:id/bookings
+// @desc    Get all rental bookings for a specific partner
+// @access  Private/Admin
+router.get('/admin/rental/partners/:id/bookings', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const bookings = await Rental.find({ owner: req.params.id })
+            .populate('buyer', 'name phone profilePhotoUrl')
+            .populate('machine', 'name category images')
+            .sort({ createdAt: -1 });
+        res.json(bookings);
+    } catch (e) {
+        console.error('Fetch partner bookings error:', e);
+        res.status(500).json({ error: 'Failed to fetch bookings' });
     }
 });
 
