@@ -16,7 +16,8 @@ const settingsSchema = new mongoose.Schema({
         taxRate: { type: Number, default: 12 }, // GST etc.
         minWalletRecharge: { type: Number, default: 500 },
         walletDiscountPercentage: { type: Number, default: 0 },
-        soilTestPrice: { type: Number, default: 250 }
+        soilTestPrice: { type: Number, default: 250 },
+        nexCardCharges: { type: Number, default: 0 }
     },
     // Platform meta
     platform: {

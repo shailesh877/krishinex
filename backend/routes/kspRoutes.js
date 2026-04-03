@@ -4,6 +4,7 @@ const KSPApplication = require('../models/KSPApplication');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
 const Settings = require('../models/Settings');
+const KSPCardLog = require('../models/KSPCardLog');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { protect } = require('../middleware/authMiddleware');
@@ -26,20 +27,20 @@ const generateToken = (userId, name, role) => {
   });
 };
 
-// KSP Partner Login (Phone/Password)
+// KSP Partner Login (Email/Password -> Step 1: Send OTP)
 router.post('/login', async (req, res) => {
   try {
-    const { phone, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!phone || !password) {
-      return res.status(400).json({ error: 'Phone and password are required' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
     }
 
     // Find user with role 'ksp'
-    const user = await User.findOne({ phone, role: 'ksp' });
+    const user = await User.findOne({ email: email.toLowerCase(), role: 'ksp' });
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid phone or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     if (!user.password) {
@@ -55,25 +56,91 @@ router.post('/login', async (req, res) => {
     }
 
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid phone or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const token = generateToken(user._id, user.name, user.role);
+    // Credentials valid -> Step 2: Generate and Send Email OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        role: user.role,
-        phone: user.phone
-      }
+    user.loginOtp = otp;
+    user.loginOtpExpiry = expiry;
+    await user.save();
+
+    // Send Email
+    const mailOptions = {
+      from: `"KrishiNex Support" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: 'KSP Portal Login OTP',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #2563eb;">Verification Code</h2>
+          <p>Hello <b>${user.name}</b>,</p>
+          <p>Your 6-digit verification code for KSP Partner Portal login is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; margin: 20px 0;">${otp}</div>
+          <p style="color: #64748b; font-size: 13px;">This code is valid for 10 minutes. Do not share it with anyone.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+          <p style="font-size: 11px; color: #94a3b8;">KrishiNex Technologies &copy; 2026</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ 
+      success: true, 
+      message: 'OTP sent to your registered email',
+      step: 2 
     });
 
   } catch (error) {
     console.error('KSP Login Error:', error);
-    res.status(500).json({ error: 'Server error during login' });
+    res.status(500).json({ error: 'Failed to initiate login' });
+  }
+});
+
+// Verify OTP and Complete Login
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase(), role: 'ksp' });
+
+    if (!user || user.loginOtp !== otp) {
+      return res.status(401).json({ error: 'Invalid OTP' });
+    }
+
+    if (new Date() > user.loginOtpExpiry) {
+      return res.status(401).json({ error: 'OTP has expired' });
+    }
+
+    // Clear OTP after success
+    user.loginOtp = '';
+    user.loginOtpExpiry = null;
+    await user.save();
+
+    // Generate Token
+    const token = generateToken(user._id, user.name, user.role);
+
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        phone: user.phone,
+        email: user.email,
+        role: user.role,
+        walletBalance: user.walletBalance
+      }
+    });
+
+  } catch (error) {
+    console.error('OTP Verification Error:', error);
+    res.status(500).json({ error: 'Failed to verify OTP' });
   }
 });
 
@@ -88,21 +155,25 @@ router.get('/stats', protect, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const transactions = await Transaction.find({
-      $or: [
-        { recipient: req.user.id },
-        { performedBy: req.user.id }
-      ]
+      recipient: req.user.id,
+      type: 'Debit'
     }).sort({ createdAt: -1 }).limit(10);
 
     res.json({
       balance: user.walletBalance || 0,
       name: user.name,
-      recentTransactions: transactions
+      recentTransactions: transactions,
+      _debug: "FILTER_ENABLED_V2" // Temporary flag to verify deployment
     });
   } catch (error) {
     console.error('KSP Stats Error:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
+});
+
+// Verification Route
+router.get('/ping-test', (req, res) => {
+  res.json({ message: 'KSP Routes is live and updated!', timestamp: new Date() });
 });
 
 // Search Farmer for Withdrawal
@@ -320,6 +391,165 @@ router.put('/:id/status', async (req, res) => {
     res.json({ success: true, message: 'Status updated' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/ksp/search-user
+ * @desc    Search for any user (farmer/partner) by phone for card generation
+ * @access  Private (KSP only)
+ */
+router.post('/search-user', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'ksp') {
+      return res.status(403).json({ error: 'Access denied. KSP only.' });
+    }
+
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+    // Search for users with this phone across all relevant roles
+    const users = await User.find({ 
+      phone: new RegExp(phone, 'i'),
+      role: { $in: ['farmer', 'buyer', 'equipment', 'soil', 'shop', 'ksp', 'labour'] }
+    }).select('name phone role cardNumber walletNumber walletBalance status');
+
+    res.json(users);
+  } catch (error) {
+    console.error('KSP User Search Error:', error);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+/**
+ * @route   POST /api/ksp/generate-card
+ * @desc    Generate a 16-digit Nex Card for a user
+ * @access  Private (KSP only)
+ */
+router.post('/generate-card', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'ksp') {
+      return res.status(403).json({ error: 'Access denied. KSP only.' });
+    }
+
+    const { userId, cardNumber } = req.body;
+
+    if (!cardNumber || cardNumber.length !== 16) {
+      return res.status(400).json({ error: 'Sahi 16-digit card number hona chahiye' });
+    }
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+    const targetUser = await User.findById(userId);
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    if (targetUser.cardNumber) {
+      return res.status(400).json({ error: 'User already has a Nex Card' });
+    }
+
+    // 1. Fetch Charges from Settings
+    const settings = await Settings.getSettings();
+    const cardCharge = settings.pricing.nexCardCharges || 0;
+
+    // 2. Check KSP Wallet Balance
+    const ksp = await User.findById(req.user.id);
+    if (!ksp) return res.status(404).json({ error: 'KSP Partner not found' });
+
+    if (ksp.walletBalance < cardCharge) {
+      return res.status(400).json({ error: `Insufficient balance. Card generation charges: ₹${cardCharge}` });
+    }
+
+    // 3. Check uniqueness of provided card number
+    const existingUser = await User.findOne({ cardNumber });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Ye card number pehle se use ho raha hai' });
+    }
+
+    // 4. Update Balances (Atomic-like)
+    ksp.walletBalance -= cardCharge;
+    
+    // Credit Admin
+    const admin = await User.findOne({ role: 'admin' });
+    if (admin) {
+      admin.walletBalance = (admin.walletBalance || 0) + cardCharge;
+      await admin.save();
+    }
+
+    // Save KSP and Target User
+    targetUser.cardNumber = cardNumber;
+    await targetUser.save();
+    await ksp.save();
+
+    // 5. Create Transactions
+    const txnId = `NEX-CARD-${Date.now()}`;
+    
+    // Debit for KSP
+    await Transaction.create({
+      transactionId: `${txnId}-KSP-D`,
+      recipient: ksp._id,
+      module: 'KSP',
+      amount: cardCharge,
+      type: 'Debit',
+      paymentMode: 'NexCard Wallet',
+      status: 'Completed',
+      performedBy: ksp._id,
+      note: `Nex Card generation charges for user ${targetUser.name}`
+    });
+
+    // Credit for Admin
+    if (admin) {
+      await Transaction.create({
+        transactionId: `${txnId}-ADM-C`,
+        recipient: admin._id,
+        module: 'KSP',
+        amount: cardCharge,
+        type: 'Credit',
+        paymentMode: 'NexCard Wallet',
+        status: 'Completed',
+        performedBy: ksp._id,
+        note: `Nex Card issuance fee from KSP ${ksp.name}`
+      });
+    }
+
+    // 6. Log the generation
+    await KSPCardLog.create({
+      kspId: req.user.id,
+      targetUserId: targetUser._id,
+      cardNumber: cardNumber
+    });
+
+    res.json({
+      success: true,
+      message: 'Nex Card generated successfully',
+      cardNumber: cardNumber,
+      userName: targetUser.name,
+      deductedAmount: cardCharge
+    });
+
+  } catch (error) {
+    console.error('KSP Generate Card Error:', error);
+    res.status(500).json({ error: 'Failed to generate card' });
+  }
+});
+
+/**
+ * @route   GET /api/ksp/card-history
+ * @desc    Get history of cards generated by this KSP
+ * @access  Private (KSP only)
+ */
+router.get('/card-history', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'ksp') {
+      return res.status(403).json({ error: 'Access denied. KSP only.' });
+    }
+
+    const history = await KSPCardLog.find({ kspId: req.user.id })
+      .populate('targetUserId', 'name phone role')
+      .sort({ generatedAt: -1 });
+
+    res.json(history);
+  } catch (error) {
+    console.error('KSP Card History Error:', error);
+    res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
 

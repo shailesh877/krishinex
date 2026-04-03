@@ -62,43 +62,65 @@
         <!-- Login Card -->
         <div class="glass-effect rounded-[2.5rem] shadow-2xl shadow-slate-200/60 p-8 md:p-10 border-2 border-white">
             <form id="loginForm" class="space-y-6">
-                <!-- Phone Number -->
-                <div class="space-y-2">
-                    <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i
-                                class="fas fa-phone text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                <!-- STEP 1: CREDENTIALS -->
+                <div id="step1" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            </div>
+                            <input type="email" id="email" required
+                                class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                                placeholder="name@example.com">
                         </div>
-                        <input type="tel" id="phone" required
-                            class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
-                            placeholder="Enter your phone">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            </div>
+                            <input type="password" id="password" required
+                                class="block w-full h-14 pl-12 pr-12 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                                placeholder="••••••••">
+                            <button type="button" onclick="togglePass()"
+                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
+                                <i class="fas fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Password -->
-                <div class="space-y-2">
-                    <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i
-                                class="fas fa-lock text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-                        </div>
-                        <input type="password" id="password" required
-                            class="block w-full h-14 pl-12 pr-12 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
-                            placeholder="••••••••">
-                        <button type="button" onclick="togglePass()"
-                            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
-                            <i class="fas fa-eye" id="eyeIcon"></i>
-                        </button>
+                <!-- STEP 2: OTP (Hidden initially) -->
+                <div id="step2" class="space-y-6 hidden">
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4">
+                        <p class="text-xs font-bold text-blue-700 text-center">
+                            We've sent a 6-digit verification code to your email. Please check your inbox.
+                        </p>
                     </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">OTP CODE</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-shield-halved text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            </div>
+                            <input type="text" id="otp" 
+                                class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[20px] font-black text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all tracking-[0.5em]"
+                                placeholder="000000" maxlength="6">
+                        </div>
+                    </div>
+                    <button type="button" onclick="resetLogin()" class="text-[10px] text-slate-400 font-bold uppercase hover:text-blue-500 transition-colors ml-1">
+                        <i class="fas fa-arrow-left mr-1"></i> Back to Login
+                    </button>
                 </div>
 
                 <!-- Action Button -->
                 <button type="submit" id="submitBtn"
                     class="w-full h-14 bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 flex items-center justify-center gap-3 transition-all active:scale-[0.98]">
-                    <span id="btnText">Secure Login</span>
-                    <i class="fas fa-arrow-right text-sm"></i>
+                    <span id="btnText">Continue to Verify</span>
+                    <i class="fas fa-bolt-lightning text-amber-400" id="btnIcon"></i>
                     <i class="fas fa-circle-notch fa-spin hidden" id="spinner"></i>
                 </button>
             </form>
@@ -138,6 +160,8 @@
     <script>
          // Primary production API base
 
+        let currentStep = 1;
+
         function togglePass() {
             const p = document.getElementById('password');
             const icon = document.getElementById('eyeIcon');
@@ -159,43 +183,89 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
+        function resetLogin() {
+            currentStep = 1;
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('btnText').textContent = 'Continue to Verify';
+            document.getElementById('btnIcon').className = 'fas fa-bolt-lightning text-amber-400';
+            document.getElementById('submitBtn').disabled = false;
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const btn = document.getElementById('submitBtn');
             const spinner = document.getElementById('spinner');
             const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
 
             try {
                 btn.disabled = true;
                 spinner.classList.remove('hidden');
                 btnText.classList.add('hidden');
+                btnIcon.classList.add('hidden');
 
-                const res = await fetch(`${API_BASE}/ksp/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, password })
-                });
+                if (currentStep === 1) {
+                    // Step 1: Login & Request OTP
+                    const res = await fetch(`${API_BASE}/ksp/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
 
-                const data = await res.json();
+                    const data = await res.json();
 
-                if (res.ok) {
-                    localStorage.setItem('kspToken', data.token);
-                    localStorage.setItem('kspUser', JSON.stringify(data.user));
-                    showToast('Login Successful! Redirecting...', 'success');
-                    setTimeout(() => window.location.href = 'ksp_dashboard.html', 1500);
+                    if (res.ok) {
+                        currentStep = 2;
+                        document.getElementById('step1').classList.add('hidden');
+                        document.getElementById('step2').classList.remove('hidden');
+                        btnText.textContent = 'Verify & Access Dashboard';
+                        btnIcon.className = 'fas fa-shield-check text-emerald-400';
+                        showToast('Credentials verified! OTP sent to email.', 'success');
+                    } else {
+                        showToast(data.error || 'Login failed', 'error');
+                    }
                 } else {
-                    showToast(data.error || 'Login failed', 'error');
-                    btn.disabled = false;
-                    spinner.classList.add('hidden');
-                    btnText.classList.remove('hidden');
+                    // Step 2: Verify OTP
+                    const otp = document.getElementById('otp').value;
+                    if (!otp || otp.length < 6) return showToast('Enter 6ndigit OTP', 'error');
+
+                    const res = await fetch(`${API_BASE}/ksp/verify-otp`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, otp })
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        localStorage.setItem('kspToken', data.token);
+                        localStorage.setItem('kspUser', JSON.stringify(data.user));
+                        showToast('OTP Verified! Redirecting...', 'success');
+                        setTimeout(() => window.location.href = 'ksp_dashboard.html', 1500);
+                        return; // Keep spinner visible during redirect
+                    } else {
+                        showToast(data.error || 'Invalid OTP', 'error');
+                    }
                 }
             } catch (err) {
                 showToast('Network error. Check connection.', 'error');
-                btn.disabled = false;
-                spinner.classList.add('hidden');
-                btnText.classList.remove('hidden');
+            } finally {
+                if (currentStep === 2 && btnText.textContent === 'Verify & Access Dashboard') {
+                    // Stay in Step 2 unless it was a final success
+                } else if (currentStep === 1) {
+                   // reset state for retry in step 1
+                }
+                
+                // Always re-enable if not redirecting
+                if (!toast.textContent.includes('Verified')) {
+                    btn.disabled = false;
+                    spinner.classList.add('hidden');
+                    btnText.classList.remove('hidden');
+                    btnIcon.classList.remove('hidden');
+                }
             }
         });
     </script>

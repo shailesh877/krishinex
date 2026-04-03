@@ -527,6 +527,12 @@
                   class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
                   placeholder="250" />
               </div>
+              <div class="space-y-2">
+                <label class="text-[11px] font-black uppercase text-slate-500">KSP NEX Card Charges (Rs.)</label>
+                <input type="number" id="price_nexCard"
+                  class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-sky-400 focus:ring-4 focus:ring-sky-50 transition-all outline-none"
+                  placeholder="0" />
+              </div>
             </div>
 
             <button onclick="updateSettings('pricing')"
@@ -637,6 +643,7 @@
         document.getElementById('price_minWallet').value = data.pricing.minWalletRecharge;
         document.getElementById('price_walletDiscount').value = data.pricing.walletDiscountPercentage || 0;
         document.getElementById('price_soilTest').value = data.pricing.soilTestPrice || 250;
+        document.getElementById('price_nexCard').value = data.pricing.nexCardCharges || 0;
 
       } catch (err) {
         showToast('Error loading settings', 'warning');
@@ -673,7 +680,8 @@
           taxRate: isNaN(tax) ? 12 : tax,
           minWalletRecharge: isNaN(minWallet) ? 500 : minWallet,
           walletDiscountPercentage: isNaN(walletDiscount) ? 0 : walletDiscount,
-          soilTestPrice: isNaN(soilTest) ? 250 : soilTest
+          soilTestPrice: isNaN(soilTest) ? 250 : soilTest,
+          nexCardCharges: isNaN(parseFloat(document.getElementById('price_nexCard').value)) ? 0 : parseFloat(document.getElementById('price_nexCard').value)
         };
       }
 

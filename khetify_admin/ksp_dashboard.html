@@ -69,11 +69,31 @@
                 <a href="#"
                     class="sidebar-item-active group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200">
                     <span
-                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 transition-all">
-                        <i class="fas fa-home text-blue-600"></i>
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+                        <i class="fas fa-home text-emerald-600"></i>
                     </span>
-                    <span class="truncate font-semibold text-blue-700">Dashboard</span>
+                    <span class="truncate font-black">Home Dashboard</span>
                 </a>
+
+                <a href="ksp_nex_card.html"
+                  class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+                  <span
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+                    <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+                  </span>
+                  <span class="truncate font-semibold">Generate Nex Card</span>
+                </a>
+
+                <!--
+                <a href="withdraw_cash.html"
+                  class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+                  <span
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+                    <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+                  </span>
+                  <span class="truncate font-semibold">Withdraw Cash</span>
+                </a>
+                -->
 
             </nav>
 
@@ -92,6 +112,50 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Transaction Details Modal -->
+        <div id="txnModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeTxnModal()"></div>
+            <div class="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="p-8 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <div id="txnModalIcon" class="h-12 w-12 rounded-2xl flex items-center justify-center text-xl"></div>
+                        <button onclick="closeTxnModal()" class="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <p id="txnModalType" class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400"></p>
+                        <h3 id="txnModalAmount" class="text-3xl font-black text-slate-900"></h3>
+                    </div>
+
+                    <div class="p-6 bg-slate-50 rounded-3xl space-y-4">
+                        <div class="flex justify-between items-start gap-4">
+                            <span class="text-[10px] font-black text-slate-400 uppercase">Transaction ID</span>
+                            <span id="txnModalId" class="text-xs font-bold text-slate-900 text-right font-mono break-all"></span>
+                        </div>
+                        <div class="flex justify-between items-start gap-4 border-t border-slate-200 pt-4">
+                            <span class="text-[10px] font-black text-slate-400 uppercase">Date & Time</span>
+                            <span id="txnModalDate" class="text-xs font-bold text-slate-900 text-right"></span>
+                        </div>
+                        <div class="flex justify-between items-start gap-4 border-t border-slate-200 pt-4">
+                            <span class="text-[10px] font-black text-slate-400 uppercase">Description</span>
+                            <span id="txnModalNote" class="text-xs font-bold text-slate-600 text-right italic"></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-2xl border-2 border-blue-100">
+                             <div class="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">
+                                <i class="fas fa-info-circle"></i>
+                             </div>
+                             <p class="text-[10px] font-black text-blue-700 leading-tight">This transaction was processed through the KSP franchise ledger.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Content -->
         <main class="flex-1 md:ml-64 p-4 md:p-8 space-y-8">
@@ -362,8 +426,8 @@
                 container.innerHTML = `<div class="py-20 text-center opacity-30 font-black italic text-xs">No Recent History</div>`;
                 return;
             }
-            container.innerHTML = txns.map(t => `
-                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all duration-300">
+            container.innerHTML = txns.map((t, index) => `
+                <div onclick='showTxnDetails(${JSON.stringify(t).replace(/'/g, "&apos;")})' class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all duration-300 cursor-pointer">
                     <div class="flex items-center gap-4">
                         <div class="h-10 w-10 rounded-xl ${t.type === 'Credit' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'} flex items-center justify-center">
                             <i class="fas ${t.type === 'Credit' ? 'fa-arrow-left' : 'fa-arrow-right'}"></i>
@@ -578,6 +642,37 @@
             toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function showTxnDetails(t) {
+            const modal = document.getElementById('txnModal');
+            const icon = document.getElementById('txnModalIcon');
+            const type = document.getElementById('txnModalType');
+            const amount = document.getElementById('txnModalAmount');
+            const id = document.getElementById('txnModalId');
+            const date = document.getElementById('txnModalDate');
+            const note = document.getElementById('txnModalNote');
+
+            const isCredit = t.type === 'Credit';
+            icon.className = `h-12 w-12 rounded-2xl flex items-center justify-center text-xl ${isCredit ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`;
+            icon.innerHTML = `<i class="fas ${isCredit ? 'fa-arrow-left' : 'fa-arrow-right'}"></i>`;
+            
+            type.textContent = isCredit ? 'Credit Received' : 'Debit Payment';
+            amount.textContent = `${isCredit ? '+' : '-'} ₹${(t.amount || 0).toLocaleString()}`;
+            amount.className = `text-3xl font-black ${isCredit ? 'text-emerald-600' : 'text-slate-900'}`;
+            
+            id.textContent = t.transactionId;
+            date.textContent = new Date(t.createdAt).toLocaleString('en-GB', { 
+                day: 'numeric', month: 'long', year: 'numeric', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+            note.textContent = t.note || 'No additional details available.';
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeTxnModal() {
+            document.getElementById('txnModal').classList.add('hidden');
         }
 
         // Init

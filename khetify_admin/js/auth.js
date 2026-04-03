@@ -3,8 +3,8 @@
  * This script ensures the user is authenticated and handles global API settings.
  */
 
-window.API_BASE = 'https://demo.ranx24.com/api';
-window.IMAGE_BASE = 'https://demo.ranx24.com';
+window.API_BASE = 'https://demo.ranx24.com:5500/api';
+window.IMAGE_BASE = 'https://demo.ranx24.com:5500';
 
 console.log('[DEBUG] Admin API Base Initialized:', window.API_BASE);
 
