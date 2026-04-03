@@ -2,8 +2,8 @@
  * ksp_auth.js - Global Session Management & Configuration for KSP Partner Portal
  */
 
-window.API_BASE = 'https://demo.ranx24.com:5500/api';
-window.IMAGE_BASE = 'https://demo.ranx24.com:5500';
+window.API_BASE = 'https://demo.ranx24.com/api';
+window.IMAGE_BASE = 'https://demo.ranx24.com';
 
 (function () {
     const KSP_TOKEN = localStorage.getItem('kspToken');
