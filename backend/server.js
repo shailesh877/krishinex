@@ -32,10 +32,10 @@ const corsOptions = {
             'https://demo.ranx24.com:3000',
             'https://demo.ranx24.com:3001',
             'https://demo.ranx24.com:5173',
-            'https://demo.ranx24.com',
-            'https://demo.ranx24.com:3000',
-            'https://demo.ranx24.com:3001',
-            'https://demo.ranx24.com:5173'
+            'http://192.168.1.10',
+            'http://192.168.1.10:3000',
+            'http://192.168.1.10:3001',
+            'http://192.168.1.10:5173'
         ];
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);

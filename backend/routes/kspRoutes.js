@@ -155,8 +155,7 @@ router.get('/stats', protect, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const transactions = await Transaction.find({
-      recipient: req.user.id,
-      type: 'Debit'
+      recipient: req.user.id
     }).sort({ createdAt: -1 }).limit(10);
 
     res.json({
@@ -550,6 +549,146 @@ router.get('/card-history', protect, async (req, res) => {
   } catch (error) {
     console.error('KSP Card History Error:', error);
     res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
+/**
+ * @route   POST /api/ksp/forgot-password
+ * @desc    Initiate forgot password (step 1: send OTP)
+ * @access  Public
+ */
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await User.findOne({ email: email.toLowerCase(), role: 'ksp' });
+    if (!user) return res.status(404).json({ error: 'No KSP partner found with this email' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    user.loginOtp = otp;
+    user.loginOtpExpiry = expiry;
+    await user.save();
+
+    const mailOptions = {
+      from: `"KrishiNex Support" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: 'KSP Password Reset OTP',
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2 style="color: #2563eb;">Password Reset Code</h2>
+          <p>Hello <b>${user.name}</b>,</p>
+          <p>You requested to reset your KSP Partner Portal password. Your 6ndigit code is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1e293b; margin: 20px 0;">${otp}</div>
+          <p style="color: #64748b; font-size: 13px;">If you didn't request this, please ignore this email.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+          <p style="font-size: 11px; color: #94a3b8;">KrishiNex Technologies &copy; 2026</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true, message: 'OTP sent to your email' });
+
+  } catch (error) {
+    console.error('KSP Forgot Password Error:', error);
+    res.status(500).json({ error: 'Failed to initiate password reset' });
+  }
+});
+
+/**
+ * @route   POST /api/ksp/verify-reset-otp
+ * @desc    Verify OTP for password reset
+ * @access  Public
+ */
+router.post('/verify-reset-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required' });
+
+    const user = await User.findOne({ email: email.toLowerCase(), role: 'ksp' });
+    if (!user || user.loginOtp !== otp) {
+      return res.status(401).json({ error: 'Invalid OTP' });
+    }
+
+    if (new Date() > user.loginOtpExpiry) {
+      return res.status(401).json({ error: 'OTP has expired' });
+    }
+
+    res.json({ success: true, message: 'OTP verified' });
+  } catch (error) {
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+/**
+ * @route   POST /api/ksp/reset-password
+ * @desc    Reset password using OTP
+ * @access  Public
+ */
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase(), role: 'ksp' });
+    if (!user || user.loginOtp !== otp) {
+      return res.status(401).json({ error: 'Invalid or expired session' });
+    }
+
+    // Hash and Save
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.loginOtp = '';
+    user.loginOtpExpiry = null;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successful. Please login.' });
+  } catch (error) {
+    console.error('KSP Reset Password Error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+/**
+ * @route   POST /api/ksp/change-password
+ * @desc    Change password while logged in
+ * @access  Private (KSP only)
+ */
+router.post('/change-password', protect, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Old and new passwords are required' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Verify Old
+    let isMatch = false;
+    if (user.password.startsWith('$2')) {
+      isMatch = await bcrypt.compare(oldPassword, user.password);
+    } else {
+      isMatch = (oldPassword === user.password);
+    }
+
+    if (!isMatch) return res.status(401).json({ error: 'Purana password galat hai' });
+
+    // Hash New
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ success: true, message: 'Password successfully changed!' });
+
+  } catch (error) {
+    console.error('KSP Change Password Error:', error);
+    res.status(500).json({ error: 'Failed to change password' });
   }
 });
 

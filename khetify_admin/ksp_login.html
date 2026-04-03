@@ -60,15 +60,18 @@
         </div>
 
         <!-- Login Card -->
-        <div class="glass-effect rounded-[2.5rem] shadow-2xl shadow-slate-200/60 p-8 md:p-10 border-2 border-white">
+        <div
+            class="glass-effect rounded-[2.5rem] shadow-2xl shadow-slate-200/60 p-8 md:p-10 border-2 border-white relative z-10">
             <form id="loginForm" class="space-y-6">
                 <!-- STEP 1: CREDENTIALS -->
                 <div id="step1" class="space-y-6">
                     <div class="space-y-2">
-                        <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                        <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email
+                            Address</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-envelope text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                                <i
+                                    class="fas fa-envelope text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                             </div>
                             <input type="email" id="email" required
                                 class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
@@ -80,7 +83,8 @@
                         <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-lock text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                                <i
+                                    class="fas fa-lock text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                             </div>
                             <input type="password" id="password" required
                                 class="block w-full h-14 pl-12 pr-12 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[15px] font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
@@ -90,28 +94,36 @@
                                 <i class="fas fa-eye" id="eyeIcon"></i>
                             </button>
                         </div>
+                        <div class="flex justify-end pr-1">
+                            <button type="button" onclick="openForgotModal()"
+                                class="text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                                Forgot Password?
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- STEP 2: OTP (Hidden initially) -->
                 <div id="step2" class="space-y-6 hidden">
-                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4">
-                        <p class="text-xs font-bold text-blue-700 text-center">
-                            We've sent a 6-digit verification code to your email. Please check your inbox.
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4 text-center">
+                        <p class="text-xs font-bold text-blue-700">
+                            We've sent a 6-digit verification code to your email.
                         </p>
                     </div>
                     <div class="space-y-2">
                         <label class="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">OTP CODE</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-shield-halved text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                                <i
+                                    class="fas fa-shield-halved text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
                             </div>
-                            <input type="text" id="otp" 
-                                class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[20px] font-black text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all tracking-[0.5em]"
+                            <input type="text" id="otp"
+                                class="block w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[20px] font-black text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all tracking-[0.5em] text-center"
                                 placeholder="000000" maxlength="6">
                         </div>
                     </div>
-                    <button type="button" onclick="resetLogin()" class="text-[10px] text-slate-400 font-bold uppercase hover:text-blue-500 transition-colors ml-1">
+                    <button type="button" onclick="resetLogin()"
+                        class="text-[10px] text-slate-400 font-bold uppercase hover:text-blue-500 transition-colors ml-1">
                         <i class="fas fa-arrow-left mr-1"></i> Back to Login
                     </button>
                 </div>
@@ -131,15 +143,72 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <p class="text-center text-slate-400 text-xs font-bold mt-8">
+        <!-- Forgot Password Modal -->
+    </div>
+
+    <!-- Footer -->
+    <!-- <p class="text-center text-slate-400 text-xs font-bold mt-8 relative z-10">
             &copy; 2026 KrishiNex Technologies. All Rights Reserved.
-        </p>
+        </p> -->
+    </div>
+
+    <!-- Forgot Password Modal (Moved outside main container) -->
+    <div id="forgotModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeForgotModal()"></div>
+        <div
+            class="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 border-2 border-white animate-[fadeIn_0.3s_ease-out]">
+            <div class="text-center mb-6">
+                <div
+                    class="h-14 w-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl mx-auto mb-4">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900">Reset Password</h3>
+                <p class="text-xs font-bold text-slate-400 mt-1">Sahi email enter kr ke OTP mangayein</p>
+            </div>
+
+            <div id="forgotStep1" class="space-y-4">
+                <input type="email" id="forgotEmail"
+                    class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                    placeholder="Registered Email">
+                <button onclick="handleForgotStep1()" id="forgotBtn1"
+                    class="w-full h-12 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                    Send Reset OTP
+                </button>
+            </div>
+
+            <div id="forgotStep2" class="space-y-4 hidden">
+                <div
+                    class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 text-[10px] font-bold text-emerald-700 text-center">
+                    OTP aapke email pe bhej diya gaya hai.
+                </div>
+                <input type="text" id="forgotOtp"
+                    class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all text-center tracking-[0.5em]"
+                    placeholder="000000" maxlength="6">
+                <button onclick="handleForgotStep2()" id="forgotBtn2"
+                    class="w-full h-12 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                    Verify OTP
+                </button>
+            </div>
+
+            <div id="forgotStep3" class="space-y-4 hidden">
+                <input type="password" id="newPassword"
+                    class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                    placeholder="New Password">
+                <input type="password" id="confPassword"
+                    class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                    placeholder="Confirm New Password">
+                <button onclick="handleForgotStep3()" id="forgotBtn3"
+                    class="w-full h-12 bg-emerald-600 text-white font-black rounded-xl shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                    Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Toast Notification -->
     <div id="toast"
-        class="fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl hidden animate-[slideInRight_0.3s_ease-out]">
+        class="fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl hidden animate-[slideInRight_0.3s_ease-out]">
         <p id="toastMessage" class="text-sm font-black"></p>
     </div>
 
@@ -158,9 +227,93 @@
     </style>
 
     <script>
-         // Primary production API base
+        // Primary production API base
 
         let currentStep = 1;
+
+        function openForgotModal() {
+            document.getElementById('forgotModal').classList.remove('hidden');
+            resetForgotSteps();
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.add('hidden');
+        }
+
+        function resetForgotSteps() {
+            document.getElementById('forgotStep1').classList.remove('hidden');
+            document.getElementById('forgotStep2').classList.add('hidden');
+            document.getElementById('forgotStep3').classList.add('hidden');
+        }
+
+        async function handleForgotStep1() {
+            const email = document.getElementById('forgotEmail').value;
+            if (!email) return showToast('Email bhoriye bhai', 'error');
+            const btn = document.getElementById('forgotBtn1');
+            try {
+                btn.disabled = true; btn.textContent = 'Wait...';
+                const res = await fetch(`${API_BASE}/ksp/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('forgotStep1').classList.add('hidden');
+                    document.getElementById('forgotStep2').classList.remove('hidden');
+                    showToast('OTP sent to email!', 'success');
+                } else {
+                    showToast(data.error || 'Failed to send OTP', 'error');
+                }
+            } catch (err) { showToast('Network Error', 'error'); }
+            finally { btn.disabled = false; btn.textContent = 'Send Reset OTP'; }
+        }
+
+        async function handleForgotStep2() {
+            const email = document.getElementById('forgotEmail').value;
+            const otp = document.getElementById('forgotOtp').value;
+            if (!otp) return showToast('OTP bhoriye bhai', 'error');
+            const btn = document.getElementById('forgotBtn2');
+            try {
+                btn.disabled = true; btn.textContent = 'Verifying...';
+                const res = await fetch(`${API_BASE}/ksp/verify-reset-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('forgotStep2').classList.add('hidden');
+                    document.getElementById('forgotStep3').classList.remove('hidden');
+                    showToast('OTP Verified!', 'success');
+                } else { showToast(data.error || 'Invalid OTP', 'error'); }
+            } catch (err) { showToast('Network Error', 'error'); }
+            finally { btn.disabled = false; btn.textContent = 'Verify OTP'; }
+        }
+
+        async function handleForgotStep3() {
+            const email = document.getElementById('forgotEmail').value;
+            const otp = document.getElementById('forgotOtp').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confPassword = document.getElementById('confPassword').value;
+            if (!newPassword || newPassword !== confPassword) return showToast('Passwords matching nahi hain!', 'error');
+
+            const btn = document.getElementById('forgotBtn3');
+            try {
+                btn.disabled = true; btn.textContent = 'Resetting...';
+                const res = await fetch(`${API_BASE}/ksp/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp, newPassword })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Password reset successfully! Login kijiye.', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else { showToast(data.error || 'Reset failed', 'error'); }
+            } catch (err) { showToast('Network Error', 'error'); }
+            finally { btn.disabled = false; btn.textContent = 'Reset Password'; }
+        }
 
         function togglePass() {
             const p = document.getElementById('password');
@@ -178,9 +331,10 @@
             const toast = document.getElementById('toast');
             const txt = document.getElementById('toastMessage');
             txt.textContent = msg;
-            toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+            // Ensure z-index is 100 to stay above everything
+            toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+            setTimeout(() => toast.classList.add('hidden'), 3500);
         }
 
         function resetLogin() {
@@ -253,14 +407,10 @@
             } catch (err) {
                 showToast('Network error. Check connection.', 'error');
             } finally {
-                if (currentStep === 2 && btnText.textContent === 'Verify & Access Dashboard') {
-                    // Stay in Step 2 unless it was a final success
-                } else if (currentStep === 1) {
-                   // reset state for retry in step 1
-                }
+                // Determine if we should show the spinner or not (only hide if NOT successful redirect)
+                const isRedirecting = document.getElementById('toastMessage').textContent.includes('Verified');
                 
-                // Always re-enable if not redirecting
-                if (!toast.textContent.includes('Verified')) {
+                if (!isRedirecting) {
                     btn.disabled = false;
                     spinner.classList.add('hidden');
                     btnText.classList.remove('hidden');
