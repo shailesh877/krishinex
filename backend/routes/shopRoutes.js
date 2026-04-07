@@ -815,7 +815,7 @@ router.post('/banners', protect, uploadBanner.single('image'), async (req, res) 
         const banner = await Banner.create({
             title,
             link,
-            image: `uploads/banners/${req.file.filename}`,
+            image: `uploads/banners/${req.file.filename}`.replace(/\\/g, '/'),
             active: true
         });
         res.status(201).json(banner);

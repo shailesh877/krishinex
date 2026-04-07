@@ -431,9 +431,15 @@
         data.forEach(banner => {
           const card = document.createElement('div');
           card.className = 'bg-white rounded-2xl border-2 border-slate-200 shadow-sm overflow-hidden group hover:shadow-xl hover:border-emerald-200 transition-all duration-300';
+          const imgPath = banner.image || '';
+          const cleanPath = imgPath.replace(/^[\/\\]+/, '').replace(/\\/g, '/');
+          const fullUrl = imgPath.startsWith('http') ? imgPath : `${SERVER_URL}/${cleanPath}`;
+
           card.innerHTML = `
             <div class="relative h-48 bg-slate-100 overflow-hidden">
-                <img src="${SERVER_URL}/${banner.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <img src="${fullUrl}" 
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                     onerror="this.src='images/logo.png'; this.style.opacity='0.3';">
                 <div class="absolute top-3 left-3">
                     <span class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase shadow-sm ${banner.active ? 'bg-emerald-500 text-white' : 'bg-slate-500 text-white'}">
                         ${banner.active ? 'Active' : 'Inactive'}

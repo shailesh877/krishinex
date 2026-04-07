@@ -463,9 +463,14 @@
         data.forEach(item => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-50/80 transition-colors';
+          
+          const imgPath = item.imageUrl || '';
+          const cleanPath = imgPath.replace(/^[\/\\]+/, '').replace(/\\/g, '/');
+          const fullUrl = imgPath.startsWith('http') ? imgPath : `https://demo.ranx24.com/${cleanPath}`;
+
           tr.innerHTML = `
             <td class="px-6 py-5">
-              ${item.imageUrl ? `<img src="https://demo.ranx24.com/${item.imageUrl}" class="h-16 w-32 object-cover rounded-xl border-2 border-white shadow-lg" />` : '<span class="text-slate-300 italic text-[10px]">No Image</span>'}
+              ${imgPath ? `<img src="${fullUrl}" class="h-16 w-32 object-cover rounded-xl border-2 border-white shadow-lg" onerror="this.src='images/logo.png'; this.style.opacity='0.3';" />` : '<span class="text-slate-300 italic text-[10px]">No Image</span>'}
             </td>
             <td class="px-6 py-5 text-xs font-black text-slate-500">
               ${new Date(item.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}

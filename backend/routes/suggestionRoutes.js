@@ -66,7 +66,7 @@ router.post('/', protect, upload.single('image'), async (req, res) => {
         };
 
         if (req.file) {
-            suggestionData.imageUrl = `uploads/suggestions/${req.file.filename}`;
+            suggestionData.imageUrl = `uploads/suggestions/${req.file.filename}`.replace(/\\/g, '/');
         }
 
         const suggestion = await Suggestion.create(suggestionData);
