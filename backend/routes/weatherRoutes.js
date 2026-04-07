@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
                     'Accept-Encoding': 'gzip, deflate, br'
                 },
-                timeout: 8000 // 8 seconds timeout
+                timeout: 4000 // 4 seconds timeout per attempt
             });
             return response.data;
         } catch (error) {
@@ -41,8 +41,8 @@ router.get('/', async (req, res) => {
             
             if (attempt < maxRetries) {
                 console.log(`Weather fetch attempt ${attempt} failed, retrying...`);
-                // Wait 2 seconds before retry
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Wait 1 second before retry
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 return fetchWeatherData();
             }
             throw error;
