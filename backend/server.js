@@ -95,6 +95,7 @@ app.use('/api/contact', require('./routes/contactRoutes'));
 app.use('/api/ads', require('./routes/adRoutes'));
 app.use('/api/locations', require('./routes/locationRoutes'));
 app.use('/api/videos', require('./routes/videoRoutes'));
+app.use('/api/weather', require('./routes/weatherRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
