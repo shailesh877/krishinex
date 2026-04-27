@@ -57,6 +57,17 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: ['labour', 'equipment', 'soil', 'doctor'] // By default full access for backward compatibility, admin can restrict
   },
+  kspType: {
+    type: String,
+    enum: ['KSP Digital', 'KSP Prime'],
+    default: 'KSP Digital'
+  },
+  kspPartnerId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    default: undefined
+  },
   employeeCode: {
     type: String,
     unique: true,

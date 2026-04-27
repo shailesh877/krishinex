@@ -570,9 +570,9 @@
                 <tr class="text-xs text-slate-700">
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Franchise</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Owner</th>
+                  <th class="text-center font-black px-5 py-4 border-b-2 border-slate-200">KSP Type</th>
                   <th class="text-center font-black px-5 py-4 border-b-2 border-slate-200">Wallet No.</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Stock Value</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Wallet Balance</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">This Month Sales</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
@@ -794,6 +794,13 @@
             <input type="email" id="add-f-email"
               class="w-full h-10 rounded-xl border-2 border-slate-200 px-3 text-sm focus:border-teal-500 focus:ring-0 outline-none transition-all"
               placeholder="john@example.com">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">KSP Type *</label>
+            <select id="add-f-ksp-type" class="w-full h-10 rounded-xl border-2 border-slate-200 px-3 text-sm focus:border-teal-500 font-bold outline-none transition-all">
+                <option value="KSP Digital">KSP Digital</option>
+                <option value="KSP Prime">KSP Prime</option>
+            </select>
           </div>
         </div>
         <div>
@@ -1094,14 +1101,14 @@
                 ${storeIcon}
                 <div>
                   <div class="font-black text-slate-900 line-clamp-1">${k.franchiseName}</div>
-                  <div class="text-[10px] text-slate-500 font-medium">ID: KSP-${k._id.substring(18).toUpperCase()}</div>
+                  <div class="text-[10px] text-slate-500 font-medium">ID: ${k.kspPartnerId || 'PENDING'}</div>
                 </div>
               </div>
             </td>
             <td class="px-5 py-4 font-bold text-slate-800">${k.ownerName}</td>
+            <td class="px-5 py-4 text-center">${k.kspType === 'KSP Prime' ? '<span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-crown mr-1 text-[8px]"></i>Prime</span>' : '<span class="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-1 text-[10px] font-black text-violet-700 border border-violet-200"><i class="fas fa-bolt mr-1 text-[8px]"></i>Digital</span>'}</td>
             <td class="px-5 py-4 text-center font-mono font-black text-emerald-700">${k.walletNumber || '---'}</td>
             <td class="px-5 py-4 font-semibold text-slate-600">${k.location}</td>
-            <td class="px-5 py-4 text-right">${stockText}</td>
             <td class="px-5 py-4 text-right font-black text-emerald-600">${formatCurrency(k.walletBalance)}</td>
             <td class="px-5 py-4 text-right font-black text-teal-600">${formatCurrency(k.salesThisMonth)}</td>
             <td class="px-5 py-4">${statusBadge}</td>
@@ -1176,6 +1183,17 @@
             <button onclick="document.getElementById('franchise-modal').remove();" class="h-8 w-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-all shadow-sm"><i class="fas fa-times"></i></button>
           </div>
           <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scroll">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex-1 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
+                <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider">KSP Partner ID</p>
+                <div id="modal-ksp-partner-id" class="text-xs font-black text-blue-700 font-mono mt-0.5">--</div>
+              </div>
+              <div class="flex-1 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
+                <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider">Status</p>
+                <div id="modal-ksp-status-text" class="text-[10px] font-black uppercase mt-1">--</div>
+              </div>
+            </div>
+
             <div id="modal-wallet-row" class="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
                <div class="flex-1">
                   <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider">NexCard Wallet ID (16 Digits)</p>
@@ -1250,11 +1268,53 @@
                             <input type="email" id="edit-email" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
                         </div>
                         <div class="col-span-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Address / Detailed Location</label>
-                            <textarea id="edit-address" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" rows="3"></textarea>
-                        </div>
+                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Address / Detailed Location</label>
+                             <textarea id="edit-address" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" rows="3"></textarea>
+                         </div>
+                         <div class="col-span-2">
+                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">KSP Type</label>
+                             <select id="edit-ksp-type" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all">
+                                 <option value="KSP Digital">KSP Digital</option>
+                                 <option value="KSP Prime">KSP Prime</option>
+                             </select>
+                         </div>
                     </div>
                     <button onclick="updateFranchiseProfile('${id}')" class="w-full bg-slate-900 text-white py-3 rounded-xl text-xs font-black shadow-lg hover:bg-black transition-all active:scale-[0.98]">Update Profile Information</button>
+                </div>
+            </div>
+
+            <!-- Bank Account Details Section -->
+            <div class="border-2 border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-white">
+                <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full px-5 py-3 bg-slate-50 text-left text-[11px] font-black text-slate-700 flex justify-between items-center hover:bg-slate-100 transition-all group">
+                    <span class="flex items-center gap-2"><i class="fas fa-building-columns text-slate-400 group-hover:text-slate-900"></i> BANK ACCOUNT DETAILS</span>
+                    <i class="fas fa-chevron-down text-slate-400 transition-transform group-hover:text-slate-900"></i>
+                </button>
+                <div class="hidden p-5 space-y-3 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Account Holder Name</label>
+                            <input type="text" id="edit-bank-holder" placeholder="e.g. Ramesh Kumar" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Bank Name</label>
+                            <input type="text" id="edit-bank-name" placeholder="e.g. SBI" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">IFSC Code</label>
+                            <input type="text" id="edit-bank-ifsc" placeholder="e.g. SBIN0001234" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all uppercase" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Account Number</label>
+                            <input type="text" id="edit-bank-accno" placeholder="e.g. 123456789012" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all font-mono" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block ml-1">Bank Branch Address</label>
+                            <input type="text" id="edit-bank-addr" placeholder="Branch address" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-100 text-xs font-black focus:border-slate-300 outline-none transition-all" />
+                        </div>
+                    </div>
+                    <button onclick="updateFranchiseBankDetails('${id}')" class="w-full bg-indigo-600 text-white py-3 rounded-xl text-xs font-black shadow-lg hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                        <i class="fas fa-building-columns"></i> Save Bank Details
+                    </button>
                 </div>
             </div>
 
@@ -1351,9 +1411,29 @@
           if (k.aadhaarDocUrl) setPreview(k.aadhaarDocUrl, 'preview-aadhaar');
           if (k.panDocUrl) setPreview(k.panDocUrl, 'preview-pan');
           if (k.businessLicenseUrl) setPreview(k.businessLicenseUrl, 'preview-license');
+          
+          if (document.getElementById('modal-ksp-partner-id')) 
+              document.getElementById('modal-ksp-partner-id').textContent = k.kspPartnerId || 'PENDING';
+          
+          const statusEl = document.getElementById('modal-ksp-status-text');
+          if (statusEl) {
+              statusEl.textContent = k.status || 'UNKNOWN';
+              statusEl.className = `text-[10px] font-black uppercase mt-1 ${k.status === 'approved' ? 'text-emerald-600' : 'text-rose-600'}`;
+          }
 
           const walletInp = document.getElementById('edit-wallet-number');
           if (walletInp) walletInp.value = k.walletNumber || "";
+
+          const kspTypeInp = document.getElementById('edit-ksp-type');
+          if (kspTypeInp) kspTypeInp.value = k.kspType || 'KSP Digital';
+
+          // Bank details pre-fill
+          const bd = k.bankDetails || {};
+          if (document.getElementById('edit-bank-holder')) document.getElementById('edit-bank-holder').value = bd.holderName || '';
+          if (document.getElementById('edit-bank-name')) document.getElementById('edit-bank-name').value = bd.bankName || '';
+          if (document.getElementById('edit-bank-accno')) document.getElementById('edit-bank-accno').value = bd.accountNumber || '';
+          if (document.getElementById('edit-bank-ifsc')) document.getElementById('edit-bank-ifsc').value = bd.ifscCode || '';
+          if (document.getElementById('edit-bank-addr')) document.getElementById('edit-bank-addr').value = bd.bankAddress || '';
 
           const actionBox = document.getElementById('modal-franchise-actions');
           if (k.status === 'approved') {
@@ -1437,7 +1517,8 @@
         phone: document.getElementById('edit-phone').value,
         email: document.getElementById('edit-email').value,
         location: document.getElementById('edit-address').value,
-        walletNumber: document.getElementById('edit-wallet-number').value
+        walletNumber: document.getElementById('edit-wallet-number').value,
+        kspType: document.getElementById('edit-ksp-type')?.value || 'KSP Digital'
       };
       try {
         const res = await fetch(`${API_BASE}/employee/admin/ksp/profile/${id}`, {
@@ -1449,6 +1530,29 @@
           showToast('Profile updated successfully!', 'success');
           fetchFranchises();
         } else { showToast('Profile update failed', 'warning'); }
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    async function updateFranchiseBankDetails(id) {
+      const payload = {
+        bankDetails: {
+          holderName: document.getElementById('edit-bank-holder')?.value || '',
+          bankName: document.getElementById('edit-bank-name')?.value || '',
+          accountNumber: document.getElementById('edit-bank-accno')?.value || '',
+          ifscCode: (document.getElementById('edit-bank-ifsc')?.value || '').toUpperCase(),
+          bankAddress: document.getElementById('edit-bank-addr')?.value || ''
+        }
+      };
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/ksp/profile/${id}`, {
+          method: 'PATCH',
+          headers: H,
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast('Bank details saved successfully!', 'success');
+          fetchFranchises();
+        } else { showToast('Bank details update failed', 'warning'); }
       } catch (e) { showToast('Network error', 'warning'); }
     }
 
@@ -1557,7 +1661,8 @@
         businessName: document.getElementById('add-f-bname').value,
         email: document.getElementById('add-f-email').value,
         address: document.getElementById('add-f-address').value,
-        password: document.getElementById('add-f-pass').value
+        password: document.getElementById('add-f-pass').value,
+        kspType: document.getElementById('add-f-ksp-type') ? document.getElementById('add-f-ksp-type').value : 'KSP Digital'
       };
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREATING...';

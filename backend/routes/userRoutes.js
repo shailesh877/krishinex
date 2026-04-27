@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const Transaction = require('../models/Transaction');
 const Ledger = require('../models/Ledger');
+const sharp = require('sharp');
 
 // @route   GET /api/user/wallet
 // @desc    Get user wallet balance, number and transactions
@@ -107,16 +108,10 @@ const upload = multer({
     }
 });
 
-// Multer config for profile photos (images only)
-const photoStorage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadsDir),
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `photo_${req.user.id}_${Date.now()}${ext}`);
-    }
-});
+// Multer config for profile photos (using memory storage for processing)
+const memoryStorage = multer.memoryStorage();
 const uploadPhoto = multer({
-    storage: photoStorage,
+    storage: memoryStorage,
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
@@ -478,7 +473,16 @@ router.post('/upload-photo', protect, uploadPhoto.single('photo'), async (req, r
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const fileUrl = `uploads/${req.file.filename}`;
+        const fileName = `photo_${req.user.id}_${Date.now()}.jpeg`;
+        const filePath = path.join(uploadsDir, fileName);
+
+        // Process image with sharp
+        await sharp(req.file.buffer)
+            .resize(500, 500)
+            .jpeg({ quality: 90 })
+            .toFile(filePath);
+
+        const fileUrl = `uploads/${fileName}`;
 
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ error: 'User not found' });
@@ -486,7 +490,7 @@ router.post('/upload-photo', protect, uploadPhoto.single('photo'), async (req, r
         user.profilePhotoUrl = fileUrl;
         await user.save();
 
-        res.json({ message: 'Photo uploaded successfully', url: fileUrl });
+        res.json({ message: 'Photo uploaded and resized successfully', url: fileUrl });
     } catch (error) {
         console.error('Photo upload error:', error);
         res.status(500).json({ error: error.message || 'Upload failed' });

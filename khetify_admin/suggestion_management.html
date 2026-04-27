@@ -466,7 +466,7 @@
           
           const imgPath = item.imageUrl || '';
           const cleanPath = imgPath.replace(/^[\/\\]+/, '').replace(/\\/g, '/');
-          const fullUrl = imgPath.startsWith('http') ? imgPath : `https://demo.ranx24.com/${cleanPath}`;
+          const fullUrl = imgPath.startsWith('http') ? imgPath : `http://192.168.31.124:5500/${cleanPath}`;
 
           tr.innerHTML = `
             <td class="px-6 py-5">

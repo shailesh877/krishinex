@@ -463,6 +463,12 @@
                     placeholder="4" />
                 </div>
                 <div class="space-y-2">
+                  <label class="text-[11px] font-black uppercase text-slate-500">KSP Recharge (%)</label>
+                  <input type="number" id="comm_ksp_recharge"
+                    class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
+                    placeholder="2" />
+                </div>
+                <div class="space-y-2">
                   <label class="text-[11px] font-black uppercase text-slate-500">Soil Testing (%)</label>
                   <input type="number" id="comm_soil"
                     class="w-full h-11 rounded-xl border-2 border-slate-200 px-4 text-sm font-bold bg-slate-50 focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all outline-none"
@@ -634,6 +640,7 @@
         document.getElementById('comm_labour').value = data.commissions.labour;
         document.getElementById('comm_trading').value = data.commissions.buyerTrading;
         document.getElementById('comm_ksp').value = data.commissions.ksp;
+        document.getElementById('comm_ksp_recharge').value = data.commissions.kspRecharge || 2;
         document.getElementById('comm_soil').value = data.commissions.soil || 10;
         document.getElementById('comm_shop').value = data.commissions.shop || 0;
 
@@ -658,6 +665,7 @@
         const commLab = parseFloat(document.getElementById('comm_labour').value);
         const commTrad = parseFloat(document.getElementById('comm_trading').value);
         const commKsp = parseFloat(document.getElementById('comm_ksp').value);
+        const commKspRecharge = parseFloat(document.getElementById('comm_ksp_recharge').value);
         const commSoil = parseFloat(document.getElementById('comm_soil').value);
 
         payload.commissions = {
@@ -665,6 +673,7 @@
           labour: isNaN(commLab) ? 5 : commLab,
           buyerTrading: isNaN(commTrad) ? 2 : commTrad,
           ksp: isNaN(commKsp) ? 4 : commKsp,
+          kspRecharge: isNaN(commKspRecharge) ? 2 : commKspRecharge,
           soil: isNaN(commSoil) ? 10 : commSoil,
           shop: isNaN(parseFloat(document.getElementById('comm_shop').value)) ? 0 : parseFloat(document.getElementById('comm_shop').value)
         };

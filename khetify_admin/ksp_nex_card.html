@@ -64,6 +64,15 @@
                     <span class="truncate font-black">Generate Nex Card</span>
                 </a>
 
+                <a href="#" onclick="openChangePassModal()"
+                  class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-rose-50 hover:to-orange-50 hover:text-rose-700 transition-all duration-200">
+                  <span
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-rose-100 group-hover:to-orange-100 transition-all">
+                    <i class="fas fa-shield-alt text-slate-600 group-hover:text-rose-600 transition-colors"></i>
+                  </span>
+                  <span class="truncate font-semibold">Change Password</span>
+                </a>
+
                 <!--
                 <a href="withdraw_cash.html" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
                     <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
@@ -82,6 +91,7 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-[10px] text-slate-500 font-bold uppercase leading-none">Partner</p>
                         <p id="kspPartnerName" class="text-xs font-black text-slate-900 truncate mt-1">N/A</p>
+                        <span id="kspStatusBadge" class="hidden inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-slate-200 text-slate-500">UNKNOWN</span>
                     </div>
                     <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors">
                         <i class="fas fa-sign-out-alt"></i>
@@ -89,6 +99,38 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Change Password Modal -->
+        <div id="changePassModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeChangePassModal()"></div>
+            <div class="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 border-2 border-white animate-[fadeIn_0.3s_ease-out]">
+                <div class="text-center mb-6">
+                    <div class="h-14 w-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 text-2xl mx-auto mb-4">
+                        <i class="fas fa-lock-open"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">Change Password</h3>
+                    <p class="text-xs font-bold text-slate-400 mt-1">Naya password set karein</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Old Password</label>
+                        <input type="password" id="oldPass" class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New Password</label>
+                        <input type="password" id="newPass" class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm New Password</label>
+                        <input type="password" id="confNewPass" class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all" placeholder="••••••••">
+                    </div>
+                    <button onclick="handleChangePassword()" id="changePassBtn" class="w-full h-12 bg-slate-900 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2">
+                        Update Password
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Main Content -->
         <main class="flex-1 md:ml-64 p-4 md:p-8 space-y-8 animate-[fadeIn_0.5s_ease-out]">
@@ -110,7 +152,7 @@
 
             <!-- Card Search & Issuance -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <section class="lg:col-span-12 xl:col-span-7 space-y-8">
+                <section id="actionSection" class="relative lg:col-span-12 xl:col-span-7 space-y-8">
                     <!-- Issuance Card -->
                     <div class="bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
                         <div class="p-6 border-b-2 border-slate-50 flex items-center justify-between bg-slate-50/50">
@@ -187,6 +229,27 @@
                 if (res.ok) {
                     document.getElementById('kspPartnerName').textContent = data.name || 'Partner';
                     document.getElementById('kspBalanceHeader').textContent = `₹${(data.balance || 0).toLocaleString()}`;
+                    
+                    const badge = document.getElementById('kspStatusBadge');
+                    if (badge && data && data.status) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = data.status;
+                        if (data.status === 'approved') badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-emerald-100 text-emerald-700";
+                        else if (data.status === 'blocked') badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-rose-100 text-rose-700";
+                        else badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-amber-100 text-amber-700";
+                    }
+
+                    if (data && data.status !== 'approved') {
+                        const existingOverlay = document.getElementById('kspInactiveOverlay');
+                        if (!existingOverlay) {
+                            const overlay = document.createElement('div');
+                            overlay.id = 'kspInactiveOverlay';
+                            overlay.className = "absolute inset-0 bg-slate-900/10 backdrop-blur-[3px] z-[55] flex items-center justify-center rounded-[2.5rem]";
+                            overlay.innerHTML = `<div class="bg-white px-6 py-5 rounded-[2rem] shadow-2xl border-2 border-rose-100/50 text-center space-y-3 animate-[fadeIn_0.4s_ease-out]"><div class="h-14 w-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto text-2xl shadow-sm"><i class="fas fa-ban"></i></div><div><h3 class="font-black text-slate-900 text-lg tracking-tight">Account Inactive</h3><p class="text-xs text-slate-500 font-bold mt-1 leading-tight">Your franchise status is <span class="uppercase text-rose-600 font-black">${data.status}</span>.<br/>Please contact Khetify Admin.</p></div></div>`;
+                            const actionSection = document.getElementById('actionSection');
+                            if (actionSection) actionSection.appendChild(overlay);
+                        }
+                    }
                 }
             } catch (err) { console.error('Profile load error', err); }
         }
@@ -334,6 +397,45 @@
                     </div>
                 `).join('');
             } catch (err) { console.error('History fetch error:', err); }
+        }
+
+        function openChangePassModal() {
+            document.getElementById('changePassModal').classList.remove('hidden');
+        }
+
+        function closeChangePassModal() {
+            document.getElementById('changePassModal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const oldPassword = document.getElementById('oldPass').value;
+            const newPassword = document.getElementById('newPass').value;
+            const confPassword = document.getElementById('confNewPass').value;
+
+            if (!oldPassword || !newPassword) return showToast('Sab details bhoriye bhai', 'error');
+            if (newPassword !== confPassword) return showToast('Passwords match nahi ho rahe', 'error');
+
+            const btn = document.getElementById('changePassBtn');
+            try {
+                btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+                const res = await fetch(`${API_BASE}/ksp/change-password`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kspToken')}`
+                    },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Password Updated! Please login again.', 'success');
+                    setTimeout(() => logout(), 2000);
+                } else {
+                    showToast(data.error || 'Failed to update', 'error');
+                }
+            } catch (err) { showToast('Network Error', 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = 'Update Password'; }
         }
 
         function showToast(msg, type) {

@@ -14,3 +14,423 @@ Stack: Error: Not allowed by CORS
     at router.handle (D:\khetify\backend\node_modules\router\index.js:186:3)
 URL: OPTIONS /api/ksp/login
 
+[2026-04-21T09:37:57.319Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T09:42:20.669Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T09:44:30.013Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T09:46:06.923Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T09:50:52.406Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T09:53:28.093Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T09:54:28.035Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:02:21.294Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:03:21.254Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:04:05.571Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:05:04.854Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:06:34.892Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:12:27.419Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:18:23.263Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:23:46.137Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:28:00.641Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T10:30:20.251Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: POST /api/machines
+
+[2026-04-21T11:37:21.973Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-21T11:37:56.042Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-21T11:38:26.057Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-21T11:40:31.900Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-21T11:45:41.415Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-21T12:46:08.934Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-21T12:48:21.549Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-22T05:39:00.663Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-22T05:39:30.480Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-22T05:40:00.525Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-22T05:43:49.483Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-22T05:47:54.467Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+
+[2026-04-22T05:48:24.579Z] 500_ERROR: Unexpected field
+Stack: MulterError: Unexpected field
+    at wrappedFileFilter (D:\khetify\backend\node_modules\multer\index.js:41:19)
+    at Multipart.<anonymous> (D:\khetify\backend\node_modules\multer\lib\make-middleware.js:155:7)
+    at Multipart.emit (node:events:508:28)
+    at HeaderParser.cb (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:358:14)
+    at HeaderParser.push (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:162:20)
+    at SBMH.ssCb [as _cb] (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:394:37)
+    at feed (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\khetify\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\khetify\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+URL: PUT /api/machines/69e75f96021a744dddebb58f
+

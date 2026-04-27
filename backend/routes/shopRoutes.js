@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 const { protect } = require('../middleware/authMiddleware');
 const Item = require('../models/Item');
@@ -25,14 +26,7 @@ if (!fs.existsSync(bannerDir)) {
     fs.mkdirSync(bannerDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename(req, file, cb) {
-        cb(null, `item-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const bannerStorage = multer.diskStorage({
@@ -82,7 +76,15 @@ router.post('/items', protect, upload.single('image'), async (req, res) => {
         };
 
         if (req.file) {
-            itemInput.imageUrl = `uploads/items/${req.file.filename}`;
+            const filename = `item-${Date.now()}.jpg`;
+            const filepath = path.join(uploadDir, filename);
+            
+            await sharp(req.file.buffer)
+                .resize(500, 500)
+                .jpeg({ quality: 90 })
+                .toFile(filepath);
+                
+            itemInput.imageUrl = `uploads/items/${filename}`;
         }
 
         // --- SMART SYNC: Calculate total stockQty from variants ---
@@ -269,7 +271,15 @@ router.put('/items/:id', protect, upload.single('image'), async (req, res) => {
         }
 
         if (req.file) {
-            item.imageUrl = `uploads/items/${req.file.filename}`;
+            const filename = `item-${Date.now()}.jpg`;
+            const filepath = path.join(uploadDir, filename);
+            
+            await sharp(req.file.buffer)
+                .resize(500, 500)
+                .jpeg({ quality: 90 })
+                .toFile(filepath);
+                
+            item.imageUrl = `uploads/items/${filename}`;
         }
 
         const updatedItem = await item.save();

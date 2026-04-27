@@ -100,12 +100,19 @@ router.post('/book', protect, async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        const validFrom = fromDate ? new Date(fromDate) : new Date();
+        const validTo = toDate ? new Date(toDate) : new Date();
+
+        if (isNaN(validFrom.getTime()) || isNaN(validTo.getTime())) {
+            return res.status(400).json({ error: 'Invalid date provided' });
+        }
+
         // Check for double booking (Only block if already Accepted or In Progress)
         const overlaps = await LabourJob.find({
             labour: labourId,
             status: { $in: ['Accepted', 'In Progress'] },
             $or: [
-                { fromDate: { $lt: new Date(toDate) }, toDate: { $gt: new Date(fromDate) } }
+                { fromDate: { $lt: validTo }, toDate: { $gt: validFrom } }
             ]
         });
 
@@ -121,7 +128,6 @@ router.post('/book', protect, async (req, res) => {
 
         let paymentMode = 'WALLET';
         finalAmount = amount;
-
             const user = await User.findById(req.user.id);
             const userBalance = user.walletBalance || 0;
             if (userBalance < finalAmount) {
@@ -143,8 +149,8 @@ router.post('/book', protect, async (req, res) => {
             platformCommission,
             ownerPayout,
             status: 'Pending',
-            fromDate: fromDate || new Date(),
-            toDate: toDate || new Date(),
+            fromDate: validFrom,
+            toDate: validTo,
             priceType: priceType || 'daily',
             hours: hours || 0,
             days: days || 0,

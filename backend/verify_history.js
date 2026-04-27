@@ -25,7 +25,7 @@ async function verifyHistory() {
 
         // Process a small payout
         console.log('Processing payout for Rajan...');
-        const res = await axios.post('https://demo.ranx24.com/api/employee/admin/process-payout', {
+        const res = await axios.post('http://192.168.31.124:5500/api/employee/admin/process-payout', {
             id: rajan._id,
             amount: 5,
             utrNumber: 'TEST-VERIFY-' + Date.now(),

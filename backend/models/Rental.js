@@ -26,7 +26,7 @@ const RentalSchema = new mongoose.Schema({
     },
     priceType: {
         type: String,
-        enum: ['hourly', 'daily'],
+        enum: ['hourly', 'daily', 'kattha'],
         default: 'daily'
     },
     hours: {
@@ -34,6 +34,10 @@ const RentalSchema = new mongoose.Schema({
         default: 0
     },
     days: {
+        type: Number,
+        default: 0
+    },
+    kattha: {
         type: Number,
         default: 0
     },
@@ -101,7 +105,11 @@ const RentalSchema = new mongoose.Schema({
     completionOTP: {
         type: String,
         default: null
-    }
+    },
+    selectedSubMachinery: [{
+        name: String,
+        image: String
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Rental', RentalSchema);

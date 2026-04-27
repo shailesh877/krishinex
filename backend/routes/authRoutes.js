@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const User = require('../models/User');
-const { sendAdminOtp } = require('../services/emailService');
+const { sendAdminOtp, sendDeletionOtp } = require('../services/emailService');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -310,6 +310,55 @@ router.post('/verify-otp-employee', async (req, res) => {
     } catch (error) {
         console.error('Verify Admin OTP error:', error);
         res.status(500).json({ error: 'Server error during OTP verification.' });
+    }
+});
+
+// POST /api/auth/request-deletion
+// Sends a 4-digit OTP to the user's email for deletion confirmation
+router.post('/request-deletion', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: 'No account found with this email address.' });
+        }
+
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        user.loginOtp = otp; // Reusing loginOtp field for simplicity
+        user.loginOtpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+        await user.save();
+
+        await sendDeletionOtp(email, otp);
+        res.status(200).json({ message: 'Verification code sent to your email.' });
+    } catch (error) {
+        console.error('Request deletion error:', error);
+        res.status(500).json({ error: 'Failed to send verification code.' });
+    }
+});
+
+// POST /api/auth/confirm-deletion
+// Verifies OTP and deletes the account
+router.post('/confirm-deletion', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) return res.status(400).json({ error: 'Email and verification code are required.' });
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ error: 'Account not found.' });
+
+        if (user.loginOtp !== otp || !user.loginOtpExpiry || new Date() > user.loginOtpExpiry) {
+            return res.status(401).json({ error: 'Invalid or expired verification code.' });
+        }
+
+        // PERMANENTLY DELETE THE USER
+        await User.findByIdAndDelete(user._id);
+
+        res.status(200).json({ message: 'Your account has been permanently deleted.' });
+    } catch (error) {
+        console.error('Confirm deletion error:', error);
+        res.status(500).json({ error: 'Failed to delete account.' });
     }
 });
 

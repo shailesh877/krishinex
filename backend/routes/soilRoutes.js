@@ -122,7 +122,7 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
         if (reportNote) request.advisoryText = reportNote;
 
         if (req.file) {
-            const baseUrl = process.env.BASE_URL || `http://${req.hostname}:5500`;
+            const baseUrl = process.env.BASE_URL || `https://demo.ranx24.com`;
             request.reportUrl = `${baseUrl}/uploads/${req.file.filename}`;
         }
 

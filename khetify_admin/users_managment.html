@@ -1008,7 +1008,7 @@
         if (!url) return '';
         if (url.startsWith('http')) {
           try {
-            const apiHost = new URL(API_BASE).host; // e.g. "demo.ranx24.com"
+            const apiHost = new URL(API_BASE).host; // e.g. "192.168.31.124"
             // Replace anything between http(s):// and the next / with apiHost
             return url.replace(/^(https?:\/\/)[^\/]+/, `$1${apiHost}`);
           } catch (e) {

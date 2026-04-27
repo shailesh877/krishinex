@@ -4,13 +4,19 @@ const path = require('path');
 const ROOT_DIR = __dirname;
 const EXCLUDES = ['node_modules', '.git', '.next', 'build', 'dist', 'bin', 'obj', '.expo', '.gradle', 'android', 'ios'];
 
+const NEW_IP = process.argv[2];
+
+if (!NEW_IP) {
+    console.error('Please provide a new IP. Usage: node bulk_update_ip.js <NEW_IP>');
+    process.exit(1);
+}
+
+const PAST_IPS = ['192.168.31.124', '192.168.31.124', '192.168.31.124', '192.168.31.124'];
+
 // Replacement mapping
 const REPLACEMENTS = [
-    { old: 'https://demo.ranx24.com', new: 'https://demo.ranx24.com' },
-    { old: 'https://demo.ranx24.com', new: 'https://demo.ranx24.com' },
-    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' },
-    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' },
-    { old: 'demo.ranx24.com', new: 'demo.ranx24.com' }
+    { old: 'http://192.168.31.124:5500', new: 'http://192.168.31.124:5500' },
+    { old: '192.168.31.124', new: '192.168.31.124' }
 ];
 
 function walk(dir) {
@@ -47,4 +53,4 @@ function walk(dir) {
 
 console.log(`Starting Universal Server Flip...`);
 walk(ROOT_DIR);
-console.log('Update Complete! All local IPs replaced with demo.ranx24.com');
+console.log(`Update Complete! All local IPs replaced with ${NEW_IP}`);

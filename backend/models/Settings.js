@@ -7,6 +7,7 @@ const settingsSchema = new mongoose.Schema({
         labour: { type: Number, default: 5 },
         buyerTrading: { type: Number, default: 2 },
         ksp: { type: Number, default: 4 },
+        kspRecharge: { type: Number, default: 2 },
         soil: { type: Number, default: 10 },
         shop: { type: Number, default: 0 }
     },

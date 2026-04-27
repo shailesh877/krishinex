@@ -266,19 +266,23 @@ router.post('/book', protect, async (req, res) => {
 
         let discountApplied = 0;
         let finalAmount = amount;
-        if (req.body.paymentMethod !== 'wallet') {
+        // Ensure paymentMode is set to WALLET for equipment
+        let paymentMode = 'WALLET';
+        
+        // Only error if they explicitly try to use cash
+        const providedMethod = (req.body.paymentMethod || '').toLowerCase();
+        const providedMode = (req.body.paymentMode || '').toLowerCase();
+
+        if (providedMethod === 'cash' || providedMode === 'cash') {
             return res.status(400).json({ error: 'Only Wallet payment is accepted for Equipment bookings.' });
         }
-
-        let paymentMode = 'WALLET';
-        finalAmount = amount; // No discount for equipment 
-
-            const user = await User.findById(req.user.id);
-            const userBalance = user.walletBalance || 0;
-            if (userBalance < finalAmount) {
-                return res.status(400).json({ error: `Insufficient wallet balance. Need ₹${finalAmount}` });
-            }
-            // No deduction at booking time per user request - deduct on completion.
+        
+        const user = await User.findById(req.user.id);
+        const userBalance = user.walletBalance || 0;
+        if (userBalance < finalAmount) {
+            return res.status(400).json({ error: `Insufficient wallet balance. Need ₹${finalAmount}` });
+        }
+        // No deduction at booking time per user request - deduct on completion.
 
         const settings = await Settings.getSettings();
         const commissionPercent = settings.commissions?.equipment || 5;
@@ -297,9 +301,11 @@ router.post('/book', protect, async (req, res) => {
             priceType: priceType || 'daily',
             hours: req.body.hours !== undefined ? req.body.hours : (priceType === 'hourly' ? 1 : 0),
             days: req.body.days !== undefined ? req.body.days : (priceType === 'daily' ? 1 : 0),
+            kattha: req.body.kattha !== undefined ? req.body.kattha : (priceType === 'kattha' ? 1 : 0),
             purpose: req.body.purpose || '',
             paymentMode,
             discountApplied,
+            selectedSubMachinery: req.body.selectedSubMachinery || [],
             status: 'New'
         });
 
@@ -307,8 +313,8 @@ router.post('/book', protect, async (req, res) => {
 
         // Notify Owner
         const { sendNotification } = require('../services/notificationService');
-        const durationStr = priceType === 'hourly' ? `${req.body.hours || 1} घंटे` : `${req.body.days || 1} दिन`;
-        const durationStrEn = priceType === 'hourly' ? `${req.body.hours || 1} Hours` : `${req.body.days || 1} Days`;
+        const durationStr = priceType === 'kattha' ? `${req.body.kattha || 1} कट्ठा` : (priceType === 'hourly' ? `${req.body.hours || 1} घंटे` : `${req.body.days || 1} दिन`);
+        const durationStrEn = priceType === 'kattha' ? `${req.body.kattha || 1} Kattha` : (priceType === 'hourly' ? `${req.body.hours || 1} Hours` : `${req.body.days || 1} Days`);
         
         await sendNotification(machine.owner, {
             user: machine.owner,
@@ -363,6 +369,7 @@ router.get('/check-availability', protect, async (req, res) => {
         const overlaps = await Rental.find({
             machine: machineId,
             status: { $in: ['Accepted', 'In Progress'] },
+            priceType: { $ne: 'kattha' }, // Kattha bookings do not block availability
             $or: [
                 { fromDate: { $lt: end }, toDate: { $gt: start } }
             ]

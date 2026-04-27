@@ -69,4 +69,35 @@ const sendAdminOtp = async (to, otp) => {
     }
 };
 
-module.exports = { sendAdminOtp };
+const sendDeletionOtp = async (to, otp) => {
+    const mailOptions = {
+        from: `"KrishiNex Security" <${process.env.SMTP_USER || 'no-reply@krishinex.com'}>`,
+        to,
+        subject: 'Account Deletion Request - Verification Code',
+        text: `Your account deletion verification code is: ${otp}\n\nWarning: Entering this code will confirm the PERMANENT DELETION of your KrishiNex account. All your data will be lost.`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #fee2e2; border-radius: 10px;">
+                <h2 style="color: #991b1b; border-bottom: 2px solid #ef4444; padding-bottom: 10px;">Account Deletion Request</h2>
+                <p style="color: #475569; font-size: 16px;">Hello,</p>
+                <p style="color: #475569; font-size: 16px;">We received a request to delete your KrishiNex account linked to this email address.</p>
+                <div style="background-color: #fef2f2; padding: 15px; border-radius: 8px; text-align: center; margin: 25px 0;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #dc2626;">${otp}</span>
+                </div>
+                <p style="color: #991b1b; font-size: 14px; font-weight: bold;">⚠️ WARNING: This action is permanent and cannot be undone. All your data, orders, and wallet balance will be deleted.</p>
+                <p style="color: #64748b; font-size: 14px;">If you did not request this, please ignore this email and change your password immediately.</p>
+                <hr style="border: 0; border-top: 1px solid #fee2e2; margin: 20px 0;">
+                <p style="color: #94a3b8; font-size: 12px; text-align: center;">KrishiNex Security Infrastructure<br>This is an automated security message. Please do not reply.</p>
+            </div>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        return info;
+    } catch (error) {
+        console.error('[EMAIL-SERVICE] Error sending deletion email:', error);
+        throw error;
+    }
+};
+
+module.exports = { sendAdminOtp, sendDeletionOtp };

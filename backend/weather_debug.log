@@ -1,0 +1,2 @@
+[2026-04-26T15:39:18.288Z] Attempt 1 failed: timeout of 4000ms exceeded - URL: https://api.open-meteo.com/v1/forecast
+[2026-04-26T15:40:13.105Z] Attempt 1 failed: timeout of 4000ms exceeded - URL: https://api.open-meteo.com/v1/forecast

@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Rental = require('./models/Rental');
 
-const BASE = 'https://demo.ranx24.com/api/employee';
+const BASE = 'http://192.168.31.124:5500/api/employee';
 
 async function getAdminToken() {
     await mongoose.connect(process.env.MONGODB_URI);

@@ -1,0 +1,15 @@
+
+--- [DEBUG] POST AT 2026-04-24T02:10:39.399Z ---
+REQ BODY: {"machineName":"Ydcuu","priceDay":"3838","priceHour":"585","desc":"Xyucy","distanceKm":"726858","village":"Xy h","latitude":"25.3660211","longitude":"83.0086736","subMachinery":"[{\"name\":\" Iucuccu\",\"hasImage\":true},{\"name\":\"Jccjjv\",\"hasImage\":true}]","imageConfig":"[\"main\",\"sub\",\"sub\"]"}
+REQ FILES: ["main_machine_1776996637434_0.jpeg","sub_attachment_1776996637434_0.jpeg","sub_attachment_1776996637434_1.jpeg"]
+HEADERS: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5YjgzODQ3YzA1OThhNzM3ZTQ4ZjM0YiIsIm5hbWUiOiJlcXVpcG1lbnQgcmVudGFsIGNlbnRlIiwicm9sZSI6ImVxdWlwbWVudCIsImlhdCI6MTc3Njc2MzA5MiwiZXhwIjoxNzc5MzU1MDkyfQ.Z3Y9bLrtBi4EKdaETuNEd1y0rF2qSXiItLpdZoi8Z8o","content-type":"multipart/form-data; boundary=577c0a4c-94d1-4aec-a4b8-8c19c683d09e","content-length":"216003","host":"192.168.31.124:5500","connection":"Keep-Alive","accept-encoding":"gzip","user-agent":"okhttp/4.12.0"}
+
+--- [DEBUG] POST AT 2026-04-26T13:31:40.966Z ---
+REQ BODY: {"machineName":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","subMachinery":"[{\"name\":\"HAL\",\"hasImage\":true,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"hasImage\":true,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[\"main\",\"sub\",\"sub\"]"}
+REQ FILES: ["main_machine_1777210297557_0.jpg","sub_attachment_1777210297557_0.jpg","sub_attachment_1777210297557_1.jpg"]
+HEADERS: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5YjgzODQ3YzA1OThhNzM3ZTQ4ZjM0YiIsIm5hbWUiOiJlcXVpcG1lbnQgcmVudGFsIGNlbnRlIiwicm9sZSI6ImVxdWlwbWVudCIsImlhdCI6MTc3NzIwODc1NywiZXhwIjoxNzc5ODAwNzU3fQ.xnh0WugWzjKXsD1Cg0nGAflA1RwkCFfMJeaQ6TE4TVA","content-type":"multipart/form-data; boundary=9c344fa4-623c-4d73-b1cf-d9290baada9d","content-length":"96463","host":"192.168.31.124:5500","connection":"Keep-Alive","accept-encoding":"gzip","user-agent":"okhttp/4.12.0"}
+
+--- [DEBUG] POST AT 2026-04-26T14:21:55.851Z ---
+REQ BODY: {"machineName":"Tractor","priceDay":"0","priceHour":"0","desc":"Tractor","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","subMachinery":"[{\"name\":\"Hl\",\"hasImage\":true,\"priceDay\":\"800\",\"priceKattha\":\"200\"}]","imageConfig":"[\"main\",\"sub\"]"}
+REQ FILES: ["main_machine_1777213312421_0.jpg","sub_attachment_1777213312421_0.jpg"]
+HEADERS: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5YjgzODQ3YzA1OThhNzM3ZTQ4ZjM0YiIsIm5hbWUiOiJlcXVpcG1lbnQgcmVudGFsIGNlbnRlIiwicm9sZSI6ImVxdWlwbWVudCIsImlhdCI6MTc3NzIwODc1NywiZXhwIjoxNzc5ODAwNzU3fQ.xnh0WugWzjKXsD1Cg0nGAflA1RwkCFfMJeaQ6TE4TVA","content-type":"multipart/form-data; boundary=abae54b6-e56b-4c7c-ab13-b0e19af1e6c1","content-length":"56904","host":"192.168.31.124:5500","connection":"Keep-Alive","accept-encoding":"gzip","user-agent":"okhttp/4.12.0"}

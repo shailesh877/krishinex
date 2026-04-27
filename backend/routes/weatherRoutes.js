@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
         } catch (error) {
             const errorLog = `[${new Date().toISOString()}] Attempt ${attempt} failed: ${error.message} - URL: ${error.config?.url}\n`;
             fs.appendFileSync(path.join(__dirname, '../weather_debug.log'), errorLog);
-            
+
             if (attempt < maxRetries) {
                 console.log(`Weather fetch attempt ${attempt} failed, retrying...`);
                 // Wait 1 second before retry

@@ -12,13 +12,27 @@ if (FIREBASE_CONFIG) {
     try {
         const serviceAccount = JSON.parse(FIREBASE_CONFIG);
         // Bhai, fix escaped newlines in private_key if they exist
+        // Bhai, fix escaped newlines and other common formatting issues in private_key
         if (serviceAccount.private_key) {
-            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            serviceAccount.private_key = serviceAccount.private_key
+                .replace(/\\n/g, '\n')
+                .replace(/\\r/g, '\r')
+                .replace(/\\t/g, '\t')
+                .replace(/\\\"/g, '"');
+            
+            // Also ensure it's trimmed and has proper PEM boundaries
+            serviceAccount.private_key = serviceAccount.private_key.trim();
         }
         firebaseApp = admin.initializeApp({
             credential: admin.credential.cert(serviceAccount)
         });
         console.log('[FIREBASE] Firebase Admin SDK initialized from Environment Variable.');
+        if (serviceAccount.private_key) {
+            console.log(`[FIREBASE] Private Key format check: startsWith=${serviceAccount.private_key.substring(0, 27)}, length=${serviceAccount.private_key.length}`);
+            if (!serviceAccount.private_key.includes('\n')) {
+                console.warn('[FIREBASE] WARNING: Private Key does NOT contain actual newlines. Push notifications will likely fail!');
+            }
+        }
     } catch (error) {
         console.error('[FIREBASE] Error parsing FIREBASE_SERVICE_ACCOUNT from Env:', error);
     }

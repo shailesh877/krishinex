@@ -27,6 +27,19 @@ const generateToken = (userId, name, role) => {
   });
 };
 
+const checkApprovedKsp = async (req, res, next) => {
+  try {
+    const ksp = await User.findById(req.user.id);
+    if (!ksp) return res.status(404).json({ error: 'KSP not found' });
+    if (ksp.status !== 'approved') {
+      return res.status(403).json({ error: 'Your account is currently inactive or blocked. Please contact admin.' });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Server error checking account status.' });
+  }
+};
+
 // KSP Partner Login (Email/Password -> Step 1: Send OTP)
 router.post('/login', async (req, res) => {
   try {
@@ -151,19 +164,52 @@ router.get('/stats', protect, async (req, res) => {
       return res.status(403).json({ error: 'Access denied. KSP only.' });
     }
 
-    const user = await User.findById(req.user.id).select('name walletBalance');
+    const user = await User.findById(req.user.id).select('name walletBalance status kspType phone email address businessName walletNumber bankDetails kspPartnerId');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // Dashboard Stats Aggressive Self-Healing
+    if (!user.kspPartnerId || user.kspPartnerId.trim() === "") {
+      const prefix = (user.kspType === 'KSP Prime') ? 'KSPP' : 'KSPD';
+      let newId;
+      let isUnique = false;
+      let attempts = 0;
+      while (!isUnique && attempts < 50) {
+        const digits = Math.floor(100000 + Math.random() * 900000);
+        newId = `${prefix}${digits}`;
+        const existing = await User.findOne({ kspPartnerId: newId });
+        if (!existing) isUnique = true;
+        attempts++;
+      }
+      user.kspPartnerId = newId;
+      await user.save();
+    }
     const transactions = await Transaction.find({
       recipient: req.user.id
     }).sort({ createdAt: -1 }).limit(10);
 
-    res.json({
+    const response = {
       balance: user.walletBalance || 0,
       name: user.name,
-      recentTransactions: transactions,
-      _debug: "FILTER_ENABLED_V2" // Temporary flag to verify deployment
-    });
+      status: user.status,
+      kspType: user.kspType || 'KSP Digital',
+      phone: user.phone,
+      email: user.email || '',
+      address: user.address || '',
+      businessName: user.businessName || '',
+      walletNumber: user.walletNumber || '',
+      kspId: user.kspPartnerId || '',
+      kspPartnerId: user.kspPartnerId || '',
+      bankDetails: {
+        holderName: user.bankDetails?.holderName || '',
+        bankName: user.bankDetails?.bankName || '',
+        accountNumber: user.bankDetails?.accountNumber || '',
+        ifscCode: user.bankDetails?.ifscCode || '',
+        bankAddress: user.bankDetails?.bankAddress || ''
+      },
+      recentTransactions: transactions
+    };
+
+    res.json(response);
   } catch (error) {
     console.error('KSP Stats Error:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
@@ -201,7 +247,7 @@ router.post('/search', protect, async (req, res) => {
 const { sendNotification } = require('../services/notificationService');
 
 // Withdraw: Request OTP
-router.post('/withdraw/request-otp', protect, async (req, res) => {
+router.post('/withdraw/request-otp', protect, checkApprovedKsp, async (req, res) => {
   try {
     const { userId, amount } = req.body;
     const farmer = await User.findById(userId);
@@ -239,7 +285,7 @@ router.post('/withdraw/request-otp', protect, async (req, res) => {
 });
 
 // Withdraw: Confirm
-router.post('/withdraw/confirm', protect, async (req, res) => {
+router.post('/withdraw/confirm', protect, checkApprovedKsp, async (req, res) => {
   try {
     const { userId, amount, otp } = req.body;
     const amt = parseFloat(amount);
@@ -342,6 +388,168 @@ router.post('/withdraw/confirm', protect, async (req, res) => {
   }
 });
 
+// Recharge: Request OTP
+router.post('/recharge/request-otp', protect, checkApprovedKsp, async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+    const targetUser = await User.findById(userId);
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const ksp = await User.findById(req.user.id);
+    if (!ksp) return res.status(404).json({ error: 'KSP not found' });
+
+    if (ksp.walletBalance < amount) {
+      return res.status(400).json({ error: `Insufficient KSP balance. You need ₹${amount} in your wallet.` });
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log(`[KSP] Sending recharge OTP to user ${targetUser.phone}: ${otp}`);
+    
+    // Send via SMS
+    await sendOtp(targetUser.phone, otp);
+    
+    // Send via App Notification
+    try {
+      await sendNotification(targetUser._id, {
+        title: 'Recharge OTP',
+        messageEn: `Your OTP to confirm recharge of ₹${amount} from KSP is ${otp}. Valid for 10 minutes.`,
+        messageHi: `KSP से ₹${amount} के रिचार्ज की पुष्टि के लिए आपका OTP ${otp} है। 10 मिनट के लिए मान्य।`,
+        type: 'payment',
+        data: { otp, amount: amount.toString() }
+      });
+    } catch (notifyErr) {
+      console.error('KSP Notification Error:', notifyErr);
+    }
+
+    res.json({ success: true, message: 'OTP sent to user' });
+  } catch (error) {
+    console.error('KSP Recharge Request Error:', error);
+    res.status(500).json({ error: 'Failed to send OTP' });
+  }
+});
+
+// Recharge: Confirm
+router.post('/recharge/confirm', protect, checkApprovedKsp, async (req, res) => {
+  try {
+    const { userId, amount, otp } = req.body;
+    const amt = parseFloat(amount);
+
+    const targetUser = await User.findById(userId);
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const ksp = await User.findById(req.user.id);
+    if (!ksp) return res.status(404).json({ error: 'KSP Partner not found' });
+
+    // Verify OTP
+    const verifyResult = await verifyOtp(targetUser.phone, otp);
+    if (verifyResult.type !== 'success' && verifyResult.message !== 'Mock OTP verified') {
+      return res.status(401).json({ error: 'Invalid OTP' });
+    }
+
+    if (ksp.walletBalance < amt) {
+      return res.status(400).json({ error: 'Insufficient KSP balance for this recharge' });
+    }
+
+    // 1. Fetch KSP Recharge Commission from Settings
+    const settings = await Settings.getSettings();
+    const kspRechargePercent = settings.commissions.kspRecharge || 0;
+    const commissionAmt = (amt * kspRechargePercent) / 100;
+
+    // 2. Atomic Balance Updates
+    // KSP pays the principal
+    ksp.walletBalance -= amt;
+
+    // TargetUser receives principal
+    targetUser.walletBalance = (targetUser.walletBalance || 0) + amt;
+
+    // KSP receives commission from Admin
+    ksp.walletBalance += commissionAmt;
+
+    // Admin pays the commission
+    const admin = await User.findOne({ role: 'admin' });
+    if (admin) {
+      admin.walletBalance = (admin.walletBalance || 0) - commissionAmt;
+      await admin.save();
+    }
+
+    await targetUser.save();
+    await ksp.save();
+
+    // 3. Create Transactions
+    const rechargeId = `KSP-RCH-${Date.now()}`;
+
+    // Debit for KSP (Principal paid)
+    await Transaction.create({
+      transactionId: `${rechargeId}-K-D`,
+      recipient: ksp._id,
+      module: 'KSP',
+      amount: amt,
+      type: 'Debit',
+      paymentMode: 'Cash',
+      status: 'Completed',
+      performedBy: ksp._id,
+      note: `Wallet Recharge to ${targetUser.name} (${targetUser.role})`
+    });
+
+    // Credit for Target User (Principal)
+    await Transaction.create({
+      transactionId: `${rechargeId}-U-C`,
+      recipient: targetUser._id,
+      module: 'KSP',
+      amount: amt,
+      type: 'Credit',
+      paymentMode: 'Cash',
+      status: 'Completed',
+      performedBy: ksp._id,
+      note: `Wallet recharged by KSP: ${ksp.name}`
+    });
+
+    // Credit for KSP (Commission)
+    if (commissionAmt > 0) {
+        await Transaction.create({
+        transactionId: `${rechargeId}-K-C`,
+        recipient: ksp._id,
+        module: 'KSP',
+        amount: commissionAmt,
+        type: 'Credit',
+        paymentMode: 'NexCard Wallet',
+        status: 'Completed',
+        performedBy: ksp._id,
+        note: `Commission for recharging ${targetUser.name} (Amount: ₹${amt})`
+        });
+
+        // Debit for Admin (Commission Paid)
+        if (admin) {
+        await Transaction.create({
+            transactionId: `${rechargeId}-A-D`,
+            recipient: admin._id,
+            module: 'KSP',
+            amount: commissionAmt,
+            type: 'Debit',
+            paymentMode: 'NexCard Wallet',
+            status: 'Completed',
+            performedBy: ksp._id,
+            note: `KSP Recharge Commission paid to ${ksp.name} for user ${targetUser.name}`
+        });
+        }
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Recharge successful',
+      data: {
+        principalRecharged: amt,
+        commissionEarned: commissionAmt,
+        netKspDeduction: amt - commissionAmt
+      }
+    });
+
+  } catch (error) {
+    console.error('KSP Recharge Confirm Error:', error);
+    res.status(500).json({ error: 'Recharge failed: ' + error.message });
+  }
+});
+
 // Submit KSP Application
 router.post('/submit', async (req, res) => {
   try {
@@ -425,7 +633,7 @@ router.post('/search-user', protect, async (req, res) => {
  * @desc    Generate a 16-digit Nex Card for a user
  * @access  Private (KSP only)
  */
-router.post('/generate-card', protect, async (req, res) => {
+router.post('/generate-card', protect, checkApprovedKsp, async (req, res) => {
   try {
     if (req.user.role !== 'ksp') {
       return res.status(403).json({ error: 'Access denied. KSP only.' });
@@ -689,6 +897,44 @@ router.post('/change-password', protect, async (req, res) => {
   } catch (error) {
     console.error('KSP Change Password Error:', error);
     res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// Support Ticket: KSP Partner raises a support ticket
+router.post('/support-ticket', protect, async (req, res) => {
+  try {
+    const { category, subject, description, priority } = req.body;
+    if (!category || !subject || !description) {
+      return res.status(400).json({ error: 'Category, Subject aur Description required ha' });
+    }
+    const ksp = await User.findById(req.user.id).select('name phone businessName');
+    if (!ksp) return res.status(404).json({ error: 'KSP Partner not found' });
+
+    const ticketId = `TKT-KSP-${Date.now().toString().slice(-7)}`;
+
+    // Save ticket as a notification to admin
+    const { sendNotification } = require('../services/notificationService');
+    const admin = await User.findOne({ role: 'admin' }).select('_id');
+    if (admin) {
+      try {
+        await sendNotification(admin._id, {
+          title: `[${priority || 'Normal'}] Support Ticket: ${category}`,
+          messageEn: `${ksp.name} (${ksp.phone}) raised a ticket.\n\nSubject: ${subject}\n\nDetails: ${description}\n\nTicket ID: ${ticketId}`,
+          messageHi: `KSP Partner ${ksp.name} ne ek support ticket raise kiya hai. Ticket ID: ${ticketId}`,
+          type: 'support',
+          data: { ticketId, category, priority: priority || 'Normal', kspId: req.user.id.toString() }
+        });
+      } catch (notifErr) {
+        console.error('Support ticket notification error:', notifErr);
+      }
+    }
+
+    console.log(`[SUPPORT TICKET] ${ticketId} from KSP ${ksp.name} (${ksp.phone}) | Category: ${category} | Priority: ${priority}`);
+    res.json({ success: true, ticketId, message: 'Ticket submitted successfully' });
+
+  } catch (error) {
+    console.error('Support Ticket Error:', error);
+    res.status(500).json({ error: 'Failed to submit ticket' });
   }
 });
 

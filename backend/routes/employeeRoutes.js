@@ -539,7 +539,7 @@ router.post('/doctor-chats', protect, async (req, res) => {
 router.post('/upload-chat-media', protect, uploadChatMedia.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-        const baseUrl = process.env.BASE_URL || `http://${req.hostname}:5500`;
+        const baseUrl = process.env.BASE_URL || `https://demo.ranx24.com`;
         const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
         res.json({ url: fileUrl });
     } catch (e) {
@@ -4587,7 +4587,7 @@ router.get('/admin/franchise-stats', protect, checkModule('ksp_franchise'), asyn
 // @desc    Add a new KSP franchise
 router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
     try {
-        const { name, phone, email, password, businessName, address } = req.body;
+        const { name, phone, email, password, businessName, address, kspType } = req.body;
 
         if (!name || !phone || !password || !businessName || !address) {
             return res.status(400).json({ error: 'Please provide all required fields' });
@@ -4596,6 +4596,17 @@ router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (r
         const userExists = await User.findOne({ phone });
         if (userExists) {
             return res.status(400).json({ error: 'User with this phone number already exists' });
+        }
+
+        // Generate unique KSP Partner ID: KSPD/KSPP + 6 random digits
+        const prefix = (kspType === 'KSP Prime') ? 'KSPP' : 'KSPD';
+        let kspPartnerId;
+        let isUnique = false;
+        while (!isUnique) {
+            const digits = Math.floor(100000 + Math.random() * 900000); // 6-digit number
+            kspPartnerId = `${prefix}${digits}`;
+            const existing = await User.findOne({ kspPartnerId });
+            if (!existing) isUnique = true;
         }
 
         const newFranchise = await User.create({
@@ -4607,12 +4618,15 @@ router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (r
             status: 'approved',
             businessName,
             address,
-            walletBalance: 0
+            walletBalance: 0,
+            kspType: kspType || 'KSP Digital',
+            kspPartnerId
         });
 
         res.status(201).json({
             message: 'Franchise Created Successfully',
-            franchiseId: newFranchise._id
+            franchiseId: newFranchise._id,
+            kspPartnerId: newFranchise.kspPartnerId
         });
     } catch (e) {
         console.error('Franchise creation error:', e);
@@ -4625,7 +4639,7 @@ router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (r
 router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
     try {
         const franchises = await User.find({ role: 'ksp' })
-            .select('name businessName phone address status walletBalance walletNumber createdAt email profilePhotoUrl aadhaarDocUrl panDocUrl businessLicenseUrl')
+            .select('name businessName phone address status walletBalance walletNumber createdAt email profilePhotoUrl aadhaarDocUrl panDocUrl businessLicenseUrl kspType bankDetails kspPartnerId')
             .sort({ createdAt: -1 });
 
         const result = await Promise.all(franchises.map(async f => {
@@ -4654,7 +4668,16 @@ router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (re
                 aadhaarDocUrl: f.aadhaarDocUrl,
                 panDocUrl: f.panDocUrl,
                 businessLicenseUrl: f.businessLicenseUrl,
-                email: f.email
+                email: f.email,
+                kspType: f.kspType || 'KSP Digital',
+                kspPartnerId: f.kspPartnerId || '',
+                bankDetails: {
+                    holderName: f.bankDetails?.holderName || '',
+                    bankName: f.bankDetails?.bankName || '',
+                    accountNumber: f.bankDetails?.accountNumber || '',
+                    ifscCode: f.bankDetails?.ifscCode || '',
+                    bankAddress: f.bankDetails?.bankAddress || ''
+                }
             };
         }));
 
@@ -4781,7 +4804,7 @@ router.post('/admin/ksp/direct-debit', protect, checkAdmin, async (req, res) => 
 // @desc    Update KSP franchise profile details
 router.patch('/admin/ksp/profile/:id', protect, checkAdmin, async (req, res) => {
     try {
-        const { name, ownerName, businessName, franchiseName, phone, email, address, location, walletNumber } = req.body;
+        const { name, ownerName, businessName, franchiseName, phone, email, address, location, walletNumber, kspType, bankDetails } = req.body;
         const up = {};
         if (name || ownerName) up.name = name || ownerName;
         if (businessName || franchiseName) up.businessName = businessName || franchiseName;
@@ -4789,15 +4812,43 @@ router.patch('/admin/ksp/profile/:id', protect, checkAdmin, async (req, res) => 
         if (email) up.email = email;
         if (address || location) up.address = address || location;
         if (walletNumber !== undefined) up.walletNumber = walletNumber;
+        if (kspType) up.kspType = kspType;
+        if (bankDetails && typeof bankDetails === 'object') {
+            if (bankDetails.holderName !== undefined) up['bankDetails.holderName'] = bankDetails.holderName;
+            if (bankDetails.bankName !== undefined) up['bankDetails.bankName'] = bankDetails.bankName;
+            if (bankDetails.accountNumber !== undefined) up['bankDetails.accountNumber'] = bankDetails.accountNumber;
+            if (bankDetails.ifscCode !== undefined) up['bankDetails.ifscCode'] = bankDetails.ifscCode;
+            if (bankDetails.bankAddress !== undefined) up['bankDetails.bankAddress'] = bankDetails.bankAddress;
+        }
 
-        const franchise = await User.findOneAndUpdate(
+        const franchise = await User.findOne({ _id: req.params.id, role: 'ksp' });
+        if (!franchise) return res.status(404).json({ error: 'Franchise not found' });
+
+        // If kspType changed, check if prefix needs update
+        if (kspType && kspType !== franchise.kspType) {
+            const newPrefix = (kspType === 'KSP Prime') ? 'KSPP' : 'KSPD';
+            const currentId = franchise.kspPartnerId || '';
+            if (!currentId.startsWith(newPrefix)) {
+                let newId;
+                let isUnique = false;
+                while (!isUnique) {
+                    const digits = Math.floor(100000 + Math.random() * 900000);
+                    newId = `${newPrefix}${digits}`;
+                    const existing = await User.findOne({ kspPartnerId: newId });
+                    if (!existing) isUnique = true;
+                }
+                up.kspPartnerId = newId;
+            }
+        }
+
+        const updatedFranchise = await User.findOneAndUpdate(
             { _id: req.params.id, role: 'ksp' },
             up,
             { new: true }
         ).select('-password');
 
-        if (!franchise) return res.status(404).json({ error: 'Franchise not found' });
-        res.json({ success: true, franchise });
+        if (!updatedFranchise) return res.status(404).json({ error: 'Franchise not found' });
+        res.json({ success: true, franchise: updatedFranchise });
     } catch (e) {
         console.error('Update franchise error:', e);
         res.status(500).json({ error: 'Failed to update profile' });

@@ -12,7 +12,7 @@ async function check() {
     const token = jwt.sign({ id: admin._id, role: 'admin' }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '1h' });
 
     try {
-        const res = await axios.get('https://demo.ranx24.com/api/employee/admin/kyc/export', {
+        const res = await axios.get('http://192.168.31.124:5500/api/employee/admin/kyc/export', {
             headers: { Authorization: `Bearer ${token}` }
         });
         console.log("Status:", res.status);

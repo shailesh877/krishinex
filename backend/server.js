@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-console.log('--- KHETIFY BACKEND V2.4 (FINAL DEBUG) ---');
+console.log('--- KHETIFY BACKEND V2.5 (BUGFIX TEST) ---');
 
 // DNS Fix for MongoDB SRV on some networks
 require('dns').setServers(['8.8.8.8', '1.1.1.1']);
@@ -18,32 +18,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
-    origin: (origin, callback) => {
-        const allowedOrigins = [
-            'https://krishinex.com',
-            'https://admin.krishinex.com',
-            'https://demo.ranx24.com',
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://localhost:5173',
-            'http://demo.ranx24.com:3000',
-            'http://demo.ranx24.com:3001',
-            'http://demo.ranx24.com:5173',
-            'https://demo.ranx24.com:3000',
-            'https://demo.ranx24.com:3001',
-            'https://demo.ranx24.com:5173',
-            'http://192.168.1.10',
-            'http://192.168.1.10:3000',
-            'http://192.168.1.10:3001',
-            'http://192.168.1.10:5173'
-        ];
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.warn(`[CORS Blocked] Origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: '*', // ALLOW ALL ORIGINS FOR DEBUGGING
     credentials: true
 };
 
@@ -51,9 +26,12 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Global Request Logger
+// LOUD GLOBAL REQUEST LOGGER
 app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('\n======================================================');
+    console.log(`🚨 PING RECEIVED: ${req.method} ${req.url}`);
+    console.log(`🚨 FROM IP: ${req.ip} | ORIGIN: ${req.headers.origin}`);
+    console.log('======================================================\n');
     next();
 });
 
@@ -72,11 +50,11 @@ app.use('/admin', express.static(path.join(__dirname, '../khetify_admin')));
 app.use('/', express.static(path.join(__dirname, '../KrishiNex')));
 
 // Routes
+app.use('/api/machines', require('./routes/machineRoutes'));
 app.use('/api/auth', authRoutes);
 app.use('/api/user', require('./routes/userRoutes'));
 app.use('/api/orders', orderRoutes);
 app.use('/api/notifications', notificationRoutes);
-app.use('/api/machines', require('./routes/machineRoutes'));
 app.use('/api/rentals', require('./routes/rentalRoutes'));
 app.use('/api/soil', require('./routes/soilRoutes'));
 app.use('/api/shop', shopRoutes);

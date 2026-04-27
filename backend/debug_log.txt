@@ -1,0 +1,172 @@
+
+--- [DEBUG] PUT AT 2026-04-24T02:09:00.954Z ---
+REQ BODY: {"name":"Xrxrxrc","priceDay":"28585050","priceHour":"858228","desc":"F d d d","distanceKm":"5858","village":"Fcrcr","latitude":"25.3660211","longitude":"83.0086736","existingImages":["uploads/machines/images-1776859564213-215870022.jpeg","uploads/machines/images-1776859564294-538434035.jpeg"],"subMachinery":"[{\"name\":\"Ycycu\",\"image\":\"\",\"isNewImage\":true}]","imageConfig":"[\"sub\"]"}
+REQ FILES: ["sub_edit_attachment_1776996539014_0.jpeg"]
+
+--- [DEBUG] PUT AT 2026-04-24T02:11:09.359Z ---
+REQ BODY: {"name":"Ydcuu","priceDay":"3838","priceHour":"585","desc":"Xyucy","distanceKm":"726858","village":"Xy h","latitude":"25.3660211","longitude":"83.0086736","existingImages":"uploads/machines/images-1776996639349-827532030.jpeg","subMachinery":"[{\"name\":\" Iucuccuu\",\"image\":\"uploads/machines/images-1776996639361-721512535.jpeg\",\"isNewImage\":false},{\"name\":\"Jccjjv\",\"image\":\"uploads/machines/images-1776996639379-677643153.jpeg\",\"isNewImage\":false}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:37:44.992Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:38:47.398Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:41:36.119Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:42:44.601Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:43:46.417Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:48:03.472Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"\",\"priceKattha\":\"\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:48:33.469Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"\",\"priceKattha\":\"\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:49:03.487Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:52:37.653Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"\",\"priceKattha\":\"\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:55:20.537Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"\",\"priceKattha\":\"\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:55:50.527Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"\",\"priceKattha\":\"\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T13:56:20.537Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"\",\"priceKattha\":\"\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T14:02:02.578Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"0\",\"priceKattha\":\"0\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T14:05:10.525Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"10\",\"priceKattha\":\"2\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"0\",\"priceKattha\":\"0\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+--- [DEBUG] PUT AT 2026-04-26T14:22:25.857Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"0\",\"priceKattha\":\"0\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+[DEBUG] Final SubMachinery to Save: [
+  {
+    "name": "HAL",
+    "image": "uploads/machines/images-1777210300948-600048274.jpg",
+    "priceDay": 800,
+    "priceKattha": 200
+  },
+  {
+    "name": "Rotaveor",
+    "image": "uploads/machines/images-1777210300951-116200858.jpg",
+    "priceDay": 0,
+    "priceKattha": 0
+  }
+]
+
+[DEBUG] Machine Saved. ID: 69ee13bcb34a929638fe6d6e SubMachinery: [
+  {
+    "name": "HAL",
+    "image": "uploads/machines/images-1777210300948-600048274.jpg",
+    "priceDay": 800,
+    "priceKattha": 200,
+    "_id": "69ee1fa1814a022dccb5467a"
+  },
+  {
+    "name": "Rotaveor",
+    "image": "uploads/machines/images-1777210300951-116200858.jpg",
+    "priceDay": 0,
+    "priceKattha": 0,
+    "_id": "69ee1fa1814a022dccb5467b"
+  }
+]
+
+--- [DEBUG] PUT AT 2026-04-26T14:22:55.867Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"850 Horsepower Tractor Good for heavy Work","distanceKm":"15","village":"Karnal","latitude":"25.3660898","longitude":"83.0086805","existingImages":"uploads/machines/images-1777210300944-959205189.jpg","subMachinery":"[{\"name\":\"HAL\",\"image\":\"uploads/machines/images-1777210300948-600048274.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"Rotaveor\",\"image\":\"uploads/machines/images-1777210300951-116200858.jpg\",\"isNewImage\":false,\"priceDay\":\"1000\",\"priceKattha\":\"500\"}]","imageConfig":"[]"}
+REQ FILES: []
+
+[DEBUG] Final SubMachinery to Save: [
+  {
+    "name": "HAL",
+    "image": "uploads/machines/images-1777210300948-600048274.jpg",
+    "priceDay": 800,
+    "priceKattha": 200
+  },
+  {
+    "name": "Rotaveor",
+    "image": "uploads/machines/images-1777210300951-116200858.jpg",
+    "priceDay": 1000,
+    "priceKattha": 500
+  }
+]
+
+[DEBUG] Machine Saved. ID: 69ee13bcb34a929638fe6d6e SubMachinery: [
+  {
+    "name": "HAL",
+    "image": "uploads/machines/images-1777210300948-600048274.jpg",
+    "priceDay": 800,
+    "priceKattha": 200,
+    "_id": "69ee1fbf814a022dccb5468e"
+  },
+  {
+    "name": "Rotaveor",
+    "image": "uploads/machines/images-1777210300951-116200858.jpg",
+    "priceDay": 1000,
+    "priceKattha": 500,
+    "_id": "69ee1fbf814a022dccb5468f"
+  }
+]
+
+--- [DEBUG] PUT AT 2026-04-26T16:25:48.343Z ---
+REQ BODY: {"name":"Tractor","priceDay":"0","priceHour":"0","desc":"Tractor","distanceKm":"15","village":"Karnal","latitude":"25.3662169","longitude":"83.0086877","existingImages":"uploads/machines/images-1777213315841-28325591.jpg","subMachinery":"[{\"name\":\"Hl\",\"image\":\"uploads/machines/images-1777213315845-346998275.jpg\",\"isNewImage\":false,\"priceDay\":\"800\",\"priceKattha\":\"200\"},{\"name\":\"\",\"image\":\"\",\"isNewImage\":true,\"priceDay\":\"20\",\"priceKattha\":\"10\"}]","imageConfig":"[\"sub\"]"}
+REQ FILES: ["sub_edit_attachment_1777220747213_1.jpg"]
+
+[DEBUG] Final SubMachinery to Save: [
+  {
+    "name": "Hl",
+    "image": "uploads/machines/images-1777213315845-346998275.jpg",
+    "priceDay": 800,
+    "priceKattha": 200
+  },
+  {
+    "name": "Attachment",
+    "image": "uploads/machines/sub-1777220748406-562577029.jpg",
+    "priceDay": 20,
+    "priceKattha": 10
+  }
+]
+
+[DEBUG] Machine Saved. ID: 69ee1f83814a022dccb5465d SubMachinery: [
+  {
+    "name": "Hl",
+    "image": "uploads/machines/images-1777213315845-346998275.jpg",
+    "priceDay": 800,
+    "priceKattha": 200,
+    "_id": "69ee3c8c89863a76a626649f"
+  },
+  {
+    "name": "Attachment",
+    "image": "uploads/machines/sub-1777220748406-562577029.jpg",
+    "priceDay": 20,
+    "priceKattha": 10,
+    "_id": "69ee3c8c89863a76a62664a0"
+  }
+]

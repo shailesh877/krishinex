@@ -3,7 +3,7 @@ const axios = require('axios');
 async function test() {
     console.log('--- STARTING CLEAN TEST ---');
     try {
-        const login = await axios.post('https://demo.ranx24.com/api/ksp/login', {
+        const login = await axios.post('http://192.168.31.124:5500/api/ksp/login', {
             phone: '9999988888',
             password: 'password123'
         });
@@ -13,7 +13,7 @@ async function test() {
         const userId = '69a9ddf748b875747eeda37';
         console.log('2. Requesting OTP for User ID:', userId);
         
-        const otpReq = await axios.post('https://demo.ranx24.com/api/ksp/withdraw/request-otp', 
+        const otpReq = await axios.post('http://192.168.31.124:5500/api/ksp/withdraw/request-otp', 
             { userId: userId, amount: 100 },
             { headers: { 'Authorization': `Bearer ${token}` } }
         );

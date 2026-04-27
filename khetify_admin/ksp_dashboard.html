@@ -77,17 +77,31 @@
 
                 <a href="ksp_nex_card.html"
                   class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
-                  <span
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+                  <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
                     <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
                   </span>
                   <span class="truncate font-semibold">Generate Nex Card</span>
                 </a>
 
+                <a href="#" onclick="openProfileModal()"
+                  class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-violet-50 hover:to-purple-50 hover:text-violet-700 transition-all duration-200">
+                  <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-violet-100 group-hover:to-purple-100 transition-all">
+                    <i class="fas fa-user-circle text-slate-600 group-hover:text-violet-600 transition-colors"></i>
+                  </span>
+                  <span class="truncate font-semibold">My Profile</span>
+                </a>
+
+                <a href="#" onclick="openSupportModal()"
+                  class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 hover:text-amber-700 transition-all duration-200">
+                  <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-orange-100 transition-all">
+                    <i class="fas fa-headset text-slate-600 group-hover:text-amber-600 transition-colors"></i>
+                  </span>
+                  <span class="truncate font-semibold">Customer Support</span>
+                </a>
+
                 <a href="#" onclick="openChangePassModal()"
                   class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-rose-50 hover:to-orange-50 hover:text-rose-700 transition-all duration-200">
-                  <span
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-rose-100 group-hover:to-orange-100 transition-all">
+                  <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-rose-100 group-hover:to-orange-100 transition-all">
                     <i class="fas fa-shield-alt text-slate-600 group-hover:text-rose-600 transition-colors"></i>
                   </span>
                   <span class="truncate font-semibold">Change Password</span>
@@ -103,6 +117,10 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-[10px] text-slate-500 font-bold uppercase leading-none">Partner</p>
                         <p id="kspPartnerName" class="text-xs font-black text-slate-900 truncate mt-1">N/A</p>
+                        <div class="flex items-center gap-1 mt-1 flex-wrap">
+                            <span id="kspStatusBadge" class="hidden inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-slate-200 text-slate-500">UNKNOWN</span>
+                            <span id="kspTypeBadge" class="hidden inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-violet-100 text-violet-700">DIGITAL</span>
+                        </div>
                     </div>
                     <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors">
                         <i class="fas fa-sign-out-alt"></i>
@@ -110,6 +128,194 @@
                 </div>
             </div>
         </aside>
+
+        <!-- Profile Modal -->
+        <div id="profileModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeProfileModal()"></div>
+            <div class="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out] max-h-[95vh] flex flex-col">
+                <!-- Header Banner -->
+                <div class="bg-gradient-to-br from-violet-600 to-purple-700 p-7 pb-14 relative shrink-0">
+                    <button onclick="closeProfileModal()" class="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-all"><i class="fas fa-times"></i></button>
+                    <div class="flex items-center gap-4">
+                        <div class="h-16 w-16 rounded-2xl bg-white/20 flex items-center justify-center text-white text-2xl shadow-xl shrink-0"><i class="fas fa-user-tie"></i></div>
+                        <div class="text-left">
+                            <h2 id="profileName" class="text-lg font-black text-white leading-tight">--</h2>
+                            <p id="profileBizName" class="text-violet-200 text-[11px] font-bold mt-0.5">--</p>
+                            <div class="flex gap-1.5 mt-2 flex-wrap">
+                                <span id="profileTypeBadge" class="px-2.5 py-0.5 bg-white/20 text-white text-[9px] font-black rounded-full uppercase tracking-widest">KSP Digital</span>
+                                <span id="profileStatusBadge2" class="px-2.5 py-0.5 bg-emerald-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Switcher -->
+                <div class="px-5 -mt-7 relative z-10 shrink-0">
+                    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 flex p-1 gap-1">
+                        <button onclick="switchProfileTab('account')" id="tabBtnAccount" class="flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all bg-violet-600 text-white shadow-sm">Account Details</button>
+                        <button onclick="switchProfileTab('bank')" id="tabBtnBank" class="flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-700">Bank Details</button>
+                    </div>
+                </div>
+
+                <!-- Scrollable Content -->
+                <div class="overflow-y-auto custom-scroll flex-1 px-5 pb-5 pt-3">
+
+                    <!-- Account Details Tab -->
+                    <div id="tabAccount" class="space-y-3">
+                        <!-- KSP ID -->
+                        <div class="flex items-center gap-3 p-3.5 bg-violet-50 rounded-2xl border border-violet-100">
+                            <div class="h-9 w-9 rounded-xl bg-violet-600 flex items-center justify-center text-white shrink-0"><i class="fas fa-fingerprint text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-violet-500 font-black uppercase tracking-widest">KSP PROFILE ID (FINAL)</p>
+                                <p id="profileKspId" data-v="v2.5" class="text-[11px] font-black text-violet-900 mt-0.5 font-mono break-all">--</p>
+                            </div>
+                            <button onclick="copyToClipboard('profileKspId')" class="h-8 w-8 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 hover:bg-violet-200 transition-all shrink-0" title="Copy ID"><i class="fas fa-copy text-xs"></i></button>
+                        </div>
+                        <!-- Phone -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0"><i class="fas fa-phone text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Phone Number</p><p id="profilePhone" class="text-sm font-black text-slate-900 mt-0.5">--</p></div>
+                        </div>
+                        <!-- Email -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0"><i class="fas fa-envelope text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Email Address</p><p id="profileEmail" class="text-sm font-bold text-slate-700 mt-0.5">--</p></div>
+                        </div>
+                        <!-- Address -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0"><i class="fas fa-map-marker-alt text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Address</p><p id="profileAddress" class="text-sm font-bold text-slate-700 mt-0.5 leading-snug">--</p></div>
+                        </div>
+                        <!-- Wallet Number -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 shrink-0"><i class="fas fa-credit-card text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Wallet / NexCard ID</p>
+                                <p id="profileWalletNo" class="text-sm font-black text-slate-900 mt-0.5 font-mono tracking-wider">--</p>
+                            </div>
+                        </div>
+                        <!-- Balance -->
+                        <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100">
+                            <div class="h-9 w-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0"><i class="fas fa-wallet text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Current Wallet Balance</p><p id="profileBalance" class="text-xl font-black text-emerald-600 mt-0.5">Rs.0</p></div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details Tab -->
+                    <div id="tabBank" class="hidden space-y-3">
+                        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-3">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                            <p class="text-[11px] text-blue-700 font-bold leading-relaxed">These bank details are used for your payout processing. To make any changes, please contact the admin.</p>
+                        </div>
+                        <!-- Account Holder -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0"><i class="fas fa-user text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Account Holder Name</p><p id="profileBankHolder" class="text-sm font-black text-slate-900 mt-0.5">--</p></div>
+                        </div>
+                        <!-- Bank Name -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 shrink-0"><i class="fas fa-building-columns text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Bank Name</p><p id="profileBankName" class="text-sm font-black text-slate-900 mt-0.5">--</p></div>
+                        </div>
+                        <!-- Account Number -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 shrink-0"><i class="fas fa-hashtag text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Account Number</p>
+                                <p id="profileBankAccNo" class="text-sm font-black text-slate-900 mt-0.5 font-mono tracking-widest">--</p>
+                            </div>
+                            <button onclick="copyToClipboard('profileBankAccNo')" class="h-8 w-8 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-300 transition-all shrink-0" title="Copy Account No"><i class="fas fa-copy text-xs"></i></button>
+                        </div>
+                        <!-- IFSC -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0"><i class="fas fa-code text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">IFSC Code</p>
+                                <p id="profileBankIfsc" class="text-sm font-black text-slate-900 mt-0.5 font-mono tracking-widest uppercase">--</p>
+                            </div>
+                            <button onclick="copyToClipboard('profileBankIfsc')" class="h-8 w-8 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-300 transition-all shrink-0" title="Copy IFSC"><i class="fas fa-copy text-xs"></i></button>
+                        </div>
+                        <!-- Bank Address -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="h-9 w-9 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 shrink-0"><i class="fas fa-location-dot text-sm"></i></div>
+                            <div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Bank Branch Address</p><p id="profileBankAddr" class="text-sm font-bold text-slate-700 mt-0.5 leading-snug">--</p></div>
+                        </div>
+                        <!-- No bank details notice -->
+                        <div id="noBankDetailsMsg" class="hidden p-5 text-center">
+                            <div class="h-14 w-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-2xl mb-3"><i class="fas fa-building-columns"></i></div>
+                            <p class="text-sm font-black text-slate-400">Bank details not added yet.</p>
+                            <p class="text-[11px] font-bold text-slate-400 mt-1">Admin se bank details add karwayein payout ke liye.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-5 pb-5 pt-2 shrink-0">
+                    <button onclick="closeProfileModal()" class="w-full h-11 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-700 transition-all text-sm">Close Profile</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Customer Support / Raise Ticket Modal -->
+        <div id="supportModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSupportModal()"></div>
+            <div class="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center text-white text-xl"><i class="fas fa-headset"></i></div>
+                        <div>
+                            <h3 class="text-lg font-black text-white">Customer Support</h3>
+                            <p class="text-amber-100 text-[11px] font-bold">Koi bhi problem report karein</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSupportModal()" class="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-all"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- Success State (hidden by default) -->
+                <div id="supportSuccessState" class="hidden p-10 text-center">
+                    <div class="h-20 w-20 rounded-3xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-4xl mb-5"><i class="fas fa-check-circle"></i></div>
+                    <h3 class="font-black text-slate-900 text-xl">Ticket Submitted!</h3>
+                    <p class="text-slate-500 text-sm font-bold mt-2 leading-relaxed">Ticket ID: <span id="ticketIdDisplay" class="text-slate-900 font-black font-mono"></span><br/>Team 24-48 hours mein respond karega.</p>
+                    <button onclick="closeSupportModal()" class="w-full mt-6 h-12 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-700 transition-all">Close</button>
+                </div>
+                <!-- Form State -->
+                <div id="supportFormState" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scroll">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Issue Category *</label>
+                        <select id="supportCategory" class="block w-full h-12 px-4 mt-1 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition-all">
+                            <option value="">-- Select Category --</option>
+                            <option value="Transaction Issue">Transaction Issue (Recharge/Withdraw)</option>
+                            <option value="Account Blocked">Account Blocked / Login Problem</option>
+                            <option value="Balance Deducted">Balance Deducted - No Service</option>
+                            <option value="Card Generation">Nex Card Generation Issue</option>
+                            <option value="OTP Not Received">OTP Not Received</option>
+                            <option value="Commission Missing">Commission Not Credited</option>
+                            <option value="Other">Other Issue</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Issue Subject *</label>
+                        <input type="text" id="supportSubject" class="block w-full h-12 px-4 mt-1 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition-all" placeholder="Short description of the issue">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Describe Your Problem *</label>
+                        <textarea id="supportDesc" rows="4" class="block w-full px-4 py-3 mt-1 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition-all resize-none" placeholder="Apni problem detail mein likhein... e.g. amount, date, transaction ID"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Priority</label>
+                        <div class="flex gap-2 mt-1">
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="supportPriority" value="Normal" class="sr-only peer" checked><div class="h-10 flex items-center justify-center rounded-xl border-2 border-slate-200 font-black text-xs text-slate-500 peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700 transition-all">Normal</div></label>
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="supportPriority" value="High" class="sr-only peer"><div class="h-10 flex items-center justify-center rounded-xl border-2 border-slate-200 font-black text-xs text-slate-500 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700 transition-all">High</div></label>
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="supportPriority" value="Urgent" class="sr-only peer"><div class="h-10 flex items-center justify-center rounded-xl border-2 border-slate-200 font-black text-xs text-slate-500 peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700 transition-all">Urgent</div></label>
+                        </div>
+                    </div>
+                    <button onclick="submitSupportTicket()" id="supportSubmitBtn" class="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:from-amber-600 hover:to-orange-600">
+                        <i class="fas fa-paper-plane"></i> Submit Ticket
+                    </button>
+                    <p class="text-[10px] text-slate-400 text-center font-bold">Hum 24-48 hours mein contact karenge.</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Change Password Modal -->
         <div id="changePassModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
@@ -208,9 +414,8 @@
                     class="md:col-span-2 bg-gradient-to-r from-blue-600 to-sky-500 rounded-[2rem] p-6 shadow-xl shadow-blue-100 relative overflow-hidden">
                     <div class="relative z-10 flex items-center justify-between h-full">
                         <div class="text-white">
-                            <h3 class="text-xl font-black">Process Withdrawal</h3>
-                            <p class="text-blue-50 text-xs font-bold mt-1 opacity-80">Withdraw cash for any user using
-                                NexCard Wallet.</p>
+                            <h3 class="text-xl font-black">Process Transactions</h3>
+                            <p class="text-blue-50 text-xs font-bold mt-1 opacity-80">Withdraw or Recharge user NexCard Wallets.</p>
                         </div>
                         <i class="fas fa-shield-check text-5xl text-white/20"></i>
                     </div>
@@ -220,13 +425,14 @@
             <!-- Main Actions -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <!-- WITHDRAWAL FLOW -->
-                <section
-                    class="lg:col-span-7 bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
-                    <div class="p-6 border-b-2 border-slate-50 flex items-center justify-between bg-slate-50/50">
-                        <h2 class="text-base font-black text-slate-900 italic">Instant Withdrawal Flow</h2>
-                        <span
-                            class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-full uppercase">OTP
-                            Verified</span>
+                <section id="actionSection"
+                    class="relative lg:col-span-7 bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+                    <div class="p-6 border-b-2 border-slate-50 flex flex-col md:flex-row items-start md:items-center justify-between bg-slate-50/50 gap-4">
+                        <h2 id="flowTitle" class="text-base font-black text-slate-900 italic">Instant Withdrawal Flow</h2>
+                        <div class="flex items-center gap-1 bg-slate-200 p-1.5 rounded-full shadow-inner">
+                            <button onclick="setFlowType('withdraw')" id="btnTabWithdraw" class="px-5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-black bg-white shadow-sm text-blue-600 transition-all">Withdraw</button>
+                            <button onclick="setFlowType('recharge')" id="btnTabRecharge" class="px-5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-black text-slate-500 hover:text-slate-700 transition-all">Recharge</button>
+                        </div>
                     </div>
 
                     <div class="p-8 space-y-8" id="flowContainer">
@@ -303,9 +509,8 @@
                             <div class="mt-8 space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="space-y-2">
-                                        <label
-                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Withdrawal
-                                            Amount</label>
+                                        <label id="amountLabel"
+                                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Withdrawal Amount</label>
                                         <div class="relative group">
                                             <div
                                                 class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -332,9 +537,9 @@
                                     </div>
                                 </div>
 
-                                <button id="withdrawMainBtn" onclick="initiateWithdraw()"
+                                <button id="withdrawMainBtn" onclick="initiateTransaction()"
                                     class="w-full h-16 bg-slate-900 text-white rounded-[1.25rem] font-black text-lg shadow-xl hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
-                                    <span>Send Verification OTP</span>
+                                    <span id="mainBtnText">Send Verification OTP</span>
                                     <i class="fas fa-bolt-lightning text-amber-400"></i>
                                 </button>
 
@@ -351,7 +556,7 @@
                 <section class="lg:col-span-5 space-y-6">
                     <div class="bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl p-6 h-full flex flex-col">
                         <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-base font-black text-slate-900 italic">Recent Withdrawals</h2>
+                            <h2 class="text-base font-black text-slate-900 italic">Recent Transactions</h2>
                             <button onclick="loadStats()"
                                 class="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-blue-500 transition-colors">
                                 <i class="fas fa-rotate"></i>
@@ -406,11 +611,12 @@
     </style>
 
     <script>
-        const API_BASE = 'https://demo.ranx24.com/api';
+        const API_BASE = 'http://192.168.31.124:5500/api';
         
         const AUTH_TOKEN = localStorage.getItem('kspToken');
         let selectedUser = null;
         let otpSent = false;
+        let currentFlow = 'withdraw'; // 'withdraw' | 'recharge'
 
         // Global Fetch Interceptor for 401 Unauthorized
         const originalFetch = window.fetch;
@@ -428,13 +634,48 @@
 
         async function loadStats() {
             try {
-                const res = await fetch(`${API_BASE}/ksp/stats`, {
+                const res = await fetch(`${API_BASE}/ksp/stats?v=${Date.now()}`, {
                     headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
                 });
                 const data = await res.json();
                 if (res.ok) {
                     document.getElementById('kspBalance').textContent = `₹${((data && data.balance) || 0).toLocaleString()}`;
                     document.getElementById('kspPartnerName').textContent = (data && data.name) || 'Partner';
+                    
+                    const badge = document.getElementById('kspStatusBadge');
+                    if (badge && data && data.status) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = data.status;
+                        if (data.status === 'approved') badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-emerald-100 text-emerald-700";
+                        else if (data.status === 'blocked') badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-rose-100 text-rose-700";
+                        else badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-amber-100 text-amber-700";
+                    }
+
+                    if (data && data.status !== 'approved') {
+                        const existingOverlay = document.getElementById('kspInactiveOverlay');
+                        if (!existingOverlay) {
+                            const overlay = document.createElement('div');
+                            overlay.id = 'kspInactiveOverlay';
+                            overlay.className = "absolute inset-0 bg-slate-900/10 backdrop-blur-[3px] z-[55] flex items-center justify-center rounded-[2.5rem]";
+                            overlay.innerHTML = `<div class="bg-white px-6 py-5 rounded-[2rem] shadow-2xl border-2 border-rose-100/50 text-center space-y-3 animate-[fadeIn_0.4s_ease-out]"><div class="h-14 w-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto text-2xl shadow-sm"><i class="fas fa-ban"></i></div><div><h3 class="font-black text-slate-900 text-lg tracking-tight">Account Inactive</h3><p class="text-xs text-slate-500 font-bold mt-1 leading-tight">Your franchise status is <span class="uppercase text-rose-600 font-black">${data.status}</span>.<br/>Please contact Khetify Admin.</p></div></div>`;
+                            const actionSection = document.getElementById('actionSection');
+                            if (actionSection) actionSection.appendChild(overlay);
+                        }
+                    }
+
+                    // kspType badge
+                    const typeBadge = document.getElementById('kspTypeBadge');
+                    if (typeBadge && data.kspType) {
+                        typeBadge.textContent = data.kspType;
+                        typeBadge.classList.remove('hidden');
+                        typeBadge.className = data.kspType === 'KSP Prime'
+                            ? 'inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-amber-100 text-amber-700'
+                            : 'inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-violet-100 text-violet-700';
+                    }
+
+                    // Cache profile data globally for Profile modal
+                    window._kspProfileData = data;
+
                     renderTransactions(data && data.recentTransactions);
                 } else {
                     if (data.error === 'Not authorized, token failed') {
@@ -447,6 +688,121 @@
             } catch (err) {
                 console.error('Stats load error', err);
                 showToast(`Stats error: ${err.message || 'Check connection'}`, 'error');
+            }
+        }
+
+        /* ---- Profile Modal ---- */
+        function openProfileModal() {
+            const d = window._kspProfileData || {};
+            console.log('[KSP-FRONTEND-DEBUG] DATA:', d);
+            console.log('[KSP-FRONTEND-DEBUG] kspPartnerId:', d.kspPartnerId);
+            console.log('[KSP-FRONTEND-DEBUG] kspId:', d.kspId);
+            // Header
+            document.getElementById('profileName').textContent = d.name || '--';
+            document.getElementById('profileBizName').textContent = d.businessName || 'KSP Partner';
+            document.getElementById('profileTypeBadge').textContent = d.kspType || 'KSP Digital';
+            const sBadge = document.getElementById('profileStatusBadge2');
+            sBadge.textContent = (d.status || 'unknown').toUpperCase();
+            if (d.status === 'approved') sBadge.className = 'px-2.5 py-0.5 bg-emerald-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest';
+            else if (d.status === 'blocked') sBadge.className = 'px-2.5 py-0.5 bg-rose-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest';
+            else sBadge.className = 'px-2.5 py-0.5 bg-amber-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest';
+
+            // Account Details tab
+            document.getElementById('profileKspId').textContent = d.kspPartnerId || d.kspId || '--';
+            document.getElementById('profilePhone').textContent = d.phone || '--';
+            document.getElementById('profileEmail').textContent = d.email || 'Not Set';
+            document.getElementById('profileAddress').textContent = d.address || '--';
+            document.getElementById('profileWalletNo').textContent = d.walletNumber || 'Not Assigned';
+            document.getElementById('profileBalance').textContent = `Rs.${((d.balance || 0).toLocaleString('en-IN'))}`;
+
+            // Bank Details tab
+            const bd = d.bankDetails || {};
+            const hasBankDetails = bd.accountNumber || bd.bankName || bd.holderName;
+            document.getElementById('noBankDetailsMsg').classList.toggle('hidden', !!hasBankDetails);
+            document.getElementById('profileBankHolder').textContent = bd.holderName || 'Not Added';
+            document.getElementById('profileBankName').textContent = bd.bankName || 'Not Added';
+            document.getElementById('profileBankAccNo').textContent = bd.accountNumber || '--';
+            document.getElementById('profileBankIfsc').textContent = bd.ifscCode || '--';
+            document.getElementById('profileBankAddr').textContent = bd.bankAddress || '--';
+
+            // Reset to Account tab
+            switchProfileTab('account');
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+
+        function switchProfileTab(tab) {
+            const isAcc = tab === 'account';
+            document.getElementById('tabAccount').classList.toggle('hidden', !isAcc);
+            document.getElementById('tabBank').classList.toggle('hidden', isAcc);
+            document.getElementById('tabBtnAccount').className = isAcc
+                ? 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all bg-violet-600 text-white shadow-sm'
+                : 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-700';
+            document.getElementById('tabBtnBank').className = !isAcc
+                ? 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all bg-violet-600 text-white shadow-sm'
+                : 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-700';
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId)?.textContent?.trim();
+            if (!text || text === '--') return showToast('Kuch copy nahi hua', 'error');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Copy failed', 'error');
+            });
+        }
+
+        /* ---- Support / Ticket Modal ---- */
+        function openSupportModal() {
+            document.getElementById('supportModal').classList.remove('hidden');
+            document.getElementById('supportSuccessState').classList.add('hidden');
+            document.getElementById('supportFormState').classList.remove('hidden');
+        }
+        function closeSupportModal() { document.getElementById('supportModal').classList.add('hidden'); }
+
+        async function submitSupportTicket() {
+            const category = document.getElementById('supportCategory').value;
+            const subject = document.getElementById('supportSubject').value.trim();
+            const desc = document.getElementById('supportDesc').value.trim();
+            const priority = document.querySelector('input[name="supportPriority"]:checked')?.value || 'Normal';
+
+            if (!category) return showToast('Category select karein', 'error');
+            if (!subject) return showToast('Subject likhein', 'error');
+            if (!desc || desc.length < 10) return showToast('Thoda aur detail mein likhein', 'error');
+
+            const btn = document.getElementById('supportSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Submitting...';
+
+            try {
+                const d = window._kspProfileData || {};
+                const res = await fetch(`${API_BASE}/ksp/support-ticket`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+                    body: JSON.stringify({ category, subject, description: desc, priority, partnerName: d.name, partnerPhone: d.phone })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('supportFormState').classList.add('hidden');
+                    document.getElementById('supportSuccessState').classList.remove('hidden');
+                    document.getElementById('ticketIdDisplay').textContent = data.ticketId || 'TKT-' + Date.now().toString().slice(-6);
+                    // Reset form
+                    document.getElementById('supportCategory').value = '';
+                    document.getElementById('supportSubject').value = '';
+                    document.getElementById('supportDesc').value = '';
+                } else {
+                    showToast(data.error || 'Submission failed', 'error');
+                }
+            } catch (err) {
+                // If API not available, show mock success
+                document.getElementById('supportFormState').classList.add('hidden');
+                document.getElementById('supportSuccessState').classList.remove('hidden');
+                document.getElementById('ticketIdDisplay').textContent = 'TKT-' + Date.now().toString().slice(-6);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Ticket';
             }
         }
 
@@ -571,18 +927,38 @@
             document.getElementById('userWallet').textContent = `₹${(user.walletBalance || 0).toLocaleString()}`;
         }
 
-        async function initiateWithdraw() {
+        function setFlowType(type) {
+            if (otpSent) return showToast('Please cancel the active transaction first', 'error');
+            currentFlow = type;
+            document.getElementById('flowTitle').textContent = type === 'withdraw' ? 'Instant Withdrawal Flow' : 'Instant Recharge Flow';
+            
+            if (type === 'withdraw') {
+                document.getElementById('btnTabWithdraw').className = 'px-5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-black bg-white shadow-sm text-blue-600 transition-all';
+                document.getElementById('btnTabRecharge').className = 'px-5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-black text-slate-500 hover:text-slate-700 transition-all';
+                document.getElementById('amountLabel').textContent = 'Withdrawal Amount';
+            } else {
+                document.getElementById('btnTabRecharge').className = 'px-5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-black bg-white shadow-sm text-emerald-600 transition-all';
+                document.getElementById('btnTabWithdraw').className = 'px-5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-black text-slate-500 hover:text-slate-700 transition-all';
+                document.getElementById('amountLabel').textContent = 'Recharge Amount';
+            }
+        }
+
+        async function initiateTransaction() {
             if (!otpSent) {
                 // Step 1: Request OTP
                 const amt = document.getElementById('withdrawAmount').value;
                 if (!amt || amt <= 0) return showToast('Enter valid amount', 'error');
 
                 const btn = document.getElementById('withdrawMainBtn');
-                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Sending OTP...';
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing Request...';
                 btn.disabled = true;
 
+                const url = currentFlow === 'withdraw' 
+                            ? `${API_BASE}/ksp/withdraw/request-otp`
+                            : `${API_BASE}/ksp/recharge/request-otp`;
+
                 try {
-                    const res = await fetch(`${API_BASE}/ksp/withdraw/request-otp`, {
+                    const res = await fetch(url, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: selectedUser._id, amount: amt })
@@ -591,9 +967,9 @@
                         otpSent = true;
                         document.getElementById('otpBox').classList.remove('hidden');
                         setTimeout(() => document.getElementById('otpBox').style.opacity = '1', 50);
-                        btn.innerHTML = 'Confirm & Finalize Withdrawal';
+                        btn.innerHTML = currentFlow === 'withdraw' ? 'Confirm Withdrawal' : 'Confirm Recharge';
                         btn.className = "w-full h-16 bg-emerald-600 text-white rounded-[1.25rem] font-black text-lg shadow-xl shadow-emerald-100 hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-3";
-                        showToast('OTP sent to user phone!', 'success');
+                        showToast(`OTP sent to ${selectedUser.name}'s phone!`, 'success');
                     } else {
                         const d = await res.json();
                         showToast(d.error || 'Failed to send OTP', 'error');
@@ -604,7 +980,7 @@
                 }
                 finally { btn.disabled = false; }
             } else {
-                // Step 2: Confirm Withdrawal
+                // Step 2: Confirm Transaction
                 const amt = document.getElementById('withdrawAmount').value;
                 const otp = document.getElementById('withdrawOtp').value;
                 if (!otp || otp.length < 4) return showToast('Enter valid 4-digit OTP', 'error');
@@ -613,28 +989,37 @@
                 btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
                 btn.disabled = true;
 
+                const url = currentFlow === 'withdraw' 
+                            ? `${API_BASE}/ksp/withdraw/confirm`
+                            : `${API_BASE}/ksp/recharge/confirm`;
+
                 try {
-                    const res = await fetch(`${API_BASE}/ksp/withdraw/confirm`, {
+                    const res = await fetch(url, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: selectedUser._id, amount: amt, otp: otp })
                     });
                     const d = await res.json();
                     if (res.ok) {
-                        const successMsg = `SUCCESS! Withdrawal Completed.\nPrincipal: ₹${d.data.principal}\nCommission: ₹${d.data.commission}\nTotal Credited: ₹${d.data.totalCredited}`;
+                        let successMsg = '';
+                        if (currentFlow === 'withdraw') {
+                            successMsg = `SUCCESS! Withdrawal Completed.\nPrincipal: ₹${d.data.principal}\nCommission: ₹${d.data.commission}`;
+                        } else {
+                            successMsg = `SUCCESS! Recharge Completed.\nAmount: ₹${d.data.principalRecharged}\nCommission Earned: ₹${d.data.commissionEarned}`;
+                        }
                         showToast(successMsg, 'success');
                         setTimeout(() => resetFlow(), 3500);
                         loadStats();
                     } else {
-                        showToast(d.error || 'Withdrawal failed', 'error');
+                        showToast(d.error || `${currentFlow} failed`, 'error');
                     }
                 } catch (e) { 
-                    console.error('Withdraw confirm error:', e);
-                    showToast(`Withdrawal error: ${e.message}`, 'error'); 
+                    console.error('Transaction confirm error:', e);
+                    showToast(`Transaction error: ${e.message}`, 'error'); 
                 }
                 finally {
                     btn.disabled = false;
-                    if (otpSent) btn.innerHTML = 'Confirm & Finalize Withdrawal';
+                    if (otpSent) btn.innerHTML = currentFlow === 'withdraw' ? 'Confirm Withdrawal' : 'Confirm Recharge';
                 }
             }
         }
@@ -651,7 +1036,7 @@
             document.getElementById('stepSearch').classList.remove('hidden');
 
             const btn = document.getElementById('withdrawMainBtn');
-            btn.innerHTML = '<span>Send Verification OTP</span> <i class="fas fa-bolt-lightning text-amber-400"></i>';
+            btn.innerHTML = '<span id="mainBtnText">Send Verification OTP</span> <i class="fas fa-bolt-lightning text-amber-400"></i>';
             btn.className = "w-full h-16 bg-slate-900 text-white rounded-[1.25rem] font-black text-lg shadow-xl hover:bg-slate-800 active:scale-[0.98] transition-all flex items-center justify-center gap-3";
         }
 

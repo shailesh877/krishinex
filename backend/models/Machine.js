@@ -41,7 +41,13 @@ const MachineSchema = new mongoose.Schema({
     location: {
         type: { type: String, enum: ['Point'], default: 'Point' },
         coordinates: { type: [Number] } // [lng, lat]
-    }
+    },
+    subMachinery: [{
+        name: { type: String, required: true },
+        image: { type: String, default: '' },
+        priceDay: { type: Number, default: 0 },
+        priceKattha: { type: Number, default: 0 }
+    }]
 }, { timestamps: true });
 
 MachineSchema.index({ location: '2dsphere' });
