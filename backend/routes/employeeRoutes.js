@@ -3017,12 +3017,12 @@ router.get('/admin/labours', protect, checkModule('labour'), async (req, res) =>
 });
 
 // @route   PUT /api/employee/admin/labour/update/:id
-// @desc    Admin: Update any field of a labourer (bypassing restriction)
+// @desc    Admin: Update any field of a labourer
 // @access  Private/Admin
-router.put('/admin/labour/update/:id', protect, checkModule('labour'), async (req, res) => {
+router.put(['/admin/labour/update/:id', '/admin/labourers/:id'], protect, checkModule('labour'), async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
-        if (!user || user.role !== 'labour') return res.status(404).json({ error: 'Labourer not found' });
+        if (!user) return res.status(404).json({ error: 'Labourer profile not found' });
 
         // Update basic fields
         if (req.body.name) {
@@ -3030,9 +3030,11 @@ router.put('/admin/labour/update/:id', protect, checkModule('labour'), async (re
             user.businessName = req.body.name;
         }
         if (req.body.phone) user.phone = req.body.phone;
-        if (req.body.email) user.email = req.body.email;
+        if (req.body.email && typeof req.body.email === 'string' && req.body.email.trim() !== '') {
+            user.email = req.body.email.trim();
+        }
         if (req.body.address) user.address = req.body.address;
-        if (req.body.aadhaarNumber) user.aadhaarNumber = req.body.aadhaarNumber;
+        if (req.body.aadhaarNumber !== undefined) user.aadhaarNumber = req.body.aadhaarNumber;
 
         // Update Bank Details
         if (req.body.bankDetails) {
@@ -3048,21 +3050,20 @@ router.put('/admin/labour/update/:id', protect, checkModule('labour'), async (re
         }
 
         // Update Labour Details (Skills & Description)
-        if (user.role === 'labour') {
-            if (!user.labourDetails) user.labourDetails = { skills: [] };
-            if (req.body.skills !== undefined) {
-                user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
-            }
-            if (req.body.skillDescription !== undefined) {
-                user.labourDetails.skillDescription = req.body.skillDescription;
-            }
-            user.markModified('labourDetails');
+        if (!user.labourDetails) user.labourDetails = { skills: [] };
+        if (req.body.skills !== undefined) {
+            user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
         }
+        if (req.body.skillDescription !== undefined) {
+            user.labourDetails.skillDescription = req.body.skillDescription;
+        }
+        user.markModified('labourDetails');
 
-        await user.save();
-        res.json({ message: 'Labourer profile updated successfully by Admin', user });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        await user.save({ validateBeforeSave: false });
+        res.json({ message: 'Labourer profile updated successfully', user });
+    } catch (e) {
+        console.error('Update labourer profile error:', e);
+        res.status(500).json({ error: 'Unable to update profile. Please try again.' });
     }
 });
 
@@ -3650,15 +3651,13 @@ router.put('/admin/rental/partners/:id/status', protect, checkModule('equipment'
         const valid = ['pending', 'approved', 'blocked', 'rejected'];
         if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
-        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        const partner = await User.findByIdAndUpdate(req.params.id, { status }, { new: true, runValidators: false });
         if (!partner) return res.status(404).json({ error: 'Partner not found' });
 
-        partner.status = status;
-        await partner.save();
         res.json({ message: `Partner status updated to ${status}`, status: partner.status });
     } catch (e) {
         console.error('Partner status update error:', e);
-        res.status(500).json({ error: 'Failed to update partner status' });
+        res.status(500).json({ error: e.message || 'Failed to update partner status' });
     }
 });
 
@@ -3669,11 +3668,11 @@ router.put('/admin/rental/partners/:id/bank', protect, checkModule('equipment'),
     console.log(`[DEBUG] Bank update request for ID: ${req.params.id}`);
     try {
         const { holderName, bankName, accountNumber, ifscCode } = req.body;
-        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        const partner = await User.findById(req.params.id);
         if (!partner) return res.status(404).json({ error: 'Partner not found' });
 
         const currentDetails = partner.bankDetails || {};
-        partner.bankDetails = {
+        const bankDetails = {
             holderName: holderName || currentDetails.holderName || '',
             bankName: bankName || currentDetails.bankName || '',
             accountNumber: accountNumber || currentDetails.accountNumber || '',
@@ -3682,11 +3681,11 @@ router.put('/admin/rental/partners/:id/bank', protect, checkModule('equipment'),
             bankDocUrl: currentDetails.bankDocUrl || ''
         };
 
-        await partner.save();
-        res.json({ message: 'Bank details updated successfully', bankDetails: partner.bankDetails });
+        const updated = await User.findByIdAndUpdate(req.params.id, { bankDetails }, { new: true, runValidators: false });
+        res.json({ message: 'Bank details updated successfully', bankDetails: updated.bankDetails });
     } catch (e) {
         console.error('Partner bank update error:', e);
-        res.status(500).json({ error: 'Failed to update bank details' });
+        res.status(500).json({ error: e.message || 'Failed to update bank details' });
     }
 });
 
@@ -3698,20 +3697,56 @@ router.put('/admin/rental/partners/:id/profile', protect, checkModule('equipment
         const { name, businessName, phone, email, address } = req.body;
         if (!name || !phone) return res.status(400).json({ error: 'Name and Phone are required' });
 
-        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        const updateFields = { name, businessName, phone };
+        if (email && typeof email === 'string' && email.trim() !== '') {
+            updateFields.email = email.trim();
+        }
+        if (address) updateFields.address = address;
+
+        const partner = await User.findByIdAndUpdate(req.params.id, updateFields, { new: true, runValidators: false });
         if (!partner) return res.status(404).json({ error: 'Partner not found' });
 
-        partner.name = name;
-        partner.businessName = businessName;
-        partner.phone = phone;
-        partner.email = email;
-        partner.address = address || partner.address;
-
-        await partner.save();
         res.json({ message: 'Profile updated successfully', partner });
     } catch (e) {
         console.error('Partner profile update error:', e);
-        res.status(500).json({ error: 'Failed to update profile' });
+        res.status(500).json({ error: e.message || 'Failed to update profile' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/update/:id
+// @desc    Update labourer profile details by admin
+// @access  Private/Admin
+router.put(['/admin/labour/update/:id', '/admin/labourers/:id'], protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { name, phone, aadhaarNumber, address, bankDetails, skillDescription, skills } = req.body;
+        if (!name || !phone) {
+            return res.status(400).json({ error: 'Name and Phone number are required' });
+        }
+
+        const updateData = { name, phone };
+        if (aadhaarNumber !== undefined) updateData.aadhaarNumber = aadhaarNumber;
+        if (address !== undefined) updateData.address = address;
+        if (bankDetails) updateData.bankDetails = bankDetails;
+
+        if (skillDescription !== undefined || skills !== undefined) {
+            updateData['labourDetails.skillDescription'] = skillDescription || '';
+            if (skills) updateData['labourDetails.skills'] = Array.isArray(skills) ? skills : [skills];
+        }
+
+        const updatedLabour = await User.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true, runValidators: false }
+        ).select('-password');
+
+        if (!updatedLabour) {
+            return res.status(404).json({ error: 'Labourer profile not found' });
+        }
+
+        res.json({ message: 'Labourer profile updated successfully', labour: updatedLabour });
+    } catch (e) {
+        console.error('Update labourer profile error:', e);
+        res.status(500).json({ error: 'Unable to update labourer profile. Please check details and try again.' });
     }
 });
 

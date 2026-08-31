@@ -576,107 +576,109 @@
             </div>
           </div>
 
-          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
-            <table class="min-w-full border-separate border-spacing-0">
+          <div class="overflow-x-auto custom-scroll" style="max-height: 400px;">
+            <table class="w-full text-left border-collapse table-auto">
               <thead class="sticky top-0 z-10 bg-slate-50">
-                <tr class="text-xs text-slate-700">
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Executive</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Assigned Area</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Active Tasks</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Completed</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total Coll.</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-purple-600">Cash on Hand</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
-                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                <tr class="text-[11px] text-slate-700 uppercase tracking-wider">
+                  <th class="font-black px-3 py-3 border-b-2 border-slate-200">Executive</th>
+                  <th class="font-black px-3 py-3 border-b-2 border-slate-200">Contact</th>
+                  <th class="font-black px-3 py-3 border-b-2 border-slate-200">Assigned Area</th>
+                  <th class="text-right font-black px-3 py-3 border-b-2 border-slate-200">Active Tasks</th>
+                  <th class="text-right font-black px-3 py-3 border-b-2 border-slate-200">Completed</th>
+                  <th class="text-right font-black px-3 py-3 border-b-2 border-slate-200">Total Coll.</th>
+                  <th class="text-right font-black px-3 py-3 border-b-2 border-slate-200 text-purple-600">Cash on Hand</th>
+                  <th class="font-black px-3 py-3 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-3 py-3 border-b-2 border-slate-200">Actions</th>
                 </tr>
               </thead>
               <tbody id="executivesTbody">
                 <!-- Executive 1 -->
                 <tr class="hover:bg-cyan-50/30 transition-colors border-b border-slate-100">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-user-tag text-cyan-600"></i>
+                  <td class="px-3 py-2.5">
+                    <div class="flex items-center gap-2">
+                      <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm shrink-0">
+                        <i class="fas fa-user-tag text-cyan-600 text-xs"></i>
                       </div>
-                      <div>
-                        <div class="font-black text-slate-900">Rahul Verma</div>
+                      <div class="min-w-0">
+                        <div class="font-black text-slate-900 text-xs truncate">Rahul Verma</div>
                         <div class="text-[10px] text-slate-500 font-medium">ID: FE001</div>
                       </div>
                     </div>
                   </td>
-                  <td class="px-5 py-4">
-                    <div class="font-semibold text-slate-900">98XXX88000</div>
-                    <div class="text-[10px] text-slate-500">rahul@krishinex.com</div>
+                  <td class="px-3 py-2.5">
+                    <div class="font-semibold text-slate-900 text-xs">98XXX88000</div>
+                    <div class="text-[10px] text-slate-500 truncate">rahul@krishinex.com</div>
                   </td>
-                  <td class="px-5 py-4">
-                    <div class="font-semibold text-slate-900">Karnal District</div>
+                  <td class="px-3 py-2.5">
+                    <div class="font-semibold text-slate-900 text-xs">Karnal District</div>
                     <div class="text-[10px] text-slate-500">10 villages</div>
                   </td>
-                  <td class="px-5 py-4 text-right">
-                    <div class="font-black text-sky-700">8</div>
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-sky-700 text-xs">8</div>
                   </td>
-                  <td class="px-5 py-4 text-right">
-                    <div class="font-black text-emerald-700">45</div>
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-emerald-700 text-xs">45</div>
                   </td>
-                  <td class="px-5 py-4 text-right">
-                    <div class="font-black text-purple-700">₹1.2 L</div>
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-purple-700 text-xs">₹1.2 L</div>
                   </td>
-                  <td class="px-5 py-4">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-purple-800 text-xs">₹12,500</div>
+                  </td>
+                  <td class="px-3 py-2.5">
+                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-circle-dot mr-1 text-[7px]"></i> Active
                     </span>
                   </td>
-                  <td class="px-5 py-4 text-right">
+                  <td class="px-3 py-2.5 text-right">
                     <button onclick="viewExecutive('FE001', 'Rahul Verma')"
-                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-2.5 py-1 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
                       <i class="fas fa-eye mr-1"></i> View
                     </button>
                   </td>
                 </tr>
 
                 <!-- Executive 2 -->
-                <tr class="hover:bg-sky-50/30 transition-colors">
-                  <td class="px-5 py-4">
-                    <div class="flex items-center gap-3">
-                      <div
-                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-sky-100 to-blue-100 flex items-center justify-center shadow-sm">
-                        <i class="fas fa-user-tag text-sky-600"></i>
+                <tr class="hover:bg-sky-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-3 py-2.5">
+                    <div class="flex items-center gap-2">
+                      <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-sky-100 to-blue-100 flex items-center justify-center shadow-sm shrink-0">
+                        <i class="fas fa-user-tag text-sky-600 text-xs"></i>
                       </div>
-                      <div>
-                        <div class="font-black text-slate-900">Priya Singh</div>
+                      <div class="min-w-0">
+                        <div class="font-black text-slate-900 text-xs truncate">Priya Singh</div>
                         <div class="text-[10px] text-slate-500 font-medium">ID: FE002</div>
                       </div>
                     </div>
                   </td>
-                  <td class="px-5 py-4">
-                    <div class="font-semibold text-slate-900">89XXX99000</div>
-                    <div class="text-[10px] text-slate-500">priya@krishinex.com</div>
+                  <td class="px-3 py-2.5">
+                    <div class="font-semibold text-slate-900 text-xs">89XXX99000</div>
+                    <div class="text-[10px] text-slate-500 truncate">priya@krishinex.com</div>
                   </td>
-                  <td class="px-5 py-4">
-                    <div class="font-semibold text-slate-900">Panipat District</div>
+                  <td class="px-3 py-2.5">
+                    <div class="font-semibold text-slate-900 text-xs">Panipat District</div>
                     <div class="text-[10px] text-slate-500">8 villages</div>
                   </td>
-                  <td class="px-5 py-4 text-right">
-                    <div class="font-black text-sky-700">5</div>
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-sky-700 text-xs">5</div>
                   </td>
-                  <td class="px-5 py-4 text-right">
-                    <div class="font-black text-emerald-700">38</div>
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-emerald-700 text-xs">38</div>
                   </td>
-                  <td class="px-5 py-4 text-right">
-                    <div class="font-black text-purple-700">₹86,000</div>
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-purple-700 text-xs">₹86,000</div>
                   </td>
-                  <td class="px-5 py-4">
-                    <span
-                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
-                      <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+                  <td class="px-3 py-2.5 text-right">
+                    <div class="font-black text-purple-800 text-xs">₹8,400</div>
+                  </td>
+                  <td class="px-3 py-2.5">
+                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-circle-dot mr-1 text-[7px]"></i> Active
                     </span>
                   </td>
-                  <td class="px-5 py-4 text-right">
+                  <td class="px-3 py-2.5 text-right">
                     <button onclick="viewExecutive('FE002', 'Priya Singh')"
-                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-2.5 py-1 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
                       <i class="fas fa-eye mr-1"></i> View
                     </button>
                   </td>
@@ -894,8 +896,7 @@
   </div>
 
   <!-- Toast -->
-  <div id="toast"
-    class="fixed bottom-6 right-6 z-[100] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+  <div id="toast" class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
     <p id="toastMessage" class="text-sm font-bold"></p>
   </div>
 
@@ -1674,7 +1675,7 @@
       tbody.innerHTML = '';
 
       if (execs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-500">No field executives found...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-slate-500 font-semibold">No field executives found...</td></tr>`;
         return;
       }
 
@@ -1685,55 +1686,55 @@
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-cyan-50/30 transition-colors border-b border-slate-100';
         tr.innerHTML = `
-          <td class="px-5 py-4">
-            <div class="flex items-center gap-3">
-              <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm">
-                <i class="fas fa-user-tag text-cyan-600"></i>
+          <td class="px-3 py-2.5">
+            <div class="flex items-center gap-2">
+              <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-100 to-sky-100 flex items-center justify-center shadow-sm shrink-0">
+                <i class="fas fa-user-tag text-cyan-600 text-xs"></i>
               </div>
-              <div>
-                <div class="font-black text-slate-900">${exec.name}</div>
+              <div class="min-w-0">
+                <div class="font-black text-slate-900 text-xs truncate">${exec.name}</div>
                 <div class="text-[10px] text-slate-500 font-medium">ID: ${exec.employeeCode || 'N/A'}</div>
               </div>
             </div>
           </td>
-          <td class="px-5 py-4">
-            <div class="font-semibold text-slate-900">${exec.phone}</div>
-            <div class="text-[10px] text-slate-500">${exec.email || 'No email provided'}</div>
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-slate-900 text-xs">${exec.phone}</div>
+            <div class="text-[10px] text-slate-500 truncate max-w-[130px]" title="${exec.email || ''}">${exec.email || 'No email'}</div>
           </td>
-          <td class="px-5 py-4">
-            <div class="font-semibold text-slate-900">${exec.assignedArea}</div>
+          <td class="px-3 py-2.5">
+            <div class="font-semibold text-slate-900 text-xs truncate max-w-[140px]" title="${exec.assignedArea}">${exec.assignedArea}</div>
           </td>
-          <td class="px-5 py-4 text-right">
-            <div class="font-black text-sky-700">${exec.activeTasks || 0}</div>
+          <td class="px-3 py-2.5 text-right">
+            <div class="font-black text-sky-700 text-xs">${exec.activeTasks || 0}</div>
           </td>
-          <td class="px-5 py-4 text-right">
-            <div class="font-black text-emerald-700">${exec.completed || 0}</div>
+          <td class="px-3 py-2.5 text-right">
+            <div class="font-black text-emerald-700 text-xs">${exec.completed || 0}</div>
           </td>
-          <td class="px-5 py-4 text-right">
-            <div class="font-black text-slate-700">₹${(exec.collections || 0).toLocaleString()}</div>
+          <td class="px-3 py-2.5 text-right">
+            <div class="font-black text-slate-700 text-xs">₹${(exec.collections || 0).toLocaleString()}</div>
           </td>
-          <td class="px-5 py-4 text-right">
-            <div class="font-black text-purple-700">₹${(exec.collectedCash || 0).toLocaleString()}</div>
+          <td class="px-3 py-2.5 text-right">
+            <div class="font-black text-purple-700 text-xs">₹${(exec.collectedCash || 0).toLocaleString()}</div>
           </td>
-          <td class="px-5 py-4">
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black border ${badgeClass}">
-              <i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active
+          <td class="px-3 py-2.5">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black border ${badgeClass}">
+              <i class="fas fa-circle-dot mr-1 text-[7px]"></i> ${exec.status === 'approved' ? 'Active' : exec.status || 'Pending'}
             </span>
           </td>
-          <td class="px-5 py-4 text-right">
-            <div class="flex items-center justify-end gap-2">
+          <td class="px-3 py-2.5 text-right">
+            <div class="flex items-center justify-end gap-1.5">
               <button onclick="toggleExecutiveStatus('${exec._id}', '${exec.status}')" 
-                class="inline-flex items-center rounded-lg border-2 ${exec.status === 'approved' ? 'border-amber-200 text-amber-600 hover:bg-amber-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'} px-3 py-1.5 text-[10px] font-bold transition-all"
+                class="inline-flex items-center rounded-lg border-2 ${exec.status === 'approved' ? 'border-amber-200 text-amber-600 hover:bg-amber-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'} px-2 py-1 text-[10px] font-bold transition-all"
                 title="${exec.status === 'approved' ? 'Deactivate' : 'Activate'} Executive">
                 <i class="fas ${exec.status === 'approved' ? 'fa-user-slash' : 'fa-user-check'}"></i>
               </button>
               <button onclick="collectCash('${exec._id}', '${exec.name}', ${exec.collectedCash || 0})" 
-                class="inline-flex items-center rounded-lg bg-white border-2 border-purple-200 px-3 py-1.5 text-[10px] text-purple-700 font-bold hover:bg-purple-50 transition-all ${exec.collectedCash > 0 ? '' : 'opacity-50 pointer-events-none'}" 
+                class="inline-flex items-center rounded-lg bg-white border-2 border-purple-200 px-2 py-1 text-[10px] text-purple-700 font-bold hover:bg-purple-50 transition-all ${exec.collectedCash > 0 ? '' : 'opacity-50 pointer-events-none'}" 
                 title="Collect Cash from FE">
                 <i class="fas fa-hand-holding-dollar mr-1"></i> Collect
               </button>
               <button onclick="viewExecutive('${exec._id}')" 
-                class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                class="inline-flex items-center rounded-lg border-2 border-slate-200 px-2 py-1 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
                 <i class="fas fa-eye mr-1"></i> View
               </button>
             </div>
@@ -2360,7 +2361,7 @@
         textColor = 'text-sky-900';
       }
 
-      toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toast.className = `fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
       toastMessage.className = `text-sm font-bold ${textColor}`;
       toastMessage.textContent = message;
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -787,8 +787,7 @@ CASH COLLECTIONS TABLE
   </div>
 
   <!-- Toast -->
-  <div id="toast"
-    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+  <div id="toast" class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
     <p id="toastMsg" class="text-sm font-bold"></p>
   </div>
 
@@ -813,7 +812,7 @@ CASH COLLECTIONS TABLE
     // ── Toast ──────────────────────────────────────────────────────────────
     function toast(msg, type = 'success') {
       const t = document.getElementById('toast'), m = document.getElementById('toastMsg');
-      t.className = 'fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]';
+      t.className = 'fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]';
       if (type === 'success') t.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
       else t.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-800');
       m.textContent = msg;

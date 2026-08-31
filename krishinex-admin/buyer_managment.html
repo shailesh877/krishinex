@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -902,8 +902,7 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast"
-        class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <div id="toast" class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
         <p id="toastMessage" class="text-sm font-bold"></p>
     </div>
 
@@ -2111,7 +2110,7 @@
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast'), msg = document.getElementById('toastMessage');
             const cfg = { success: ['from-emerald-50 to-emerald-100', 'border-emerald-300', 'text-emerald-900'], warning: ['from-amber-50 to-amber-100', 'border-amber-300', 'text-amber-900'], info: ['from-sky-50 to-sky-100', 'border-sky-300', 'text-sky-900'] }[type] || ['bg-white', 'border-slate-300', 'text-slate-900'];
-            toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] bg-gradient-to-r ${cfg[0]} ${cfg[1]}`;
+            toast.className = `fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] bg-gradient-to-r ${cfg[0]} ${cfg[1]}`;
             msg.className = `text-sm font-bold ${cfg[2]}`; msg.textContent = message;
             toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 3500);
         }

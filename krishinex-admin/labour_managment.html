@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -1032,8 +1032,7 @@
   </div>
 
   <!-- Toast -->
-  <div id="toast"
-    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+  <div id="toast" class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
     <p id="toastMessage" class="text-sm font-bold"></p>
   </div>
 
@@ -2058,7 +2057,7 @@
       if (type === 'success') { bgColor = 'bg-emerald-50'; borderColor = 'border-emerald-300'; textColor = 'text-emerald-900'; }
       else if (type === 'warning') { bgColor = 'bg-rose-50'; borderColor = 'border-rose-300'; textColor = 'text-rose-900'; }
 
-      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl ${bgColor} ${borderColor}`;
+      toast.className = `fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl ${bgColor} ${borderColor}`;
       toastMessage.className = `text-sm font-bold ${textColor}`;
       toastMessage.textContent = message;
       toast.classList.remove('hidden');

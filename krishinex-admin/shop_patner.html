@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -1215,8 +1215,7 @@
   </div>
 
   <!-- Toast -->
-  <div id="toast"
-    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+  <div id="toast" class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
     <p id="toastMessage" class="text-sm font-bold"></p>
   </div>
 
@@ -2135,7 +2134,7 @@
     function showToast(message, type = 'info') {
       const toast = document.getElementById('toast');
       const msg = document.getElementById('toastMessage');
-      toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl transition-all ${type === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-white border-slate-300 text-slate-900'}`;
+      toast.className = `fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl transition-all ${type === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-white border-slate-300 text-slate-900'}`;
       msg.textContent = message;
       toast.classList.remove('hidden');
       setTimeout(() => toast.classList.add('hidden'), 3500);

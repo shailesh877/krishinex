@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -506,14 +506,14 @@
                             digits)</label>
                         <input type="password" id="newPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
                             class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••">
+                            placeholder="â€¢â€¢â€¢â€¢">
                     </div>
                     <div>
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm
                             PIN</label>
                         <input type="password" id="confirmPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
                             class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••">
+                            placeholder="â€¢â€¢â€¢â€¢">
                     </div>
                     <button onclick="handleSetPin()" id="setPinBtn"
                         class="w-full h-12 bg-blue-600 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-blue-700">
@@ -528,14 +528,14 @@
                             PIN</label>
                         <input type="password" id="oldPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
                             class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••">
+                            placeholder="â€¢â€¢â€¢â€¢">
                     </div>
                     <div>
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New PIN (4
                             digits)</label>
                         <input type="password" id="updateNewPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
                             class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••">
+                            placeholder="â€¢â€¢â€¢â€¢">
                     </div>
                     <button onclick="handleUpdatePin()" id="updatePinBtn"
                         class="w-full h-12 bg-indigo-600 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-indigo-700">
@@ -567,21 +567,21 @@
                             Password</label>
                         <input type="password" id="oldPass"
                             class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••••••">
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <div>
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New
                             Password</label>
                         <input type="password" id="newPass"
                             class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••••••">
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <div>
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm New
                             Password</label>
                         <input type="password" id="confNewPass"
                             class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
-                            placeholder="••••••••">
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
                     </div>
                     <button onclick="handleChangePassword()" id="changePassBtn"
                         class="w-full h-12 bg-slate-900 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2">
@@ -603,7 +603,7 @@
                     <div class="hidden sm:flex flex-col text-right">
                         <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none">KSP
                             Wallet</p>
-                        <p id="kspBalanceHeader" class="text-sm font-black text-slate-900 mt-1">₹0.00</p>
+                        <p id="kspBalanceHeader" class="text-sm font-black text-slate-900 mt-1">â‚¹0.00</p>
                     </div>
                     <div class="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
                         <i class="fas fa-id-card"></i>
@@ -682,8 +682,7 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast"
-        class="fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl hidden animate-[slideInRight_0.3s_ease-out]">
+    <div id="toast" class="fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl hidden animate-[slideInRight_0.3s_ease-out] z-[99999]">
         <p id="toastMessage" class="text-sm font-black"></p>
     </div>
 
@@ -700,7 +699,7 @@
                 const data = await res.json();
                 if (res.ok) {
                     document.getElementById('kspPartnerName').textContent = data.name || 'Partner';
-                    document.getElementById('kspBalanceHeader').textContent = `₹${(data.balance || 0).toLocaleString()}`;
+                    document.getElementById('kspBalanceHeader').textContent = `â‚¹${(data.balance || 0).toLocaleString()}`;
 
                     const badge = document.getElementById('kspStatusBadge');
                     if (badge && data && data.status) {
@@ -1141,7 +1140,7 @@
             const toast = document.getElementById('toast');
             const txt = document.getElementById('toastMessage');
             txt.textContent = msg;
-            toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+            toast.className = `fixed bottom-6 right-6 z-[99999] rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
