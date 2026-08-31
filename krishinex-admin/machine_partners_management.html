@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Equipment Rental Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: { colors: { brand: { green: '#16A34A', blue: '#0EA5E9' } } }
+      }
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-orange-50 via-slate-50 to-amber-50 text-slate-900 overflow-x-hidden">
+  <div class="min-h-screen flex">
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg"><img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3"><img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+      <!-- Navigation -->
+                              <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 text-orange-700 border-2 border-orange-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 shadow-sm">
+            <i class="fas fa-tractor text-orange-600"></i>
+          </span>
+          <span class="truncate font-black">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+      <!-- Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-orange-400 hover:bg-orange-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full"></span>
+              </div>
+            </button>
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-tractor text-orange-600"></i> Equipment Rental Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">Bookings, commissions & field
+                executive cash collections</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Date Preset Selector -->
+            <div class="hidden lg:flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button onclick="setGlobalDatePreset('today')" id="btn-date-today" class="date-preset-btn px-2.5 py-1 text-[10px] font-black rounded-lg text-slate-600 hover:text-slate-900 transition-all">Today</button>
+              <button onclick="setGlobalDatePreset('yesterday')" id="btn-date-yesterday" class="date-preset-btn px-2.5 py-1 text-[10px] font-black rounded-lg text-slate-600 hover:text-slate-900 transition-all">Yesterday</button>
+              <button onclick="setGlobalDatePreset('month')" id="btn-date-month" class="date-preset-btn px-2.5 py-1 text-[10px] font-black rounded-lg text-slate-600 hover:text-slate-900 transition-all">This Month</button>
+              <button onclick="setGlobalDatePreset('all')" id="btn-date-all" class="date-preset-btn px-2.5 py-1 text-[10px] font-black rounded-lg bg-white text-orange-600 shadow-sm border border-slate-200/50 transition-all">All</button>
+            </div>
+            
+            <!-- Custom Date Picker Inputs -->
+            <div class="flex items-center gap-1.5 px-3 h-9 bg-white border border-slate-200 rounded-xl shadow-sm">
+              <span class="text-[9px] font-black text-orange-600 uppercase">From</span>
+              <input type="date" id="globalStartDate" onchange="onGlobalDateChange()" class="text-xs font-bold text-slate-700 focus:outline-none bg-transparent outline-none border-none">
+              <span class="text-[9px] font-black text-orange-600 uppercase">To</span>
+              <input type="date" id="globalEndDate" onchange="onGlobalDateChange()" class="text-xs font-bold text-slate-700 focus:outline-none bg-transparent outline-none border-none">
+            </div>
+
+            <button onclick="exportBookings()"
+              class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs text-white font-black hover:from-orange-600 hover:to-amber-600 shadow-md transition-all cursor-pointer">
+              <i class="fas fa-download mr-2"></i> Export CSV
+            </button>
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 transition-all"><i
+                class="far fa-bell text-slate-600"></i></button>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <main class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+          <!-- Providers -->
+          <div
+            class="rounded-2xl border-2 border-orange-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
+                <i class="fas fa-users text-orange-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-orange-600 font-black">Providers</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-providers">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Partners</p>
+          </div>
+          <!-- Total Machines -->
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-tractor text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">Machines</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-machines">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Listed</p>
+          </div>
+          <!-- Active Bookings -->
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-calendar-check text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Active</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-active">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Live Bookings</p>
+          </div>
+          <!-- Total Revenue -->
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Revenue</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-revenue">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total (Completed)</p>
+          </div>
+          <!-- Platform Commission -->
+          <div
+            class="rounded-2xl border-2 border-blue-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
+                <i class="fas fa-sack-dollar text-blue-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-blue-600 font-black">Commission</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-commission">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Platform (5%)</p>
+          </div>
+          <!-- Cash Pending -->
+          <div
+            class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+                <i class="fas fa-hand-holding-dollar text-rose-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-rose-600 font-black">Pending</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-cash-pending">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Cash Uncollected</p>
+          </div>
+        </section>
+
+        <!-- BOOKINGS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-orange-50/20 to-amber-50/20">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2"><i
+                    class="fas fa-calendar-days text-orange-600"></i> Equipment Bookings & Commission</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">All rental bookings with financial breakdown and
+                  field executive assignment</p>
+              </div>
+              <div class="flex gap-2 flex-wrap">
+                <input id="searchBooking" oninput="filterBookingTable()" placeholder="Search machine / farmer…"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-semibold w-44 focus:border-orange-400 outline-none transition-all" />
+                <select id="statusFilter" onchange="fetchBookings()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold focus:border-orange-400 outline-none">
+                  <option value="all">All Status</option>
+                  <option value="New">New</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-auto custom-scroll" style="max-height:480px">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Booking</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Provider → Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Machine & Duration</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Commission (5%)</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Payout</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Field Exec</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Cash</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookingTableBody">
+                <tr>
+                  <td colspan="10" class="text-center py-8 text-slate-400 font-semibold"><i
+                      class="fas fa-circle-notch fa-spin mr-2"></i>Loading bookings…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!--
+CASH COLLECTIONS TABLE
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2"><i
+                    class="fas fa-hand-holding-dollar text-purple-600"></i> Field Executive Cash Collections</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">All payments collected by field executives from
+                  completed bookings</p>
+              </div>
+            </div>
+          </div>
+          <div class="overflow-auto custom-scroll" style="max-height:380px">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Booking ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Machine</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Provider</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Commission</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Collected By</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Note</th>
+                </tr>
+              </thead>
+              <tbody id="cashCollectionBody">
+                <tr>
+                  <td colspan="9" class="text-center py-8 text-slate-400 font-semibold"><i
+                      class="fas fa-circle-notch fa-spin mr-2"></i>Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+-->
+
+        <!-- EQUIPMENT PROVIDERS (PARTNERS) TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden mt-6">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-orange-50/20 to-amber-50/20">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2"><i
+                    class="fas fa-handshake text-orange-600"></i> Equipment Providers (Partners)</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">Manage partner registrations, machines, and KYC
+                  status</p>
+              </div>
+              <div class="flex gap-2">
+                <input id="searchPartner" oninput="filterPartnerTable()" placeholder="Search partner name/phone…"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-semibold w-44 focus:border-orange-400 outline-none transition-all" />
+              </div>
+            </div>
+          </div>
+          <div class="overflow-auto custom-scroll" style="max-height:480px">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Partner Details</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Machines</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Bookings</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Joined Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">KYC Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="partnerTableBody">
+                <tr>
+                  <td colspan="6" class="text-center py-8 text-slate-400 font-semibold"><i
+                      class="fas fa-circle-notch fa-spin mr-2"></i>Loading partners…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- BOOKING DETAIL MODAL -->
+  <div id="bookingModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target===this)closeModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-lg border-2 border-slate-200 overflow-hidden animate-[slideUp_0.3s_ease-out]">
+      <div
+        class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white flex items-center justify-between">
+        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2"><i
+            class="fas fa-tractor text-orange-600"></i> Booking Details</h2>
+        <button onclick="closeModal()"
+          class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"><i
+            class="fas fa-times text-slate-700"></i></button>
+      </div>
+      <div id="modalContent" class="px-6 py-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scroll"></div>
+      <div id="modalActions" class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex flex-wrap gap-2 justify-end">
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN FE MODAL -->
+  <div id="assignModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target===this)closeAssignModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-sm border-2 border-slate-200 overflow-hidden animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 flex items-center justify-between">
+        <h2 class="text-lg font-black text-slate-900">Assign Field Executive</h2>
+        <button onclick="closeAssignModal()"
+          class="h-8 w-8 rounded-lg border-2 border-slate-200 flex items-center justify-center hover:bg-slate-50"><i
+            class="fas fa-times text-slate-600 text-sm"></i></button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <input type="hidden" id="assignBookingId">
+        <div>
+          <label class="text-xs font-black text-slate-700 mb-2 block">Select Field Executive</label>
+          <select id="feSelect"
+            class="w-full h-10 rounded-xl border-2 border-slate-200 bg-white px-3 text-sm font-semibold focus:border-orange-400 outline-none">
+            <option value="">Loading field executives…</option>
+          </select>
+        </div>
+        <button onclick="submitAssign()"
+          class="w-full h-10 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md">
+          <i class="fas fa-check mr-2"></i> Assign
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARTNER DETAIL MODAL -->
+  <div id="partnerModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target===this)closePartnerModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl border-2 border-slate-200 animate-[slideUp_0.3s_ease-out] overflow-hidden">
+      <div
+        class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white flex items-center justify-between">
+        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2"><i
+            class="fas fa-id-card text-orange-600"></i> Partner 360° View</h2>
+        <button onclick="closePartnerModal()"
+          class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all"><i
+            class="fas fa-times text-slate-700"></i></button>
+      </div>
+      <div id="partnerModalContent" class="px-0 py-0 overflow-hidden flex flex-col h-[80vh]">
+        <!-- Tab Navigation -->
+        <div class="flex border-b-2 border-slate-200 bg-slate-50/50 px-6">
+          <button onclick="switchPartnerTab('overview')" id="tab-overview" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-orange-500 text-orange-600 transition-all">Overview</button>
+          <button onclick="switchPartnerTab('machines')" id="tab-machines" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Machines</button>
+          <button onclick="switchPartnerTab('bookings')" id="tab-bookings" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Bookings History</button>
+          <button onclick="switchPartnerTab('wallet')" id="tab-wallet" class="px-6 py-4 text-xs font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all">Wallet & Payouts</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll p-6">
+          <!-- Overview Tab -->
+          <div id="content-overview" class="tab-content space-y-6"></div>
+          
+          <!-- Machines Tab -->
+          <div id="content-machines" class="tab-content hidden space-y-4">
+            <div id="machinesList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div class="col-span-full py-12 text-center text-slate-400 font-bold">
+                 <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Loading machines…
+               </div>
+            </div>
+          </div>
+
+          <!-- Bookings Tab -->
+          <div id="content-bookings" class="tab-content hidden space-y-4">
+            <div class="overflow-x-auto rounded-xl border-2 border-slate-100 bg-white">
+              <table class="min-w-full border-separate border-spacing-0">
+                <thead class="bg-slate-50">
+                  <tr class="text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Booking ID</th>
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Farmer</th>
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Machine</th>
+                    <th class="px-4 py-3 text-right border-b-2 border-slate-100">Amount</th>
+                    <th class="px-4 py-3 text-left border-b-2 border-slate-100">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="partnerBookingsBody">
+                  <tr>
+                    <td colspan="5" class="py-12 text-center text-slate-400 font-bold">
+                      <i class="fas fa-circle-notch fa-spin mr-2"></i>Loading history…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Wallet Tab -->
+          <div id="content-wallet" class="tab-content hidden space-y-6">
+             <div id="walletBalanceCard"></div>
+             <div class="bg-white rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b-2 border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                   <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Transaction History</h3>
+                </div>
+                <div class="overflow-x-auto">
+                   <table class="w-full text-[11px]">
+                      <thead class="bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider">
+                         <tr>
+                            <th class="px-4 py-3 text-left">Date</th>
+                            <th class="px-4 py-3 text-left">Ref ID</th>
+                            <th class="px-4 py-3 text-left">Type</th>
+                            <th class="px-4 py-3 text-right">Amount</th>
+                            <th class="px-4 py-3 text-left">Mode</th>
+                            <th class="px-4 py-3 text-left">Note</th>
+                         </tr>
+                      </thead>
+                      <tbody id="walletHistoryBody"></tbody>
+                   </table>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMsg" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script>
+    
+    const API = API_BASE + '/employee';
+    const AUTH = localStorage.getItem('employeeToken');
+    const H = { 'Authorization': `Bearer ${AUTH}`, 'Content-Type': 'application/json' };
+
+    let allBookings = [];
+    let allPartners = [];
+
+    // ── Sidebar ────────────────────────────────────────────────────────────
+    function toggleSidebar(force) {
+      const sb = document.getElementById('sidebar'), bd = document.getElementById('mobile-backdrop');
+      const open = !sb.classList.contains('-translate-x-full');
+      if (force === false || (open && force === undefined)) { sb.classList.add('-translate-x-full'); bd.classList.add('hidden'); }
+      else { sb.classList.remove('-translate-x-full'); bd.classList.remove('hidden'); }
+    }
+
+    // ── Toast ──────────────────────────────────────────────────────────────
+    function toast(msg, type = 'success') {
+      const t = document.getElementById('toast'), m = document.getElementById('toastMsg');
+      t.className = 'fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]';
+      if (type === 'success') t.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+      else t.classList.add('bg-rose-50', 'border-rose-300', 'text-rose-800');
+      m.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3500);
+    }
+
+    // ── KPI Stats ──────────────────────────────────────────────────────────
+    // ── Partners Table ─────────────────────────────────────────────────────
+    async function fetchPartners() {
+      const tbody = document.getElementById('partnerTableBody');
+      const from = document.getElementById('globalStartDate')?.value || '';
+      const to = document.getElementById('globalEndDate')?.value || '';
+      
+      let url = `${API}/admin/rental/partners`;
+      const params = [];
+      if (from) params.push(`startDate=${from}`);
+      if (to) params.push(`endDate=${to}`);
+      if (params.length) url += `?${params.join('&')}`;
+
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading partners…</td></tr>`;
+      try {
+        const r = await fetch(url, { headers: H });
+        const data = await r.json();
+        if (!r.ok) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500 font-bold">Failed to load partners</td></tr>`; return; }
+        allPartners = data;
+        renderPartnerTable(allPartners);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500 font-bold">Network error</td></tr>`;
+      }
+    }
+
+    function renderPartnerTable(partners) {
+      const tbody = document.getElementById('partnerTableBody');
+      if (!partners.length) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-semibold">No partners found.</td></tr>`; return; }
+      tbody.innerHTML = '';
+      partners.forEach(p => {
+        const joinedDate = p.joinedAt ? new Date(p.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+
+        const statusColors = {
+          'pending': 'bg-slate-100 border-slate-300 text-slate-700',
+          'approved': 'bg-emerald-100 border-emerald-300 text-emerald-900',
+          'rejected': 'bg-rose-100 border-rose-300 text-rose-800',
+          'blocked': 'bg-slate-900 border-slate-700 text-white'
+        };
+        const sc = statusColors[p.status] || 'bg-slate-100 text-slate-700 border-slate-300';
+
+        let actionBtns = `<button onclick="openPartnerModal('${p._id}')" class="inline-flex items-center rounded-lg bg-orange-100 px-2.5 py-1.5 text-[10px] text-orange-700 font-bold hover:bg-orange-200 transition-all mr-1"><i class="fas fa-eye mr-1"></i> View</button>`;
+        if (p.status !== 'approved') {
+          actionBtns += `<button onclick="updatePartnerStatus('${p._id}', 'approved')" class="inline-flex items-center rounded-lg bg-emerald-500 px-2.5 py-1.5 text-[10px] text-white font-bold hover:bg-emerald-600 transition-all mr-1">Approve</button>`;
+        }
+        if (p.status !== 'blocked') {
+          actionBtns += `<button onclick="updatePartnerStatus('${p._id}', 'blocked')" class="inline-flex items-center rounded-lg bg-rose-500 px-2.5 py-1.5 text-[10px] text-white font-bold hover:bg-rose-600 transition-all mr-1">Block</button>`;
+        } else {
+          actionBtns += `<button onclick="updatePartnerStatus('${p._id}', 'pending')" class="inline-flex items-center rounded-lg bg-slate-500 px-2.5 py-1.5 text-[10px] text-white font-bold hover:bg-slate-600 transition-all mr-1">Unblock</button>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-orange-50/20 transition-colors border-b border-slate-100 partner-row';
+        tr.dataset.search = `${p.name} ${p.phone} ${p.location}`.toLowerCase();
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                ${p.profilePhotoUrl ? `<img src="${p.profilePhotoUrl}" class="h-full w-full object-cover">` : `<i class="fas fa-user text-slate-400"></i>`}
+              </div>
+              <div>
+                <div class="font-black text-slate-900 text-xs">${p.name}</div>
+                <div class="text-[10px] text-slate-500">${p.phone} · ${p.location}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4"><span class="font-bold text-slate-700 text-xs">${p.machineCount} Machines</span></td>
+          <td class="px-5 py-4"><span class="font-bold text-slate-700 text-xs">${p.totalBookings} Bookings</span></td>
+          <td class="px-5 py-4 text-xs font-semibold text-slate-600">${joinedDate}</td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black border-2 ${sc}">${p.status.toUpperCase()}</span>
+          </td>
+          <td class="px-5 py-4 text-right">${actionBtns}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updatePartnerStatus(id, status) {
+      if (!confirm(`Are you sure you want to set this partner to ${status}?`)) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/partners/${id}/status`, {
+          method: 'PUT',
+          headers: H,
+          body: JSON.stringify({ status })
+        });
+        const d = await r.json();
+        if (r.ok) {
+          toast(`Partner ${status} successfully`, 'success');
+          fetchPartners();
+          fetchStats();
+        } else {
+          toast(d.error || 'Failed', 'error');
+        }
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    let currentPartnerId = null;
+
+    function openPartnerModal(id) {
+      const p = allPartners.find(x => x._id === id);
+      if (!p) return;
+      currentPartnerId = id;
+      
+      const modal = document.getElementById('partnerModal');
+      const overviewContainer = document.getElementById('content-overview');
+      const machinesList = document.getElementById('machinesList');
+      const bookingsBody = document.getElementById('partnerBookingsBody');
+
+      // Reset contents
+      machinesList.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Loading machines…</div>`;
+      bookingsBody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading history…</td></tr>`;
+      delete machinesList.dataset.loadedId;
+      delete bookingsBody.dataset.loadedId;
+      
+      switchPartnerTab('overview');
+
+      const fixUrl = (u) => {
+        if (!u || u === 'undefined' || u === 'null' || u === 'none') return null;
+        const imgHost = window.IMAGE_BASE || 'https://demo.ranx24.com';
+        if (u.startsWith('http://') || u.startsWith('https://')) {
+          try {
+            const targetHost = new URL(imgHost).host;
+            return u.replace(/^(https?:\/\/)[^\/]+/, `$1${targetHost}`);
+          } catch (e) { return u; }
+        }
+        const path = u.startsWith('/') ? u : '/' + u;
+        return `${imgHost.replace(/\/+$/, '')}${path.replace(/\\/g, '/')}`;
+      };
+
+      const profilePic = fixUrl(p.profilePhotoUrl);
+      const aadhaarFrontPic = fixUrl(p.aadhaarDocUrl || p.documentUrl);
+      const aadhaarBackPic = fixUrl(p.aadhaarBackDocUrl);
+      const bank = p.bankDetails || {};
+
+      const statusColors = {
+        'pending': 'bg-slate-100 text-slate-700',
+        'approved': 'bg-emerald-100 text-emerald-900',
+        'blocked': 'bg-slate-900 text-white'
+      };
+
+        const hasDocs = !!(aadhaarFrontPic || aadhaarBackPic || bank.bankDocUrl);
+
+        overviewContainer.innerHTML = `
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div class="flex items-center gap-4">
+                <div class="h-20 w-20 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-200">
+                  ${profilePic ? `<img src="${profilePic}" class="h-full w-full object-cover">` : `<i class="fas fa-user text-slate-300 text-4xl flex items-center justify-center h-full"></i>`}
+                </div>
+                <div>
+                  <h3 class="text-lg font-black text-slate-900">${p.name}</h3>
+                  <p class="text-sm font-bold text-slate-500">${p.phone}</p>
+                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black mt-1 ${statusColors[p.status] || ''}">${p.status.toUpperCase()}</span>
+                </div>
+              </div>
+              <!-- Business Details Form -->
+              <div class="bg-slate-50 rounded-2xl p-4 border-2 border-slate-100">
+                 <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 flex justify-between items-center">
+                    <span>Business Details</span>
+                    <button onclick="savePartnerProfile('${p._id}')" class="bg-slate-900 text-white px-3 py-1 rounded-lg text-[10px] hover:bg-black transition-all shadow-sm">
+                      <i class="fas fa-save mr-1"></i> Save Profile
+                    </button>
+                 </div>
+                 <div class="space-y-3">
+                   <div>
+                      <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Owner Name</label>
+                      <input id="edit_name" type="text" value="${p.name || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                   </div>
+                   <div>
+                      <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Business Name</label>
+                      <input id="edit_biz" type="text" value="${p.businessName || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                   </div>
+                   <div class="grid grid-cols-2 gap-3">
+                      <div>
+                          <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Mobile</label>
+                          <input id="edit_phone" type="text" value="${p.phone || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                      </div>
+                      <div>
+                          <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Email</label>
+                          <input id="edit_email" type="text" value="${p.email || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                      </div>
+                   </div>
+                   <div>
+                      <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Address/Location</label>
+                      <input id="edit_addr" type="text" value="${p.location || ''}" class="w-full h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-black text-slate-900 outline-none focus:border-blue-400">
+                   </div>
+                 </div>
+              </div>
+            </div>
+            <div class="bg-orange-50/50 rounded-2xl p-5 border-2 border-orange-100">
+              <div class="text-[10px] font-black text-orange-400 uppercase tracking-wider mb-3 flex justify-between items-center">
+                <span>Bank Information</span>
+                <button onclick="saveBankDetails('${p._id}')" class="bg-orange-500 text-white px-3 py-1 rounded-lg text-[10px] hover:bg-orange-600 transition-all shadow-sm">
+                  <i class="fas fa-save mr-1"></i> Save
+                </button>
+              </div>
+              <div class="space-y-3">
+                <div><input id="edit_holder" type="text" value="${bank.holderName || p.name || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+                <div><input id="edit_bank" type="text" value="${bank.bankName || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+                <div><input id="edit_acc" type="text" value="${bank.accountNumber || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+                <div><input id="edit_ifsc" type="text" value="${bank.ifscCode || ''}" class="w-full h-8 rounded-lg border-2 border-orange-100 bg-white px-2 text-xs font-black text-slate-900 focus:border-orange-400 outline-none"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-200">
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-file-shield text-orange-600"></i> Partner KYC & Identity Documents
+              </h4>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-orange-50 text-orange-700 border border-orange-200">KYC Verification</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              ${[
+                {
+                  key: 'aadhaarFront',
+                  title: 'Aadhaar Card (Front)',
+                  icon: 'fas fa-id-card text-orange-600',
+                  number: p.aadhaarNumber ? `Aadhaar: ${p.aadhaarNumber}` : 'Not Provided',
+                  url: aadhaarFrontPic
+                },
+                {
+                  key: 'aadhaarBack',
+                  title: 'Aadhaar Card (Back)',
+                  icon: 'fas fa-id-card text-orange-600',
+                  number: p.aadhaarNumber ? `Aadhaar: ${p.aadhaarNumber}` : 'Not Provided',
+                  url: aadhaarBackPic
+                },
+                {
+                  key: 'bankDocUrl',
+                  title: 'Bank Passbook / Cheque',
+                  icon: 'fas fa-file-invoice-dollar text-blue-600',
+                  number: bank.accountNumber ? `A/C: ${bank.accountNumber}` : 'Not Provided',
+                  url: fixUrl(bank.bankDocUrl)
+                }
+              ].map(d => {
+                const hasUrl = !!d.url;
+                return `
+                  <div class="bg-white rounded-2xl border-2 border-slate-200 p-4 flex flex-col justify-between shadow-sm hover:border-orange-400 transition-all">
+                    <div>
+                      <div class="flex justify-between items-start gap-2 mb-3">
+                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                          <div class="h-8 w-8 rounded-xl bg-orange-50 flex items-center justify-center text-sm shrink-0">
+                            <i class="${d.icon}"></i>
+                          </div>
+                          <div class="min-w-0 flex-1">
+                            <h4 class="text-xs font-black text-slate-900 truncate">${d.title}</h4>
+                            <p class="text-[10px] text-slate-500 font-semibold truncate">${d.number}</p>
+                          </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${hasUrl ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+                          ${hasUrl ? '<i class="fas fa-check-circle mr-1"></i> Uploaded' : '<i class="fas fa-times-circle mr-1"></i> Missing'}
+                        </span>
+                      </div>
+
+                      ${hasUrl ? `
+                        <div class="h-32 w-full rounded-xl bg-slate-900 overflow-hidden border border-slate-200 relative group mb-3 cursor-pointer shadow-inner" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')">
+                          <img src="${d.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'h-full w-full bg-slate-900 flex flex-col items-center justify-center text-slate-300 p-2 text-center\\'><i class=\\'fas fa-file-excel text-2xl mb-1 text-orange-400\\'></i><span class=\\'text-[10px] font-bold text-slate-200\\'>File Unavailable</span></div>';">
+                          <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1.5 backdrop-blur-[2px]">
+                            <i class="fas fa-search-plus text-lg text-orange-400"></i>
+                            <span>View Full Screen</span>
+                          </div>
+                        </div>
+                      ` : `
+                        <div class="h-32 w-full rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3">
+                          <i class="fas fa-file-circle-xmark text-2xl mb-1 text-slate-300"></i>
+                          <span class="text-[10px] font-bold text-slate-500">Not Uploaded</span>
+                        </div>
+                      `}
+                    </div>
+
+                    <div class="flex gap-2 pt-2 border-t border-slate-100">
+                      ${hasUrl ? `
+                        <button type="button" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-black py-2 rounded-xl flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer">
+                          <i class="fas fa-eye"></i> View
+                        </button>
+                        <button type="button" onclick="rejectPartnerDocument('${p._id}', '${d.key}', '${d.title}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-black rounded-xl border border-rose-200 flex items-center justify-center transition-all cursor-pointer" title="Reject Document for Re-upload">
+                          <i class="fas fa-trash-alt mr-1"></i> Reject
+                        </button>
+                      ` : `
+                        <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
+                          No Document Attached
+                        </button>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+          <div class="flex items-center justify-between p-4 bg-slate-900 rounded-2xl text-white mt-6">
+             <div><p class="text-[10px] font-bold text-slate-400 uppercase">Performance</p><p class="text-sm font-black">${p.machineCount || 0} Machines · ${p.totalBookings || 0} Bookings</p></div>
+             <div class="flex gap-2">
+                ${p.status !== 'approved' ? (hasDocs ? `<button onclick="updatePartnerStatus('${p._id}', 'approved'); closePartnerModal()" class="px-4 py-2 bg-emerald-500 rounded-xl text-xs font-black">Approve KYC</button>` : `<span class="px-3 py-2 bg-slate-800 text-slate-400 rounded-xl text-xs font-bold border border-slate-700" title="Cannot approve: No documents uploaded"><i class="fas fa-lock mr-1"></i> Doc Missing</span>`) : ''}
+                ${p.status !== 'blocked' ? `<button onclick="updatePartnerStatus('${p._id}', 'blocked'); closePartnerModal()" class="px-4 py-2 bg-rose-500 rounded-xl text-xs font-black">Block</button>` : ''}
+             </div>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    async function savePartnerProfile(id) {
+       const btn = event.currentTarget;
+       const original = btn.innerHTML;
+       btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+       btn.disabled = true;
+
+       const b = {
+          name: document.getElementById('edit_name').value,
+          businessName: document.getElementById('edit_biz').value,
+          phone: document.getElementById('edit_phone').value,
+          email: document.getElementById('edit_email').value,
+          address: document.getElementById('edit_addr').value
+       };
+       try {
+          const r = await fetch(`${API}/admin/rental/partners/${id}/profile`, {
+             method: 'PUT',
+             headers: H,
+             body: JSON.stringify(b)
+          });
+          const d = await r.json();
+          if (r.ok) {
+             toast('Profile updated successfully', 'success');
+             // Update local allPartners so the list is refreshed
+             const idx = allPartners.findIndex(x => x._id === id);
+             if (idx !== -1) {
+                allPartners[idx] = { ...allPartners[idx], ...b, location: b.address };
+                fetchPartners(); // Re-render table
+             }
+          } else toast(d.error || 'Failed', 'error');
+       } catch (e) { toast('Network error', 'error'); }
+       finally {
+          btn.innerHTML = original;
+          btn.disabled = false;
+       }
+    }
+
+    function switchPartnerTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById(`content-${tabName}`).classList.remove('hidden');
+      ['overview', 'machines', 'bookings', 'wallet'].forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (!btn) return;
+        if (t === tabName) {
+          btn.classList.replace('border-transparent', 'border-orange-500');
+          btn.classList.replace('text-slate-500', 'text-orange-600');
+        } else {
+          btn.classList.replace('border-orange-500', 'border-transparent');
+          btn.classList.replace('text-orange-600', 'text-slate-500');
+        }
+      });
+      if (tabName === 'machines') loadPartnerMachines(currentPartnerId);
+      if (tabName === 'bookings') loadPartnerBookings(currentPartnerId);
+      if (tabName === 'wallet') loadPartnerWallet(currentPartnerId);
+    }
+
+    async function loadPartnerWallet(id) {
+       const balanceCard = document.getElementById('walletBalanceCard');
+       const historyBody = document.getElementById('walletHistoryBody');
+       
+       balanceCard.innerHTML = `<div class="p-8 text-center"><i class="fas fa-circle-notch fa-spin text-orange-500"></i></div>`;
+       historyBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400">Loading wallet history…</td></tr>`;
+
+       try {
+          const r = await fetch(`${API}/admin/rental/partners/${id}/wallet`, { headers: H });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error);
+
+          balanceCard.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Balance</p>
+                  <h2 class="text-4xl font-black mb-4">₹${d.balance.toLocaleString()}</h2>
+                  <div class="flex gap-2">
+                    <button onclick="toggleTxnForm('Credit')" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg"><i class="fas fa-plus mr-1"></i> Add Credit</button>
+                    <button onclick="toggleTxnForm('Debit')" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all shadow-lg"><i class="fas fa-minus mr-1"></i> Apply Debit</button>
+                  </div>
+                </div>
+                <i class="fas fa-wallet absolute -right-4 -bottom-4 text-8xl text-white/5 transform -rotate-12"></i>
+              </div>
+              <div id="txnFormContainer" class="hidden bg-slate-50 rounded-3xl border-2 border-slate-200 p-4 animate-[fadeIn_0.2s_ease-out]">
+                 <div class="flex justify-between items-center mb-3">
+                    <h4 id="txnFormTitle" class="text-[10px] font-black text-slate-900 uppercase">New Transaction</h4>
+                    <button onclick="toggleTxnForm()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-[10px]"></i></button>
+                 </div>
+                 <div class="space-y-2">
+                    <input id="txn_amt" type="number" placeholder="Amount" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-orange-400">
+                    <input id="txn_note" type="text" placeholder="Remark/Note" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-orange-400">
+                    <select id="txn_mode" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-orange-400">
+                       <option value="Bank Transfer">Bank Transfer</option>
+                       <option value="UPI">UPI / GPay</option>
+                       <option value="Cash">Cash</option>
+                    </select>
+                    <button id="txn_submit_btn" onclick="submitWalletTransaction()" class="w-full h-8 rounded-lg bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">Submit</button>
+                 </div>
+              </div>
+            </div>`;
+
+          if (!d.transactions || d.transactions.length === 0) {
+             historyBody.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400 uppercase tracking-widest">No transactions found</td></tr>`;
+          } else {
+             historyBody.innerHTML = d.transactions.map(t => {
+                const isCredit = t.type === 'Credit' || t.type === 'Collection';
+                const amtColor = isCredit ? 'text-emerald-600' : 'text-rose-600';
+                const amtSign = isCredit ? '+' : '-';
+                return `
+                  <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                     <td class="px-4 py-3 font-semibold text-slate-500">${new Date(t.createdAt).toLocaleDateString()}</td>
+                     <td class="px-4 py-3 font-black text-slate-900">${t.transactionId}</td>
+                     <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span>
+                     </td>
+                     <td class="px-4 py-3 text-right font-black ${amtColor}">${amtSign}₹${t.amount}</td>
+                     <td class="px-4 py-3 font-bold text-slate-600">${t.paymentMode}</td>
+                     <td class="px-4 py-3 text-slate-500 font-semibold">${t.note || '-'}</td>
+                  </tr>`;
+             }).join('');
+          }
+       } catch (e) {
+          toast(e.message, 'error');
+       }
+    }
+
+    let currentTxnType = null;
+    function toggleTxnForm(type) {
+       const container = document.getElementById('txnFormContainer');
+       if (!type || (currentTxnType === type && !container.classList.contains('hidden'))) {
+          container.classList.add('hidden');
+          return;
+       }
+       currentTxnType = type;
+       document.getElementById('txnFormTitle').innerText = `${type} Funds`;
+       document.getElementById('txn_submit_btn').innerHTML = `Submit ${type}`;
+       container.classList.remove('hidden');
+    }
+
+    async function submitWalletTransaction() {
+       const amt = document.getElementById('txn_amt').value;
+       const note = document.getElementById('txn_note').value;
+       const mode = document.getElementById('txn_mode').value;
+       const btn = document.getElementById('txn_submit_btn');
+
+       if (!amt || amt <= 0) return toast('Invalid amount', 'error');
+
+       btn.disabled = true;
+       btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing…';
+
+       try {
+          const r = await fetch(`${API}/admin/rental/partners/${currentPartnerId}/wallet/transaction`, {
+             method: 'POST',
+             headers: H,
+             body: JSON.stringify({ type: currentTxnType, amount: amt, note, paymentMode: mode })
+          });
+          const d = await r.json();
+          if (r.ok) {
+             toast(`₹${amt} ${currentTxnType}ed successfully`, 'success');
+             loadPartnerWallet(currentPartnerId); // Refresh view
+          } else toast(d.error || 'Failed', 'error');
+       } catch (e) { toast('Network error', 'error'); }
+       finally {
+          btn.disabled = false;
+          btn.innerHTML = `Submit ${currentTxnType}`;
+       }
+    }
+
+    async function loadPartnerMachines(id) {
+      const container = document.getElementById('machinesList');
+      if (container.dataset.loadedId === id) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/partners/${id}/machines`, { headers: H });
+        const data = await r.json();
+        const getImg = (u) => fixUrl(u);
+
+        if (!data || data.length === 0) {
+          container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 font-bold">No machines.</div>`;
+          return;
+        }
+        container.innerHTML = data.map(m => `
+          <div class="bg-white rounded-2xl border-2 border-slate-100 p-4 transition-all hover:border-orange-200 shadow-sm flex flex-col gap-3">
+            <div class="flex gap-4">
+              <div class="h-20 w-20 rounded-2xl bg-slate-100 overflow-hidden border-2 border-slate-50 flex-shrink-0">
+                <img src="${getImg(m.images[0])}" class="h-full w-full object-cover">
+              </div>
+              <div class="flex-1">
+                 <div class="flex justify-between items-start">
+                   <h4 class="text-sm font-black text-slate-900">${m.name}</h4>
+                   <span class="px-2 py-0.5 rounded-md bg-slate-100 text-[9px] font-black text-slate-600 uppercase">${m.category}</span>
+                 </div>
+                 <div class="text-[10px] text-slate-500 font-bold mt-1">
+                    <i class="fas fa-map-marker-alt text-orange-400 mr-1"></i> ${m.village || 'N/A'}
+                    <span class="mx-1">·</span>
+                    <i class="fas fa-route text-blue-400 mr-1"></i> ${m.distanceKm} KM Radius
+                 </div>
+                 <div class="grid grid-cols-2 gap-2 mt-3">
+                    <div class="bg-orange-50 p-1.5 rounded-lg border border-orange-100">
+                       <p class="text-[8px] font-bold text-orange-400 uppercase leading-none">Daily</p>
+                       <p class="text-[11px] font-black text-orange-700">₹${m.priceDay}</p>
+                    </div>
+                    <div class="bg-blue-50 p-1.5 rounded-lg border border-blue-100">
+                       <p class="text-[8px] font-bold text-blue-400 uppercase leading-none">Hourly</p>
+                       <p class="text-[11px] font-black text-blue-700">₹${m.priceHour}</p>
+                    </div>
+                 </div>
+              </div>
+            </div>
+            ${m.desc ? `<div class="bg-slate-50/50 p-2 rounded-xl text-[10px] text-slate-600 font-semibold italic border border-slate-100 line-clamp-2">"${m.desc}"</div>` : ''}
+
+            <!-- Attachments / Sub-machinery list -->
+            ${m.subMachinery && m.subMachinery.length > 0 ? `
+            <div class="pt-2 border-t border-slate-100 mt-1">
+               <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Attachments (${m.subMachinery.length})</span>
+               <div class="flex flex-wrap gap-1.5">
+                  ${m.subMachinery.map(sub => `
+                     <div class="inline-flex items-center gap-1.5 bg-orange-50/50 border border-orange-100/80 rounded-lg p-1 px-2">
+                        ${sub.image ? `<img src="${getImg(sub.image)}" class="h-6 w-6 rounded object-cover flex-shrink-0">` : `<div class="h-6 w-6 rounded bg-slate-200 flex items-center justify-center flex-shrink-0"><i class="fas fa-link text-[10px] text-slate-400"></i></div>`}
+                        <div class="text-left leading-tight">
+                           <p class="text-[10px] font-black text-slate-800">${sub.name}</p>
+                           <p class="text-[8px] font-bold text-orange-600">₹${sub.priceDay}/Day${sub.priceKattha ? ` · ₹${sub.priceKattha}/Kattha` : ''}</p>
+                        </div>
+                     </div>
+                  `).join('')}
+               </div>
+            </div>
+            ` : ''}
+          </div>
+        `).join('');
+        container.dataset.loadedId = id;
+      } catch (e) { container.innerHTML = 'Error'; }
+    }
+
+    async function loadPartnerBookings(id) {
+      const tbody = document.getElementById('partnerBookingsBody');
+      if (tbody.dataset.loadedId === id) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/partners/${id}/bookings`, { headers: H });
+        const data = await r.json();
+        if (!data || data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold">No history.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = data.map(b => {
+           const sc = b.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 
+                      b.status === 'Cancelled' ? 'bg-rose-100 text-rose-700' : 
+                      b.status === 'Accepted' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
+           
+           const fDate = new Date(b.fromDate).toLocaleDateString();
+           const tDate = new Date(b.toDate).toLocaleDateString();
+           const duration = b.priceType === 'daily' ? `${b.days} Days` : `${b.hours} Hours`;
+
+           return `
+            <tr class="hover:bg-slate-50/80 transition-colors border-b border-slate-50">
+              <td class="px-4 py-4">
+                 <div class="text-[10px] font-black text-slate-500 mb-1">#${b._id.toString().slice(-6).toUpperCase()}</div>
+                 <div class="text-[9px] font-bold text-slate-400">${new Date(b.createdAt).toLocaleString([], {dateStyle:'short', timeStyle:'short'})}</div>
+              </td>
+              <td class="px-4 py-4">
+                 <div class="flex items-center gap-2">
+                    <div class="h-7 w-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                       <img src="${b.buyer && b.buyer.profilePhotoUrl ? API_BASE.split('/api')[0]+'/'+b.buyer.profilePhotoUrl : 'https://via.placeholder.com/50'}" class="h-full w-full object-cover">
+                    </div>
+                    <div>
+                       <div class="text-xs font-black text-slate-900">${b.buyer ? b.buyer.name : 'Unknown'}</div>
+                       <div class="text-[9px] text-slate-500 font-bold">${b.buyer ? b.buyer.phone : ''}</div>
+                    </div>
+                 </div>
+              </td>
+              <td class="px-4 py-4">
+                 <div class="text-xs font-black text-slate-800">${b.machine ? b.machine.name : 'Deleted Machine'}</div>
+                 <div class="flex items-center gap-2 mt-1">
+                    <span class="text-[10px] font-bold text-slate-500"><i class="far fa-calendar-alt mr-1"></i>${fDate} - ${tDate}</span>
+                    <span class="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 rounded text-slate-600">${duration}</span>
+                 </div>
+                 ${b.purpose ? `<div class="text-[9px] text-slate-400 italic mt-1">${b.purpose}</div>` : ''}
+              </td>
+              <td class="px-4 py-4 text-right">
+                 <div class="text-xs font-black text-slate-900">₹${b.totalAmount}</div>
+                 <div class="text-[9px] font-bold text-slate-400 mt-1">
+                    Net: <span class="text-emerald-600">₹${b.ownerPayout}</span>
+                 </div>
+                 <div class="text-[8px] text-orange-400 mt-0.5">Comm: ₹${b.platformCommission}</div>
+              </td>
+              <td class="px-4 py-4">
+                 <div class="flex flex-col items-start gap-2">
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${sc}">${b.status}</span>
+                    ${b.paymentMode ? `<span class="text-[8px] font-black px-1.5 py-0.5 border border-slate-200 rounded text-slate-500"><i class="fas ${b.paymentMode === 'WALLET' ? 'fa-wallet' : 'fa-money-bill'} mr-1"></i>${b.paymentMode}</span>` : ''}
+                    ${b.status === 'Accepted' && b.completionOTP ? `<span class="text-[9px] font-black text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">OTP: ${b.completionOTP}</span>` : ''}
+                 </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        tbody.dataset.loadedId = id;
+      } catch (e) { tbody.innerHTML = 'Error'; }
+    }
+
+    async function saveBankDetails(id) {
+      const holderName = document.getElementById('edit_holder').value;
+      const bankName = document.getElementById('edit_bank').value;
+      const accountNumber = document.getElementById('edit_acc').value;
+      const ifscCode = document.getElementById('edit_ifsc').value;
+
+      try {
+        const r = await fetch(`${API}/admin/rental/partners/${id}/bank`, {
+          method: 'PUT',
+          headers: H,
+          body: JSON.stringify({ holderName, bankName, accountNumber, ifscCode })
+        });
+        const d = await r.json();
+        if (r.ok) {
+          toast('Bank details updated successfully', 'success');
+          // Refresh localized data in allPartners array
+          const pIdx = allPartners.findIndex(x => x._id === id);
+          if (pIdx !== -1) {
+            allPartners[pIdx].bankDetails = d.bankDetails;
+          }
+        } else {
+          toast(d.error || 'Update failed', 'error');
+        }
+      } catch (e) {
+        toast('Network error while saving bank details', 'error');
+      }
+    }
+
+    function closePartnerModal() {
+      document.getElementById('partnerModal').classList.add('hidden');
+    }
+
+    function filterPartnerTable() {
+      const q = document.getElementById('searchPartner').value.toLowerCase();
+      document.querySelectorAll('.partner-row').forEach(tr => {
+        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+      });
+    }
+
+    // ── Global Date Filters ────────────────────────────────────────────────
+    function formatLocalDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function setGlobalDatePreset(preset) {
+      const startInput = document.getElementById('globalStartDate');
+      const endInput = document.getElementById('globalEndDate');
+      const today = new Date();
+
+      document.querySelectorAll('.date-preset-btn').forEach(btn => {
+        btn.className = "date-preset-btn px-2.5 py-1 text-[10px] font-black rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+      });
+      const activeBtn = document.getElementById(`btn-date-${preset}`);
+      if (activeBtn) {
+        activeBtn.className = "date-preset-btn px-2.5 py-1 text-[10px] font-black rounded-lg bg-white text-orange-600 shadow-sm border border-slate-200/50 transition-all";
+      }
+
+      if (preset === 'today') {
+        const str = formatLocalDate(today);
+        startInput.value = str;
+        endInput.value = str;
+      } else if (preset === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const str = formatLocalDate(yesterday);
+        startInput.value = str;
+        endInput.value = str;
+      } else if (preset === 'month') {
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startInput.value = formatLocalDate(startOfMonth);
+        endInput.value = formatLocalDate(today);
+      } else {
+        startInput.value = '';
+        endInput.value = '';
+      }
+      
+      onGlobalDateChange();
+    }
+
+    function onGlobalDateChange() {
+      fetchStats();
+      fetchBookings();
+      fetchPartners();
+    }
+
+    // ── KPI Stats ──────────────────────────────────────────────────────────
+    async function fetchStats() {
+      try {
+        const from = document.getElementById('globalStartDate').value;
+        const to = document.getElementById('globalEndDate').value;
+        let url = `${API}/admin/rental/stats`;
+        const params = [];
+        if (from) params.push(`startDate=${from}`);
+        if (to) params.push(`endDate=${to}`);
+        if (params.length) url += `?${params.join('&')}`;
+
+        const r = await fetch(url, { headers: H });
+        const d = await r.json();
+        if (!r.ok) return;
+        document.getElementById('kpi-providers').textContent = d.totalProviders ?? 0;
+        document.getElementById('kpi-machines').textContent = d.totalMachines ?? 0;
+        document.getElementById('kpi-active').textContent = d.activeBookings ?? 0;
+        const rev = d.totalRevenue ?? 0;
+        document.getElementById('kpi-revenue').textContent = `₹${rev.toLocaleString('en-IN')}`;
+        const comm = d.totalCommission ?? 0;
+        document.getElementById('kpi-commission').textContent = `₹${comm.toLocaleString('en-IN')}`;
+        document.getElementById('kpi-cash-pending').textContent = d.cashPending ?? 0;
+      } catch (e) { console.error('Stats error:', e); }
+    }
+
+    // ── Bookings Table ─────────────────────────────────────────────────────
+    async function fetchBookings() {
+      const status = document.getElementById('statusFilter').value;
+      const from = document.getElementById('globalStartDate').value;
+      const to = document.getElementById('globalEndDate').value;
+      
+      let url = `${API}/admin/rental/bookings`;
+      const params = [];
+      if (status !== 'all') params.push(`status=${encodeURIComponent(status)}`);
+      if (from) params.push(`startDate=${from}`);
+      if (to) params.push(`endDate=${to}`);
+      if (params.length) url += `?${params.join('&')}`;
+
+      const tbody = document.getElementById('bookingTableBody');
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading…</td></tr>`;
+      try {
+        const r = await fetch(url, { headers: H });
+        const d = await r.json();
+        if (!r.ok) { tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-rose-500 font-bold">${d.error || 'Failed to load bookings'}</td></tr>`; return; }
+        allBookings = d.bookings || [];
+        renderBookingTable(allBookings);
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-rose-500 font-bold">Network error</td></tr>`;
+      }
+    }
+
+    function renderBookingTable(bookings) {
+      const tbody = document.getElementById('bookingTableBody');
+      if (!bookings.length) { tbody.innerHTML = `<tr><td colspan="10" class="text-center py-8 text-slate-400 font-semibold">No bookings found.</td></tr>`; return; }
+      tbody.innerHTML = '';
+      bookings.forEach(b => {
+        const from = b.fromDate ? new Date(b.fromDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const to = b.toDate ? new Date(b.toDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+
+        const statusColors = {
+          'New': 'bg-slate-100 border-slate-300 text-slate-700',
+          'Accepted': 'bg-sky-100 border-sky-300 text-sky-800',
+          'In Progress': 'bg-amber-100 border-amber-300 text-amber-800',
+          'Completed': 'bg-emerald-100 border-emerald-300 text-emerald-900',
+          'Cancelled': 'bg-rose-100 border-rose-300 text-rose-800'
+        };
+        const statusIcons = { 'New': 'fa-circle', 'Accepted': 'fa-thumbs-up', 'In Progress': 'fa-spinner fa-spin', 'Completed': 'fa-circle-check', 'Cancelled': 'fa-ban' };
+        const sc = statusColors[b.status] || 'bg-slate-100 text-slate-700 border-slate-300';
+        const si = statusIcons[b.status] || 'fa-circle';
+
+        const cashBadge = b.cashCollected
+          ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-check mr-0.5"></i>Collected</span>`
+          : (b.status === 'Completed'
+            ? `<button onclick="markCollected('${b._id}')" class="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[9px] font-bold text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all"><i class="fas fa-hand-holding-dollar mr-0.5"></i>Collect</button>`
+            : `<span class="text-[9px] text-slate-400">—</span>`);
+
+        const feName = b.assignedFieldExec ? `<span class="text-xs font-semibold text-slate-700">${b.assignedFieldExec.name}</span>` : `<button onclick="openAssign('${b._id}')" class="inline-flex items-center text-[9px] rounded-lg bg-orange-50 border border-orange-200 px-2 py-0.5 text-orange-700 font-bold hover:bg-orange-100 transition-all"><i class="fas fa-plus mr-1"></i>Assign</button>`;
+
+        let actionBtns = `<button onclick="openDetail('${b._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-2.5 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all"><i class="fas fa-eye mr-1"></i>View</button>`;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-orange-50/20 transition-colors border-b border-slate-100 booking-row';
+        tr.dataset.search = `${b.machine?.name} ${b.farmer?.name} ${b.provider?.name} ${b.bookingId}`.toLowerCase();
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="font-black text-slate-900 text-xs">${b.bookingId}</div>
+            <div class="text-[10px] text-slate-500">${from}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="text-xs font-semibold text-slate-900">${b.provider?.name} → ${b.farmer?.name}</div>
+            <div class="text-[10px] text-slate-500">${b.farmer?.phone || ''}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900 text-xs">${b.machine?.name}</div>
+            <div class="text-[10px] text-slate-500">${b.priceType === 'hourly' ? b.hours + ' hrs' : b.days + ' days'} · ${from}–${to}</div>
+          </td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">₹${(b.totalAmount || 0).toLocaleString('en-IN')}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-blue-700">₹${(b.platformCommission || 0).toLocaleString('en-IN')}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-emerald-700">₹${(b.ownerPayout || 0).toLocaleString('en-IN')}</div></td>
+          <td class="px-5 py-4">${feName}</td>
+          <td class="px-5 py-4">${cashBadge}</td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black border-2 ${sc}"><i class="fas ${si} mr-1"></i>${b.status}</span>
+          </td>
+          <td class="px-5 py-4 text-right">${actionBtns}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterBookingTable() {
+      const q = document.getElementById('searchBooking').value.toLowerCase();
+      document.querySelectorAll('.booking-row').forEach(tr => {
+        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
+      });
+    }
+
+    // ── Cash Collections ───────────────────────────────────────────────────
+    async function fetchCashCollections() {
+      const tbody = document.getElementById('cashCollectionBody');
+      if (!tbody) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/cash-collections`, { headers: H });
+        const data = await r.json();
+        if (!r.ok || !data.length) {
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400 font-semibold">No cash collections yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = '';
+        data.forEach(c => {
+          const collDate = c.collectedAt ? new Date(c.collectedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '—';
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-purple-50/20 transition-colors border-b border-slate-100';
+          tr.innerHTML = `
+            <td class="px-5 py-4"><div class="font-black text-slate-900 text-xs">${c.bookingId}</div></td>
+            <td class="px-5 py-4 text-xs font-semibold text-slate-900">${c.machine}</td>
+            <td class="px-5 py-4 text-xs font-semibold text-slate-900">${c.provider}</td>
+            <td class="px-5 py-4 text-xs font-semibold text-slate-900">${c.farmer}</td>
+            <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">₹${(c.totalAmount || 0).toLocaleString('en-IN')}</div></td>
+            <td class="px-5 py-4 text-right"><div class="font-black text-blue-700">₹${(c.commission || 0).toLocaleString('en-IN')}</div></td>
+            <td class="px-5 py-4"><span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-1 text-[10px] font-bold text-purple-700 border border-purple-200"><i class="fas fa-user mr-1"></i>${c.collectedBy}</span></td>
+            <td class="px-5 py-4 text-xs text-slate-600">${collDate}</td>
+            <td class="px-5 py-4 text-xs text-slate-500 max-w-[120px] truncate" title="${c.note}">${c.note || '—'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-rose-500 font-bold">Failed to load</td></tr>`;
+      }
+    }
+
+    // ── Mark Cash Collected ────────────────────────────────────────────────
+    async function markCollected(id) {
+      if (!confirm('Mark this booking as cash collected?')) return;
+      try {
+        const r = await fetch(`${API}/admin/rental/bookings/${id}/collect`, { method: 'PUT', headers: H });
+        const d = await r.json();
+        if (r.ok) { toast(d.message || 'Cash marked collected', 'success'); fetchBookings(); fetchStats(); fetchCashCollections(); }
+        else toast(d.error || 'Failed', 'error');
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    // ── Booking Detail Modal ───────────────────────────────────────────────
+    async function openDetail(id) {
+      const booking = allBookings.find(b => b._id === id);
+      if (!booking) return;
+
+      const from = booking.fromDate ? new Date(booking.fromDate).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
+      const to = booking.toDate ? new Date(booking.toDate).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A';
+
+      document.getElementById('modalContent').innerHTML = `
+        <!-- Booking metadata -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="rounded-xl bg-orange-50 border border-orange-200 p-3">
+            <p class="text-[10px] text-orange-600 font-black uppercase">Booking ID</p>
+            <p class="font-black text-slate-900 mt-1">${booking.bookingId}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <p class="text-[10px] text-slate-500 font-black uppercase">Status</p>
+            <p class="font-black text-slate-900 mt-1">${booking.status}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <p class="text-[10px] text-slate-500 font-black uppercase">Provider (Owner)</p>
+            <p class="font-black text-slate-900 mt-1">${booking.provider?.name}</p>
+            <p class="text-xs text-slate-500">${booking.provider?.phone}</p>
+          </div>
+          <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <p class="text-[10px] text-slate-500 font-black uppercase">Farmer (Buyer)</p>
+            <p class="font-black text-slate-900 mt-1">${booking.farmer?.name}</p>
+            <p class="text-xs text-slate-500">${booking.farmer?.phone}</p>
+          </div>
+        </div>
+
+        <!-- 1. What was Booked (Machine & Sub-Machinery) -->
+        <div class="rounded-xl border border-orange-100 bg-orange-50/20 p-4 space-y-3">
+            <h3 class="text-xs font-black text-orange-800 uppercase tracking-widest flex items-center gap-2 border-b border-orange-100 pb-2">
+                <i class="fas fa-tractor"></i> Machine & Equipment Booked
+            </h3>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Machine Name</span>
+                    <p class="font-black text-slate-800">${booking.machine?.name || 'N/A'}</p>
+                </div>
+                <div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Category</span>
+                    <p class="font-bold text-slate-700">${booking.machine?.category || 'N/A'}</p>
+                </div>
+                <div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Brand / Model</span>
+                    <p class="font-semibold text-slate-700">${booking.machine?.brand ? booking.machine.brand + ' ' + (booking.machine.model || '') : '—'}</p>
+                </div>
+                <div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase">Reg Number</span>
+                    <p class="font-mono font-bold text-slate-700">${booking.machine?.registrationNumber || '—'}</p>
+                </div>
+            </div>
+            
+            <!-- Attachments / Sub-machinery -->
+            ${booking.selectedSubMachinery && booking.selectedSubMachinery.length > 0 ? `
+            <div class="pt-2 border-t border-orange-100">
+                <span class="text-[9px] font-black text-orange-600 uppercase tracking-wider block mb-2">Attachments Booked</span>
+                <div class="flex flex-wrap gap-2">
+                    ${booking.selectedSubMachinery.map(sub => {
+                        const img = (sub.image && typeof sub.image === 'string' && sub.image !== 'undefined' && sub.image !== 'null') ? (sub.image.startsWith('http') ? sub.image : API_BASE.split('/api')[0] + (sub.image.startsWith('/') ? sub.image : '/' + sub.image)) : null;
+                        return `
+                          <div class="inline-flex items-center gap-2 bg-white border border-orange-200 rounded-lg p-1.5 shadow-sm">
+                              ${img ? `<img src="${img}" class="h-6 w-6 rounded object-cover" onerror="this.style.display='none'">` : '<i class="fas fa-tools text-orange-500 text-xs px-1"></i>'}
+                              <span class="text-[10px] font-black text-slate-800">${sub.name}</span>
+                          </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            ` : ''}
+        </div>
+
+        <!-- 2. kya kam kerwana hai (Work Description / Purpose) -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 border-b border-slate-200 pb-2 mb-2">
+                <i class="fas fa-comment-dots text-slate-600"></i> Work Description / Purpose
+            </h3>
+            <p class="text-xs text-slate-700 leading-relaxed font-semibold bg-white p-3 rounded-xl border border-slate-100 shadow-inner">
+                ${booking.purpose || 'No specific purpose or description provided.'}
+            </p>
+        </div>
+
+        <!-- Duration details -->
+        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+          <p class="text-[10px] text-slate-500 font-black uppercase">Duration & Time</p>
+          <p class="font-black text-slate-900 mt-1">${booking.priceType === 'hourly' ? booking.hours + ' hrs' : booking.days + ' days'}</p>
+          <p class="text-xs text-slate-500">${from} → ${to}</p>
+        </div>
+
+        <!-- Financial Breakdown -->
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
+          <p class="text-xs font-black text-emerald-700 mb-2">Financial Breakdown</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="text-center">
+              <p class="text-[10px] text-slate-500 font-semibold">Total</p>
+              <p class="font-black text-slate-900">₹${(booking.totalAmount || 0).toLocaleString('en-IN')}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-[10px] text-slate-500 font-semibold">Commission (5%)</p>
+              <p class="font-black text-blue-700">₹${(booking.platformCommission || 0).toLocaleString('en-IN')}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-[10px] text-slate-500 font-semibold">Provider Payout</p>
+              <p class="font-black text-emerald-700">₹${(booking.ownerPayout || 0).toLocaleString('en-IN')}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- FE & Cash Collection -->
+        <div class="rounded-xl bg-slate-50 border border-slate-200 p-3">
+          <p class="text-[10px] text-slate-500 font-black uppercase mb-1">Field Executive</p>
+          <p class="font-semibold text-slate-900">${booking.assignedFieldExec ? booking.assignedFieldExec.name + ' · ' + booking.assignedFieldExec.phone : 'Not Assigned'}</p>
+        </div>
+        <div class="rounded-xl ${booking.cashCollected ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'} border p-3">
+          <p class="text-[10px] font-black uppercase mb-1 ${booking.cashCollected ? 'text-emerald-600' : 'text-rose-600'}">Cash Collection</p>
+          <p class="font-semibold text-slate-900">${booking.cashCollected ? '✅ Collected by ' + (booking.cashCollectedBy?.name || 'Admin') : '⏳ Pending'}</p>
+          ${booking.cashNote ? `<p class="text-xs text-slate-500 mt-1">${booking.cashNote}</p>` : ''}
+        </div>
+        ${booking.cancelReason ? `<div class="rounded-xl bg-rose-50 border border-rose-200 p-3"><p class="text-[10px] text-rose-600 font-black uppercase">Cancel Reason</p><p class="text-sm text-slate-700 mt-1">${booking.cancelReason}</p></div>` : ''}
+      `;
+
+      // Action buttons
+      const actions = document.getElementById('modalActions');
+      actions.innerHTML = '';
+
+      // Status progression buttons
+      const nextStatuses = { 'New': 'Accepted', 'Accepted': 'In Progress', 'In Progress': 'Completed' };
+      if (nextStatuses[booking.status]) {
+        const next = nextStatuses[booking.status];
+        const btn = document.createElement('button');
+        btn.className = 'inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-xs text-white font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all';
+        btn.innerHTML = `<i class="fas fa-arrow-right mr-1.5"></i> Mark as ${next}`;
+        btn.onclick = () => updateStatus(id, next);
+        actions.appendChild(btn);
+      }
+
+      if (booking.status !== 'Cancelled' && booking.status !== 'Completed') {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'inline-flex items-center rounded-xl bg-rose-50 border-2 border-rose-200 px-4 py-2 text-xs text-rose-700 font-black hover:bg-rose-100 transition-all';
+        cancelBtn.innerHTML = `<i class="fas fa-ban mr-1.5"></i> Cancel Booking`;
+        cancelBtn.onclick = () => { const r = prompt('Reason for cancellation?'); if (r) updateStatus(id, 'Cancelled', r); };
+        actions.appendChild(cancelBtn);
+      }
+
+      if (!booking.assignedFieldExec) {
+        const feBtn = document.createElement('button');
+        feBtn.className = 'inline-flex items-center rounded-xl bg-orange-50 border-2 border-orange-200 px-4 py-2 text-xs text-orange-700 font-black hover:bg-orange-100 transition-all';
+        feBtn.innerHTML = `<i class="fas fa-user-plus mr-1.5"></i> Assign FE`;
+        feBtn.onclick = () => { closeModal(); openAssign(id); };
+        actions.appendChild(feBtn);
+      }
+
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'inline-flex items-center rounded-xl bg-slate-100 px-4 py-2 text-xs text-slate-700 font-black hover:bg-slate-200 transition-all';
+      closeBtn.innerHTML = 'Close';
+      closeBtn.onclick = closeModal;
+      actions.appendChild(closeBtn);
+
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('bookingModal').classList.add('hidden'); }
+
+    async function updateStatus(id, status, cancelReason = '') {
+      try {
+        const body = { status };
+        if (cancelReason) body.cancelReason = cancelReason;
+        const r = await fetch(`${API}/admin/rental/bookings/${id}/status`, { method: 'PUT', headers: H, body: JSON.stringify(body) });
+        const d = await r.json();
+        if (r.ok) { toast(d.message || 'Status updated', 'success'); closeModal(); fetchBookings(); fetchStats(); }
+        else toast(d.error || 'Failed', 'error');
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    // ── Assign FE Modal ────────────────────────────────────────────────────
+    async function openAssign(bookingId) {
+      document.getElementById('assignBookingId').value = bookingId;
+      const sel = document.getElementById('feSelect');
+      sel.innerHTML = '<option value="">Loading…</option>';
+      document.getElementById('assignModal').classList.remove('hidden');
+      try {
+        const r = await fetch(`${API}/admin/rental/field-execs`, { headers: H });
+        const fes = await r.json();
+        if (fes.length === 0) { sel.innerHTML = '<option value="">No field executives found</option>'; return; }
+        sel.innerHTML = '<option value="">Select field executive</option>' + fes.map(f => `<option value="${f._id}">${f.name} · ${f.phone}</option>`).join('');
+      } catch (e) { sel.innerHTML = '<option value="">Error loading</option>'; }
+    }
+
+    function closeAssignModal() { document.getElementById('assignModal').classList.add('hidden'); }
+
+    async function submitAssign() {
+      const bookingId = document.getElementById('assignBookingId').value;
+      const fieldExecId = document.getElementById('feSelect').value;
+      if (!fieldExecId) { toast('Please select a field executive', 'error'); return; }
+      try {
+        const r = await fetch(`${API}/admin/rental/bookings/${bookingId}/assign`, { method: 'PUT', headers: H, body: JSON.stringify({ fieldExecId }) });
+        const d = await r.json();
+        if (r.ok) { toast(d.message || 'Assigned successfully', 'success'); closeAssignModal(); fetchBookings(); }
+        else toast(d.error || 'Failed to assign', 'error');
+      } catch (e) { toast('Network error', 'error'); }
+    }
+
+    // ── CSV Export ─────────────────────────────────────────────────────────
+    async function exportBookings() {
+      toast('Starting download...', 'info');
+
+      // Native download triggered via token parameter so backend can provide Content-Disposition
+      const exportUrl = `${API}/admin/rental/export?token=${AUTH}`;
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = exportUrl;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        toast('CSV export initiated!', 'success');
+      }, 3000);
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    let currentDocKeyForViewer = null;
+
+    function openDocViewer(title, url, docKey) {
+      if (!url) return toast('Document URL not available', 'error');
+      currentDocKeyForViewer = docKey || null;
+      document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
+      document.getElementById('docViewerDownloadBtn').href = url;
+
+      const img = document.getElementById('docViewerImage');
+      const errState = document.getElementById('docViewerErrorState');
+
+      if (img && errState) {
+        img.classList.remove('hidden');
+        errState.classList.add('hidden');
+        img.src = url;
+      }
+
+      const rejectBtn = document.getElementById('docViewerRejectBtn');
+      if (rejectBtn) {
+        if (docKey && currentPartnerId) {
+          rejectBtn.onclick = () => rejectPartnerDocument(currentPartnerId, docKey, title);
+          rejectBtn.classList.remove('hidden');
+        } else {
+          rejectBtn.classList.add('hidden');
+        }
+      }
+
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function handleDocViewerImageError(img) {
+      if (!img) return;
+      img.classList.add('hidden');
+      const errState = document.getElementById('docViewerErrorState');
+      if (errState) {
+        errState.classList.remove('hidden');
+      }
+    }
+
+    function closeDocViewer() {
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function rejectPartnerDocument(userId, docKey, docTitle) {
+      if (!confirm(`Are you sure you want to REJECT "${docTitle}"?\n\nThis will clear the document and allow the partner to re-upload it.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/user/${userId}/reject-doc`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ docKey })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast(data.message || 'Document rejected successfully', 'success');
+          closeDocViewer();
+          if (typeof openPartnerModal === 'function') openPartnerModal(userId);
+          fetchPartners();
+        } else {
+          toast(data.error || 'Failed to reject document', 'error');
+        }
+      } catch (e) {
+        toast('Network error: ' + e.message, 'error');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setGlobalDatePreset('all');
+      fetchCashCollections();
+      fetchPartners();
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAssignModal(); closePartnerModal(); closeDocViewer(); toggleSidebar(false); } });
+  </script>
+
+  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
+  <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
+            <i class="fas fa-file-image text-lg"></i>
+          </div>
+          <div>
+            <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
+            <p class="text-[10px] text-purple-300 font-medium">Official Identification & Verification Document</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <i class="fas fa-trash-alt"></i> Reject Document
+          </button>
+          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
+            <i class="fas fa-download"></i> Download / Open
+          </a>
+          <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
+        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
+          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

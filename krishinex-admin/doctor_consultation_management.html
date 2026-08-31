@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Doctor Consultation Management - KrishiNex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Date Filter Dropdown */
+    .date-filter-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 999;
+      background: #fff;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      min-width: 300px;
+      overflow: hidden;
+      animation: slideUp 0.2s ease-out;
+    }
+    .date-preset-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .date-preset-btn:hover { background: #f0fdf4; color: #16a34a; }
+    .date-preset-btn.active { background: #dcfce7; color: #15803d; }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900 overflow-x-hidden">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Doctor Module</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+                                                <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-user-doctor text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-user-md text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p class="text-xs font-black text-slate-900 truncate" id="admin-name">Doctor Panel</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white" onclick="toggleSidebar(true)">
+              <i class="fas fa-bars"></i>
+            </button>
+            <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <i class="fas fa-user-doctor text-emerald-600"></i>
+              Doctor Consultation Management
+            </h1>
+          </div>
+
+          <!-- Date Filter -->
+          <div class="relative" id="dateFilterWrapper">
+            <button onclick="toggleDateDropdown()"
+              class="inline-flex items-center gap-2 h-10 px-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-black hover:bg-emerald-100 hover:border-emerald-300 transition-all shadow-sm">
+              <i class="fas fa-calendar-alt"></i>
+              <span id="dateFilterLabel">All Time</span>
+              <i class="fas fa-chevron-down text-[10px]" id="dateChevron"></i>
+            </button>
+
+            <div id="dateDropdown" class="date-filter-dropdown hidden">
+              <!-- Presets -->
+              <div class="p-2 border-b border-slate-100">
+                <p class="px-3 py-1 text-[10px] font-black uppercase text-slate-400 tracking-widest">Quick Presets</p>
+                <button class="date-preset-btn active" id="preset-all" onclick="setDatePreset('all')">
+                  <i class="fas fa-infinity text-emerald-500"></i> All Time
+                </button>
+                <button class="date-preset-btn" id="preset-today" onclick="setDatePreset('today')">
+                  <i class="fas fa-calendar-day text-sky-500"></i> Today
+                </button>
+                <button class="date-preset-btn" id="preset-yesterday" onclick="setDatePreset('yesterday')">
+                  <i class="fas fa-clock text-orange-500"></i> Yesterday
+                </button>
+                <button class="date-preset-btn" id="preset-7d" onclick="setDatePreset('7d')">
+                  <i class="fas fa-calendar-week text-purple-500"></i> Last 7 Days
+                </button>
+                <button class="date-preset-btn" id="preset-30d" onclick="setDatePreset('30d')">
+                  <i class="fas fa-calendar text-indigo-500"></i> Last 30 Days
+                </button>
+              </div>
+              <!-- Custom Range -->
+              <div class="p-3">
+                <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Custom Range</p>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold">From</label>
+                    <input type="date" id="customStartDate"
+                      class="w-full h-9 px-3 rounded-lg border-2 border-slate-200 text-xs font-bold focus:border-emerald-400 outline-none bg-slate-50 mt-1">
+                  </div>
+                  <div>
+                    <label class="text-[10px] text-slate-500 font-bold">To</label>
+                    <input type="date" id="customEndDate"
+                      class="w-full h-9 px-3 rounded-lg border-2 border-slate-200 text-xs font-bold focus:border-emerald-400 outline-none bg-slate-50 mt-1">
+                  </div>
+                </div>
+                <button onclick="applyCustomDateFilter()"
+                  class="w-full h-9 rounded-lg bg-emerald-600 text-white text-xs font-black hover:bg-emerald-700 transition-all">
+                  <i class="fas fa-filter mr-1"></i> Apply Filter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div onclick="filterByStatus('All')" class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xl flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all">
+                <div class="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                    <i class="fas fa-ticket-alt text-slate-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase">Total Tickets</p>
+                    <p class="text-xl font-black text-slate-900" id="stat-total">0</p>
+                </div>
+            </div>
+            <div onclick="filterByStatus('Pending')" class="bg-white p-4 rounded-2xl border-2 border-emerald-100 shadow-xl flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all">
+                <div class="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i class="fas fa-clock text-orange-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-orange-500 uppercase">Pending</p>
+                    <p class="text-xl font-black text-slate-900" id="stat-pending">0</p>
+                </div>
+            </div>
+            <div onclick="filterByStatus('Contacted')" class="bg-white p-4 rounded-2xl border-2 border-sky-100 shadow-xl flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all">
+                <div class="h-12 w-12 rounded-xl bg-sky-100 flex items-center justify-center">
+                    <i class="fas fa-phone text-sky-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-sky-500 uppercase">Contacted</p>
+                    <p class="text-xl font-black text-slate-900" id="stat-contacted">0</p>
+                </div>
+            </div>
+            <div onclick="filterByStatus('Resolved')" class="bg-white p-4 rounded-2xl border-2 border-emerald-100 shadow-xl flex items-center gap-4 cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all">
+                <div class="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <i class="fas fa-check-circle text-emerald-600"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-emerald-500 uppercase">Resolved</p>
+                    <p class="text-xl font-black text-slate-900" id="stat-resolved">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultation Table -->
+        <section class="bg-white rounded-2xl border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h2 class="text-lg font-black text-slate-900 flex items-center gap-2">
+              <i class="fas fa-list-ul text-emerald-600"></i>
+              Consultation Tickets
+            </h2>
+            <div class="flex items-center gap-2">
+                 <input type="text" id="searchInput" placeholder="Search farmer or crop..." oninput="filterRequests()" 
+                    class="h-10 px-4 rounded-xl border-2 border-slate-200 text-xs font-semibold focus:border-brand-green outline-none w-full md:w-64">
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="bg-slate-50">
+                <tr class="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Ticket ID</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Farmer Details</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Problem Details</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Issue Image</th>
+                  <th class="text-left px-6 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right px-6 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="consultationBody" class="divide-y divide-slate-100">
+                <!-- Data will be loaded here -->
+              </tbody>
+            </table>
+            <div id="loadingState" class="p-12 text-center bg-slate-50/50">
+              <div class="animate-spin inline-block w-8 h-8 border-4 border-brand-green border-t-transparent rounded-full mb-4"></div>
+              <p class="text-slate-400 font-bold italic">Loading consultations...</p>
+            </div>
+            <div id="emptyState" class="hidden p-12 text-center bg-slate-50/50">
+              <i class="fas fa-notes-medical text-slate-200 text-6xl mb-4"></i>
+              <p class="text-slate-400 font-bold">No consultations found.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-[slideUp_0.3s_ease-out]">
+          <div class="px-6 py-4 border-b-2 border-slate-100 flex items-center justify-between">
+              <h3 class="text-lg font-black text-slate-900">Consultation Request Details</h3>
+              <button onclick="closeModal()" class="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          <div class="p-6 custom-scroll max-h-[80vh] overflow-y-auto">
+              <div id="modalContent" class="space-y-6">
+                  <!-- Dynamic Content -->
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Resolve Modal -->
+  <div id="resolveModal" class="fixed inset-0 z-[60] hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl scale-95 transition-transform duration-300">
+          <div class="px-6 py-4 border-b-2 border-slate-100 flex items-center justify-between bg-emerald-50/50">
+              <h3 class="text-lg font-black text-emerald-900 flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> Resolve Consultation
+              </h3>
+              <button onclick="closeResolveModal()" class="h-10 w-10 rounded-xl hover:bg-white text-slate-400 transition-all">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          <div class="p-6 space-y-4">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Add Resolution Note / Advice for Farmer</p>
+              <textarea id="resolveNoteTextarea" placeholder="आपका परामर्श सफल रहा। हमने आवश्यक जानकारी प्रदान कर दी है।" 
+                class="w-full h-32 p-4 rounded-2xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-sm font-semibold transition-all resize-none bg-slate-50 shadow-inner"></textarea>
+              
+              <div class="flex gap-3">
+                  <button onclick="closeResolveModal()" class="flex-1 h-12 rounded-2xl bg-slate-100 text-slate-600 font-black text-xs hover:bg-slate-200 transition-all">
+                    CANCEL
+                  </button>
+                  <button onclick="submitResolution()" class="flex-[2] h-12 rounded-2xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-700 shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-paper-plane"></i> SUBMIT RESOLUTION
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-[100] transform translate-y-20 opacity-0 transition-all duration-300">
+    <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+      <i class="fas fa-check-circle text-emerald-400" id="toastIcon"></i>
+      <span id="toastMsg" class="text-sm font-black"></span>
+    </div>
+  </div>
+
+  <script>
+    
+    const token = localStorage.getItem('employeeToken');
+    let allConsultations = [];
+
+    // --- Date Filter State ---
+    let selectedStartDate = 'all';
+    let selectedEndDate = 'all';
+
+    function getQueryParamString() {
+      if (selectedStartDate === 'all') return 'all=true';
+      return `startDate=${selectedStartDate}&endDate=${selectedEndDate}`;
+    }
+
+    function toggleDateDropdown() {
+      const dd = document.getElementById('dateDropdown');
+      const chevron = document.getElementById('dateChevron');
+      dd.classList.toggle('hidden');
+      chevron.style.transform = dd.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    }
+
+    function setDatePreset(preset) {
+      const today = new Date();
+      const fmt = d => d.toISOString().split('T')[0];
+
+      document.querySelectorAll('.date-preset-btn').forEach(b => b.classList.remove('active'));
+
+      if (preset === 'all') {
+        selectedStartDate = 'all'; selectedEndDate = 'all';
+        document.getElementById('dateFilterLabel').textContent = 'All Time';
+        document.getElementById('preset-all').classList.add('active');
+      } else if (preset === 'today') {
+        selectedStartDate = selectedEndDate = fmt(today);
+        document.getElementById('dateFilterLabel').textContent = 'Today';
+        document.getElementById('preset-today').classList.add('active');
+      } else if (preset === 'yesterday') {
+        const y = new Date(today); y.setDate(y.getDate() - 1);
+        selectedStartDate = selectedEndDate = fmt(y);
+        document.getElementById('dateFilterLabel').textContent = 'Yesterday';
+        document.getElementById('preset-yesterday').classList.add('active');
+      } else if (preset === '7d') {
+        const s = new Date(today); s.setDate(s.getDate() - 6);
+        selectedStartDate = fmt(s); selectedEndDate = fmt(today);
+        document.getElementById('dateFilterLabel').textContent = 'Last 7 Days';
+        document.getElementById('preset-7d').classList.add('active');
+      } else if (preset === '30d') {
+        const s = new Date(today); s.setDate(s.getDate() - 29);
+        selectedStartDate = fmt(s); selectedEndDate = fmt(today);
+        document.getElementById('dateFilterLabel').textContent = 'Last 30 Days';
+        document.getElementById('preset-30d').classList.add('active');
+      }
+
+      document.getElementById('dateDropdown').classList.add('hidden');
+      document.getElementById('dateChevron').style.transform = '';
+      fetchConsultations();
+    }
+
+    function applyCustomDateFilter() {
+      const s = document.getElementById('customStartDate').value;
+      const e = document.getElementById('customEndDate').value;
+      if (!s || !e) { alert('Please select both From and To dates.'); return; }
+      if (s > e) { alert('Start date cannot be after end date.'); return; }
+      selectedStartDate = s; selectedEndDate = e;
+      document.querySelectorAll('.date-preset-btn').forEach(b => b.classList.remove('active'));
+      const fmt = d => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+      document.getElementById('dateFilterLabel').textContent = `${fmt(s)} – ${fmt(e)}`;
+      document.getElementById('dateDropdown').classList.add('hidden');
+      document.getElementById('dateChevron').style.transform = '';
+      fetchConsultations();
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+      const wrapper = document.getElementById('dateFilterWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('dateDropdown').classList.add('hidden');
+        document.getElementById('dateChevron').style.transform = '';
+      }
+    });
+
+    if (!token) {
+      window.location.replace('login.html');
+    }
+
+    function toggleSidebar(show) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (show) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function showToast(msg, error = false) {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      document.getElementById('toastMsg').innerText = msg;
+      
+      icon.className = error ? 'fas fa-exclamation-circle text-rose-400' : 'fas fa-check-circle text-emerald-400';
+      
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    async function fetchConsultations() {
+      const qs = getQueryParamString();
+      const url = `${API_BASE}/doctor/admin/all?${qs}`;
+      console.log('Fetching consultations from:', url);
+      document.getElementById('loadingState').classList.remove('hidden');
+      try {
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) {
+           const errData = await res.json().catch(() => ({}));
+           console.error('API Error:', res.status, errData);
+           showToast(errData.error || `Error ${res.status}: Failed to load`, true);
+           return;
+        }
+
+        const data = await res.json();
+        console.log('Loaded consultations:', data.length);
+        
+        allConsultations = Array.isArray(data) ? data : [];
+        renderTable(allConsultations);
+        updateStats(allConsultations);
+      } catch (err) {
+        console.error('Fetch error:', err);
+        showToast('Connection error. Check backend server.', true);
+      } finally {
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('consultationBody');
+      const emptyState = document.getElementById('emptyState');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      data.forEach(item => {
+        const ticketId = item._id.slice(-6).toUpperCase();
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors group cursor-pointer';
+        tr.onclick = (e) => {
+             // Don't open modal if clicking on action buttons
+             if (e.target.closest('button')) return;
+             openDetailModal(item);
+        };
+        
+        const statusConfig = getStatusConfig(item.status);
+
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <span class="text-[11px] font-black bg-slate-100 px-2 py-1 rounded text-slate-600 block w-fit border border-slate-200">#${ticketId}</span>
+            <p class="text-[10px] text-slate-400 font-bold mt-1">${new Date(item.createdAt).toLocaleDateString()}</p>
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-sm font-black text-slate-900 uppercase">${item.name || 'Unknown'}</p>
+            <p class="text-xs text-brand-blue font-bold tracking-tight mb-1"><i class="fas fa-phone-alt mr-1"></i>${item.phone || 'N/A'}</p>
+            ${item.farmer && item.farmer.address ? `
+              <p class="text-[11px] text-slate-500 font-medium leading-tight max-w-[200px] truncate" title="${item.farmer.address}">
+                <i class="fas fa-map-marker-alt text-rose-500 mr-1"></i>${item.farmer.address}
+              </p>
+            ` : ''}
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-[11px] font-black text-emerald-600 uppercase mb-0.5">${item.cropName}</p>
+            <p class="text-xs font-semibold text-slate-600 line-clamp-1">${item.issue}</p>
+            ${item.assignedTo ? `
+              <p class="text-[10px] text-brand-blue font-black mt-1 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-fit">
+                <i class="fas fa-user-tag mr-1"></i> Assigned: ${item.assignedTo.name}
+              </p>
+            ` : ''}
+          </td>
+          <td class="px-6 py-4">
+            ${item.imageUrl ? `
+              <div class="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shadow-sm" onclick="event.stopPropagation(); window.open('${item.imageUrl}', '_blank')">
+                 <img src="${item.imageUrl}" alt="issue" class="h-full w-full object-cover">
+              </div>
+            ` : `<span class="text-[10px] text-slate-400 font-black italic">No Image</span>`}
+          </td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${statusConfig.class}">
+              <i class="${statusConfig.icon} mr-1.5 text-[9px]"></i>
+              ${item.status}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-2">
+                ${item.status === 'Pending' ? `
+                    <button onclick="updateStatus('${item._id}', 'Contacted')" 
+                        class="h-8 px-3 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-600 hover:text-white text-[10px] font-black transition-all flex items-center gap-1.5 shadow-sm border border-sky-100">
+                        <i class="fas fa-headset"></i> Contacted
+                    </button>
+                ` : ''}
+                ${item.status !== 'Resolved' && item.status !== 'Cancelled' ? `
+                    <button onclick="updateStatus('${item._id}', 'Resolved')"
+                        class="h-8 px-3 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black transition-all flex items-center gap-1.5 shadow-sm border border-emerald-100">
+                        <i class="fas fa-check"></i> Close
+                    </button>
+                ` : ''}
+                <button onclick="openDetailModal('${item._id}')" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition-all">
+                    <i class="fas fa-eye text-xs"></i>
+                </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getStatusConfig(status) {
+        switch(status) {
+            case 'Pending': return { class: 'bg-orange-50 text-orange-600 border border-orange-100', icon: 'fas fa-clock' };
+            case 'Contacted': return { class: 'bg-sky-50 text-sky-600 border border-sky-100', icon: 'fas fa-headset' };
+            case 'Resolved': return { class: 'bg-emerald-50 text-emerald-600 border border-emerald-100', icon: 'fas fa-check-circle' };
+            case 'Cancelled': return { class: 'bg-rose-50 text-rose-600 border border-rose-100', icon: 'fas fa-times-circle' };
+            default: return { class: 'bg-slate-100 text-slate-500', icon: 'fas fa-question' };
+        }
+    }
+
+    function updateStats(data) {
+        document.getElementById('stat-total').innerText = data.length;
+        document.getElementById('stat-pending').innerText = data.filter(i => i.status === 'Pending').length;
+        document.getElementById('stat-contacted').innerText = data.filter(i => i.status === 'Contacted').length;
+        document.getElementById('stat-resolved').innerText = data.filter(i => i.status === 'Resolved').length;
+    }
+
+    let currentResolvingId = null;
+
+    async function updateStatus(id, status) {
+        if (status === 'Resolved') {
+            currentResolvingId = id;
+            document.getElementById('resolveNoteTextarea').value = "आपका परामर्श सफल रहा। हमने आवश्यक जानकारी प्रदान कर दी है।";
+            const resModal = document.getElementById('resolveModal');
+            resModal.classList.remove('hidden');
+            setTimeout(() => resModal.firstElementChild.classList.remove('scale-95'), 10);
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/doctor/admin/${id}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status })
+            });
+
+            if (res.ok) {
+                showToast(`Status updated to ${status}`);
+                fetchConsultations();
+                if (detailModalOpen) closeModal();
+            } else {
+                showToast('Failed to update status', true);
+            }
+        } catch (err) {
+            showToast('Connection error', true);
+        }
+    }
+
+    function closeResolveModal() {
+        const resModal = document.getElementById('resolveModal');
+        resModal.firstElementChild.classList.add('scale-95');
+        setTimeout(() => resModal.classList.add('hidden'), 200);
+        currentResolvingId = null;
+    }
+
+    async function submitResolution() {
+        if (!currentResolvingId) return;
+        const resolvedNote = document.getElementById('resolveNoteTextarea').value.trim();
+        
+        try {
+            const res = await fetch(`${API_BASE}/doctor/admin/${currentResolvingId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: 'Resolved', resolvedNote })
+            });
+
+            if (res.ok) {
+                showToast('Consultation resolved with note');
+                closeResolveModal();
+                fetchConsultations();
+                if (detailModalOpen) closeModal();
+            } else {
+                showToast('Failed to resolve', true);
+            }
+        } catch (err) {
+            showToast('Connection error', true);
+        }
+    }
+
+    let currentStatusFilter = 'All';
+
+    function filterByStatus(status) {
+        currentStatusFilter = status;
+        filterRequests();
+        showToast(`Filtered by: ${status}`);
+    }
+
+    function filterRequests() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        
+        const filtered = allConsultations.filter(item => {
+            const name = (item.name || '').toLowerCase();
+            const crop = (item.cropName || '').toLowerCase();
+            const phone = (item.phone || '').toLowerCase();
+            const address = (item.farmer && item.farmer.address || '').toLowerCase();
+            const matchesQuery = !query || name.includes(query) || crop.includes(query) || phone.includes(query) || address.includes(query);
+            const matchesStatus = currentStatusFilter === 'All' || item.status === currentStatusFilter;
+            
+            return matchesQuery && matchesStatus;
+        });
+        renderTable(filtered);
+    }
+
+    let detailModalOpen = false;
+    function openDetailModal(itemOrId) {
+        const item = typeof itemOrId === 'string' ? allConsultations.find(i => i._id === itemOrId) : itemOrId;
+        console.log('Opening Detail Modal for Item:', item);
+        if (!item) return;
+
+        const modal = document.getElementById('detailModal');
+        const content = document.getElementById('modalContent');
+        const statusConfig = getStatusConfig(item.status);
+
+        content.innerHTML = `
+            <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Farmer Name</p>
+                        <p class="text-sm font-black text-slate-900">${item.name || 'Unknown'}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Phone Number</p>
+                        <p class="text-sm font-bold text-brand-blue underline cursor-pointer" onclick="window.open('tel:${item.phone}')">${item.phone || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Farmer Address</p>
+                        <p class="text-sm font-semibold text-slate-700">${item.farmer && item.farmer.address ? item.farmer.address : 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Request Date</p>
+                        <p class="text-sm font-semibold text-slate-700">${new Date(item.createdAt).toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Current Status</p>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${statusConfig.class} mt-1">
+                          <i class="${statusConfig.icon} mr-1.5 text-[9px]"></i>
+                          ${item.status}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Issue Image</p>
+                     ${item.imageUrl ? `
+                        <div class="aspect-square bg-slate-100 rounded-2xl overflow-hidden border-2 border-slate-100 shadow-inner group relative">
+                            <img src="${item.imageUrl}" class="h-full w-full object-cover">
+                            <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                <a href="${item.imageUrl}" target="_blank" class="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-slate-900">
+                                    <i class="fas fa-expand"></i>
+                                </a>
+                            </div>
+                        </div>
+                     ` : `<div class="aspect-square bg-slate-50 flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200">
+                            <i class="fas fa-image text-slate-200 text-4xl"></i>
+                          </div>`}
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-100">
+                <p class="text-[10px] font-black text-emerald-600 uppercase mb-2">Problem Description (${item.cropName})</p>
+                <div class="text-sm font-semibold text-slate-800 leading-relaxed italic border-l-4 border-emerald-400 pl-4 py-1">
+                    "${item.issue}"
+                </div>
+            </div>
+
+            ${item.status === 'Resolved' ? `
+            <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-100">
+                <p class="text-[10px] font-black text-emerald-700 uppercase mb-2 flex items-center gap-2">
+                    <i class="fas fa-comment-dots"></i> Resolution Note (By Admin)
+                </p>
+                <div class="text-sm font-black text-emerald-900 leading-relaxed pl-4 py-2 border-l-4 border-emerald-500 bg-white/50 rounded-r-xl">
+                    ${item.resolvedNote || '<span class="text-slate-400 italic font-normal text-xs uppercase opacity-60 tracking-wider">No resolution note provided.</span>'}
+                </div>
+            </div>
+            ` : ''}
+
+            ${(item.status !== 'Resolved' && item.status !== 'Cancelled') ? `
+            <div class="bg-sky-50 p-5 rounded-2xl border-2 border-sky-100 border-dashed">
+                <p class="text-[11px] font-black text-sky-600 uppercase mb-3 flex items-center gap-2">
+                    <i class="fas fa-wand-magic-sparkles"></i> Quick Admin Actions
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="updateStatus('${item._id}', 'Contacted')" class="px-4 py-2.5 rounded-xl bg-white border border-sky-200 text-sky-600 hover:bg-sky-600 hover:text-white transition-all text-xs font-black shadow-sm flex items-center gap-2">
+                        <i class="fas fa-phone-volume"></i> Mark as Contacted
+                    </button>
+                    <button onclick="updateStatus('${item._id}', 'Resolved')" class="px-4 py-2.5 rounded-xl bg-white border border-emerald-200 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-black shadow-sm flex items-center gap-2">
+                        <i class="fas fa-check-double"></i> Mark as Resolved
+                    </button>
+                     <button onclick="updateStatus('${item._id}', 'Cancelled')" class="px-4 py-2.5 rounded-xl bg-white border border-rose-200 text-rose-500 hover:bg-rose-500 hover:text-white transition-all text-xs font-black shadow-sm flex items-center gap-2">
+                        <i class="fas fa-trash"></i> Cancel Ticket
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-violet-50 p-5 rounded-2xl border-2 border-violet-100 border-dashed">
+                <p class="text-[11px] font-black text-violet-600 uppercase mb-3 flex items-center gap-2">
+                    <i class="fas fa-user-tag"></i> Assign to Field Executive
+                </p>
+                <div class="flex flex-col md:flex-row gap-3">
+                    <select id="executiveSelect" class="flex-1 h-10 px-4 rounded-xl border-2 border-violet-200 text-xs font-bold outline-none focus:border-violet-500">
+                        <option value="">Select Executive...</option>
+                    </select>
+                    <button onclick="assignToExecutive('${item._id}')" class="h-10 px-6 rounded-xl bg-violet-600 text-white text-xs font-black hover:bg-violet-700 transition-all shadow-md flex items-center justify-center gap-2">
+                        <i class="fas fa-handshake"></i> ASSIGN NOW
+                    </button>
+                </div>
+            </div>
+            ` : ''}
+        `;
+
+        modal.classList.remove('hidden');
+        detailModalOpen = true;
+        
+        if (item.status !== 'Resolved' && item.status !== 'Cancelled') {
+            loadFieldExecutives(item.assignedTo ? item.assignedTo._id : null);
+        }
+    }
+
+    async function loadFieldExecutives(selectedId = null) {
+        console.log('Loading field executives...');
+        try {
+            const res = await fetch(`${API_BASE}/doctor/admin/field-executives`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            console.log('Executives response status:', res.status);
+            const data = await res.json();
+            console.log('Executives data:', data);
+
+            const select = document.getElementById('executiveSelect');
+            if (!select) {
+                console.error('executiveSelect element not found!');
+                return;
+            }
+
+            select.innerHTML = '<option value="">Select Executive...</option>';
+            if (Array.isArray(data)) {
+                data.forEach(exec => {
+                    const opt = document.createElement('option');
+                    opt.value = exec._id;
+                    // Bhai, if business name is missing, show phone number instead of "Khetify"
+                    const suffix = exec.businessName ? `(${exec.businessName})` : `(${exec.phone})`;
+                    opt.innerText = `${exec.name} ${suffix}`;
+                    if (exec._id === selectedId) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                console.log(`Populated ${data.length} executives.`);
+            } else {
+                console.error('Data is not an array:', data);
+                showToast('Failed to load executive list', true);
+            }
+        } catch (err) {
+            console.error('Error loading executives:', err);
+            showToast('Connection error while loading executives', true);
+        }
+    }
+
+    async function assignToExecutive(consultationId) {
+        const executiveId = document.getElementById('executiveSelect').value;
+        if (!executiveId) {
+            showToast('Please select a field executive first', true);
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/doctor/admin/${consultationId}/assign`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ executiveId })
+            });
+
+            if (res.ok) {
+                showToast('Consultation assigned successfully!');
+                fetchConsultations();
+                closeModal();
+            } else {
+                showToast('Failed to assign consultation', true);
+            }
+        } catch (err) {
+            showToast('Connection error', true);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.add('hidden');
+        detailModalOpen = false;
+    }
+
+    fetchConsultations();
+    
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && detailModalOpen) closeModal();
+    });
+  </script>
+  <script src="js/sidebar-guard.js"></script>
+</body>
+</html>

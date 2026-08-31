@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Labour Aggregation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-purple-50 via-slate-50 to-violet-50 text-slate-900 overflow-x-hidden">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+                              <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-purple-50 via-violet-50 to-purple-50 text-purple-700 border-2 border-purple-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 shadow-sm">
+            <i class="fas fa-people-group text-purple-600"></i>
+          </span>
+          <span class="truncate font-black">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Loading...</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-purple-400 hover:bg-purple-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
+                <span class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-people-group text-purple-600"></i>
+                Labour Aggregation Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Labour database, skills, job history & ratings
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Premium Date Filter Dropdown -->
+            <div class="relative inline-block text-left" id="dateFilterContainer">
+              <button onclick="toggleDateDropdown()" id="dateFilterBtn"
+                class="inline-flex h-9 items-center rounded-xl border-2 border-slate-200 bg-white px-4 text-xs text-slate-700 font-bold hover:bg-slate-50 hover:border-emerald-300 transition-all shadow-sm hover:shadow-md">
+                <i class="far fa-calendar mr-2 text-emerald-600"></i>
+                <span id="dateFilterLabel">All Time</span>
+                <i class="fas fa-chevron-down ml-2 text-[10px] text-slate-400"></i>
+              </button>
+              
+              <!-- Dropdown Panel -->
+              <div id="dateFilterDropdown" class="hidden absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white border border-slate-200 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50 transition-all duration-200">
+                <div class="p-4 space-y-4">
+                  <div>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-2">Quick Presets</span>
+                    <div class="grid grid-cols-2 gap-2">
+                      <button onclick="setDatePreset('today')" id="preset-today" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Today</button>
+                      <button onclick="setDatePreset('yesterday')" id="preset-yesterday" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Yesterday</button>
+                      <button onclick="setDatePreset('7d')" id="preset-7d" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last 7 Days</button>
+                      <button onclick="setDatePreset('30d')" id="preset-30d" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last 30 Days</button>
+                      <button onclick="setDatePreset('all')" id="preset-all" class="preset-btn col-span-2 px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all">All Time</button>
+                    </div>
+                  </div>
+                  
+                  <div class="border-t border-slate-100"></div>
+                  
+                  <div class="space-y-3">
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Custom Date Range</span>
+                    <div class="space-y-2">
+                      <div>
+                        <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">From Date</label>
+                        <input type="date" id="filterStartDate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
+                      </div>
+                      <div>
+                        <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">To Date</label>
+                        <input type="date" id="filterEndDate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
+                      </div>
+                      <button onclick="applyCustomDateFilter()" class="w-full mt-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:brightness-105 active:scale-[0.98] transition-all">
+                        Apply Filter
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span id="headerUserName" class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">...</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div
+            class="rounded-2xl border-2 border-purple-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center">
+                <i class="fas fa-users text-purple-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-purple-600 font-black">Total</span>
+            </div>
+            <p id="totalLabourers" class="text-2xl font-black text-slate-900">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Labourers</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-circle-check text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Active</span>
+            </div>
+            <p id="activeLabourers" class="text-2xl font-black text-slate-900">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Available</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-check-circle text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">KYC</span>
+            </div>
+            <p id="kycVerified" class="text-2xl font-black text-slate-900">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Verified</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-briefcase text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">Active</span>
+            </div>
+            <p id="activeJobs" class="text-2xl font-black text-slate-900">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Jobs</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-violet-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-violet-100 to-violet-50 flex items-center justify-center">
+                <i class="fas fa-clipboard-check text-violet-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-violet-600 font-black">Completed</span>
+            </div>
+            <p id="totalJobsCompleted" class="text-2xl font-black text-slate-900">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Jobs</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Revenue</span>
+            </div>
+            <p id="thisMonthRevenue" class="text-2xl font-black text-slate-900">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">This Month</p>
+          </div>
+        </section>
+
+        <!-- LABOUR DATABASE TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-violet-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900">Labour Aggregation Management</h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Registered labourers with KYC, skills & availability
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="skillFilter" onchange="filterLabourers()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All Skills</option>
+                  <option value="harvesting">Harvesting</option>
+                  <option value="sowing">Sowing</option>
+                  <option value="loading">Loading</option>
+                  <option value="helper">General Helper</option>
+                </select>
+                <select id="availabilityFilter" onchange="filterLabourers()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All Availability</option>
+                  <option value="active">Active (Looking for work)</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <input id="labourSearchInput" type="text" placeholder="🔍 Search name / location"
+                  oninput="filterLabourers()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-56" />
+                <button onclick="exportLabourers()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-violet-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Labourer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact & Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Skills</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">KYC</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Availability</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Jobs Done</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Rating</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="labourTableBody">
+                <!-- Data will be populated by fetchLabourers() -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- JOB HISTORY & PERFORMANCE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-emerald-50/20 to-sky-50/20">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-history text-emerald-600"></i>
+                  Job History & Performance
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Completed jobs, hours worked, acres covered & farmer ratings
+                </p>
+              </div>
+              <div class="flex flex-wrap gap-2 items-center">
+                <input id="jobSearchInput" type="text" placeholder="🔍 Search Labour/Farmer" oninput="filterJobsTable()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-48 focus:border-emerald-400 outline-none" />
+                <div class="flex items-center gap-1 bg-white rounded-xl border-2 border-slate-200 px-2 h-9">
+                  <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
+                  <input id="jobStartDate" type="date" onchange="filterJobsTable()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer" title="Start Date" />
+                  <span class="text-slate-300">→</span>
+                  <input id="jobEndDate" type="date" onchange="filterJobsTable()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer" title="End Date" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Job ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Labourer → Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Work Type</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Hours / Acres</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-emerald-600">Commission
+                  </th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-purple-600">Payout</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Rating</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jobHistoryTableBody">
+                <!-- Data will be populated by fetchLabourJobs() -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- LABOUR PROFILE MODAL -->
+  <div id="labourProfileModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeLabourProfile()">
+    <div id="labourModalContent"
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col h-[85vh] border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <!-- Modal Header -->
+      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-purple-50/30 to-white">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-user-circle text-purple-600"></i>
+            Labour Profile
+          </h2>
+          <div class="flex items-center gap-2">
+            <button onclick="openEditLabour()"
+              class="inline-flex items-center rounded-xl bg-purple-600 px-4 py-2 text-xs font-black text-white hover:bg-purple-700 shadow-xl transition-all">
+              <i class="fas fa-edit mr-1"></i> Modify
+            </button>
+            <button onclick="closeLabourProfile()"
+              class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+              <i class="fas fa-times text-slate-700"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="flex border-b-2 border-slate-200 bg-slate-50/50 px-6 overflow-x-auto custom-scroll">
+        <button onclick="switchLabourTab('overview')" id="ltab-overview"
+          class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-purple-500 text-purple-600 transition-all shrink-0">Overview</button>
+        <button onclick="switchLabourTab('docs')" id="ltab-docs"
+          class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all flex items-center gap-1.5 shrink-0">
+          <i class="fas fa-id-card text-xs"></i> KYC & Documents
+        </button>
+        <button onclick="switchLabourTab('jobs')" id="ltab-jobs"
+          class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all shrink-0">Job
+          History</button>
+        <button onclick="switchLabourTab('wallet')" id="ltab-wallet"
+          class="px-6 py-4 text-[10px] font-black uppercase tracking-wider border-b-4 border-transparent text-slate-500 hover:text-slate-700 transition-all shrink-0">Wallet
+          & Payouts</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
+        <!-- Overview Tab -->
+        <div id="lcontent-overview" class="labour-tab-content space-y-6">
+          <div class="text-center">
+            <div
+              class="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-violet-100 text-4xl mb-3 shadow-xl border-4 border-white overflow-hidden cursor-pointer"
+              id="labourProfilePhotoContainer" title="Click to view photo">
+              <i class="fas fa-user text-purple-600"></i>
+            </div>
+            <p class="text-xl font-black text-slate-900" id="labourProfileName">-</p>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              <span class="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black rounded-full"
+                id="labourProfileId">-</span>
+              <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full"
+                id="labourProfileStatus">-</span>
+            </div>
+          </div>
+
+          <!-- CONTACT & KYC SECTION -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+              <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center justify-between">
+                <span class="flex items-center gap-2"><i class="fas fa-address-card text-purple-500"></i> Contact & Identification</span>
+                <button onclick="switchLabourTab('docs')" class="text-[9px] text-purple-600 font-bold hover:underline"><i class="fas fa-folder-open mr-1"></i> All Docs</button>
+              </h3>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-600 font-bold">Phone</span>
+                  <span class="text-sm font-black text-slate-900" id="labourProfilePhone">-</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-600 font-bold">Aadhaar No.</span>
+                  <span class="text-sm font-black text-slate-900" id="labourProfileAadhaar">-</span>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-100 pt-2 mt-2">
+                  <span class="text-xs text-slate-600 font-bold">Location</span>
+                  <span class="text-sm font-black text-slate-900 truncate max-w-[150px]"
+                    id="labourProfileLocation">-</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+              <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+                <i class="fas fa-coins text-amber-500"></i> Wallet & Pricing
+              </h3>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-600 font-bold">Wallet Balance</span>
+                  <span class="text-sm font-black text-green-600" id="labourProfileWallet">-</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-600 font-bold">Daily Rate</span>
+                  <span class="text-sm font-black text-slate-900" id="labourProfileDailyRate">-</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-slate-600 font-bold">Hourly Rate</span>
+                  <span class="text-sm font-black text-slate-900" id="labourProfileHourlyRate">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BANK DETAILS SECTION -->
+          <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+            <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center justify-between">
+              <span class="flex items-center gap-2"><i class="fas fa-university text-blue-500"></i> Bank Account Information</span>
+              <button id="labourProfilePassbookDoc" type="button" class="hidden text-[9px] bg-blue-50 text-blue-700 px-2 py-1 rounded-lg border border-blue-200 hover:bg-blue-100 transition-all font-black"><i class="fas fa-file-invoice mr-1"></i> Passbook Doc</button>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-600 font-bold">A/C Holder</span>
+                <span class="text-sm font-black text-slate-900" id="labourProfileAccHolder">-</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-600 font-bold">Bank Name</span>
+                <span class="text-sm font-black text-slate-900" id="labourProfileBankName">-</span>
+              </div>
+              <div class="flex justify-between items-center border-t border-slate-100 pt-2">
+                <span class="text-xs text-slate-600 font-bold">Account No.</span>
+                <span class="text-sm font-black text-slate-900" id="labourProfileAccNo">-</span>
+              </div>
+              <div class="flex justify-between items-center border-t border-slate-100 pt-2">
+                <span class="text-xs text-slate-600 font-bold">IFSC Code</span>
+                <span class="text-sm font-black text-slate-900 uppercase" id="labourProfileIFSC">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- STATS SECTION -->
+          <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4">
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase">Jobs</p>
+                <p class="text-lg font-black text-purple-700" id="labourProfileJobs">-</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-500 font-black uppercase">Rating</p>
+                <div class="flex items-center justify-center gap-1">
+                  <i class="fas fa-star text-amber-500 text-xs"></i>
+                  <p class="text-lg font-black text-slate-900" id="labourProfileRating">-</p>
+                </div>
+              </div>
+              <div>
+                <p class="text-sm font-black text-slate-900 truncate px-2" id="labourProfileSkills">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- SKILL DESCRIPTION SECTION -->
+          <div class="rounded-2xl border-2 border-slate-100 bg-white p-4">
+            <p class="text-[10px] text-slate-400 font-black uppercase mb-2 ml-1">Skill Description</p>
+            <p class="text-sm font-medium text-slate-700 italic bg-slate-50 p-3 rounded-xl border border-slate-100"
+              id="labourProfileSkillDesc">
+              No description provided.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Documents & KYC Tab -->
+        <div id="lcontent-docs" class="labour-tab-content hidden space-y-4">
+          <!-- Populated dynamically by loadLabourDocs(currentLabour) -->
+        </div>
+
+        <!-- Jobs Tab -->
+        <div id="lcontent-jobs" class="labour-tab-content hidden space-y-4">
+          <div class="overflow-x-auto rounded-3xl border-2 border-slate-100 bg-white">
+            <table class="w-full text-[11px]">
+              <thead class="bg-slate-50 text-slate-500 font-black uppercase tracking-wider">
+                <tr>
+                  <th class="px-4 py-3 text-left">Job ID & Type</th>
+                  <th class="px-4 py-3 text-left">Farmer</th>
+                  <th class="px-4 py-3 text-right">Metrics</th>
+                  <th class="px-4 py-3 text-right">Amount</th>
+                  <th class="px-4 py-3 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody id="labourSpecificJobsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Wallet Tab -->
+        <div id="lcontent-wallet" class="labour-tab-content hidden space-y-6">
+          <div id="labourWalletDashboard"></div>
+          <div class="bg-white rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+            <div class="px-6 py-4 border-b-2 border-slate-100 bg-slate-50/50 flex justify-between items-center">
+              <h3 class="text-[10px] font-black text-slate-900 uppercase">Transaction History</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-[11px]">
+                <thead class="bg-slate-50/50 text-slate-500 font-bold uppercase tracking-wider">
+                  <tr>
+                    <th class="px-4 py-3 text-left">Date</th>
+                    <th class="px-4 py-3 text-left">ID</th>
+                    <th class="px-4 py-3 text-left">Type</th>
+                    <th class="px-4 py-3 text-right">Amount</th>
+                    <th class="px-4 py-3 text-left">Mode</th>
+                    <th class="px-4 py-3 text-left">Note</th>
+                  </tr>
+                </thead>
+                <tbody id="labourWalletHistoryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- EDIT LABOUR MODAL -->
+  <div id="editLabourModal"
+    class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeEditLabour()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-purple-50/30 to-white">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-edit text-purple-600"></i>
+            Edit Labour Profile
+          </h2>
+          <button onclick="closeEditLabour()"
+            class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+            <i class="fas fa-times text-slate-700"></i>
+          </button>
+        </div>
+      </div>
+      <div class="px-6 py-6 space-y-6">
+        <!-- Basic Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Full Name</label>
+            <input type="text" id="editLabourName"
+              class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Phone Number</label>
+            <input type="text" id="editLabourPhone"
+              class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Aadhaar Number</label>
+            <input type="text" id="editLabourAadhaar"
+              class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Location / Address</label>
+            <input type="text" id="editLabourLocation"
+              class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none">
+          </div>
+        </div>
+
+        <!-- Skill Description -->
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Skill Description (Publicly visible to
+            Farmers)</label>
+          <textarea id="editLabourSkillDesc" rows="3"
+            class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-purple-400 outline-none resize-none"
+            placeholder="Describe the labor's expertise..."></textarea>
+        </div>
+
+        <div class="border-t-2 border-slate-100 pt-4">
+          <h3 class="text-xs font-black text-slate-400 uppercase mb-4 flex items-center gap-2">
+            <i class="fas fa-university text-blue-500"></i> Bank Account Information
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">A/C Holder Name</label>
+              <input type="text" id="editLabourAccHolder"
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Bank Name</label>
+              <input type="text" id="editLabourBankName"
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">Account Number</label>
+              <input type="text" id="editLabourAccNo"
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black uppercase text-slate-400 ml-1">IFSC Code</label>
+              <input type="text" id="editLabourIFSC"
+                class="w-full rounded-xl border-2 border-slate-200 px-4 py-2 text-sm font-bold focus:border-blue-400 outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeEditLabour()"
+          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+          Cancel
+        </button>
+        <button onclick="saveLabourProfile()"
+          class="inline-flex items-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-black text-white hover:bg-emerald-700 shadow-xl shadow-emerald-100 transition-all">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASSIGN JOB MODAL -->
+  <div id="assignJobModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeAssignJobModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-orange-50/30 to-white">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-user-plus text-orange-600"></i>
+            Assign Labourer to Job
+          </h2>
+          <button onclick="closeAssignJobModal()"
+            class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+            <i class="fas fa-times text-slate-700"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-6 space-y-5">
+        <p class="text-sm text-slate-600">Select an employee who will supervise this labour job.</p>
+        <div class="space-y-2">
+          <label for="employeeSelect" class="block text-xs font-bold text-slate-700">Select Employee:</label>
+          <select id="employeeSelect"
+            class="w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm font-semibold focus:border-emerald-400 focus:ring-emerald-400 transition-all">
+            <option value="">-- Select an Employee --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-end gap-3">
+        <button onclick="closeAssignJobModal()"
+          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+          Cancel
+        </button>
+        <button onclick="assignJobToEmployee()"
+          class="inline-flex items-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-black text-white hover:bg-emerald-700 shadow-xl shadow-emerald-100 transition-all">
+          Confirm Assignment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== LABOUR PAGE SCRIPT ========== -->
+  <script>
+
+    const AUTH_TOKEN = localStorage.getItem('employeeToken') || localStorage.getItem('kspToken') || localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const userDataStr = localStorage.getItem('employeeUser') || localStorage.getItem('kspUser');
+    const userData = userDataStr ? JSON.parse(userDataStr) : null;
+    const userRole = userData ? userData.role : 'employee';
+    const userPincode = userData ? userData.pincode : null;
+
+    let allLabourers = [];
+
+    // Date Filter State
+    let selectedStartDate = 'all';
+    let selectedEndDate = 'all';
+
+    function getQueryParamString() {
+      if (selectedStartDate && selectedEndDate) {
+        if (selectedStartDate === 'all' && selectedEndDate === 'all') {
+          return 'all=true';
+        } else {
+          return `startDate=${selectedStartDate}&endDate=${selectedEndDate}`;
+        }
+      }
+      return 'all=true';
+    }
+
+    function toggleDateDropdown() {
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (!dropdown) return;
+      if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        dropdown.classList.add('block');
+      } else {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('block');
+      }
+    }
+
+    // Close dropdown on click outside
+    document.addEventListener('click', (e) => {
+      const container = document.getElementById('dateFilterContainer');
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (container && dropdown && !container.contains(e.target) && !dropdown.classList.contains('hidden')) {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('block');
+      }
+    });
+
+    function updatePresetActiveBadge(preset) {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all';
+      });
+      const activeBtn = document.getElementById(`preset-${preset}`);
+      if (activeBtn) {
+        activeBtn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all';
+      }
+    }
+
+    function setDatePreset(preset) {
+      const today = new Date();
+      const formatDate = (d) => d.toISOString().split('T')[0];
+
+      if (preset === 'today') {
+        selectedStartDate = formatDate(today);
+        selectedEndDate = formatDate(today);
+        document.getElementById('dateFilterLabel').textContent = 'Today';
+        document.getElementById('filterStartDate').value = selectedStartDate;
+        document.getElementById('filterEndDate').value = selectedEndDate;
+      } else if (preset === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        selectedStartDate = formatDate(yesterday);
+        selectedEndDate = formatDate(yesterday);
+        document.getElementById('dateFilterLabel').textContent = 'Yesterday';
+        document.getElementById('filterStartDate').value = selectedStartDate;
+        document.getElementById('filterEndDate').value = selectedEndDate;
+      } else if (preset === '7d') {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        selectedStartDate = formatDate(sevenDaysAgo);
+        selectedEndDate = formatDate(today);
+        document.getElementById('dateFilterLabel').textContent = 'Last 7 Days';
+        document.getElementById('filterStartDate').value = selectedStartDate;
+        document.getElementById('filterEndDate').value = selectedEndDate;
+      } else if (preset === '30d') {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        selectedStartDate = formatDate(thirtyDaysAgo);
+        selectedEndDate = formatDate(today);
+        document.getElementById('dateFilterLabel').textContent = 'Last 30 Days';
+        document.getElementById('filterStartDate').value = selectedStartDate;
+        document.getElementById('filterEndDate').value = selectedEndDate;
+      } else if (preset === 'all') {
+        selectedStartDate = 'all';
+        selectedEndDate = 'all';
+        document.getElementById('dateFilterLabel').textContent = 'All Time';
+        document.getElementById('filterStartDate').value = '';
+        document.getElementById('filterEndDate').value = '';
+      }
+
+      updatePresetActiveBadge(preset);
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('block');
+      }
+      refreshAllData();
+    }
+
+    function applyCustomDateFilter() {
+      const start = document.getElementById('filterStartDate').value;
+      const end = document.getElementById('filterEndDate').value;
+      if (!start || !end) {
+        alert('Please select both start and end dates');
+        return;
+      }
+      if (new Date(start) > new Date(end)) {
+        alert('Start date cannot be after end date');
+        return;
+      }
+
+      selectedStartDate = start;
+      selectedEndDate = end;
+
+      const opt = { day: '2-digit', month: 'short' };
+      const startStr = new Date(start).toLocaleDateString('en-US', opt);
+      const endStr = new Date(end).toLocaleDateString('en-US', opt);
+      document.getElementById('dateFilterLabel').textContent = `${startStr} - ${endStr}`;
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all';
+      });
+
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (dropdown) {
+        dropdown.classList.add('hidden');
+        dropdown.classList.remove('block');
+      }
+      refreshAllData();
+    }
+
+    function refreshAllData() {
+      fetchLabourStats();
+      fetchLabourers();
+      fetchLabourJobs();
+    }
+    let currentJobToAssign = null;
+    let allEmployees = [];
+    let currentLabour = null;
+
+    window.addEventListener('DOMContentLoaded', function () {
+      console.log('👷 Labour Aggregation Management Page Loaded');
+
+      // Update UI with actual user name
+      if (typeof userData !== 'undefined' && userData) {
+        if (document.getElementById('sidebarUserName')) document.getElementById('sidebarUserName').textContent = userData.name;
+        if (document.getElementById('headerUserName')) document.getElementById('headerUserName').textContent = userData.name.split(' ')[0];
+      }
+
+      applyRBAC();
+      setDatePreset('all');
+      fetchEmployeesToAssign();
+    });
+
+    function applyRBAC() {
+      if (userRole === 'employee') {
+        document.querySelectorAll('button').forEach(btn => {
+          if (btn.textContent.includes('Edit') || btn.textContent.includes('Delete') || btn.textContent.includes('Block')) {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+          }
+        });
+        document.querySelectorAll('.assign-job-btn').forEach(btn => {
+          btn.disabled = true;
+          btn.classList.add('opacity-50', 'cursor-not-allowed');
+        });
+      }
+    }
+
+    async function fetchLabourStats() {
+      try {
+        const qStr = getQueryParamString();
+        const res = await fetch(`${API_BASE}/employee/admin/labour/stats?${qStr}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('totalLabourers').textContent = (data.totalLabourers || 0).toLocaleString();
+          document.getElementById('activeLabourers').textContent = (data.activeLabourers || 0).toLocaleString();
+          document.getElementById('kycVerified').textContent = (data.kycVerified || 0).toLocaleString();
+          document.getElementById('activeJobs').textContent = (data.activeJobs || 0).toLocaleString();
+          document.getElementById('totalJobsCompleted').textContent = (data.totalJobsCompleted || 0).toLocaleString();
+
+          let revenueStr = `₹${(data.thisMonthRevenue || 0).toLocaleString('en-IN')}`;
+          document.getElementById('thisMonthRevenue').textContent = revenueStr;
+        }
+      } catch (err) {
+        console.error('Stats fetch err:', err);
+      }
+    }
+
+    function updateSkillFilterDropdown(labourers) {
+      const select = document.getElementById('skillFilter');
+      if (!select || !labourers) return;
+      const currentVal = select.value;
+      const skillsSet = new Set();
+      labourers.forEach(l => {
+        const list = Array.isArray(l.skills) ? l.skills : (l.skills ? [l.skills] : []);
+        list.forEach(s => { if (s && typeof s === 'string') skillsSet.add(s.trim()); });
+      });
+      const skills = Array.from(skillsSet).sort();
+      if (skills.length > 0) {
+        select.innerHTML = '<option value="">All Skills</option>' + skills.map(s => `<option value="${s}" ${s === currentVal ? 'selected' : ''}>${s}</option>`).join('');
+      }
+    }
+
+    async function fetchLabourers() {
+      try {
+        const qStr = getQueryParamString();
+        const res = await fetch(`${API_BASE}/employee/admin/labours?${qStr}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allLabourers = data;
+          updateSkillFilterDropdown(allLabourers);
+          renderLabourTable(allLabourers);
+        }
+      } catch (e) { console.error('Error fetching labourers:', e); }
+    }
+
+    function createLabourRow(labour) {
+      const skillsList = Array.isArray(labour.skills) ? labour.skills : [];
+      const skillsStr = skillsList.join(', ').toLowerCase();
+
+      const nameStr = (labour.name || 'Labour Partner').toString();
+      const locationStr = (labour.location || labour.address || '').toString();
+      const availStr = (labour.availability || 'inactive').toString();
+
+      const isVerified = labour.status === 'approved';
+      const kycBadge = isVerified
+        ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-shield-check mr-1"></i> Verified</span>`
+        : `<span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
+
+      const isActive = availStr.toLowerCase() === 'active';
+      const availBadge = isActive
+        ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> Active</span>`
+        : `<span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-200"><i class="fas fa-ban mr-1 text-[8px]"></i> Inactive</span>`;
+
+      const skillBadges = skillsList.map(s => {
+        const sStr = String(s);
+        let icon = 'fas fa-wrench';
+        if (sStr.toLowerCase().includes('harvest')) icon = 'fas fa-wheat-awn';
+        if (sStr.toLowerCase().includes('sow')) icon = 'fas fa-seedling';
+        if (sStr.toLowerCase().includes('load')) icon = 'fas fa-dolly';
+        return `<span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-bold text-slate-700 border border-slate-200"><i class="${icon} mr-0.5 text-[7px]"></i> ${sStr}</span>`;
+      }).join('');
+
+      const isPending = labour.status === 'pending';
+      const isRejected = labour.status === 'rejected';
+
+      const hasDocs = hasUploadedDocuments(labour);
+
+      let actionBtns = '';
+      if (isPending) {
+        if (hasDocs) {
+          actionBtns = `<button onclick="approveLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-emerald-500 text-white px-2.5 py-1 text-[9px] font-black hover:bg-emerald-600 transition-all mr-1 shadow-sm"><i class="fas fa-check mr-1"></i> Approve</button><button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i> Reject</button>`;
+        } else {
+          actionBtns = `<span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-400 px-2 py-1 text-[9px] font-bold border border-slate-200 mr-1" title="Cannot approve: No KYC documents uploaded"><i class="fas fa-lock mr-1"></i> Doc Missing</span><button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i> Reject</button>`;
+        }
+      } else if (isVerified) {
+        actionBtns = `<button onclick="rejectLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-100 transition-all mr-1"><i class="fas fa-ban mr-1"></i> Suspend</button>`;
+      } else if (isRejected) {
+        if (hasDocs) {
+          actionBtns = `<button onclick="approveLabour('${labour._id}')" class="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 text-[9px] font-black hover:bg-emerald-100 transition-all mr-1"><i class="fas fa-check-circle mr-1"></i> Re-activate</button>`;
+        } else {
+          actionBtns = `<span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-400 px-2 py-1 text-[9px] font-bold border border-slate-200 mr-1" title="Cannot activate: No KYC documents uploaded"><i class="fas fa-lock mr-1"></i> Doc Missing</span>`;
+        }
+      }
+
+      return `<tr class="hover:bg-purple-50/30 transition-colors border-b border-slate-100 labour-row" data-name="${nameStr.toLowerCase()}" data-location="${locationStr.toLowerCase()}" data-skill="${skillsStr}" data-availability="${availStr.toLowerCase()}">
+        <td class="px-5 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100 flex items-center justify-center shadow-sm"><i class="fas fa-user text-purple-600"></i></div><div><div class="font-black text-slate-900">${labour.name}</div><div class="text-[10px] text-slate-500 font-medium">ID: ${labour.labourCode}</div></div></div></td>
+        <td class="px-5 py-4"><div class="font-semibold text-slate-900">${labour.phone}</div><div class="text-[10px] text-slate-500 truncate w-32" title="${labour.location}">${labour.location || 'N/A'}</div></td>
+        <td class="px-5 py-4"><div class="flex flex-wrap gap-1">${skillBadges || '<span class="text-xs text-slate-400">None</span>'}</div></td>
+        <td class="px-5 py-4">${kycBadge}</td>
+        <td class="px-5 py-4">${availBadge}</td>
+        <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${labour.jobsDone}</div></td>
+        <td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-1"><i class="fas fa-star text-amber-500 text-xs"></i><span class="font-black text-slate-900">${labour.rating}</span></div></td>
+        <td class="px-5 py-4 text-right">${actionBtns}<button onclick="viewLabourProfile('${labour._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all mr-1" title="View"><i class="fas fa-eye"></i> View</button><button onclick="viewLabourProfile('${labour._id}'); setTimeout(openEditLabour, 100);" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-blue-600 font-bold hover:bg-blue-50 transition-all" title="Edit"><i class="fas fa-edit"></i> Edit</button></td>
+      </tr>`;
+    }
+
+    function renderLabourTable(labourers) {
+      window.progressiveRenderTable('labourTableBody', labourers, createLabourRow, {
+        chunkSize: 20,
+        emptyHtml: '<tr><td colspan="8" class="text-center py-6 text-slate-500 font-bold">No labourers found.</td></tr>'
+      });
+    }
+
+    async function fetchLabourJobs() {
+      try {
+        const qStr = getQueryParamString();
+        const res = await fetch(`${API_BASE}/employee/admin/labour/jobs?${qStr}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) renderJobsTable(data);
+      } catch (e) { console.error('Error fetching jobs:', e); }
+    }
+
+    function renderJobsTable(jobs) {
+      const tbody = document.getElementById('jobHistoryTableBody');
+      tbody.innerHTML = '';
+      if (jobs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-slate-500 font-bold">No jobs found.</td></tr>`;
+        return;
+      }
+
+      jobs.forEach(job => {
+        const from = job.fromDate ? new Date(job.fromDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const to = job.toDate ? new Date(job.toDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        const dateRange = from === 'N/A' ? 'N/A' : `${from} – ${to}`;
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-emerald-50/30 transition-colors border-b border-slate-100 job-history-row";
+
+        // Add data for filtering
+        tr.dataset.search = `${job.labourName} ${job.farmerName} ${job._id}`.toLowerCase();
+        tr.dataset.date = job.fromDate || '';
+
+        let statusBadge = '';
+        if (job.status === 'Completed') statusBadge = `<span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black text-emerald-900 border-2 border-emerald-300"><i class="fas fa-circle-check mr-1"></i> Completed</span>`;
+        else if (job.status === 'In Progress') statusBadge = `<span class="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-[10px] font-black text-sky-900 border-2 border-sky-300"><i class="fas fa-spinner fa-spin mr-1"></i> In Progress</span>`;
+        else statusBadge = `<span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black text-slate-700 border-2 border-slate-300">${job.status}</span>`;
+
+        tr.innerHTML = `
+          <td class="px-5 py-4"><div class="font-black text-slate-900">#${job._id.substring(18).toUpperCase()}</div><div class="text-[10px] text-slate-500 font-medium">${dateRange}</div></td>
+          <td class="px-5 py-4"><div class="text-xs font-semibold text-slate-900">${job.labourName} → ${job.farmerName}</div><div class="text-[10px] text-slate-500 truncate w-32" title="${job.labourLocation}">${job.labourLocation || 'N/A'}</div></td>
+          <td class="px-5 py-4"><span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-briefcase mr-1"></i> ${job.workType}</span></td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-slate-900">
+              ${job.priceType === 'hourly' ? (job.hours || job.hoursWorked || 0) + ' hrs' : (job.priceType === 'daily' ? (job.days || 1) + ' days' : (job.acresCovered || 0) + ' acres')}
+            </div>
+          </td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">₹${job.amount || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-emerald-600">₹${job.platformCommission || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="font-black text-purple-600">₹${job.ownerPayout || 0}</div></td>
+          <td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-1"><i class="fas fa-star text-amber-500 text-sm"></i><span class="font-black text-slate-900">${job.rating || 0}</span></div></td>
+          <td class="px-5 py-4">${statusBadge}</td>
+          <td class="px-5 py-4 text-right">
+            ${!job.assignedTo ? `<button onclick="openAssignJobModal('${job._id}')" class="inline-flex items-center rounded-lg bg-orange-100 text-orange-700 border border-orange-200 px-2.5 py-1.5 text-[10px] font-black hover:bg-orange-200 transition-all assign-job-btn"><i class="fas fa-user-plus mr-1"></i> Assign</button>` : `<div class="flex flex-col items-end gap-1"><span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-500 border border-slate-200 px-2.5 py-1.5 text-[10px] font-black"><i class="fas fa-check-double mr-1"></i> Assigned</span><span class="text-[9px] font-bold text-slate-400">by ${job.assignedEmployeeName || 'Employee'} (${job.assignedEmployeeId || 'N/A'})</span></div>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterJobsTable() {
+      const search = document.getElementById('jobSearchInput').value.toLowerCase();
+      const start = document.getElementById('jobStartDate').value;
+      const end = document.getElementById('jobEndDate').value;
+
+      document.querySelectorAll('.job-history-row').forEach(row => {
+        const matchSearch = row.dataset.search.includes(search);
+
+        let jobDate = null;
+        if (row.dataset.date) {
+          try {
+            // Handle different potential date formats
+            const d = new Date(row.dataset.date);
+            if (!isNaN(d.getTime())) {
+              jobDate = d.toISOString().split('T')[0];
+            }
+          } catch (e) { }
+        }
+
+        let matchDate = true;
+        if (start && jobDate && jobDate < start) matchDate = false;
+        if (end && jobDate && jobDate > end) matchDate = false;
+        if ((start || end) && !jobDate) matchDate = false;
+
+        row.style.display = (matchSearch && matchDate) ? '' : 'none';
+      });
+    }
+
+    function switchLabourTab(tabName) {
+      document.querySelectorAll('.labour-tab-content').forEach(c => c.classList.add('hidden'));
+      const targetContent = document.getElementById(`lcontent-${tabName}`);
+      if (targetContent) targetContent.classList.remove('hidden');
+
+      ['overview', 'docs', 'jobs', 'wallet'].forEach(t => {
+        const btn = document.getElementById(`ltab-${t}`);
+        if (!btn) return;
+        if (t === tabName) {
+          btn.classList.replace('border-transparent', 'border-purple-500');
+          btn.classList.replace('text-slate-500', 'text-purple-600');
+        } else {
+          btn.classList.replace('border-purple-500', 'border-transparent');
+          btn.classList.replace('text-purple-600', 'text-slate-500');
+        }
+      });
+      if (tabName === 'jobs' && currentLabour) loadLabourJobs(currentLabour._id);
+      if (tabName === 'wallet' && currentLabour) loadLabourWallet(currentLabour._id);
+      if (tabName === 'docs' && currentLabour) loadLabourDocs(currentLabour);
+    }
+
+    function openDocViewer(title, url, docKey) {
+      if (!url) return showToast('Document URL not available', 'warning');
+
+      document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
+      document.getElementById('docViewerDownloadBtn').href = url;
+
+      const img = document.getElementById('docViewerImage');
+      const errState = document.getElementById('docViewerErrorState');
+
+      if (img && errState) {
+        img.classList.remove('hidden');
+        errState.classList.add('hidden');
+        img.src = url;
+      }
+
+      const rejectBtn = document.getElementById('docViewerRejectBtn');
+      if (rejectBtn) {
+        if (docKey && currentLabour) {
+          rejectBtn.onclick = () => rejectDocument(currentLabour._id, docKey, title);
+          rejectBtn.classList.remove('hidden');
+        } else {
+          rejectBtn.classList.add('hidden');
+        }
+      }
+
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function handleDocViewerImageError(img) {
+      if (!img) return;
+      img.classList.add('hidden');
+      const errState = document.getElementById('docViewerErrorState');
+      if (errState) {
+        errState.classList.remove('hidden');
+      }
+    }
+
+    function closeDocViewer() {
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function rejectDocument(labourId, docKey, docTitle) {
+      if (!confirm(`Are you sure you want to REJECT the "${docTitle}"?\n\nThis will remove the document and allow the partner to re-upload it.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/${labourId}/reject-doc`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ docKey })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Document rejected successfully', 'success');
+          closeDocViewer();
+
+          if (currentLabour && currentLabour._id === labourId) {
+            if (docKey === 'aadhaarFront') currentLabour.aadhaarDocUrl = '';
+            if (docKey === 'aadhaarBack') currentLabour.aadhaarBackDocUrl = '';
+            if (docKey === 'panCard') currentLabour.panDocUrl = '';
+            if (docKey === 'passbook') {
+              currentLabour.passbookDocUrl = '';
+              if (currentLabour.bankDetails) currentLabour.bankDetails.passbookUrl = '';
+            }
+            if (docKey === 'profilePhoto') currentLabour.profilePhotoUrl = '';
+            currentLabour.status = 'pending';
+            loadLabourDocs(currentLabour);
+          }
+          fetchLabourers();
+          fetchLabourStats();
+        } else {
+          showToast(data.error || 'Failed to reject document', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'warning');
+      }
+    }
+
+    function loadLabourDocs(labour) {
+      const container = document.getElementById('lcontent-docs');
+      if (!container || !labour) return;
+
+      const fixUrl = (u) => {
+        if (!u || typeof u !== 'string') return null;
+        const clean = u.trim();
+        if (!clean || clean === 'undefined' || clean === 'null' || clean === 'none' || clean.includes('undefined')) return null;
+        if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+        const base = API_BASE.split('/api')[0];
+        return base + (clean.startsWith('/') ? clean : '/' + clean);
+      };
+
+      const bank = labour.bankDetails || {};
+
+      const docs = [
+        {
+          key: 'aadhaarFront',
+          title: 'Aadhaar Card (Front Side)',
+          type: 'Aadhaar Front',
+          icon: 'fas fa-address-card text-purple-600',
+          number: labour.aadhaarNumber ? `Aadhaar: ${labour.aadhaarNumber}` : 'Not Provided',
+          url: fixUrl(labour.aadhaarDocUrl || labour.aadhaarFrontUrl || labour.aadhaarFront)
+        },
+        {
+          key: 'aadhaarBack',
+          title: 'Aadhaar Card (Back Side)',
+          type: 'Aadhaar Back',
+          icon: 'fas fa-id-card text-purple-600',
+          number: labour.aadhaarNumber ? `Aadhaar: ${labour.aadhaarNumber}` : 'Not Provided',
+          url: fixUrl(labour.aadhaarBackDocUrl || labour.aadhaarBackUrl || labour.aadhaarBack)
+        },
+        {
+          key: 'panCard',
+          title: 'PAN Card / Govt ID',
+          type: 'PAN Card',
+          icon: 'fas fa-credit-card text-blue-600',
+          number: labour.panNumber || labour.panNo ? `PAN: ${labour.panNumber || labour.panNo}` : 'Not Provided',
+          url: fixUrl(labour.panDocUrl || labour.panCardUrl || labour.panDoc)
+        },
+        {
+          key: 'passbook',
+          title: 'Bank Passbook / Cancelled Cheque',
+          type: 'Bank Passbook',
+          icon: 'fas fa-university text-emerald-600',
+          number: bank.accountNumber ? `A/C: ${bank.accountNumber} (${bank.bankName || 'Bank'})` : 'Not Provided',
+          url: fixUrl(labour.passbookDocUrl || labour.passbookUrl || bank.passbookUrl || bank.passbookDoc)
+        },
+        {
+          key: 'profilePhoto',
+          title: 'Profile Photo / Selfie ID',
+          type: 'Profile Picture',
+          icon: 'fas fa-user-circle text-amber-600',
+          number: `Labour ID: ${labour.labourCode}`,
+          url: fixUrl(labour.profilePhotoUrl || labour.photoUrl || labour.photo)
+        }
+      ];
+
+      const uploadedCount = docs.filter(d => !!d.url).length;
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center bg-purple-50/70 p-4 rounded-2xl border border-purple-200">
+            <div>
+              <h4 class="text-xs font-black text-purple-950 flex items-center gap-2">
+                <i class="fas fa-folder-open text-purple-600"></i>
+                KYC Verification Documents (${uploadedCount}/${docs.length} Uploaded)
+              </h4>
+              <p class="text-[11px] text-purple-700 font-semibold mt-0.5">Preview documents or reject invalid files to allow partner re-upload</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${labour.status === 'approved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
+              ${labour.status === 'approved' ? 'Verified Partner' : 'Pending Verification'}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${docs.map(d => {
+              const hasUrl = !!d.url;
+              return `
+                <div class="bg-white rounded-2xl border-2 border-slate-200 p-4 flex flex-col justify-between shadow-sm hover:border-purple-400 transition-all">
+                  <div>
+                    <div class="flex justify-between items-start mb-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center text-base shrink-0">
+                          <i class="${d.icon}"></i>
+                        </div>
+                        <div>
+                          <h4 class="text-xs font-black text-slate-900">${d.title}</h4>
+                          <p class="text-[10px] text-slate-500 font-semibold truncate max-w-[170px]">${d.number}</p>
+                        </div>
+                      </div>
+                      <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${hasUrl ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}">
+                        ${hasUrl ? '<i class="fas fa-check-circle mr-1"></i> Uploaded' : '<i class="fas fa-times-circle mr-1"></i> Missing'}
+                      </span>
+                    </div>
+
+                    ${hasUrl ? `
+                      <div class="h-40 w-full rounded-xl bg-slate-900 overflow-hidden border border-slate-200 relative group mb-3 cursor-pointer shadow-inner" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')">
+                        <img src="${d.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'h-full w-full bg-slate-900 flex flex-col items-center justify-center text-slate-300 p-4 text-center\\'><i class=\\'fas fa-file-excel text-3xl mb-2 text-purple-400\\'></i><span class=\\'text-[11px] font-bold text-slate-200\\'>Document File Not Found</span><span class=\\'text-[9px] text-slate-400 mt-1\\'>File missing on server</span></div>';">
+                        <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white font-bold text-xs gap-1.5 backdrop-blur-[2px]">
+                          <i class="fas fa-search-plus text-xl text-purple-400"></i>
+                          <span>Click to View Full Screen</span>
+                        </div>
+                      </div>
+                    ` : `
+                      <div class="h-40 w-full rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3">
+                        <i class="fas fa-file-circle-xmark text-3xl mb-1.5 text-slate-300"></i>
+                        <span class="text-[11px] font-bold text-slate-500">Document Not Uploaded</span>
+                        <span class="text-[9px] text-slate-400">Partner has not provided this document yet</span>
+                      </div>
+                    `}
+                  </div>
+
+                  <div class="flex gap-2 pt-2 border-t border-slate-100">
+                    ${hasUrl ? `
+                      <button type="button" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black py-2 rounded-xl flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer">
+                        <i class="fas fa-eye"></i> View
+                      </button>
+                      <button type="button" onclick="rejectDocument('${labour._id}', '${d.key}', '${d.title}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-black rounded-xl border border-rose-200 flex items-center justify-center transition-all cursor-pointer" title="Reject Document for Re-upload">
+                        <i class="fas fa-trash-alt mr-1"></i> Reject
+                      </button>
+                      <a href="${d.url}" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black rounded-xl flex items-center justify-center transition-all" title="Open Image in New Tab">
+                        <i class="fas fa-external-link-alt"></i>
+                      </a>
+                    ` : `
+                      <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
+                        No Document Attached
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadLabourJobs(id) {
+      const body = document.getElementById('labourSpecificJobsBody');
+      body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading history…</td></tr>`;
+      try {
+        const r = await fetch(`${API_BASE}/employee/admin/labour/partners/${id}/jobs`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+
+        if (d.length === 0) {
+          body.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-bold uppercase tracking-widest">No jobs found</td></tr>`;
+          return;
+        }
+
+        body.innerHTML = d.map(j => `
+            <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+               <td class="px-4 py-3">
+                  <div class="font-black text-slate-900">#${j._id.substring(18).toUpperCase()}</div>
+                  <div class="text-[9px] font-bold text-purple-600 uppercase mt-0.5">${j.workType}</div>
+               </td>
+               <td class="px-4 py-3">
+                  <div class="font-bold text-slate-700">${j.farmer?.name || 'Farmer'}</div>
+                  <div class="text-[9px] text-slate-400 font-semibold">${j.farmer?.phone || 'N/A'}</div>
+               </td>
+               <td class="px-4 py-3 text-right font-black text-slate-900">
+                  ${j.priceType === 'hourly' ? (j.hoursWorked || j.hours || 0) + ' hrs' : (j.priceType === 'daily' ? (j.days || 1) + ' days' : (j.acresCovered || 0) + ' acres')}
+               </td>
+               <td class="px-4 py-3 text-right">
+                  <div class="font-black text-emerald-600">₹${j.amount}</div>
+                  <div class="text-[8px] font-bold text-slate-400">Payout: ₹${j.ownerPayout || 0}</div>
+               </td>
+               <td class="px-4 py-3">
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${j.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${j.status}</span>
+               </td>
+            </tr>`).join('');
+      } catch (e) { showToast(e.message, 'warning'); }
+    }
+
+    async function loadLabourWallet(id) {
+      const dashboard = document.getElementById('labourWalletDashboard');
+      const body = document.getElementById('labourWalletHistoryBody');
+      dashboard.innerHTML = `<div class="p-8 text-center text-purple-500"><i class="fas fa-circle-notch fa-spin"></i></div>`;
+      body.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400 uppercase">Loading history…</td></tr>`;
+
+      try {
+        const r = await fetch(`${API_BASE}/employee/admin/labour/partners/${id}/wallet`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+
+        dashboard.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <div class="col-span-1 md:col-span-2 bg-gradient-to-br from-purple-900 to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                  <div class="relative z-10">
+                     <p class="text-[9px] font-bold text-purple-300 uppercase tracking-widest mb-1">Total Balance</p>
+                     <h2 class="text-4xl font-black mb-4">₹${d.balance.toLocaleString()}</h2>
+                     <div class="flex gap-2">
+                        <button onclick="toggleLTxnForm('Credit')" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-lg"><i class="fas fa-plus mr-1"></i> Credit</button>
+                        <button onclick="toggleLTxnForm('Debit')" class="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl text-[9px] font-black uppercase transition-all shadow-lg"><i class="fas fa-minus mr-1"></i> Debit (Payout)</button>
+                     </div>
+                  </div>
+                  <i class="fas fa-coins absolute -right-4 -bottom-4 text-8xl text-white/5 transform -rotate-12"></i>
+               </div>
+               <div id="lTxnFormContainer" class="hidden bg-slate-50 rounded-3xl border-2 border-slate-200 p-4 animate-[fadeIn_0.2s_ease-out]">
+                  <div class="flex justify-between items-center mb-3">
+                     <h4 id="lTxnFormTitle" class="text-[10px] font-black text-slate-900 uppercase">Manual Entry</h4>
+                     <button onclick="toggleLTxnForm()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-[10px]"></i></button>
+                  </div>
+                  <div class="space-y-2">
+                     <input id="ltxn_amt" type="number" placeholder="Amount" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-purple-400">
+                     <input id="ltxn_note" type="text" placeholder="Remark/Note" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-purple-400">
+                     <select id="ltxn_mode" class="w-full h-8 rounded-lg border border-slate-200 px-2 text-xs font-bold outline-none focus:border-purple-400">
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="UPI / PhonePe">UPI / PhonePe</option>
+                        <option value="Cash">Cash</option>
+                     </select>
+                     <button id="ltxn_submit_btn" onclick="submitLabourWalletTxn()" class="w-full h-8 rounded-lg bg-purple-900 text-white text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all">Record Entry</button>
+                  </div>
+               </div>
+            </div>`;
+
+        if (d.transactions.length === 0) {
+          body.innerHTML = `<tr><td colspan="6" class="p-8 text-center font-bold text-slate-400 uppercase">No history available</td></tr>`;
+        } else {
+          body.innerHTML = d.transactions.map(t => {
+            const isCredit = t.type === 'Credit' || t.type === 'Collection';
+            return `
+                  <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                     <td class="px-4 py-3 font-semibold text-slate-400">${new Date(t.createdAt).toLocaleDateString()}</td>
+                     <td class="px-4 py-3 font-black text-slate-900">${t.transactionId.split('-').pop()}</td>
+                     <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span>
+                     </td>
+                     <td class="px-4 py-3 text-right font-black ${isCredit ? 'text-emerald-600' : 'text-rose-600'}">${isCredit ? '+' : '-'}₹${t.amount}</td>
+                     <td class="px-4 py-3 font-bold text-slate-500">${t.paymentMode}</td>
+                     <td class="px-4 py-3 text-slate-400 font-semibold truncate max-w-[100px]">${t.note || '-'}</td>
+                  </tr>`;
+          }).join('');
+        }
+      } catch (e) { showToast(e.message, 'warning'); }
+    }
+
+    let lTxnType = null;
+    function toggleLTxnForm(type) {
+      const container = document.getElementById('lTxnFormContainer');
+      if (!type || (lTxnType === type && !container.classList.contains('hidden'))) {
+        container.classList.add('hidden');
+        return;
+      }
+      lTxnType = type;
+      document.getElementById('lTxnFormTitle').innerText = `${type} Transaction`;
+      document.getElementById('ltxn_submit_btn').innerText = `Record ${type}`;
+      container.classList.remove('hidden');
+    }
+
+    async function submitLabourWalletTxn() {
+      const amt = document.getElementById('ltxn_amt').value;
+      const note = document.getElementById('ltxn_note').value;
+      const mode = document.getElementById('ltxn_mode').value;
+      const btn = document.getElementById('ltxn_submit_btn');
+
+      if (!amt || amt <= 0) return showToast('Enter valid amount', 'warning');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing…';
+
+      try {
+        const r = await fetch(`${API_BASE}/employee/admin/labour/partners/${currentLabour._id}/wallet/transaction`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ type: lTxnType, amount: amt, note, paymentMode: mode })
+        });
+        const d = await r.json();
+        if (r.ok) {
+          showToast(`₹${amt} ${lTxnType}ed successfully`, 'success');
+          loadLabourWallet(currentLabour._id);
+        } else throw new Error(d.error);
+      } catch (e) { showToast(e.message, 'warning'); }
+      finally { btn.disabled = false; btn.innerText = `Record ${lTxnType}`; }
+    }
+
+    function viewLabourProfile(labourId) {
+      const labour = allLabourers.find(l => l._id === labourId);
+      if (!labour) return;
+      currentLabour = labour;
+
+      switchLabourTab('overview');
+
+      const fixUrl = (u) => {
+        if (!u || typeof u !== 'string') return null;
+        const clean = u.trim();
+        if (!clean || clean === 'undefined' || clean === 'null' || clean === 'none' || clean.includes('undefined')) return null;
+        if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+        const base = API_BASE.split('/api')[0];
+        return base + (clean.startsWith('/') ? clean : '/' + clean);
+      };
+
+      const photo = fixUrl(labour.profilePhotoUrl || labour.photoUrl || labour.photo);
+      const container = document.getElementById('labourProfilePhotoContainer');
+      container.innerHTML = photo ? `<img src="${photo}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-purple-600"></i>`;
+      if (photo) {
+        container.onclick = () => openDocViewer(`${labour.name} - Profile Picture`, photo);
+      } else {
+        container.onclick = null;
+      }
+
+      document.getElementById('labourProfileName').textContent = labour.name;
+      document.getElementById('labourProfileId').textContent = `ID: ${labour.labourCode}`;
+      document.getElementById('labourProfileStatus').textContent = labour.status.toUpperCase();
+      document.getElementById('labourProfileStatus').className = `px-3 py-1 text-[10px] font-black rounded-full ${labour.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`;
+
+      document.getElementById('labourProfilePhone').textContent = labour.phone || 'N/A';
+      document.getElementById('labourProfileAadhaar').textContent = labour.aadhaarNumber || 'Not Provided';
+
+      const aadhaarFrontUrl = fixUrl(labour.aadhaarDocUrl || labour.aadhaarFrontUrl || labour.aadhaarFront);
+      const docLink = document.getElementById('labourProfileAadhaarDoc');
+      if (docLink) {
+        if (aadhaarFrontUrl) {
+          docLink.onclick = () => openDocViewer('Aadhaar Card (Front)', aadhaarFrontUrl);
+          docLink.classList.remove('hidden');
+        } else {
+          docLink.classList.add('hidden');
+        }
+      }
+
+      const aadhaarBackUrl = fixUrl(labour.aadhaarBackDocUrl || labour.aadhaarBackUrl || labour.aadhaarBack);
+      const docBackLink = document.getElementById('labourProfileAadhaarBackDoc');
+      if (docBackLink) {
+        if (aadhaarBackUrl) {
+          docBackLink.onclick = () => openDocViewer('Aadhaar Card (Back)', aadhaarBackUrl);
+          docBackLink.classList.remove('hidden');
+        } else {
+          docBackLink.classList.add('hidden');
+        }
+      }
+
+      const bank = labour.bankDetails || {};
+      const passbookUrl = fixUrl(labour.passbookDocUrl || labour.passbookUrl || bank.passbookUrl || bank.passbookDoc);
+      const passbookLink = document.getElementById('labourProfilePassbookDoc');
+      if (passbookLink) {
+        if (passbookUrl) {
+          passbookLink.onclick = () => openDocViewer('Bank Passbook', passbookUrl);
+          passbookLink.classList.remove('hidden');
+        } else {
+          passbookLink.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('labourProfileLocation').textContent = labour.location || 'N/A';
+
+      document.getElementById('labourProfileWallet').textContent = `₹${(labour.walletBalance || 0).toLocaleString()}`;
+      document.getElementById('labourProfileDailyRate').textContent = `₹${(labour.ratePerDay || 0).toLocaleString()}`;
+      document.getElementById('labourProfileHourlyRate').textContent = `₹${(labour.ratePerHour || 0).toLocaleString()}`;
+
+      document.getElementById('labourProfileAccHolder').textContent = bank.holderName || 'N/A';
+      document.getElementById('labourProfileBankName').textContent = bank.bankName || 'N/A';
+      document.getElementById('labourProfileAccNo').textContent = bank.accountNumber || 'N/A';
+      document.getElementById('labourProfileIFSC').textContent = bank.ifscCode || 'N/A';
+
+      document.getElementById('labourProfileJobs').textContent = labour.jobsDone || '0';
+      document.getElementById('labourProfileRating').textContent = labour.rating || '0.0';
+      const skills = Array.isArray(labour.skills) ? labour.skills.join(', ') : (labour.skills || 'None');
+      document.getElementById('labourProfileSkills').textContent = skills;
+      document.getElementById('labourProfileSkillDesc').textContent = (labour.labourDetails?.skillDescription) || 'No description provided.';
+
+      document.getElementById('labourProfileModal').classList.remove('hidden');
+    }
+
+    function hasUploadedDocuments(labour) {
+      if (!labour) return false;
+      const isValidUrl = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+      const bank = labour.bankDetails || {};
+      return (
+        isValidUrl(labour.aadhaarDocUrl) ||
+        isValidUrl(labour.aadhaarFrontUrl) ||
+        isValidUrl(labour.aadhaarFront) ||
+        isValidUrl(labour.aadhaarBackDocUrl) ||
+        isValidUrl(labour.aadhaarBackUrl) ||
+        isValidUrl(labour.aadhaarBack) ||
+        isValidUrl(labour.panDocUrl) ||
+        isValidUrl(labour.panCardUrl) ||
+        isValidUrl(labour.panDoc) ||
+        isValidUrl(labour.passbookDocUrl) ||
+        isValidUrl(labour.passbookUrl) ||
+        isValidUrl(bank.passbookUrl) ||
+        isValidUrl(bank.passbookDoc)
+      );
+    }
+
+    async function approveLabour(id) {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/approve/${id}`, {
+          method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) { showToast(data.message || 'Labourer approved', 'success'); fetchLabourers(); fetchLabourStats(); }
+        else showToast(data.error || 'Failed to approve', 'warning');
+      } catch (e) { showToast('Network error: ' + e.message, 'warning'); }
+    }
+
+    async function rejectLabour(id) {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/reject/${id}`, {
+          method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) { showToast('Labourer suspended', 'success'); fetchLabourers(); fetchLabourStats(); }
+        else showToast('Failed to suspend', 'warning');
+      } catch (e) { showToast('Network error', 'warning'); }
+    }
+
+    function closeLabourProfile() { document.getElementById('labourProfileModal').classList.add('hidden'); }
+
+    function openEditLabour() {
+      if (!currentLabour) return;
+      document.getElementById('editLabourName').value = currentLabour.name || '';
+      document.getElementById('editLabourPhone').value = currentLabour.phone || '';
+      document.getElementById('editLabourAadhaar').value = currentLabour.aadhaarNumber || '';
+      document.getElementById('editLabourLocation').value = currentLabour.address || '';
+      document.getElementById('editLabourSkillDesc').value = currentLabour.labourDetails?.skillDescription || '';
+
+      const bank = currentLabour.bankDetails || {};
+      document.getElementById('editLabourAccHolder').value = bank.holderName || '';
+      document.getElementById('editLabourBankName').value = bank.bankName || '';
+      document.getElementById('editLabourAccNo').value = bank.accountNumber || '';
+      document.getElementById('editLabourIFSC').value = bank.ifscCode || '';
+
+      document.getElementById('editLabourModal').classList.remove('hidden');
+    }
+
+    function closeEditLabour() {
+      document.getElementById('editLabourModal').classList.add('hidden');
+    }
+
+    async function saveLabourProfile() {
+      if (!currentLabour) return;
+      const payload = {
+        name: document.getElementById('editLabourName').value,
+        phone: document.getElementById('editLabourPhone').value,
+        aadhaarNumber: document.getElementById('editLabourAadhaar').value,
+        address: document.getElementById('editLabourLocation').value,
+        bankDetails: {
+          holderName: document.getElementById('editLabourAccHolder').value,
+          bankName: document.getElementById('editLabourBankName').value,
+          accountNumber: document.getElementById('editLabourAccNo').value,
+          ifscCode: document.getElementById('editLabourIFSC').value
+        },
+        skillDescription: document.getElementById('editLabourSkillDesc').value
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/update/${currentLabour._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast('Labourer profile updated successfully', 'success');
+          closeEditLabour();
+          closeLabourProfile();
+          fetchLabourers();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Failed to update profile', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'warning');
+      }
+    }
+
+    async function exportLabourers() {
+      showToast('Starting download...', 'info');
+      let url = `${API_BASE}/employee/admin/labour/export?token=${AUTH_TOKEN}`;
+      if (selectedStartDate && selectedEndDate) {
+        if (selectedStartDate === 'all' && selectedEndDate === 'all') {
+          url += `&all=true`;
+        } else {
+          url += `&startDate=${selectedStartDate}&endDate=${selectedEndDate}`;
+        }
+      }
+      window.open(url, '_blank');
+    }
+
+    function filterLabourers() {
+      const searchTerm = document.getElementById('labourSearchInput').value.toLowerCase();
+      const skillFilter = document.getElementById('skillFilter').value;
+      const availabilityFilter = document.getElementById('availabilityFilter').value;
+      document.querySelectorAll('.labour-row').forEach(row => {
+        const matchesSearch = row.dataset.name.includes(searchTerm) || row.dataset.location.includes(searchTerm);
+        const matchesSkill = skillFilter === 'all' || row.dataset.skill.includes(skillFilter.toLowerCase());
+        const matchesAvailability = availabilityFilter === 'all' || row.dataset.availability === availabilityFilter;
+        row.style.display = (matchesSearch && matchesSkill && matchesAvailability) ? '' : 'none';
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      let bgColor = 'bg-white', borderColor = 'border-slate-300', textColor = 'text-slate-900';
+      if (type === 'success') { bgColor = 'bg-emerald-50'; borderColor = 'border-emerald-300'; textColor = 'text-emerald-900'; }
+      else if (type === 'warning') { bgColor = 'bg-rose-50'; borderColor = 'border-rose-300'; textColor = 'text-rose-900'; }
+
+      toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl ${bgColor} ${borderColor}`;
+      toastMessage.className = `text-sm font-bold ${textColor}`;
+      toastMessage.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    async function fetchEmployeesToAssign() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/all?includeFieldExecutives=true`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          allEmployees = await res.json();
+          const select = document.getElementById('employeeSelect');
+          select.innerHTML = '<option value="">-- Select an Employee --</option>';
+          allEmployees.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp._id;
+            opt.textContent = `${emp.name} (${emp.employeeCode || 'N/A'})`;
+            select.appendChild(opt);
+          });
+        }
+      } catch (e) { console.error('Error fetching employees:', e); }
+    }
+
+    function openAssignJobModal(jobId) {
+      currentJobToAssign = jobId;
+      document.getElementById('assignJobModal').classList.remove('hidden');
+    }
+
+    function closeAssignJobModal() {
+      currentJobToAssign = null;
+      document.getElementById('assignJobModal').classList.add('hidden');
+    }
+
+    async function assignJobToEmployee() {
+      const employeeId = document.getElementById('employeeSelect').value;
+      if (!employeeId) { showToast('Please select an employee', 'warning'); return; }
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/labour/jobs/${currentJobToAssign}/assign`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ employeeId })
+        });
+        if (res.ok) {
+          showToast('Job assigned successfully!', 'success');
+          closeAssignJobModal();
+          fetchLabourJobs();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Failed to assign job', 'warning');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'warning');
+      }
+    }
+
+    function logoutSession() {
+      localStorage.removeItem('employeeToken');
+      window.location.href = 'login.html';
+    }
+  </script>
+  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
+  <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
+            <i class="fas fa-file-image text-lg"></i>
+          </div>
+          <div>
+            <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
+            <p class="text-[10px] text-purple-300 font-medium">Official Identification & Verification Document</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <i class="fas fa-trash-alt"></i> Reject Document
+          </button>
+          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
+            <i class="fas fa-download"></i> Download / Open
+          </a>
+          <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
+        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
+          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

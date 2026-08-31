@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KrishiNex – Smarter Farming, Stronger India</title>
+  <meta name="description"
+    content="KrishiNex is India's leading Agri-Fintech platform offering NexCard, KSP franchise network, drone services, and premium agri-inputs for every farmer." />
+  <meta property="og:title" content="KrishiNex – Smarter Farming, Stronger India" />
+  <meta property="og:description"
+    content="Empowering Indian farmers with smart agri-finance, drone services, and a pan-India KSP rural franchise network." />
+  <meta property="og:image" content="assets/images/hero.png" />
+  <link rel="icon" href="assets/images/logo.png" type="image/png" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#2e7d32', light: '#4caf50', dark: '#1b5e20' },
+            secondary: { DEFAULT: '#1565c0', light: '#42a5f5', dark: '#0d47a1' },
+          }
+        }
+      }
+    };
+  </script>
+</head>
+
+<body class="bg-white">
+
+  <!-- Navbar injected by components.js -->
+  <div id="navbar-root"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       HERO SECTION
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="grad-hero min-h-[90vh] flex items-center py-8 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div class="grid lg:grid-cols-2 gap-14 items-center">
+
+        <!-- Left -->
+        <div class="anim-fadeup order-2 lg:order-1">
+          <!-- Badge -->
+          <div
+            class="inline-flex items-center gap-2 bg-green-100 text-green-800 text-xs font-bold px-4 py-2 rounded-full mb-7 shadow-sm">
+            <span class="w-2 h-2 bg-green-500 rounded-full anim-pulse-g inline-block"></span>
+            India's #1 Agri-Fintech Platform
+          </div>
+
+          <h1
+            class="font-poppins text-4xl md:text-5xl lg:text-[3.4rem] font-extrabold leading-[1.12] text-gray-900 mb-6">
+            Smarter Farming,<br />
+            <span class="text-gradient-primary">
+              Stronger India.
+            </span>
+          </h1>
+
+          <p class="text-gray-600 text-lg leading-relaxed mb-9 max-w-lg">
+            KrishiNex connects every farmer to 24x7 cash access, precision drone services, quality agri-inputs, and a
+            pan-India rural franchise network — all from one app.
+          </p>
+
+          <!-- CTAs -->
+          <div class="flex flex-wrap gap-4 mb-12">
+            <a href="#app" id="cta-download" class="btn btn-primary text-base shadow-lg">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.29.07 2.18.73 2.93.75.87-.17 1.72-.86 3.05-.92 2.08.1 3.58 1.12 4.47 2.78-3.88 2.4-3.3 7.72.55 9.27zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+              </svg>
+              Download App
+            </a>
+            <a href="collaborate.html" id="cta-partner" class="btn btn-outline text-base">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Partner With Us
+            </a>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex flex-wrap gap-8 pt-8 border-t border-gray-200">
+            <div>
+              <p class="text-3xl font-extrabold font-poppins text-primary">10K+</p>
+              <p class="text-xs text-gray-500 mt-0.5 font-medium">Farmers Served</p>
+            </div>
+            <div class="w-px bg-gray-200 self-stretch"></div>
+            <div>
+              <p class="text-3xl font-extrabold font-poppins text-secondary">500+</p>
+              <p class="text-xs text-gray-500 mt-0.5 font-medium">KSP Partners</p>
+            </div>
+            <div class="w-px bg-gray-200 self-stretch"></div>
+            <div>
+              <p class="text-3xl font-extrabold font-poppins" style="color:#f9a825">18+</p>
+              <p class="text-xs text-gray-500 mt-0.5 font-medium">States Covered</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right – Hero Image -->
+        <div class="flex justify-center relative order-1 lg:order-2">
+          <div class="absolute inset-8 rounded-3xl blur-3xl opacity-30"
+            style="background:linear-gradient(135deg,#4caf50,#42a5f5)"></div>
+          <img src="assets/images/hero.png" alt="KrishiNex – Agri-Fintech for Indian Farmers"
+            class="relative rounded-3xl shadow-2xl w-full max-w-lg object-cover anim-float" />
+          <!-- Floating badge -->
+          <div
+            class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-gray-100">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+              style="background:linear-gradient(135deg,#2e7d32,#1565c0)">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-gray-900">NexCard Active</p>
+              <p class="text-[10px] text-gray-500">24x7 Cash Access</p>
+            </div>
+          </div>
+          <div
+            class="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 border border-gray-100">
+            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-gray-900">500+ KSP Centres</p>
+              <p class="text-[10px] text-gray-500">Across India</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SERVICES SECTION
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="py-24 bg-white" id="services">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Header -->
+      <div class="text-center mb-16">
+        <div class="section-chip bg-green-50 text-green-700 mb-5">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+          </svg>
+          Our Services
+        </div>
+        <h2 class="font-poppins text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+          Everything a Farmer Needs,<br />
+          <span class="text-gradient-primary">At One Platform</span>
+        </h2>
+        <p class="text-gray-500 text-base max-w-xl mx-auto">From finance to precision farming — KrishiNex covers it all
+          through our growing KSP network.</p>
+      </div>
+
+      <!-- Strict Bullet Points List -->
+      <div class="max-w-4xl mx-auto grid sm:grid-cols-2 gap-5">
+
+        <!-- NexCard -->
+        <div class="card-lift bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#2e7d32,#43a047)">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <path d="M2 10h20M6 15h4" />
+            </svg>
+          </div>
+          <p class="text-[0.95rem] text-gray-700 leading-snug">
+            <span class="font-poppins font-bold text-gray-900 block mb-0.5 text-base">NexCard:</span>
+            24x7 Cash Access &amp; Smart Agri-Finance.
+          </p>
+        </div>
+
+        <!-- KSP -->
+        <div class="card-lift bg-white border border-blue-100/50 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#1565c0,#42a5f5)">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 22V12h6v10" />
+            </svg>
+          </div>
+          <p class="text-[0.95rem] text-gray-700 leading-snug">
+            <span class="font-poppins font-bold text-gray-900 block mb-0.5 text-base">KrishiNex Sewa Points
+              (KSP):</span>
+            Asset-Light Rural Franchise Network.
+          </p>
+        </div>
+
+        <!-- Drone -->
+        <div class="card-lift bg-white border border-teal-100/50 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#0d9488,#2e7d32)">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </div>
+          <p class="text-[0.95rem] text-gray-700 leading-snug">
+            <span class="font-poppins font-bold text-gray-900 block mb-0.5 text-base">Agri-Service Bookings:</span>
+            Precision drones, equipment rentals, and farm labour at your fingertips.
+          </p>
+        </div>
+
+        <!-- Inputs -->
+        <div class="card-lift bg-white border border-amber-100/50 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#f59e0b,#ef4444)">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <p class="text-[0.95rem] text-gray-700 leading-snug">
+            <span class="font-poppins font-bold text-gray-900 block mb-0.5 text-base">Premium Agri-Inputs:</span>
+            Quality seeds and fertilizers.
+          </p>
+        </div>
+
+        <!-- Dr Expert -->
+        <div class="card-lift bg-white border border-purple-100/50 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#9333ea,#c084fc)">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v8m-4-4h8" />
+            </svg>
+          </div>
+          <p class="text-[0.95rem] text-gray-700 leading-snug">
+            <span class="font-poppins font-bold text-gray-900 block mb-0.5 text-base">Agriculture Dr. Expert:</span>
+            Consult certified agriculture doctors for crop health and better yields.
+          </p>
+        </div>
+
+        <!-- Market Rates -->
+        <div class="card-lift bg-white border border-sky-100/50 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
+            style="background:linear-gradient(135deg,#0284c7,#38bdf8)">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <p class="text-[0.95rem] text-gray-700 leading-snug">
+            <span class="font-poppins font-bold text-gray-900 block mb-0.5 text-base">Real-Time Market Rates:</span>
+            Stay updated with accurate daily mandi prices to sell your crops smarter.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       HOW IT WORKS
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <div class="section-chip bg-blue-50 text-blue-700 mb-5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Simple & Fast
+        </div>
+        <h2 class="font-poppins text-3xl md:text-4xl font-extrabold text-gray-900">How KrishiNex Works</h2>
+        <p class="text-gray-500 mt-3 max-w-md mx-auto">Three simple steps to access the full KrishiNex ecosystem</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 relative">
+        <!-- Connector -->
+        <!-- <div class="hidden md:block absolute top-10 left-1/3 right-1/3 h-0.5"
+          style="background:linear-gradient(90deg,#2e7d32,#1565c0)"></div> -->
+
+        <div class="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100 card-lift" id="how-step1">
+          <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg grad-green">
+            <span class="text-white font-extrabold text-2xl font-poppins">1</span>
+          </div>
+          <h3 class="font-poppins font-bold text-lg mb-3 text-gray-900">Download & Register</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Download the KrishiNex app and register instantly using your
+            Aadhaar or mobile number. No paperwork.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100 card-lift" id="how-step2">
+          <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg grad-green">
+            <span class="text-white font-extrabold text-2xl font-poppins">2</span>
+          </div>
+          <h3 class="font-poppins font-bold text-lg mb-3 text-gray-900">Visit Nearest KSP</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Find your nearest KrishiNex Sewa Point for cash withdrawal,
+            input purchase, drone booking, or expert advisory.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100 card-lift" id="how-step3">
+          <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg grad-green">
+            <span class="text-white font-extrabold text-2xl font-poppins">3</span>
+          </div>
+          <h3 class="font-poppins font-bold text-lg mb-3 text-gray-900">Grow & Prosper</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Access agri-credit, buy quality inputs, book drone services,
+            and earn rewards — all within a unified ecosystem.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       APP OVERVIEW SECTION
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="py-24 bg-white" id="app">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+        <!-- App Mockup -->
+        <div class="flex justify-center">
+          <div class="relative">
+            <div class="absolute -inset-8 rounded-3xl blur-3xl opacity-30"
+              style="background:linear-gradient(135deg,#4caf50,#42a5f5)"></div>
+            <img src="assets/images/app-mockup.png" alt="KrishiNex Mobile App Mockup"
+              class="relative w-64 md:w-80 rounded-3xl shadow-2xl object-cover anim-float" />
+            <!-- Badge above phone -->
+            <div class="absolute -top-4 -right-4 bg-white border border-gray-100 rounded-2xl shadow-lg px-4 py-3">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-4 h-4 text-green-700" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-gray-800">4.8 ★ Rating</p>
+                  <p class="text-[10px] text-gray-500">Play Store</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div>
+          <div class="section-chip bg-green-50 text-green-700 mb-6">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Mobile App
+          </div>
+          <h2 class="font-poppins text-3xl md:text-4xl font-extrabold text-gray-900 mb-5 leading-tight">
+            Your Farm's Digital Partner —
+            <span class="text-gradient-primary">
+              Always in Your Pocket
+            </span>
+          </h2>
+          <p class="text-gray-600 leading-relaxed mb-4 text-base">
+            The KrishiNex app seamlessly connects every farmer to the KSP ecosystem — enabling instant NexCard
+            transactions, real-time crop advisory, and drone service booking from one platform.
+          </p>
+          <p class="text-gray-600 leading-relaxed mb-8 text-base">
+            Whether in the field or at home, KrishiNex ensures you always have access to finance, technology, and expert
+            guidance — making modern farming simple and profitable.
+          </p>
+
+          <!-- App Store Buttons -->
+          <div class="flex flex-wrap gap-4">
+            <a href="#" id="btn-playstore"
+              class="inline-flex items-center gap-3 bg-gray-900 text-white px-5 py-3.5 rounded-2xl hover:bg-gray-700 transition-all hover:-translate-y-0.5 shadow-lg">
+              <svg class="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M3.18 23.76a2 2 0 00.53 1.4L4 25.5l11.94-11.94L4 1.6l-.3.34a2 2 0 00-.52 1.4v20.42zM20.09 10.61L17.2 9l-3.62 3.62 3.62 3.62 2.9-1.61a2.31 2.31 0 000-4zM4.54.24L16.5 12.2 12.88 15.8 1.7 4.61A2 2 0 014.54.24zM4.54 24.16a2 2 0 01-2.84-2.84L12.88 10.2l3.62 3.62z"
+                  style="fill:#34a853" />
+                <path d="M4.54.24L16.5 12.2 12.88 15.8 1.7 4.61A2 2 0 014.54.24z" style="fill:#4285f4" />
+                <path d="M4.54 24.16a2 2 0 01-2.84-2.84L12.88 10.2l3.62 3.62z" style="fill:#fbbc04" />
+                <path d="M20.09 10.61L17.2 9l-3.62 3.62 3.62 3.62 2.9-1.61a2.31 2.31 0 000-4z" style="fill:#ea4335" />
+              </svg>
+              <div class="text-left">
+                <p class="text-[10px] text-gray-400 leading-none">GET IT ON</p>
+                <p class="text-sm font-bold leading-tight">Google Play</p>
+              </div>
+            </a>
+            <a href="#" id="btn-appstore"
+              class="inline-flex items-center gap-3 bg-gray-900 text-white px-5 py-3.5 rounded-2xl hover:bg-gray-700 transition-all hover:-translate-y-0.5 shadow-lg">
+              <svg class="w-7 h-7 fill-white" viewBox="0 0 24 24">
+                <path
+                  d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+              </svg>
+              <div class="text-left">
+                <p class="text-[10px] text-gray-400 leading-none">DOWNLOAD ON THE</p>
+                <p class="text-sm font-bold leading-tight">App Store</p>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CTA BANNER
+  ═══════════════════════════════════════════════════════════ -->
+  <section class="py-20 grad-green relative overflow-hidden">
+    <div class="absolute inset-0 opacity-[0.07]"
+      style="background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><circle cx=%2230%22 cy=%2230%22 r=%222%22 fill=%22white%22/></svg>');background-size:60px 60px">
+    </div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-48 translate-x-48"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full translate-y-32 -translate-x-32"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+      <div class="inline-flex items-center gap-2 bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-full mb-6">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        Be Part of the Revolution
+      </div>
+      <h2 class="font-poppins text-3xl md:text-5xl font-extrabold text-white mb-5 leading-tight">
+        Become a KSP Partner Today!
+      </h2>
+      <p class="text-green-100 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+        Join India's fastest-growing agri-fintech franchise network and build a sustainable, dignified income right from
+        your village.
+      </p>
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="collaborate.html" id="cta-apply"
+          class="bg-white text-primary font-bold px-8 py-4 rounded-full text-base hover:bg-green-50 hover:-translate-y-1 transition-all shadow-xl">
+          Apply for Franchise
+        </a>
+        <a href="contact.html"
+          class="border-2 border-white text-white font-bold px-8 py-4 rounded-full text-base hover:bg-white hover:text-primary hover:-translate-y-1 transition-all">
+          Talk to Our Team
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer injected by components.js -->
+  <div id="footer-root"></div>
+
+  <script src="assets/js/components.js"></script>
+</body>
+
+</html>

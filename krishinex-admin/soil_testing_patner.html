@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Soil Testing Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(71, 85, 105, 0.7);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 9999px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(71, 85, 105, 0.7);
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-purple-50 via-slate-50 to-blue-50 text-slate-900 overflow-x-hidden">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+                              <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 text-indigo-700 border-2 border-indigo-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 shadow-sm">
+            <i class="fas fa-flask text-indigo-600"></i>
+          </span>
+          <span class="truncate font-black">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <a href="Analytics_Reports.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+          <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Analytics & Reports</span>
+      </a>
+
+      <a href="settings.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+          <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Settings</span>
+      </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-purple-400 hover:bg-purple-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-flask text-purple-600"></i>
+                Soil Testing Lab Management
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Lab partners, test capacity, reports & turnaround time
+              </p>
+            </div>
+          </div>
+
+          <!-- Global Date Filters -->
+          <div
+            class="hidden lg:flex items-center gap-2 bg-slate-50 border-2 border-slate-200 rounded-2xl p-1 shadow-sm">
+            <button id="preset-today" onclick="setGlobalDatePreset('today')"
+              class="px-3 py-1 text-xs font-black rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-white">Today</button>
+            <button id="preset-yesterday" onclick="setGlobalDatePreset('yesterday')"
+              class="px-3 py-1 text-xs font-black rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-white">Yesterday</button>
+            <button id="preset-this-month" onclick="setGlobalDatePreset('this-month')"
+              class="px-3 py-1 text-xs font-black rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-white">This
+              Month</button>
+            <button id="preset-all" onclick="setGlobalDatePreset('all')"
+              class="px-3 py-1 text-xs font-black rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-white">All
+              Time</button>
+
+            <div class="h-4 w-[2px] bg-slate-200 mx-1"></div>
+
+            <div class="flex items-center gap-1.5 px-1">
+              <span class="text-[9px] text-slate-400 font-black uppercase">From</span>
+              <input type="date" id="global-start-date" onchange="onGlobalDateChange()"
+                class="bg-transparent text-xs font-bold text-slate-700 outline-none border-b-2 border-transparent focus:border-purple-500 py-0.5">
+              <span class="text-[9px] text-slate-400 font-black uppercase">To</span>
+              <input type="date" id="global-end-date" onchange="onGlobalDateChange()"
+                class="bg-transparent text-xs font-bold text-slate-700 outline-none border-b-2 border-transparent focus:border-purple-500 py-0.5">
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span id="headerUserName" class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            class="rounded-2xl border-2 border-purple-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-microscope text-2xl text-purple-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-purple-600 font-black">Total</span>
+            </div>
+            <p id="total-labs" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-purple-700 font-bold">Testing Labs</p>
+            <div class="mt-3 pt-3 border-t-2 border-purple-100">
+              <p class="text-[10px] text-slate-600 font-semibold">+6 new this week</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-check-circle text-2xl text-emerald-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-emerald-600 font-black">Active</span>
+            </div>
+            <p id="active-labs" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-emerald-700 font-bold">Active Labs</p>
+            <div class="mt-3 pt-3 border-t-2 border-emerald-100">
+              <p class="text-[10px] text-slate-600 font-semibold">91% active rate</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-blue-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-vial text-2xl text-blue-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-blue-600 font-black">All Time</span>
+            </div>
+            <p id="total-tests" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-blue-700 font-bold">Total Tests</p>
+            <div class="mt-3 pt-3 border-t-2 border-blue-100">
+              <p id="total-revenue" class="text-[10px] text-slate-600 font-semibold">...</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-calendar-days text-2xl text-sky-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">This Month</span>
+            </div>
+            <p id="month-tests" class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-sky-700 font-bold">Tests Done</p>
+            <div class="mt-3 pt-3 border-t-2 border-sky-100">
+              <p id="month-revenue" class="text-[10px] text-slate-600 font-semibold">...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SOIL TESTING LABS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-purple-50/20 to-blue-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-flask-vial text-purple-600"></i>
+                  Soil Testing Labs
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Lab partners with test capacity, TAT & report quality
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="labStatusFilter" onchange="filterLabs()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All Status</option>
+                  <option value="approved">Active</option>
+                  <option value="pending">Inactive / Pending</option>
+                </select>
+                <input id="labSearchInput" type="text" placeholder="🔍 Search name / location / ID"
+                  oninput="filterLabs()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-64 hover:border-slate-300 focus:border-purple-300 focus:ring-2 focus:ring-purple-100 transition-all outline-none" />
+                <button onclick="window.location.href='location_management.html'"
+                  class="inline-flex items-center h-9 rounded-xl border-2 border-indigo-200 bg-indigo-50 px-4 text-xs text-indigo-700 font-black hover:bg-indigo-100 shadow-sm transition-all">
+                  <i class="fas fa-map-marker-alt mr-2"></i> Manage Locations
+                </button>
+                <button onclick="exportLabs()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-blue-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Lab Name</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Test Types</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">TAT</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Tests Done</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="labs-table-body">
+                <tr class="hover:bg-purple-50/30 transition-colors border-b border-slate-100">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center shadow-sm">
+                        <i class="fas fa-flask text-purple-600"></i>
+                      </div>
+                      <div>
+                        <div class="font-black text-slate-900">Green Soil Testing Lab</div>
+                        <div class="text-[10px] text-slate-500 font-medium">ID: GL101</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">98XXX22000</div>
+                    <div class="text-[10px] text-slate-500">green@soillab.com</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Karnal, Haryana</div>
+                    <div class="text-[10px] text-slate-500">Industrial Area, Sector 7</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="flex flex-wrap gap-1">
+                      <span
+                        class="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-[9px] font-bold text-purple-700 border border-purple-200">
+                        NPK
+                      </span>
+                      <span
+                        class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 border border-blue-200">
+                        pH
+                      </span>
+                      <span
+                        class="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200">
+                        Micro
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div
+                      class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 border border-emerald-200">
+                      <span class="text-xs font-black text-emerald-700">2-3</span>
+                      <span class="text-[10px] font-bold text-emerald-600">days</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-slate-900">1,240</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-check-circle mr-1"></i> Active
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="viewLab('GL101', 'Green Soil Lab')"
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-blue-50/30 transition-colors">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="h-9 w-9 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-sm">
+                        <i class="fas fa-flask text-blue-600"></i>
+                      </div>
+                      <div>
+                        <div class="font-black text-slate-900">Krishi Soil Analysis Lab</div>
+                        <div class="text-[10px] text-slate-500 font-medium">ID: KL102</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">89XXX33000</div>
+                    <div class="text-[10px] text-slate-500">krishi@lab.com</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="font-semibold text-slate-900">Panipat, Haryana</div>
+                    <div class="text-[10px] text-slate-500">Main Road</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="flex flex-wrap gap-1">
+                      <span
+                        class="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-[9px] font-bold text-purple-700 border border-purple-200">
+                        NPK
+                      </span>
+                      <span
+                        class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-bold text-blue-700 border border-blue-200">
+                        pH
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="inline-flex items-center gap-1 rounded-lg bg-sky-50 px-2.5 py-1 border border-sky-200">
+                      <span class="text-xs font-black text-sky-700">3-4</span>
+                      <span class="text-[10px] font-bold text-sky-600">days</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="font-black text-slate-900">860</div>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span
+                      class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
+                      <i class="fas fa-check-circle mr-1"></i> Active
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="viewLab('KL102', 'Krishi Soil Lab')"
+                      class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+                      <i class="fas fa-eye mr-1"></i> View
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- RECENT SOIL TEST REQUESTS SECTION -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden mt-8">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-indigo-50/20 to-purple-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-list-ul text-indigo-600"></i>
+                  Recent Soil Test Requests
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Individual tests requested by farmers, sample pickups & report status
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <select id="requestStatusFilter" onchange="filterRequests()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="all">All Requests</option>
+                  <option value="New">Unassigned/New</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="InProgress">Testing</option>
+                  <option value="Completed">Completed</option>
+                </select>
+                <div class="flex items-center gap-1 bg-white rounded-xl border-2 border-slate-200 px-2 h-9">
+                  <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
+                  <input id="requestStartDate" type="date" onchange="filterRequests()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                    title="Start Date" />
+                  <span class="text-slate-300">→</span>
+                  <input id="requestEndDate" type="date" onchange="filterRequests()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                    title="End Date" />
+                </div>
+                <input id="requestSearchInput" type="text" placeholder="🔍 Search farmer / lab / ID"
+                  oninput="filterRequests()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-64 hover:border-slate-300 focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition-all outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Request ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Farmer</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location (S/D/V)</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200 text-indigo-600">Crop</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Test Type</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Price</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Payment</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="requests-table-body">
+                <tr>
+                  <td colspan="8" class="px-5 py-4 text-center text-slate-500 font-semibold italic">Loading requests...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- SOIL REQUEST DETAILS MODAL -->
+        <div id="soilRequestModal"
+          class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)]">
+            <!-- Modal Header -->
+            <div
+              class="px-8 py-6 border-b-2 border-slate-100 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 flex items-center justify-between">
+              <div>
+                <h3 id="modalReqId" class="text-xl font-black text-slate-900">#SLR-XXXXXX</h3>
+                <p id="modalReqDate" class="text-xs text-slate-500 font-bold mt-1">Requested on: -- --- ----</p>
+              </div>
+              <button onclick="closeRequestModal()"
+                class="h-10 w-10 rounded-full bg-white border-2 border-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-100 hover:bg-rose-50 transition-all shadow-sm">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto custom-scroll px-8 py-6 space-y-6">
+              <!-- Farmer & Location Info -->
+              <div class="grid grid-cols-2 gap-6">
+                <div class="p-5 rounded-2xl bg-slate-50 border-2 border-slate-100">
+                  <p class="text-[10px] uppercase tracking-wider text-slate-400 font-black mb-3">Farmer Details</p>
+                  <h4 id="modalFarmerName" class="text-base font-black text-slate-900">---</h4>
+                  <p id="modalFarmerPhone" class="text-sm text-slate-600 font-bold mt-1">---</p>
+                </div>
+                <div class="p-5 rounded-2xl bg-indigo-50/50 border-2 border-indigo-100">
+                  <p class="text-[10px] uppercase tracking-wider text-indigo-400 font-black mb-3">Location Details</p>
+                  <p id="modalStateDistrict" class="text-sm font-black text-indigo-900">---</p>
+                  <p id="modalVillage" class="text-xs text-indigo-600 font-bold mt-2">---</p>
+                </div>
+              </div>
+
+              <!-- Test Specifics -->
+              <div class="grid grid-cols-3 gap-4">
+                <div class="space-y-1">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Test Type</p>
+                  <p id="modalTestType" class="text-sm font-black text-slate-900">---</p>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Crop Name</p>
+                  <p id="modalCropName" class="text-sm font-black text-slate-900">---</p>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Sample Type</p>
+                  <p id="modalSampleType" class="text-sm font-black text-slate-900">---</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Visit Preference</p>
+                  <p id="modalVisitType" class="text-sm font-black text-slate-900">---</p>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Agreed Price</p>
+                  <p id="modalPrice" class="text-base font-black text-emerald-600">₹0</p>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Payment Details</p>
+                  <p id="modalPaymentMode" class="text-sm font-black text-slate-900">---</p>
+                  <p id="modalPaymentStatus" class="text-[10px] font-bold uppercase">---</p>
+                </div>
+              </div>
+
+              <!-- Status & Result -->
+              <div class="pt-6 border-t-2 border-slate-100">
+                <div class="flex items-center justify-between mb-4">
+                  <h4 class="text-sm font-black text-slate-900">Service Status</h4>
+                  <span id="modalRequestStatus"
+                    class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-black border uppercase">---</span>
+                </div>
+
+                <div id="advisoryContainer" class="hidden p-4 rounded-xl bg-amber-50 border-1 border-amber-200 mb-4">
+                  <p class="text-[10px] text-amber-600 font-black uppercase mb-1">Advisory Advice</p>
+                  <p id="modalAdvisory" class="text-xs text-amber-800 font-bold italic">---</p>
+                </div>
+
+                <div id="reportContainer"
+                  class="hidden flex items-center justify-between p-4 rounded-xl bg-emerald-50 border-1 border-emerald-200">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="h-10 w-10 rounded-lg bg-white flex items-center justify-center text-emerald-600 shadow-sm">
+                      <i class="fas fa-file-pdf text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs font-black text-emerald-900">Soil Analysis Report.pdf</p>
+                      <p class="text-[10px] text-emerald-600 font-bold">Generated by lab partner</p>
+                    </div>
+                  </div>
+                  <a id="modalDownloadReport" target="_blank" href="#"
+                    class="h-9 px-4 rounded-lg bg-emerald-600 text-white text-[11px] font-black flex items-center shadow-lg hover:bg-emerald-700 transition-all">
+                    <i class="fas fa-download mr-2"></i> Download
+                  </a>
+                </div>
+              </div>
+
+              <!-- Admin Action Section (New) -->
+              <div id="adminActionSection" class="hidden pt-6 border-t-2 border-slate-100 mt-6">
+                <h4 class="text-sm font-black text-slate-900 mb-4">Admin Update Actions</h4>
+
+                <!-- Assignment Section -->
+                <div class="p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-100 mb-6">
+                  <p class="text-[10px] uppercase tracking-wider text-indigo-400 font-black mb-3">Assign Lab Partner</p>
+                  <div class="flex gap-2">
+                    <select id="adminAssignLab"
+                      class="flex-1 h-10 px-3 rounded-xl border-2 border-white text-xs font-bold bg-white focus:border-indigo-500 outline-none transition-all shadow-sm">
+                      <option value="">-- Select Lab Partner --</option>
+                    </select>
+                    <button onclick="assignLabToRequest()"
+                      class="h-10 px-4 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-md hover:bg-indigo-700 transition-all flex items-center gap-2">
+                      <i class="fas fa-check-circle"></i> Assign
+                    </button>
+                  </div>
+                  <p id="currentAssignedLab" class="text-[10px] text-slate-500 font-bold mt-2">Currently Assigned: <span
+                      class="text-indigo-600">None</span></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div class="space-y-1">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Update Status</p>
+                    <select id="adminUpdateStatus"
+                      class="w-full h-10 px-3 rounded-xl border-2 border-slate-100 text-xs font-bold bg-white focus:border-indigo-500 outline-none transition-all">
+                      <option value="Accepted">Accepted</option>
+                      <option value="InProgress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
+                  <div class="space-y-1">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">Report File (PDF)</p>
+                    <label
+                      class="flex items-center justify-center w-full h-10 px-3 rounded-xl border-2 border-dashed border-slate-200 bg-white cursor-pointer hover:bg-slate-50 transition-all">
+                      <span id="fileNameDisplay" class="text-[10px] text-slate-500 font-bold">Choose File...</span>
+                      <input type="file" id="adminUpdateReport" accept=".pdf" class="hidden"
+                        onchange="updateFileName(this)">
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-1 mb-4">
+                  <p class="text-[10px] text-slate-400 font-bold uppercase">Add Lab Advisory</p>
+                  <textarea id="adminUpdateAdvisory" rows="2"
+                    class="w-full p-3 rounded-xl border-2 border-slate-100 text-xs font-bold bg-white focus:border-indigo-500 outline-none transition-all"
+                    placeholder="Enter lab advisory/advice here..."></textarea>
+                </div>
+
+                <button id="btnSubmitAdminUpdate" onclick="submitAdminUpdate()"
+                  class="w-full h-11 rounded-xl bg-indigo-600 text-white text-xs font-black shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                  <i class="fas fa-save"></i> Submit Report & Update Status
+                </button>
+              </div>
+            </div>
+
+
+            <!-- Modal Bottom -->
+            <div class="px-8 py-5 bg-slate-50 flex items-center justify-end border-t-2 border-slate-100">
+              <button onclick="closeRequestModal()"
+                class="px-6 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-sm font-black text-slate-600 hover:bg-slate-100 transition-all">
+                Close View
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEST TYPE DISTRIBUTION -->
+        <section>
+          <div class="mb-4">
+            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+              <i class="fas fa-flask-vial text-indigo-600"></i>
+              Test Type Distribution
+            </h2>
+            <p class="text-sm text-slate-600 font-semibold mt-1">Popular tests, average TAT & pricing</p>
+          </div>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- NPK Test -->
+            <div
+              class="rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white p-5 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <p class="text-base font-black text-slate-900">🧪 NPK Test</p>
+                  <p id="npk-tests" class="text-[11px] text-slate-500 font-semibold mt-1">
+                    ... tests completed
+                  </p>
+                </div>
+                <div
+                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center shadow-sm">
+                  <i class="fas fa-vial text-xl text-purple-600"></i>
+                </div>
+              </div>
+              <div class="pt-3 border-t-2 border-purple-100 space-y-2">
+                <div class="flex justify-between">
+                  <p class="text-xs text-slate-600 font-semibold">Avg TAT</p>
+                  <p id="npk-tat" class="text-sm font-black text-purple-700">... days</p>
+                </div>
+                <div class="flex justify-between">
+                  <p class="text-xs text-slate-600 font-semibold">Avg Price</p>
+                  <p id="npk-price" class="text-sm font-black text-slate-900">₹...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- pH Test -->
+            <div
+              class="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <p class="text-base font-black text-slate-900">💧 pH Test</p>
+                  <p id="ph-tests" class="text-[11px] text-slate-500 font-semibold mt-1">
+                    ... tests completed
+                  </p>
+                </div>
+                <div
+                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center shadow-sm">
+                  <i class="fas fa-droplet text-xl text-blue-600"></i>
+                </div>
+              </div>
+              <div class="pt-3 border-t-2 border-blue-100 space-y-2">
+                <div class="flex justify-between">
+                  <p class="text-xs text-slate-600 font-semibold">Avg TAT</p>
+                  <p id="ph-tat" class="text-sm font-black text-blue-700">... days</p>
+                </div>
+                <div class="flex justify-between">
+                  <p class="text-xs text-slate-600 font-semibold">Avg Price</p>
+                  <p id="ph-price" class="text-sm font-black text-slate-900">₹...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Micro Nutrients -->
+            <div
+              class="rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 hover:shadow-lg hover:-translate-y-1 transition-all">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <p class="text-base font-black text-slate-900">🌱 Micro Nutrients</p>
+                  <p id="micro-tests" class="text-[11px] text-slate-500 font-semibold mt-1">
+                    ... tests completed
+                  </p>
+                </div>
+                <div
+                  class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
+                  <i class="fas fa-seedling text-xl text-emerald-600"></i>
+                </div>
+              </div>
+              <div class="pt-3 border-t-2 border-emerald-100 space-y-2">
+                <div class="flex justify-between">
+                  <p class="text-xs text-slate-600 font-semibold">Avg TAT</p>
+                  <p id="micro-tat" class="text-sm font-black text-emerald-700">... days</p>
+                </div>
+                <div class="flex justify-between">
+                  <p class="text-xs text-slate-600 font-semibold">Avg Price</p>
+                  <p id="micro-price" class="text-sm font-black text-slate-900">₹...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- LAB PROFILE MODAL -->
+  <div id="labProfileModal"
+    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+    onclick="if(event.target === this) closeLabProfile()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <div class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-purple-50/30 to-white">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-flask text-purple-600"></i>
+            Soil Testing Lab Profile
+          </h2>
+          <button onclick="closeLabProfile()"
+            class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+            <i class="fas fa-times text-slate-700"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-6 space-y-5">
+        <div class="text-center">
+          <div
+            class="inline-flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-blue-100 text-5xl mb-4 shadow-xl border-4 border-white">
+            <i class="fas fa-flask text-purple-600"></i>
+          </div>
+          <p class="text-2xl font-black text-slate-900" id="modalLabName">-</p>
+          <p class="text-sm text-slate-500 font-bold mt-2" id="modalLabId">-</p>
+        </div>
+
+        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
+          <div class="flex justify-between items-center mb-3 border-b-2 border-slate-200 pb-2">
+            <p class="text-[10px] uppercase tracking-wider text-purple-600 font-black"><i class="fas fa-flask mr-1"></i>
+              Lab Information</p>
+            <button id="adminEditLabBtn" onclick="toggleLabEdit()"
+              class="text-[10px] font-black text-purple-700 hover:text-purple-900 bg-purple-100 px-3 py-1 rounded-full transition-all">
+              <i class="fas fa-edit mr-1"></i> Edit Lab Info
+            </button>
+          </div>
+
+          <div id="labDisplayMode" class="space-y-3">
+            <div class="flex justify-between">
+              <p class="text-xs text-slate-600 font-bold">Contact</p>
+              <div class="text-right">
+                <p class="text-sm font-black text-slate-900" id="modalLabPhone">-</p>
+                <p class="text-[10px] text-slate-500 font-bold" id="modalLabEmail">-</p>
+              </div>
+            </div>
+            <div class="flex justify-between">
+              <p class="text-xs text-slate-600 font-bold">Location</p>
+              <p class="text-sm font-black text-slate-900" id="modalLabLocation">-</p>
+            </div>
+            <div class="flex justify-between border-t-2 border-slate-200 pt-3 mt-3">
+              <p class="text-xs text-slate-600 font-bold">Supported Tests</p>
+              <div class="flex flex-wrap justify-end gap-1 max-w-[60%]" id="modalLabTests">
+                -
+              </div>
+            </div>
+            <div class="flex justify-between">
+              <p class="text-xs text-slate-600 font-bold">Avg TAT</p>
+              <p class="text-sm font-black text-slate-900"><span id="modalLabTat">-</span> Days</p>
+            </div>
+            <div class="flex justify-between">
+              <p class="text-xs text-slate-600 font-bold">Total Tests Performed</p>
+              <p class="text-sm font-black text-purple-700" id="modalLabTestsDone">-</p>
+            </div>
+            <!-- Lab KYC & License Documents Grid -->
+            <div class="rounded-2xl border-2 border-slate-200 bg-white p-5 space-y-4">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                <p class="text-[10px] uppercase tracking-wider text-purple-600 font-black">
+                  <i class="fas fa-file-contract mr-1"></i> Lab KYC & License Documents
+                </p>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-purple-50 text-purple-700 border border-purple-200">Official Certification</span>
+              </div>
+              <div id="soilLabKycDocsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Dynamically populated document cards -->
+              </div>
+            </div>
+            <div class="flex justify-between border-t-2 border-slate-200 pt-3 mt-3">
+              <p class="text-xs text-slate-600 font-bold">Status</p>
+              <span id="modalLabStatus" class="text-sm font-black text-emerald-700">Active</span>
+            </div>
+          </div>
+
+          <div id="labEditMode" class="space-y-3 hidden">
+            <div>
+              <label class="text-[10px] text-slate-400 font-bold">Average TAT (Days)</label>
+              <input type="number" id="editLabTat" min="1"
+                class="w-full text-xs font-bold border-b-2 border-purple-200 bg-transparent py-1 outline-none focus:border-purple-500 transition-colors">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-400 font-bold block mb-1">Supported Tests</label>
+              <div class="flex flex-wrap gap-3">
+                <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input type="checkbox" id="editTestNPK" value="NPK"
+                    class="rounded border-slate-300 text-purple-600 focus:ring-purple-500">
+                  NPK
+                </label>
+                <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input type="checkbox" id="editTestPH" value="pH"
+                    class="rounded border-slate-300 text-purple-600 focus:ring-purple-500">
+                  pH
+                </label>
+                <label class="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input type="checkbox" id="editTestMicro" value="Micro Nutrients"
+                    class="rounded border-slate-300 text-purple-600 focus:ring-purple-500">
+                  Micro Nutrients
+                </label>
+              </div>
+            </div>
+            <div class="flex gap-2 pt-2">
+              <button onclick="saveAdminLabEdits()"
+                class="flex-1 bg-purple-600 text-white text-[10px] font-black py-2 rounded-xl hover:bg-purple-700 shadow-md transition-all">Save
+                Changes</button>
+              <button onclick="toggleLabEdit(false)"
+                class="flex-1 bg-slate-200 text-slate-700 text-[10px] font-black py-2 rounded-xl hover:bg-slate-300 transition-all">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank Details Section -->
+        <div id="modalBankSection" class="rounded-2xl border-2 border-blue-100 bg-blue-50/30 p-5 hidden">
+          <div class="flex justify-between items-center mb-3">
+            <p class="text-[10px] uppercase tracking-wider text-blue-600 font-black"><i
+                class="fas fa-building-columns mr-1"></i> Bank Details</p>
+            <button id="adminEditBankBtn" onclick="toggleBankEdit()"
+              class="text-[10px] font-black text-blue-700 hover:text-blue-900 bg-blue-100 px-3 py-1 rounded-full transition-all">
+              <i class="fas fa-edit mr-1"></i> Edit Bank Info
+            </button>
+          </div>
+
+          <div id="bankDisplayMode" class="grid grid-cols-2 gap-x-6 gap-y-2">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold">Account Holder</p>
+              <p id="modalBankHolder" class="text-sm font-black text-slate-900">—</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold">Bank Name</p>
+              <p id="modalBankName" class="text-sm font-black text-slate-900">—</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold">Account Number</p>
+              <p id="modalBankAccNo" class="text-sm font-black text-slate-900">—</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold">IFSC Code</p>
+              <p id="modalBankIfsc" class="text-sm font-black text-slate-900">—</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-[10px] text-slate-400 font-bold">Branch Address</p>
+              <p id="modalBankAddr" class="text-sm font-bold text-slate-700">—</p>
+            </div>
+          </div>
+
+          <div id="bankEditMode" class="grid grid-cols-2 gap-x-4 gap-y-3 hidden">
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">Account Holder</label>
+              <input type="text" id="editBankHolder"
+                class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">Bank Name</label>
+              <input type="text" id="editBankName"
+                class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">Account Number</label>
+              <input type="text" id="editBankAccNo"
+                class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-1">
+              <label class="text-[10px] text-slate-400 font-bold">IFSC Code</label>
+              <input type="text" id="editBankIfsc"
+                class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-2">
+              <label class="text-[10px] text-slate-400 font-bold">Branch Address</label>
+              <input type="text" id="editBankAddr"
+                class="w-full text-xs font-bold border-b-2 border-blue-200 bg-transparent py-1 outline-none focus:border-blue-500 transition-colors">
+            </div>
+            <div class="col-span-2 flex gap-2 mt-2">
+              <button onclick="saveAdminBankEdits()"
+                class="flex-1 bg-blue-600 text-white text-[10px] font-black py-2 rounded-xl hover:bg-blue-700 shadow-md transition-all">Save
+                Changes</button>
+              <button onclick="toggleBankEdit(false)"
+                class="flex-1 bg-slate-200 text-slate-700 text-[10px] font-black py-2 rounded-xl hover:bg-slate-300 transition-all">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents: Lab License & Cancel Cheque -->
+        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 font-black mb-3"><i
+              class="fas fa-folder-open mr-1"></i> KYC Documents</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <i class="fas fa-ribbon text-blue-600 text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-black text-slate-800">Laboratory License</p>
+                  <p id="modalLabLicenseStatus" class="text-[10px] text-slate-500 font-semibold">Not Uploaded</p>
+                </div>
+              </div>
+              <a id="modalLabLicenseLink" href="#" target="_blank"
+                class="text-xs font-black text-blue-600 hover:underline hidden"><i class="fas fa-eye mr-1"></i> View</a>
+              <span id="modalLabLicenseNone" class="text-xs font-bold text-slate-400">—</span>
+            </div>
+            <div class="flex items-center justify-between border-t border-slate-200 pt-3">
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <i class="fas fa-credit-card text-orange-600 text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-black text-slate-800">Cancelled Cheque</p>
+                  <p id="modalCancelChequeStatus" class="text-[10px] text-slate-500 font-semibold">Not Uploaded</p>
+                </div>
+              </div>
+              <a id="modalCancelChequeLink" href="#" target="_blank"
+                class="text-xs font-black text-orange-600 hover:underline hidden"><i class="fas fa-eye mr-1"></i>
+                View</a>
+              <span id="modalCancelChequeNone" class="text-xs font-bold text-slate-400">—</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="border-t-2 border-slate-200 px-6 py-4 bg-slate-50 flex justify-between items-center">
+        <div class="flex gap-2" id="modalActionButtons">
+          <!-- Dynamically populated based on status -->
+        </div>
+        <button onclick="closeLabProfile()"
+          class="inline-flex items-center rounded-xl bg-slate-200 px-6 py-3 text-sm font-black text-slate-700 hover:bg-slate-300 transition-all">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-[100] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== SOIL TESTING PAGE SCRIPT ========== -->
+  <script>
+
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+    function fixUrl(url) {
+      if (!url || url === 'undefined' || url === 'null') return '#';
+      if (url.startsWith('http')) return url;
+      const root = window.IMAGE_BASE || API_BASE.replace('/api', '');
+      const cleanUrl = url.replace(/\\/g, '/').replace(/^\/+/, '');
+      return `${root}/${cleanUrl}`;
+    }
+
+    function downloadFileDirectly(url, filename) {
+      const fixedUrl = fixUrl(url);
+      if (!fixedUrl || fixedUrl === '#') {
+        showToast('No file available for download', 'warning');
+        return;
+      }
+
+      const a = document.createElement('a');
+      a.href = fixedUrl;
+      a.download = filename || 'Soil_Analysis_Report.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    let globalStartDate = '';
+    let globalEndDate = '';
+
+    function formatLocalDate(date) {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function setGlobalDatePreset(preset) {
+      const today = new Date();
+
+      // Update UI active button
+      ['today', 'yesterday', 'this-month', 'all'].forEach(p => {
+        const btn = document.getElementById(`preset-${p}`);
+        if (btn) {
+          if (p === preset) {
+            btn.className = "px-3 py-1 text-xs font-black rounded-xl transition-all bg-purple-600 text-white shadow-sm";
+          } else {
+            btn.className = "px-3 py-1 text-xs font-black rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-white";
+          }
+        }
+      });
+
+      if (preset === 'today') {
+        globalStartDate = formatLocalDate(today);
+        globalEndDate = formatLocalDate(today);
+      } else if (preset === 'yesterday') {
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        globalStartDate = formatLocalDate(yesterday);
+        globalEndDate = formatLocalDate(yesterday);
+      } else if (preset === 'this-month') {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        globalStartDate = formatLocalDate(firstDay);
+        globalEndDate = formatLocalDate(today);
+      } else { // 'all'
+        globalStartDate = '';
+        globalEndDate = '';
+      }
+
+      const startInput = document.getElementById('global-start-date');
+      const endInput = document.getElementById('global-end-date');
+      if (startInput) startInput.value = globalStartDate;
+      if (endInput) endInput.value = globalEndDate;
+
+      refreshAllData();
+    }
+
+    function onGlobalDateChange() {
+      globalStartDate = document.getElementById('global-start-date').value;
+      globalEndDate = document.getElementById('global-end-date').value;
+
+      // Clear active presets
+      ['today', 'yesterday', 'this-month', 'all'].forEach(p => {
+        const btn = document.getElementById(`preset-${p}`);
+        if (btn) {
+          btn.className = "px-3 py-1 text-xs font-black rounded-xl transition-all text-slate-600 hover:text-slate-900 hover:bg-white";
+        }
+      });
+
+      refreshAllData();
+    }
+
+    function refreshAllData() {
+      fetchSoilLabStats();
+      fetchSoilRequests();
+      fetchSoilLabs();
+    }
+
+    const TEST_TYPES_DICT = {
+      'NPK': { color: 'purple', icon: 'vial' },
+      'pH': { color: 'blue', icon: 'droplet' },
+      'Micro Nutrients': { color: 'emerald', icon: 'microscope' }
+    };
+
+    let allSoilLabs = [];
+
+    window.addEventListener('DOMContentLoaded', async function () {
+      console.log('🧪 Soil Testing Management Page Loaded');
+      setGlobalDatePreset('all');
+      await fetchSoilLabs();
+    });
+
+    async function fetchSoilLabStats() {
+      try {
+        if (!AUTH_TOKEN) {
+          showToast('Not authenticated', 'error');
+          return;
+        }
+
+        let url = `${API_BASE}/employee/admin/soil-labs/stats`;
+        const params = new URLSearchParams();
+        if (globalStartDate) params.append('startDate', globalStartDate);
+        if (globalEndDate) params.append('endDate', globalEndDate);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Update KPI Cards
+          document.getElementById('total-labs').textContent = data.totalLabs;
+          document.getElementById('active-labs').textContent = data.activeLabs;
+          document.getElementById('total-tests').textContent = data.totalTests;
+          document.getElementById('month-tests').textContent = data.thisMonthTests;
+
+          document.getElementById('total-revenue').textContent = `₹${(data.totalRevenue || 0).toLocaleString('en-IN')} revenue`;
+          document.getElementById('month-revenue').textContent = `₹${(data.thisMonthRevenue || 0).toLocaleString('en-IN')} this month`;
+
+          // Update Test Type Distribution
+          const npk = data.testTypes?.npk || { tests: 0, avgPrice: 0, avgTAT: 3 };
+          document.getElementById('npk-tests').textContent = `${npk.tests} tests completed`;
+          document.getElementById('npk-tat').textContent = `${npk.avgTAT} days`;
+          document.getElementById('npk-price').textContent = `₹${npk.avgPrice}`;
+
+          const ph = data.testTypes?.ph || { tests: 0, avgPrice: 0, avgTAT: 3 };
+          document.getElementById('ph-tests').textContent = `${ph.tests} tests completed`;
+          document.getElementById('ph-tat').textContent = `${ph.avgTAT} days`;
+          document.getElementById('ph-price').textContent = `₹${ph.avgPrice}`;
+
+          const micro = data.testTypes?.microNutrients || { tests: 0, avgPrice: 0, avgTAT: 3 };
+          document.getElementById('micro-tests').textContent = `${micro.tests} tests completed`;
+          document.getElementById('micro-tat').textContent = `${micro.avgTAT} days`;
+          document.getElementById('micro-price').textContent = `₹${micro.avgPrice}`;
+        } else {
+          showToast(data.message || 'Error fetching stats', 'error');
+        }
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+        showToast('Failed to fetch soil lab stats', 'error');
+      }
+    }
+
+    async function fetchSoilLabs() {
+      try {
+        if (!AUTH_TOKEN) return;
+
+        let url = `${API_BASE}/employee/admin/soil-labs`;
+        const params = new URLSearchParams();
+        if (globalStartDate) params.append('startDate', globalStartDate);
+        if (globalEndDate) params.append('endDate', globalEndDate);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // The backend returns an array directly, not { labs: [...] }
+          allSoilLabs = data;
+          renderLabsTable(data);
+        } else {
+          showToast(data.message || 'Error fetching labs', 'error');
+        }
+      } catch (err) {
+        console.error('Error fetching soil labs:', err);
+        showToast('Failed to fetch soil labs', 'error');
+      }
+    }
+
+    let allSoilRequests = [];
+
+    async function fetchSoilRequests() {
+      try {
+        if (!AUTH_TOKEN) return;
+
+        let url = `${API_BASE}/employee/admin/soil-requests`;
+        const params = new URLSearchParams();
+        if (globalStartDate) params.append('startDate', globalStartDate);
+        if (globalEndDate) params.append('endDate', globalEndDate);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          allSoilRequests = data;
+          renderRequestsTable(data);
+        } else {
+          console.error('Error fetching requests', data);
+        }
+      } catch (err) {
+        console.error('Error fetching soil requests:', err);
+        const tbody = document.getElementById('requests-table-body');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-4 text-center text-rose-500 font-bold">Failed to load requests. Please check if backend is running.</td></tr>`;
+        }
+      }
+    }
+
+    function viewRequestDetails(reqId) {
+      const req = allSoilRequests.find(r => r._id === reqId);
+      if (!req) return;
+
+      document.getElementById('modalReqId').textContent = `#SLR-${req._id.substring(req._id.length - 6).toUpperCase()}`;
+      document.getElementById('modalReqDate').textContent = `Requested on: ${new Date(req.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+
+      document.getElementById('modalFarmerName').textContent = req.farmerName;
+      document.getElementById('modalFarmerPhone').textContent = req.farmerPhone;
+      document.getElementById('modalStateDistrict').textContent = `${req.state || 'N/A'} / ${req.district || 'N/A'}`;
+      document.getElementById('modalVillage').textContent = req.village || 'N/A';
+
+      document.getElementById('modalTestType').textContent = req.testType;
+      document.getElementById('modalCropName').textContent = req.cropName || 'N/A';
+      document.getElementById('modalSampleType').textContent = req.sampleType || 'Field Soil';
+      document.getElementById('modalVisitType').textContent = req.visitType || 'I will visit lab';
+      document.getElementById('modalPrice').textContent = `₹${req.price}`;
+
+      const pMode = req.paymentMethod === 'wallet' ? 'NexCard Wallet' : 'Cash on Visit';
+      document.getElementById('modalPaymentMode').textContent = pMode;
+      const pStatus = document.getElementById('modalPaymentStatus');
+      pStatus.textContent = req.paymentStatus || 'Pending';
+      pStatus.className = `text-[10px] font-bold uppercase ${req.paymentStatus === 'Completed' ? 'text-emerald-600' : 'text-amber-600'}`;
+
+      const statusEl = document.getElementById('modalRequestStatus');
+      statusEl.textContent = req.status === 'InProgress' ? 'In Progress' : req.status;
+
+      let statusClass = "bg-slate-50 text-slate-700 border-slate-200";
+      if (req.status === 'Completed') statusClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+      if (req.status === 'New') statusClass = "bg-amber-50 text-amber-700 border-amber-200";
+      if (req.status === 'InProgress' || req.status === 'In Progress') statusClass = "bg-indigo-50 text-indigo-700 border-indigo-200";
+      statusEl.className = `inline-flex items-center rounded-full ${statusClass} px-3 py-1 text-[11px] font-black border uppercase`;
+
+      // Advisory
+      const advisoryContainer = document.getElementById('advisoryContainer');
+      if (req.advisoryText) {
+        document.getElementById('modalAdvisory').textContent = req.advisoryText;
+        advisoryContainer.classList.remove('hidden');
+      } else {
+        advisoryContainer.classList.add('hidden');
+      }
+
+      // Report
+      const reportContainer = document.getElementById('reportContainer');
+      const downloadBtn = document.getElementById('modalDownloadReport');
+      if (req.reportUrl) {
+        downloadBtn.onclick = (e) => {
+          e.preventDefault();
+          const reportId = req._id.substring(req._id.length - 6).toUpperCase();
+          downloadFileDirectly(req.reportUrl, `Soil_Testing_Report_SLR-${reportId}.pdf`);
+        };
+        reportContainer.classList.remove('hidden');
+      } else {
+        reportContainer.classList.add('hidden');
+      }
+
+      document.getElementById('soilRequestModal').classList.remove('hidden');
+
+      // Admin update logic - only show for non-completed requests
+      const adminSection = document.getElementById('adminActionSection');
+      if (adminSection) {
+        if (req.status !== 'Completed' || req.paymentStatus !== 'Completed') {
+          adminSection.classList.remove('hidden');
+          document.getElementById('adminUpdateStatus').value = req.status === 'New' ? 'Accepted' : req.status;
+          document.getElementById('adminUpdateAdvisory').value = req.advisoryText || '';
+          document.getElementById('adminUpdateReport').value = '';
+          const fileNameDisp = document.getElementById('fileNameDisplay');
+          if (fileNameDisp) fileNameDisp.textContent = 'Choose File...';
+        } else {
+          adminSection.classList.add('hidden');
+        }
+      }
+
+      // Populate Lab Dropdown
+      const labSelect = document.getElementById('adminAssignLab');
+      if (labSelect) {
+        labSelect.innerHTML = '<option value="">-- Select Lab Partner --</option>';
+        allSoilLabs.forEach(lab => {
+          const opt = document.createElement('option');
+          opt.value = lab._id;
+          const locText = lab.location ? ` (${lab.location})` : '';
+          opt.textContent = `${lab.labName}${locText}`;
+          labSelect.appendChild(opt);
+        });
+      }
+      const currentLabText = document.getElementById('currentAssignedLab');
+      if (currentLabText) {
+        currentLabText.innerHTML = `Currently Assigned: <span class="text-indigo-600 font-black">${req.labName || 'None'}</span>`;
+      }
+
+      // Store current req ID globally for update
+      window.currentUpdatingReqId = reqId;
+    }
+
+    function updateFileName(input) {
+      const fileName = input.files[0] ? input.files[0].name : 'Choose File...';
+      document.getElementById('fileNameDisplay').textContent = fileName;
+    }
+
+    async function submitAdminUpdate() {
+      const btn = document.getElementById('btnSubmitAdminUpdate');
+      const reqId = window.currentUpdatingReqId;
+      if (!reqId) return;
+
+      const status = document.getElementById('adminUpdateStatus').value;
+      const advisoryText = document.getElementById('adminUpdateAdvisory').value;
+      const reportFile = document.getElementById('adminUpdateReport').files[0];
+
+      const formData = new FormData();
+      formData.append('status', status);
+      formData.append('advisoryText', advisoryText);
+      if (reportFile) {
+        formData.append('report', reportFile);
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+
+        const response = await fetch(`${API_BASE}/soil/requests/${reqId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showToast('Success', 'Soil request updated successfully!', 'success');
+          closeRequestModal();
+          // Refresh data
+          if (typeof fetchSoilLabStats === 'function') fetchSoilLabStats();
+          if (typeof fetchSoilRequests === 'function') fetchSoilRequests();
+        } else {
+          showToast('Error', result.message || 'Failed to update request', 'error');
+        }
+      } catch (error) {
+        console.error('Update error:', error);
+        showToast('Error', 'An error occurred while updating', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save mr-2"></i> Submit Report & Update Status';
+      }
+    }
+
+    async function assignLabToRequest() {
+      const reqId = window.currentUpdatingReqId;
+      const labId = document.getElementById('adminAssignLab').value;
+      if (!reqId || !labId) {
+        showToast('Please select a lab partner', 'warning');
+        return;
+      }
+
+      if (!confirm('Assign this test to the selected lab? They will be notified.')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/employee/admin/soil-requests/${reqId}/assign`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ labId })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          showToast('Lab assigned successfully!', 'success');
+          // Refresh details and table
+          fetchSoilRequests();
+          // Update the modal text
+          const lab = allSoilLabs.find(l => l._id === labId);
+          if (lab) {
+            document.getElementById('currentAssignedLab').innerHTML = `Currently Assigned: <span class="text-indigo-600 font-black">${lab.labName}</span>`;
+          }
+        } else {
+          showToast(result.error || 'Failed to assign lab', 'error');
+        }
+      } catch (error) {
+        console.error('Assign error:', error);
+        showToast('An error occurred', 'error');
+      }
+    }
+
+    function closeRequestModal() {
+      document.getElementById('soilRequestModal').classList.add('hidden');
+    }
+
+    function renderRequestsTable(requests) {
+      const tbody = document.getElementById('requests-table-body');
+      tbody.innerHTML = '';
+
+      if (requests.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-4 text-center text-slate-500 font-semibold">No soil test requests found.</td></tr>`;
+        return;
+      }
+
+      requests.forEach(req => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-indigo-50/30 transition-colors border-b border-slate-100";
+
+        const dateStr = new Date(req.createdAt).toLocaleDateString('en-GB', {
+          day: '2-digit', month: 'short', year: 'numeric'
+        });
+
+        let displayStatus = req.status;
+        if (displayStatus === 'InProgress') displayStatus = 'In Progress';
+
+        let statusClass = "bg-slate-50 text-slate-700 border-slate-200";
+        if (req.status === 'Completed') statusClass = "bg-emerald-50 text-emerald-700 border-emerald-200";
+        if (req.status === 'New') statusClass = "bg-amber-50 text-amber-700 border-amber-200";
+        if (req.status === 'InProgress' || req.status === 'In Progress') statusClass = "bg-indigo-50 text-indigo-700 border-indigo-200";
+
+        tr.innerHTML = `
+          <td class="px-5 py-4 font-bold text-slate-900">
+            <button onclick="viewRequestDetails('${req._id}')" class="text-xs font-black text-indigo-600 hover:text-indigo-800 transition-colors hover:underline">
+              #SLR-${req._id.substring(req._id.length - 6).toUpperCase()}
+            </button>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-black text-slate-900">${req.farmerName}</div>
+            <div class="text-[10px] text-slate-500">${req.farmerPhone}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-bold text-slate-800 text-xs">${req.state || 'N/A'}, ${req.district || 'N/A'}</div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-tight">${req.village || 'N/A'}</div>
+          </td>
+          <td class="px-5 py-4 font-black text-indigo-600">${req.cropName || 'N/A'}</td>
+          <td class="px-5 py-4 font-bold text-slate-900">${req.testType}</td>
+          <td class="px-5 py-4 text-right font-black text-indigo-600">₹${req.price}</td>
+          <td class="px-5 py-4">
+            <div class="text-[10px] font-black text-slate-800 uppercase">${req.paymentMethod === 'wallet' ? 'Wallet' : 'Cash'}</div>
+            <div class="text-[9px] font-bold ${req.paymentStatus === 'Completed' ? 'text-emerald-600' : 'text-amber-600'} uppercase">${req.paymentStatus || 'Pending'}</div>
+          </td>
+          <td class="px-5 py-4 text-xs font-semibold text-slate-600">${dateStr}</td>
+          <td class="px-5 py-4">
+             <span class="inline-flex items-center rounded-full ${statusClass} px-2.5 py-1 text-[10px] font-black border uppercase">
+               ${displayStatus}
+             </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+             <button onclick="viewRequestDetails('${req._id}')" class="text-indigo-600 hover:text-indigo-700 font-black text-xs underline decoration-indigo-200 underline-offset-4">Details</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterRequests() {
+      const searchTerm = (document.getElementById('requestSearchInput')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('requestStatusFilter')?.value || 'all';
+      const start = document.getElementById('requestStartDate')?.value;
+      const end = document.getElementById('requestEndDate')?.value;
+
+      const filtered = allSoilRequests.filter(req => {
+        const farmer = (req.farmerName || '').toLowerCase();
+        const lab = (req.labName || '').toLowerCase();
+        const id = (req._id || '').toLowerCase();
+        const matchesSearch = !searchTerm || farmer.includes(searchTerm) || lab.includes(searchTerm) || id.includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
+
+        let matchesDate = true;
+        if (start || end) {
+          const reqDate = req.createdAt ? new Date(req.createdAt).toISOString().split('T')[0] : null;
+          if (!reqDate) {
+            matchesDate = false;
+          } else {
+            if (start && reqDate < start) matchesDate = false;
+            if (end && reqDate > end) matchesDate = false;
+          }
+        }
+
+        return matchesSearch && matchesStatus && matchesDate;
+      });
+
+      renderRequestsTable(filtered);
+    }
+
+    function renderLabsTable(labs) {
+      const tbody = document.getElementById('labs-table-body');
+      tbody.innerHTML = '';
+
+      if (labs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-4 text-center text-slate-500 font-semibold">No soil labs found.</td></tr>`;
+        return;
+      }
+
+      labs.forEach(lab => {
+        // Parse location for display
+        let village = 'N/A', state = '';
+        if (lab.location && lab.location.includes(',')) {
+          const parts = lab.location.split(',');
+          village = parts[0].trim();
+          state = parts[parts.length - 1].trim();
+        } else if (lab.location) {
+          village = lab.location;
+        }
+
+        let testTypeBadges = lab.testTypes.map(type => {
+          const config = TEST_TYPES_DICT[type] || { color: 'slate', icon: 'vial' };
+          return `<span class="inline-flex items-center rounded-full bg-${config.color}-50 px-2 py-0.5 text-[9px] font-bold text-${config.color}-700 border border-${config.color}-200">
+                      ${type}
+                    </span>`;
+        }).join('');
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-purple-50/30 transition-colors border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center shadow-sm">
+                <i class="fas fa-flask text-purple-600"></i>
+              </div>
+              <div>
+                <div class="font-black text-slate-900">${lab.labName}</div>
+                <div class="text-[10px] text-slate-500 font-medium">ID: SL${lab._id.substring(0, 5).toUpperCase()}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${lab.phone}</div>
+            <div class="text-[10px] text-slate-500">${lab.email}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="font-semibold text-slate-900">${village}${state ? ', ' + state : ''}</div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex flex-wrap gap-1">
+              ${testTypeBadges}
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <div class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 border border-emerald-200">
+              <span class="text-xs font-black text-emerald-700">${lab.tatDays || 3}</span>
+              <span class="text-[10px] font-bold text-emerald-600">days</span>
+            </div>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <div class="font-black text-slate-900">${(lab.testsDone || 0).toLocaleString()}</div>
+          </td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full ${lab.status === 'approved' || lab.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'} px-3 py-1 text-[10px] font-black border">
+              <i class="fas ${lab.status === 'approved' || lab.status === 'Active' ? 'fa-check-circle' : 'fa-clock'} mr-1"></i> ${lab.status === 'approved' ? 'Active' : lab.status}
+            </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <button onclick="viewLab('${lab._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-slate-50 transition-all">
+              <i class="fas fa-eye mr-1"></i> View
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // View Lab Details
+    async function viewLab(labId) {
+      window.currentModalLabId = labId;
+      const lab = allSoilLabs.find(l => l._id === labId);
+      if (!lab) return;
+
+      document.getElementById('modalLabName').textContent = lab.labName;
+      document.getElementById('modalLabId').textContent = 'Lab ID: SL' + lab._id.substring(0, 5).toUpperCase();
+      document.getElementById('modalLabPhone').textContent = lab.phone;
+      document.getElementById('modalLabEmail').textContent = lab.email || 'N/A';
+
+      let v = 'N/A', s = '';
+      if (lab.location && lab.location.includes(',')) {
+        const p = lab.location.split(',');
+        v = p[0].trim(); s = p[p.length - 1].trim();
+      } else if (lab.location) { v = lab.location; }
+      document.getElementById('modalLabLocation').textContent = `${v}${s ? ', ' + s : ''}`;
+
+      let testTypeBadges = (lab.testTypes || []).map(type => {
+        const config = TEST_TYPES_DICT[type] || { color: 'slate', icon: 'vial' };
+        return `<span class="inline-flex items-center rounded-full bg-${config.color}-50 px-2 py-0.5 text-[10px] font-bold text-${config.color}-700 border border-${config.color}-200">${type}</span>`;
+      }).join('');
+      document.getElementById('modalLabTests').innerHTML = testTypeBadges || '<span class="text-[10px] text-slate-500 font-bold">None</span>';
+
+      document.getElementById('modalLabTat').textContent = lab.tatDays || 3;
+      document.getElementById('modalLabTestsDone').textContent = (lab.testsDone || 0).toLocaleString();
+
+      const docBtn = document.getElementById('modalViewDocBtn');
+      const noDocTxt = document.getElementById('modalNoDocText');
+      if (docBtn) {
+        if (lab.documentUrl) {
+          docBtn.href = fixUrl(lab.documentUrl);
+          docBtn.classList.remove('hidden');
+          if (noDocTxt) noDocTxt.classList.add('hidden');
+        } else {
+          docBtn.classList.add('hidden');
+          if (noDocTxt) noDocTxt.classList.remove('hidden');
+        }
+      }
+
+      const docBackBtn = document.getElementById('modalViewDocBackBtn');
+      const noDocBackTxt = document.getElementById('modalNoDocBackText');
+      if (docBackBtn) {
+        if (lab.aadhaarBackDocUrl) {
+          docBackBtn.href = fixUrl(lab.aadhaarBackDocUrl);
+          docBackBtn.classList.remove('hidden');
+          if (noDocBackTxt) noDocBackTxt.classList.add('hidden');
+        } else {
+          docBackBtn.classList.add('hidden');
+          if (noDocBackTxt) noDocBackTxt.classList.remove('hidden');
+        }
+      }
+
+      const statusEl = document.getElementById('modalLabStatus');
+      statusEl.textContent = lab.status === 'approved' ? 'Active' : lab.status;
+      statusEl.className = lab.status === 'approved' || lab.status === 'Active'
+        ? 'text-sm font-black text-emerald-700'
+        : 'text-sm font-black text-amber-700';
+
+      // ─── Use bankDetails & docs directly from allSoilLabs ───
+      function populateBankAndDocs(bd, licenseUrl, chequeUrl) {
+        // ALWAYS show bank section for Soil Labs so admin can see if they are missing
+        document.getElementById('modalBankSection').classList.remove('hidden');
+
+        document.getElementById('modalBankHolder').textContent = bd.holderName || 'Not Provided';
+        document.getElementById('modalBankName').textContent = bd.bankName || 'Not Provided';
+        document.getElementById('modalBankAccNo').textContent = bd.accountNumber || 'Not Provided';
+        document.getElementById('modalBankIfsc').textContent = bd.ifscCode || 'Not Provided';
+        document.getElementById('modalBankAddr').textContent = bd.bankAddress || 'Not Provided';
+
+        const licenseLink = document.getElementById('modalLabLicenseLink');
+        const licenseNone = document.getElementById('modalLabLicenseNone');
+        const licenseStatus = document.getElementById('modalLabLicenseStatus');
+        if (licenseUrl && typeof licenseUrl === 'string' && licenseUrl.trim() !== '' && licenseUrl !== 'undefined') {
+          const u = fixUrl(licenseUrl);
+          licenseLink.onclick = (e) => { e.preventDefault(); openDocViewer('Lab License Document', u, 'licenseDoc'); };
+          licenseLink.classList.remove('hidden'); licenseNone.classList.add('hidden');
+          licenseStatus.textContent = 'Uploaded ✓'; licenseStatus.className = 'text-[10px] text-emerald-600 font-black';
+        } else {
+          licenseLink.classList.add('hidden'); licenseNone.classList.remove('hidden');
+          licenseStatus.textContent = 'Not Uploaded'; licenseStatus.className = 'text-[10px] text-rose-500 font-bold';
+        }
+
+        const chequeLink = document.getElementById('modalCancelChequeLink');
+        const chequeNone = document.getElementById('modalCancelChequeNone');
+        const chequeStatus = document.getElementById('modalCancelChequeStatus');
+        if (chequeUrl && typeof chequeUrl === 'string' && chequeUrl.trim() !== '' && chequeUrl !== 'undefined') {
+          const u = fixUrl(chequeUrl);
+          chequeLink.onclick = (e) => { e.preventDefault(); openDocViewer('Bank Passbook / Cheque', u, 'passbook'); };
+          chequeLink.classList.remove('hidden'); chequeNone.classList.add('hidden');
+          chequeStatus.textContent = 'Uploaded ✓'; chequeStatus.className = 'text-[10px] text-emerald-600 font-black';
+        } else {
+          chequeLink.classList.add('hidden'); chequeNone.classList.remove('hidden');
+          chequeStatus.textContent = 'Not Uploaded'; chequeStatus.className = 'text-[10px] text-rose-500 font-bold';
+        }
+      }
+
+      // Use data already in allSoilLabs (now includes bankDetails & businessLicenseUrl)
+      function renderLabKycGrid(profileData) {
+        const p = profileData || lab;
+        const bd = p.bankDetails || {};
+        const fixDocUrl = (u) => {
+          if (!u || typeof u !== 'string') return null;
+          const clean = u.trim();
+          if (!clean || clean === 'undefined' || clean === 'null' || clean === 'none' || clean.includes('undefined')) return null;
+          return fixUrl(clean);
+        };
+
+        const docs = [
+          {
+            key: 'aadhaarFront',
+            title: 'Aadhaar Card (Front)',
+            icon: 'fas fa-address-card text-purple-600',
+            url: fixDocUrl(p.aadhaarDocUrl || p.aadhaarFrontUrl || p.aadhaarFront)
+          },
+          {
+            key: 'aadhaarBack',
+            title: 'Aadhaar Card (Back)',
+            icon: 'fas fa-id-card text-purple-600',
+            url: fixDocUrl(p.aadhaarBackDocUrl || p.aadhaarBackUrl || p.aadhaarBack)
+          },
+          {
+            key: 'licenseDoc',
+            title: 'Lab License / Registration',
+            icon: 'fas fa-file-signature text-blue-600',
+            url: fixDocUrl(p.businessLicenseUrl || p.certDocUrl || p.licenseDocUrl)
+          },
+          {
+            key: 'passbook',
+            title: 'Bank Passbook / Cheque',
+            icon: 'fas fa-university text-emerald-600',
+            url: fixDocUrl(bd.bankDocUrl || bd.passbookUrl || p.passbookDocUrl)
+          }
+        ];
+
+        const grid = document.getElementById('soilLabKycDocsGrid');
+        if (grid) {
+          grid.innerHTML = docs.map(d => {
+            const hasUrl = !!d.url;
+            return `
+              <div class="bg-slate-50 rounded-2xl border-2 border-slate-200 p-4 flex flex-col justify-between shadow-sm hover:border-purple-400 transition-all">
+                <div>
+                  <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center gap-2.5">
+                      <div class="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-base shrink-0 shadow-sm">
+                        <i class="${d.icon}"></i>
+                      </div>
+                      <div>
+                        <h4 class="text-xs font-black text-slate-900">${d.title}</h4>
+                        <p class="text-[10px] text-slate-500 font-semibold">${hasUrl ? 'Document Attached' : 'Not Uploaded'}</p>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${hasUrl ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+                      ${hasUrl ? '<i class="fas fa-check-circle mr-1"></i> Uploaded' : '<i class="fas fa-times-circle mr-1"></i> Missing'}
+                    </span>
+                  </div>
+
+                  ${hasUrl ? `
+                    <div class="h-32 w-full rounded-xl bg-slate-900 overflow-hidden border border-slate-200 relative group mb-3 cursor-pointer shadow-inner" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')">
+                      <img src="${d.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'h-full w-full bg-slate-900 flex flex-col items-center justify-center text-slate-300 p-2 text-center\\'><i class=\\'fas fa-file-excel text-2xl mb-1 text-purple-400\\'></i><span class=\\'text-[10px] font-bold text-slate-200\\'>File Unavailable</span></div>';">
+                      <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1.5 backdrop-blur-[2px]">
+                        <i class="fas fa-search-plus text-lg text-purple-400"></i>
+                        <span>View Full Screen</span>
+                      </div>
+                    </div>
+                  ` : `
+                    <div class="h-32 w-full rounded-xl bg-white border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3">
+                      <i class="fas fa-file-circle-xmark text-2xl mb-1 text-slate-300"></i>
+                      <span class="text-[10px] font-bold text-slate-500">Not Uploaded</span>
+                    </div>
+                  `}
+                </div>
+
+                <div class="flex gap-2 pt-2 border-t border-slate-200">
+                  ${hasUrl ? `
+                    <button type="button" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-black py-2 rounded-xl flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button type="button" onclick="rejectPartnerDocument('${labId}', '${d.key}', '${d.title}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-black rounded-xl border border-rose-200 flex items-center justify-center transition-all cursor-pointer" title="Reject Document for Re-upload">
+                      <i class="fas fa-trash-alt mr-1"></i> Reject
+                    </button>
+                  ` : `
+                    <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
+                      No Document Attached
+                    </button>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      renderLabKycGrid(lab);
+
+      // Also fetch fresh from API in background to ensure latest data
+      fetch(`${API_BASE}/employee/admin/users/${labId}`, {
+        headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+      }).then(r => r.ok ? r.json() : null).then(profile => {
+        if (profile) {
+          renderLabKycGrid(profile);
+        }
+      }).catch(e => console.warn('Profile refresh failed:', e));
+
+      const actionsContainer = document.getElementById('modalActionButtons');
+      actionsContainer.innerHTML = '';
+
+      const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+      const hasDocs = isValidDoc(lab.certDocUrl) || isValidDoc(lab.licenseDocUrl) || isValidDoc(lab.aadhaarDocUrl) || isValidDoc(lab.aadhaarFrontUrl) || isValidDoc(lab.photoUrl);
+
+      if (lab.status === 'pending' || lab.status === 'blocked' || lab.status === 'rejected') {
+        if (hasDocs) {
+          actionsContainer.innerHTML += `<button onclick="approveLab('${lab._id}', '${lab.labName.replace(/'/g, "\\'")}') " class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-black text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i class="fas fa-check-circle mr-2"></i> Approve Lab</button>`;
+        } else {
+          actionsContainer.innerHTML += `<button disabled class="inline-flex items-center rounded-xl bg-slate-100 border border-slate-200 px-5 py-2.5 text-sm font-black text-slate-400 cursor-not-allowed" title="Cannot approve: No KYC or Lab Certification documents uploaded"><i class="fas fa-lock mr-2"></i> Documents Missing</button>`;
+        }
+      }
+      if (lab.status === 'approved' || lab.status === 'Active') {
+        actionsContainer.innerHTML += `<button onclick="blockLab('${lab._id}', '${lab.labName.replace(/'/g, "\\'")}') " class="inline-flex items-center rounded-xl border-2 border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-black text-rose-700 hover:bg-rose-100 transition-all"><i class="fas fa-ban mr-2"></i> Reject / Block</button>`;
+      }
+
+      document.getElementById('labProfileModal').classList.remove('hidden');
+    }
+
+    // Toggle Bank Editing Mode
+    function toggleBankEdit(force) {
+      const display = document.getElementById('bankDisplayMode');
+      const edit = document.getElementById('bankEditMode');
+      const editBtn = document.getElementById('adminEditBankBtn');
+
+      const isEditing = force !== undefined ? force : edit.classList.contains('hidden');
+
+      if (isEditing) {
+        // Pre-fill inputs from current display text
+        document.getElementById('editBankHolder').value = document.getElementById('modalBankHolder').textContent.replace('Not Provided', '');
+        document.getElementById('editBankName').value = document.getElementById('modalBankName').textContent.replace('Not Provided', '');
+        document.getElementById('editBankAccNo').value = document.getElementById('modalBankAccNo').textContent.replace('Not Provided', '');
+        document.getElementById('editBankIfsc').value = document.getElementById('modalBankIfsc').textContent.replace('Not Provided', '');
+        document.getElementById('editBankAddr').value = document.getElementById('modalBankAddr').textContent.replace('Not Provided', '');
+
+        display.classList.add('hidden');
+        edit.classList.remove('hidden');
+        editBtn.classList.add('invisible');
+      } else {
+        display.classList.remove('hidden');
+        edit.classList.add('hidden');
+        editBtn.classList.remove('invisible');
+      }
+    }
+
+    // Save Bank Edits from Admin Panel
+    async function saveAdminBankEdits() {
+      const labId = window.currentModalLabId; // We need to store this globally when opening modal
+      if (!labId) return;
+
+      const data = {
+        holderName: document.getElementById('editBankHolder').value.trim(),
+        bankName: document.getElementById('editBankName').value.trim(),
+        accountNumber: document.getElementById('editBankAccNo').value.trim(),
+        ifscCode: document.getElementById('editBankIfsc').value.trim(),
+        bankAddress: document.getElementById('editBankAddr').value.trim()
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/employee/admin/users/${labId}/bank-details`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          showToast('Bank details updated successfully!', 'success');
+          toggleBankEdit(false);
+          // Update display text immediately
+          document.getElementById('modalBankHolder').textContent = data.holderName || 'Not Provided';
+          document.getElementById('modalBankName').textContent = data.bankName || 'Not Provided';
+          document.getElementById('modalBankAccNo').textContent = data.accountNumber || 'Not Provided';
+          document.getElementById('modalBankIfsc').textContent = data.ifscCode || 'Not Provided';
+          document.getElementById('modalBankAddr').textContent = data.bankAddress || 'Not Provided';
+
+          // Optionally update allSoilLabs memory
+          const lab = allSoilLabs.find(l => l._id === labId);
+          if (lab) lab.bankDetails = data;
+        } else {
+          const res = await response.json();
+          showToast(res.error || 'Failed to update bank details', 'error');
+        }
+      } catch (err) {
+        console.error('Admin bank save error:', err);
+        showToast('Network error while saving bank details', 'error');
+      }
+    }
+
+    // Toggle Lab Info Editing Mode
+    function toggleLabEdit(force) {
+      const display = document.getElementById('labDisplayMode');
+      const edit = document.getElementById('labEditMode');
+      const editBtn = document.getElementById('adminEditLabBtn');
+
+      const isEditing = force !== undefined ? force : edit.classList.contains('hidden');
+
+      if (isEditing) {
+        // Pre-fill inputs from current state
+        const lab = allSoilLabs.find(l => l._id === window.currentModalLabId);
+        if (lab) {
+          document.getElementById('editLabTat').value = lab.tatDays || 3;
+          document.getElementById('editTestNPK').checked = lab.testTypes.includes('NPK');
+          document.getElementById('editTestPH').checked = lab.testTypes.includes('pH');
+          document.getElementById('editTestMicro').checked = lab.testTypes.includes('Micro Nutrients');
+        }
+
+        display.classList.add('hidden');
+        edit.classList.remove('hidden');
+        editBtn.classList.add('invisible');
+      } else {
+        display.classList.remove('hidden');
+        edit.classList.add('hidden');
+        editBtn.classList.remove('invisible');
+      }
+    }
+
+    // Save Lab Info Edits from Admin Panel
+    async function saveAdminLabEdits() {
+      const labId = window.currentModalLabId;
+      if (!labId) return;
+
+      const tatDays = Number(document.getElementById('editLabTat').value) || 3;
+      const testTypes = [];
+      if (document.getElementById('editTestNPK').checked) testTypes.push('NPK');
+      if (document.getElementById('editTestPH').checked) testTypes.push('pH');
+      if (document.getElementById('editTestMicro').checked) testTypes.push('Micro Nutrients');
+
+      try {
+        const response = await fetch(`${API_BASE}/employee/admin/users/${labId}/soil-details`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ tatDays, testTypes })
+        });
+
+        if (response.ok) {
+          showToast('Lab details updated successfully!', 'success');
+          toggleLabEdit(false);
+
+          // Refresh lab table and list
+          await fetchSoilLabs();
+
+          // Re-open/update the view in modal
+          const updatedLab = allSoilLabs.find(l => l._id === labId);
+          if (updatedLab) {
+            document.getElementById('modalLabTat').textContent = updatedLab.tatDays;
+            let testTypeBadges = updatedLab.testTypes.map(type => {
+              const config = TEST_TYPES_DICT[type] || { color: 'slate', icon: 'vial' };
+              return `<span class="inline-flex items-center rounded-full bg-${config.color}-50 px-2 py-0.5 text-[10px] font-bold text-${config.color}-700 border border-${config.color}-200">${type}</span>`;
+            }).join('');
+            document.getElementById('modalLabTests').innerHTML = testTypeBadges || '<span class="text-[10px] text-slate-500 font-bold">None</span>';
+          }
+        } else {
+          const res = await response.json();
+          showToast(res.error || 'Failed to update lab details', 'error');
+        }
+      } catch (err) {
+        console.error('Admin lab save error:', err);
+        showToast('Network error while saving lab details', 'error');
+      }
+    }
+
+
+
+    async function approveLab(labId, labName) {
+      if (!confirm(`Are you sure you want to approve ${labName}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/approve/${labId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast(`${labName} has been approved`, 'success');
+          closeLabProfile();
+          fetchSoilLabs();
+          fetchSoilLabStats();
+        } else {
+          showToast('Failed to approve lab', 'warning');
+        }
+      } catch (err) {
+        showToast('Network error', 'warning');
+      }
+    }
+
+    async function blockLab(labId, labName) {
+      if (!confirm(`Are you sure you want to reject/block ${labName}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/block/${labId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast(`${labName} has been blocked`, 'success');
+          closeLabProfile();
+          fetchSoilLabs();
+          fetchSoilLabStats();
+        } else {
+          showToast('Failed to block lab', 'warning');
+        }
+      } catch (err) {
+        showToast('Network error', 'warning');
+      }
+    }
+
+    function closeLabProfile() {
+      document.getElementById('labProfileModal').classList.add('hidden');
+    }
+
+    // Filter Logic
+    function filterLabs() {
+      const searchTerm = (document.getElementById('labSearchInput')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('labStatusFilter')?.value || 'all';
+
+      // Use allSoilLabs memory
+      const filteredLabs = allSoilLabs.filter(lab => {
+        const labName = (lab.labName || '').toLowerCase();
+        const location = (lab.location || '').toLowerCase();
+        const labId = (lab._id || '').toLowerCase();
+
+        const matchesSearch = !searchTerm || labName.includes(searchTerm) || location.includes(searchTerm) || labId.includes(searchTerm);
+
+        let normalizedStatus = lab.status === 'approved' || lab.status === 'Active' ? 'approved' : 'pending';
+        const matchesStatus = statusFilter === 'all' || normalizedStatus === statusFilter;
+
+        return matchesSearch && matchesStatus;
+      });
+
+      renderLabsTable(filteredLabs);
+    }
+
+    // Export Logic
+    function exportLabs() {
+      if (!allSoilLabs || allSoilLabs.length === 0) {
+        showToast('No data to export', 'warning');
+        return;
+      }
+
+      const searchTerm = (document.getElementById('labSearchInput')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('labStatusFilter')?.value || 'all';
+
+      const rowsToExport = allSoilLabs.filter(lab => {
+        const labName = (lab.labName || '').toLowerCase();
+        const location = (`${lab.village || ''} ${lab.state || ''}`).toLowerCase();
+        const labId = (lab._id || '').toLowerCase();
+        const matchesSearch = !searchTerm || labName.includes(searchTerm) || location.includes(searchTerm) || labId.includes(searchTerm);
+        let normalizedStatus = lab.status === 'approved' || lab.status === 'Active' ? 'approved' : 'pending';
+        const matchesStatus = statusFilter === 'all' || normalizedStatus === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+
+      const headers = ['Lab ID', 'Name', 'Phone', 'Email', 'Location', 'Supported Tests', 'Avg TAT (Days)', 'Tests Performed', 'Status', 'Joined Date'];
+      const csvRows = [headers.join(',')];
+
+      rowsToExport.forEach(lab => {
+        const testTypesStr = (lab.testTypes || []).join(' | ');
+        const locationStr = lab.location || 'N/A';
+        csvRows.push([
+          `SL${lab._id.substring(0, 5).toUpperCase()}`,
+          `"${lab.labName.replace(/"/g, '""')}"`,
+          lab.phone,
+          lab.email || '',
+          `"${locationStr}"`,
+          `"${testTypesStr}"`,
+          lab.tatDays || 3,
+          lab.testsDone || 0,
+          lab.status === 'approved' ? 'Active' : lab.status,
+          new Date(lab.joinedAt).toLocaleDateString('en-GB')
+        ].join(','));
+      });
+
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `soil_labs_export_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Exported CSV Successfully', 'success');
+    }
+
+    // Show Toast
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+
+      let bgColor = 'bg-white';
+      let borderColor = 'border-slate-300';
+      let textColor = 'text-slate-900';
+
+      if (type === 'success') {
+        bgColor = 'bg-gradient-to-r from-emerald-50 to-emerald-100';
+        borderColor = 'border-emerald-300';
+        textColor = 'text-emerald-900';
+      } else if (type === 'info') {
+        bgColor = 'bg-gradient-to-r from-sky-50 to-sky-100';
+        borderColor = 'border-sky-300';
+        textColor = 'text-sky-900';
+      }
+
+      toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] ${bgColor} ${borderColor}`;
+      toastMessage.className = `text-sm font-bold ${textColor}`;
+      toastMessage.textContent = message;
+
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+    let currentDocKeyForViewer = null;
+
+    function openDocViewer(title, url, docKey) {
+      if (!url) return showToast('Document URL not available', 'info');
+      currentDocKeyForViewer = docKey || null;
+      document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
+      document.getElementById('docViewerDownloadBtn').href = url;
+
+      const img = document.getElementById('docViewerImage');
+      const errState = document.getElementById('docViewerErrorState');
+
+      if (img && errState) {
+        img.classList.remove('hidden');
+        errState.classList.add('hidden');
+        img.src = url;
+      }
+
+      const rejectBtn = document.getElementById('docViewerRejectBtn');
+      if (rejectBtn) {
+        if (docKey && currentLabId) {
+          rejectBtn.onclick = () => rejectPartnerDocument(currentLabId, docKey, title);
+          rejectBtn.classList.remove('hidden');
+        } else {
+          rejectBtn.classList.add('hidden');
+        }
+      }
+
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function handleDocViewerImageError(img) {
+      if (!img) return;
+      img.classList.add('hidden');
+      const errState = document.getElementById('docViewerErrorState');
+      if (errState) {
+        errState.classList.remove('hidden');
+      }
+    }
+
+    function closeDocViewer() {
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function rejectPartnerDocument(userId, docKey, docTitle) {
+      if (!confirm(`Are you sure you want to REJECT "${docTitle}"?\n\nThis will clear the document and allow the partner to re-upload it.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/user/${userId}/reject-doc`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ docKey })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Document rejected successfully', 'success');
+          closeDocViewer();
+          if (typeof viewLabProfile === 'function') viewLabProfile(userId);
+          fetchSoilLabs();
+        } else {
+          showToast(data.error || 'Failed to reject document', 'info');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'info');
+      }
+    }
+  </script>
+
+  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
+  <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
+            <i class="fas fa-file-image text-lg"></i>
+          </div>
+          <div>
+            <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
+            <p class="text-[10px] text-purple-300 font-medium">Official Identification & Verification Document</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <i class="fas fa-trash-alt"></i> Reject Document
+          </button>
+          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
+            <i class="fas fa-download"></i> Download / Open
+          </a>
+          <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
+        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
+          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

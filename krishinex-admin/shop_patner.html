@@ -1,0 +1,2264 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Shop Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-teal-50 via-slate-50 to-emerald-50 text-slate-900 overflow-x-hidden">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== REUSABLE SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+                              <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-teal-50 via-emerald-50 to-teal-50 text-teal-700 border-2 border-teal-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 shadow-sm">
+            <i class="fas fa-shopping-cart text-teal-600"></i>
+          </span>
+          <span class="truncate font-black">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- <a href="Analytics_Reports.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+          <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Analytics & Reports</span>
+      </a> -->
+
+      <!-- <a href="settings.html"
+        class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+        <span
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+          <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+        </span>
+        <span class="truncate font-semibold">Settings</span>
+      </a> -->
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN AREA ========== -->
+    <div class="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+      <!-- Sticky Header -->
+      <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+        <div class="flex items-center justify-between px-4 md:px-6 h-16">
+          <div class="flex items-center gap-3">
+            <button id="hamburger"
+              class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-teal-400 hover:bg-teal-50 transition-all shadow-sm"
+              onclick="toggleSidebar()" aria-pressed="false">
+              <div class="space-y-[5px]">
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                <span
+                  class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+              </div>
+            </button>
+
+            <div>
+              <h1 class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                <i class="fas fa-shopping-cart text-teal-600"></i>
+                Shop Management (E-commerce)
+              </h1>
+              <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                Shop partners, products catalog, orders & inventory
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            <button
+              class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+              <i class="far fa-bell text-slate-600"></i>
+            </button>
+            <button
+              class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+              <div
+                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                <i class="fas fa-user text-white text-xs"></i>
+              </div>
+              <span id="headerUserName" class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ========== MAIN CONTENT ========== -->
+      <main
+        class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+        <!-- GLOBAL DATE FILTER -->
+        <section class="rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-lg">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <span
+                class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600 shadow-sm border border-teal-100">
+                <i class="fas fa-filter text-sm"></i>
+              </span>
+              <div>
+                <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Global Date Filter</h3>
+                <p class="text-[10px] text-slate-500 font-semibold mt-0.5">Filters stats, shop partners, and recent
+                  orders</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <!-- Quick Presets -->
+              <div class="flex bg-slate-100 rounded-xl p-1 gap-1 border border-slate-200 shadow-inner">
+                <button onclick="setGlobalDatePreset('today')" id="btn-preset-today"
+                  class="global-preset-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all hover:bg-white/50 text-slate-600">Today</button>
+                <button onclick="setGlobalDatePreset('yesterday')" id="btn-preset-yesterday"
+                  class="global-preset-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all hover:bg-white/50 text-slate-600">Yesterday</button>
+                <button onclick="setGlobalDatePreset('month')" id="btn-preset-month"
+                  class="global-preset-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all hover:bg-white/50 text-slate-600">This
+                  Month</button>
+                <button onclick="setGlobalDatePreset('all')" id="btn-preset-all"
+                  class="global-preset-btn px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all hover:bg-white/50 bg-white text-teal-700 shadow-sm">All</button>
+              </div>
+
+              <!-- Custom Range -->
+              <div
+                class="flex items-center gap-1.5 bg-white rounded-xl border-2 border-slate-200 px-3 h-10 shadow-sm focus-within:border-teal-400 transition-all">
+                <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
+                <input id="globalStartDate" type="date" onchange="onGlobalDateChange()"
+                  class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                  title="Start Date" />
+                <span class="text-slate-300">→</span>
+                <input id="globalEndDate" type="date" onchange="onGlobalDateChange()"
+                  class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                  title="End Date" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- KPI CARDS -->
+        <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          <div
+            class="rounded-2xl border-2 border-teal-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-100 to-teal-50 flex items-center justify-center">
+                <i class="fas fa-store text-teal-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-teal-600 font-black">Shops</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="total-shops">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Partners</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Active</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="active-shops">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Active</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-box text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Products</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="total-products">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center">
+                <i class="fas fa-shopping-bag text-amber-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-amber-600 font-black">Orders</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="month-orders">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1" id="label-orders-period">This Month</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Revenue</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="month-revenue">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1" id="label-revenue-period">This Month</p>
+          </div>
+
+          <div
+            class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+                <i class="fas fa-triangle-exclamation text-rose-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-rose-600 font-black">Stock</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="low-stock">-</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Low Stock</p>
+          </div>
+        </section>
+
+        <!-- SHOP PARTNERS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div
+            class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-teal-50/20 to-emerald-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-store-alt text-teal-600"></i>
+                  Shop Partners
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Agri shops with products, inventory & fulfillment
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="shopSearchInput" placeholder="Search Shop/ID..." oninput="filterShops()"
+                  class="h-9 w-48 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs placeholder:text-slate-400 focus:border-teal-400 focus:outline-none focus:ring-4 focus:ring-teal-50 transition-all font-semibold" />
+                <select id="shopStatusFilter" onchange="filterShops()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="All">All Categories</option>
+                  <option value="Active">Active</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                <div class="flex items-center gap-1 bg-white rounded-xl border-2 border-slate-200 px-2 h-9">
+                  <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
+                  <input id="shopStartDate" type="date" onchange="filterShops()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                    title="Start Date" />
+                  <span class="text-slate-300">→</span>
+                  <input id="shopEndDate" type="date" onchange="filterShops()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                    title="End Date" />
+                </div>
+                <button onclick="exportShops()"
+                  class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 px-4 text-xs text-white font-black hover:from-teal-600 hover:to-emerald-600 shadow-md transition-all">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Shop Name</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Contact</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Categories</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Products</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Orders</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="shops-table-body">
+                <!-- Dynamically populated via JS -->
+                <tr>
+                  <td colspan="8" class="text-center py-8 text-slate-500 font-bold"><i
+                      class="fas fa-spinner fa-spin mr-2"></i> Loading Shops...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ORDERS TABLE -->
+        <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+          <div class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-sky-50/20 to-cyan-50/20">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-shopping-basket text-sky-600"></i>
+                  Recent Orders
+                </h2>
+                <p class="text-xs text-slate-600 font-semibold mt-1">
+                  Order tracking & fulfillment status
+                </p>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="orderSearchInput" placeholder="Search Order/Shop/Buyer..."
+                  oninput="filterOrders()"
+                  class="h-9 w-64 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs placeholder:text-slate-400 focus:border-sky-400 focus:outline-none focus:ring-4 focus:ring-sky-50 transition-all font-semibold" />
+                <select id="orderStatusFilter" onchange="filterOrders()"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                  <option value="All">All Status</option>
+                  <option value="NEW">New</option>
+                  <option value="ACCEPTED">Accepted</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+                <div class="flex items-center gap-1 bg-white rounded-xl border-2 border-slate-200 px-2 h-9">
+                  <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
+                  <input id="orderStartDate" type="date" onchange="filterOrders()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                    title="Start Date" />
+                  <span class="text-slate-300">→</span>
+                  <input id="orderEndDate" type="date" onchange="filterOrders()"
+                    class="bg-transparent text-[10px] font-bold outline-none cursor-pointer text-slate-700"
+                    title="End Date" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-auto custom-scroll" style="max-height: 420px;">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-10 bg-slate-50">
+                <tr class="text-xs text-slate-700">
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Order ID</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Partner Details</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Products</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-rose-600">Comm.</th>
+                  <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200 text-teal-600">Payout</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Payment</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Date</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body">
+                <!-- Dynamically populated via JS -->
+                <tr>
+                  <td colspan="7" class="text-center py-8 text-slate-500 font-bold"><i
+                      class="fas fa-spinner fa-spin mr-2"></i> Loading Orders...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- INVENTORY ALERTS -->
+        <section class="rounded-2xl bg-white border-2 border-rose-200 shadow-xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div
+              class="h-10 w-10 rounded-lg bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center">
+              <i class="fas fa-triangle-exclamation text-rose-600"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-black text-slate-900">Low Stock Alerts</h2>
+              <p class="text-xs text-slate-600 font-semibold">Products running low across shops</p>
+            </div>
+          </div>
+          <div class="space-y-2" id="low-stock-container">
+            <!-- Dynamically populated -->
+            <p class="text-sm font-semibold text-slate-500 text-center py-4">No low stock alerts right now.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Shop Profile Modal -->
+  <!-- Shop Profile Modal (360-Degree View) -->
+  <div id="shopProfileModal" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay backdrop -->
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeShopProfile()">
+    </div>
+
+    <!-- Modal content in a sliding drawer -->
+    <div
+      class="absolute inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col border-l-2 border-slate-200 animate-[slideInRight_0.3s_ease-out]">
+
+      <!-- Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-white via-teal-50/30 to-emerald-50/30 border-b-2 border-slate-200">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-4">
+            <div id="modalProfileCircle"
+              class="h-14 w-14 rounded-2xl bg-slate-100 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
+              <i class="fas fa-store text-2xl text-slate-300"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-black text-slate-900 leading-tight" id="modalShopName">Shop Name</h3>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-[10px] text-slate-500 font-bold" id="modalShopId">ID: SH001</span>
+                <span id="modalShopStatus"
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase border-2">Active</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="toggleEditBtn" onclick="toggleEditMode()"
+              class="h-9 px-4 rounded-xl bg-teal-500 text-white text-xs font-black hover:bg-teal-600 shadow-md transition-all">
+              <i class="fas fa-edit mr-1.5"></i> Edit
+            </button>
+            <button onclick="closeShopProfile()"
+              class="h-9 w-9 rounded-xl bg-slate-100 hover:bg-rose-100 hover:text-rose-600 flex items-center justify-center transition-all">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-slate-100">
+          <button onclick="switchTab('overview')" id="tab-overview"
+            class="tab-btn active px-4 py-2 text-xs font-black border-b-2 border-teal-500 text-teal-600 transition-all">OVERVIEW</button>
+          <button onclick="switchTab('wallet')" id="tab-wallet"
+            class="tab-btn px-4 py-2 text-xs font-black border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all">WALLET</button>
+          <button onclick="switchTab('sales')" id="tab-sales"
+            class="tab-btn px-4 py-2 text-xs font-black border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all">SALES
+            HISTORY</button>
+          <button onclick="switchTab('inventory')" id="tab-inventory"
+            class="tab-btn px-4 py-2 text-xs font-black border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all">INVENTORY</button>
+        </div>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="flex-1 overflow-y-auto custom-scroll bg-slate-50/50 p-6">
+
+        <!-- OVERVIEW TAB -->
+        <div id="content-overview" class="tab-content space-y-6">
+          <div id="viewMode" class="space-y-6">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-3 gap-4">
+              <div class="bg-white p-3 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Total Sales</p>
+                <p class="text-base font-black text-slate-900 mt-0.5" id="v_stat_totalSales">₹0</p>
+              </div>
+              <div class="bg-white p-3 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Total Orders</p>
+                <p class="text-base font-black text-slate-900 mt-0.5" id="v_stat_totalOrders">0</p>
+              </div>
+              <div class="bg-white p-3 rounded-2xl border-2 border-slate-100 shadow-sm text-center">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Products</p>
+                <p class="text-base font-black text-slate-900 mt-0.5" id="v_stat_totalProducts">0</p>
+              </div>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="rounded-2xl border-2 border-slate-100 bg-white p-5 shadow-sm">
+              <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                <i class="fas fa-id-card mr-2 text-teal-500"></i> Identity & Contact
+              </h4>
+              <div class="grid grid-cols-2 gap-y-5 gap-x-6">
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Owner Name</p>
+                  <p class="text-xs font-black text-slate-900" id="v_ownerName">-</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Phone Number</p>
+                  <p class="text-xs font-black text-slate-900" id="v_phone">-</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Email Address</p>
+                  <p class="text-xs font-black text-slate-900" id="v_email">-</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Joined On</p>
+                  <p class="text-xs font-black text-slate-900" id="v_joinedDate">-</p>
+                </div>
+                <div class="col-span-2 pt-2 border-t border-slate-50">
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Business Address</p>
+                  <p class="text-xs font-black text-slate-900 leading-relaxed" id="v_address">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- KYC Documents -->
+            <div class="rounded-2xl border-2 border-slate-100 bg-white p-5 shadow-sm space-y-4">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                  <i class="fas fa-file-contract text-teal-600"></i> KYC & Compliance Documents
+                </h4>
+                <span id="shopKycUploadedBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-teal-50 text-teal-700 border border-teal-200">KYC Verification</span>
+              </div>
+              <div id="shopKycDocsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically generated document cards with View & Reject buttons -->
+              </div>
+            </div>
+
+            <!-- Bank Details -->
+            <div class="rounded-2xl border-2 border-slate-100 bg-white p-5 shadow-sm">
+              <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                <i class="fas fa-university mr-2 text-amber-500"></i> Settlement Account
+              </h4>
+              <div class="grid grid-cols-2 gap-y-4 gap-x-6">
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Holder Name</p>
+                  <p class="text-xs font-black text-slate-900" id="v_bank_holderName">-</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Bank Name</p>
+                  <p class="text-xs font-black text-slate-900" id="v_bank_bankName">-</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">Account Number</p>
+                  <p class="text-xs font-black text-slate-900" id="v_bank_accountNumber">-</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-slate-500 font-bold mb-0.5">IFSC Code</p>
+                  <p class="text-xs font-black text-slate-900" id="v_bank_ifscCode">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Mode Form (Overview Tab) -->
+          <div id="editMode" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border-2 border-slate-100 p-5 shadow-sm space-y-4">
+              <h4 class="text-xs font-black text-slate-900 flex items-center">
+                <i class="fas fa-edit mr-2 text-teal-500"></i> Modify Profile
+              </h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Shop/Business Name</label>
+                  <input type="text" id="e_businessName"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-teal-400 text-xs font-bold transition-all">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Owner Name</label>
+                  <input type="text" id="e_name"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-teal-400 text-xs font-bold transition-all">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Phone Number</label>
+                  <input type="text" id="e_phone"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-teal-400 text-xs font-bold transition-all">
+                </div>
+                <div class="col-span-2">
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Full Address</label>
+                  <textarea id="e_address" rows="2"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-teal-400 text-xs font-bold transition-all"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border-2 border-slate-100 p-5 shadow-sm space-y-4">
+              <h4 class="text-xs font-black text-slate-900">KYC & Banking</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Aadhaar Number</label>
+                  <input type="text" id="e_aadhaarNumber"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">PAN Number</label>
+                  <input type="text" id="e_panNumber"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+                </div>
+                <div class="col-span-2">
+                  <div class="h-px bg-slate-100 my-2"></div>
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Bank Name</label>
+                  <input type="text" id="e_bank_bankName"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">IFSC Code</label>
+                  <input type="text" id="e_bank_ifscCode"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+                </div>
+                <div class="col-span-2">
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Account Number</label>
+                  <input type="text" id="e_bank_accountNumber"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <button onclick="saveShopEdits()"
+                class="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-black shadow-lg shadow-teal-100 hover:shadow-teal-200 transition-all uppercase tracking-wider text-xs">Save
+                Profile Changes</button>
+              <button onclick="toggleEditMode(false)"
+                class="px-6 py-3.5 rounded-2xl border-2 border-slate-200 font-black text-slate-500 hover:bg-slate-50 transition-all text-xs">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WALLET TAB -->
+        <div id="content-wallet" class="tab-content hidden space-y-6">
+          <!-- Balance Card -->
+          <div
+            class="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 p-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 h-40 w-40 bg-white/5 rounded-full blur-3xl"></div>
+            <div class="relative z-10">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">NexCard Wallet Balance</p>
+              <div class="flex items-baseline gap-2">
+                <span class="text-3xl font-black text-white" id="v_walletBalance">₹0.00</span>
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">Available</span>
+              </div>
+            </div>
+
+            <div class="mt-8 flex gap-3 relative z-10">
+              <button onclick="openWalletAction('Credit')"
+                class="flex-1 h-12 rounded-2xl bg-emerald-500 text-white font-black text-xs hover:bg-emerald-600 shadow-lg shadow-emerald-900/20 transition-all">
+                <i class="fas fa-plus-circle mr-2"></i> CREDIT MONEY
+              </button>
+              <button onclick="openWalletAction('Debit')"
+                class="flex-1 h-12 rounded-2xl bg-rose-500 text-white font-black text-xs hover:bg-rose-600 shadow-lg shadow-rose-900/20 transition-all">
+                <i class="fas fa-minus-circle mr-2"></i> DEBIT MONEY
+              </button>
+            </div>
+          </div>
+
+          <!-- Transaction Form (Collapsible) -->
+          <div id="walletActionForm"
+            class="hidden rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-sm animate-in fade-in slide-in-from-top-4">
+            <h4 class="text-xs font-black text-slate-900 mb-4 flex items-center">
+              <span id="walletActionTitle" class="text-emerald-600">Credit Wallet</span>
+            </h4>
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Amount (₹)</label>
+                  <input type="number" id="w_amount" placeholder="0.00"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 focus:bg-white focus:border-teal-400 text-sm font-black transition-all">
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase">Payment Mode</label>
+                  <select id="w_mode"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+                    <option value="Cash">Cash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="UPI">UPI</option>
+                    <option value="NexCard Wallet">NexCard Wallet</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="text-[10px] font-black text-slate-500 uppercase">Transaction Note / Remark</label>
+                <input type="text" id="w_note" placeholder="Reason for transaction..."
+                  class="w-full mt-1 px-4 py-2.5 rounded-xl border-2 border-slate-100 bg-slate-50 text-xs font-bold">
+              </div>
+              <div class="flex gap-2">
+                <button onclick="submitWalletTransaction()"
+                  class="flex-1 h-11 rounded-xl bg-slate-900 text-white font-black text-xs hover:bg-black transition-all">CONFIRM
+                  TRANSACTION</button>
+                <button onclick="closeWalletAction()"
+                  class="px-5 h-11 rounded-xl border-2 border-slate-100 font-bold text-slate-400 text-xs hover:bg-slate-50 transition-all">CANCEL</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction History -->
+          <div class="rounded-2xl border-2 border-slate-100 bg-white shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Recent Wallet Activity</h4>
+            </div>
+            <div class="max-h-[300px] overflow-auto custom-scroll">
+              <table class="w-full text-left border-collapse">
+                <tbody id="wallet-history-body">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SALES HISTORY TAB -->
+        <div id="content-sales" class="tab-content hidden space-y-4">
+          <div class="rounded-2xl border-2 border-slate-100 bg-white shadow-sm overflow-hidden">
+            <table class="w-full text-left border-collapse border-separate border-spacing-0">
+              <thead class="bg-slate-50 sticky top-0 z-10">
+                <tr class="text-[10px] font-black text-slate-500 uppercase">
+                  <th class="px-5 py-3 border-b border-slate-100">Order ID</th>
+                  <th class="px-5 py-3 border-b border-slate-100">Buyer</th>
+                  <th class="px-5 py-3 text-right border-b border-slate-100">Amount</th>
+                  <th class="px-5 py-3 border-b border-slate-100 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="sales-history-body" class="text-[11px] font-semibold text-slate-700">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INVENTORY TAB -->
+        <div id="content-inventory" class="tab-content hidden space-y-4">
+          <div class="grid grid-cols-2 gap-3 pb-6" id="inventory-grid">
+            <!-- Dynamic -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div id="modalFooter" class="px-6 py-4 border-t-2 border-slate-100 bg-white flex items-center justify-between">
+        <div id="modalActionButtons" class="flex gap-2">
+          <!-- Dynamic -->
+        </div>
+        <button onclick="closeShopProfile()"
+          class="h-10 px-6 rounded-xl bg-slate-100 font-black text-slate-600 text-[11px] hover:bg-slate-200 transition-all uppercase tracking-wider">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div id="orderDetailsModal"
+    class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+    onclick="if(event.target === this) closeOrderModal()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+      <!-- Header -->
+      <div
+        class="border-b-2 border-slate-200 px-6 py-5 bg-gradient-to-r from-white via-sky-50/30 to-white flex items-center justify-between">
+        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+          <i class="fas fa-shopping-bag text-sky-600"></i>
+          Order Details <span id="modalOrderTitleId" class="text-slate-400 font-bold ml-1 text-sm">#XXXXXX</span>
+        </h2>
+        <button onclick="closeOrderModal()"
+          class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+          <i class="fas fa-times text-slate-700"></i>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
+        <!-- Status & Dates -->
+        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+          <div>
+            <p class="text-[10px] text-slate-400 font-black uppercase">Fulfillment Status</p>
+            <span id="modalOrderStatus"
+              class="mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase border-2 bg-slate-100 border-slate-300 text-slate-700">NEW</span>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] text-slate-400 font-black uppercase">Order Date</p>
+            <p id="modalOrderDate" class="text-xs font-black text-slate-900 mt-1">-- --- ----</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Buyer / Customer Details -->
+          <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+            <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+              <i class="fas fa-user text-sky-500"></i> Customer Information
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-600 font-bold">Name</span>
+                <span class="text-sm font-black text-slate-900" id="modalCustomerName">-</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-600 font-bold">Mobile</span>
+                <span class="text-sm font-black text-slate-900" id="modalCustomerPhone">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shop Partner Details -->
+          <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+            <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+              <i class="fas fa-store text-teal-500"></i> Shop Partner Info
+            </h3>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-600 font-bold">Shop Name</span>
+                <span class="text-sm font-black text-slate-900" id="modalOrderShopName">-</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-600 font-bold">Shop Phone</span>
+                <span class="text-sm font-black text-slate-900" id="modalOrderShopPhone">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
+          <h3 class="text-xs font-black text-slate-400 uppercase mb-2 flex items-center gap-2">
+            <i class="fas fa-map-marker-alt text-rose-500"></i> Delivery Address
+          </h3>
+          <p id="modalDeliveryAddress" class="text-xs font-black text-slate-800 leading-relaxed">-</p>
+        </div>
+
+        <!-- Ordered Items Table -->
+        <div class="rounded-2xl border-2 border-slate-200 overflow-hidden bg-white shadow-sm">
+          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200">
+            <h4 class="text-xs font-black text-slate-900 uppercase">Ordered Products</h4>
+          </div>
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-[9px] font-black uppercase text-slate-500 border-b border-slate-200">
+                <th class="px-4 py-2">Product Name</th>
+                <th class="px-4 py-2 text-right">Price</th>
+                <th class="px-4 py-2 text-right">Qty</th>
+                <th class="px-4 py-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody id="modalOrderItemsBody" class="text-xs font-semibold text-slate-700 divide-y divide-slate-100">
+              <!-- Dynamic -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 shadow-inner">
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-bold">Subtotal Amount</span>
+              <span class="font-black text-slate-900" id="modalOrderSubtotal">₹0</span>
+            </div>
+            <div class="flex justify-between text-rose-600">
+              <span class="font-bold">Platform Commission</span>
+              <span class="font-black" id="modalOrderCommission">-₹0</span>
+            </div>
+            <div class="flex justify-between text-emerald-600 border-t border-slate-200 pt-2 text-sm font-black">
+              <span>Partner Payout</span>
+              <span id="modalOrderPayout">₹0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 border-t border-slate-200 bg-white flex justify-between items-center">
+        <div>
+          <p class="text-[9px] text-slate-400 font-black uppercase">Payment Mode</p>
+          <span id="modalOrderPaymentMode"
+            class="inline-flex items-center rounded-lg bg-blue-50 text-blue-600 border border-blue-100 px-2 py-0.5 text-[9px] font-black uppercase">CASH</span>
+        </div>
+        <button onclick="closeOrderModal()"
+          class="h-10 px-6 rounded-xl bg-slate-100 font-black text-slate-600 text-[11px] hover:bg-slate-200 transition-all uppercase tracking-wider">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+    <p id="toastMessage" class="text-sm font-bold"></p>
+  </div>
+
+  <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+  <script>
+    function toggleSidebar(force) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+      if (force === false || (isOpen && force === undefined)) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+        hamburger?.setAttribute('aria-pressed', 'false');
+      } else {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        hamburger?.setAttribute('aria-pressed', 'true');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') toggleSidebar(false);
+    });
+  </script>
+
+  <!-- ========== SHOP MANAGEMENT PAGE SCRIPT ========== -->
+  <script>
+
+    const API_BASE = window.API_BASE;
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+    function fixImageUrl(url) {
+      if (!url || url === 'undefined' || url === 'null' || url === 'none') return '';
+      const imgHost = window.IMAGE_BASE || 'https://demo.ranx24.com';
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        try {
+          const targetHost = new URL(imgHost).host;
+          return url.replace(/^(https?:\/\/)[^\/]+/, `$1${targetHost}`);
+        } catch (e) { return url; }
+      }
+      const cleanPath = url.startsWith('/') ? url : '/' + url;
+      return `${imgHost.replace(/\/+$/, '')}${cleanPath.replace(/\\/g, '/')}`;
+    }
+
+    let allShops = [];
+    let allOrders = [];
+    let currentShopData = null; // Stores 360 data
+
+    async function fetchShopStats(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/stats?startDate=${startDate}&endDate=${endDate}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('total-shops').textContent = data.totalShops || 0;
+          document.getElementById('active-shops').textContent = data.activeShops || 0;
+          document.getElementById('total-products').textContent = data.totalProducts || 0;
+          document.getElementById('month-orders').textContent = data.thisMonthOrders || 0;
+          document.getElementById('month-revenue').textContent = `₹${(data.thisMonthRevenue || 0).toLocaleString()}`;
+          document.getElementById('low-stock').textContent = data.lowStockCount || 0;
+        }
+      } catch (err) { console.error('Stats Error:', err); }
+    }
+
+    async function fetchShops(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shops?startDate=${startDate}&endDate=${endDate}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allShops = data;
+          renderShopsTable(data);
+        }
+      } catch (err) { console.error('Shops Error:', err); }
+    }
+
+    async function fetchShopOrders(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/orders?startDate=${startDate}&endDate=${endDate}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          allOrders = data;
+          renderOrdersTable(data);
+        }
+      } catch (err) { console.error('Orders Error:', err); }
+    }
+
+    function createShopRow(s) {
+      const isApp = s.status === 'approved' || s.status === 'Active';
+      const color = isApp ? 'emerald' : (s.status === 'pending' ? 'amber' : 'rose');
+      return `
+        <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
+                <i class="fas fa-store"></i>
+              </div>
+              <div>
+                 <p class="text-xs font-black text-slate-900">${s.businessName}</p>
+                 <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${s._id.substring(18)}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4">
+            <p class="text-[11px] font-bold text-slate-700">${s.name}</p>
+            <p class="text-[10px] text-slate-400">${s.phone}</p>
+          </td>
+          <td class="px-5 py-4 text-[10px] font-bold text-slate-500">${s.address || '-'}</td>
+          <td class="px-5 py-4 text-center">
+             <span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-[9px] font-black text-slate-600 uppercase tracking-tighter">${s.category || 'Agri'}</span>
+          </td>
+          <td class="px-5 py-4 text-center">
+             <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-[10px] font-black">${s.totalProducts || 0}</span>
+          </td>
+          <td class="px-5 py-4 text-center">
+             <span class="px-2 py-0.5 rounded-lg bg-teal-50 text-teal-600 border border-teal-100 text-[10px] font-black">${s.totalOrders || 0}</span>
+          </td>
+          <td class="px-5 py-4">
+             <span class="px-2 py-0.5 rounded-full bg-${color}-50 text-${color}-700 border border-${color}-200 text-[9px] font-black uppercase">${s.status}</span>
+          </td>
+          <td class="px-5 py-4">
+             <button onclick="viewShop('${s._id}')" class="h-8 w-8 rounded-lg bg-white border-2 border-slate-100 text-slate-400 hover:text-teal-600 hover:border-teal-200 transition-all flex items-center justify-center shadow-sm">
+                <i class="fas fa-eye text-xs"></i>
+             </button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function renderShopsTable(shops) {
+      window.progressiveRenderTable('shops-table-body', shops, createShopRow, {
+        chunkSize: 20,
+        emptyHtml: '<tr><td colspan="7" class="text-center py-10 text-slate-400 font-bold">No partners found.</td></tr>'
+      });
+    }
+
+    function renderOrdersTable(orders) {
+      const container = document.getElementById('orders-table-body');
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-slate-400 font-bold">No recent orders yet.</td></tr>`;
+        return;
+      }
+      container.innerHTML = orders.map(o => `
+        <tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+          <td class="px-5 py-4">
+             <button onclick="openOrderModal('${o._id}')" class="text-sky-600 hover:text-sky-800 hover:underline text-xs font-black uppercase transition-colors">#${o._id.substring(18)}</button>
+          </td>
+          <td class="px-5 py-4">
+             <p class="text-[11px] font-black text-slate-800">${o.shopName}</p>
+             <p class="text-[9px] text-slate-400 font-bold italic">To: ${o.buyerName}</p>
+          </td>
+          <td class="px-5 py-4">
+             <p class="text-[10px] font-bold text-slate-700 truncate max-w-[150px]">${o.itemsSummary}</p>
+          </td>
+          <td class="px-5 py-4 text-right">
+             <p class="text-xs font-black text-slate-900">₹${o.totalAmount.toLocaleString()}</p>
+          </td>
+          <td class="px-5 py-4 text-right">
+             <p class="text-[10px] font-black text-rose-600">₹${(o.commissionAmount || 0).toFixed(1)}</p>
+          </td>
+          <td class="px-5 py-4 text-right">
+             <p class="text-[11px] font-black text-emerald-600">₹${(o.payoutAmount || 0).toLocaleString()}</p>
+          </td>
+          <td class="px-5 py-4 text-center">
+             <span class="px-1.5 py-0.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 text-[9px] font-black uppercase">${o.paymentMode || 'COD'}</span>
+          </td>
+          <td class="px-5 py-4">
+             <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 text-[9px] font-black uppercase">${o.status}</span>
+          </td>
+          <td class="px-5 py-4">
+             <p class="text-[10px] font-bold text-slate-500">${new Date(o.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function switchTab(tabId) {
+      // Buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-teal-500', 'text-teal-600');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      activeBtn.classList.add('active', 'border-teal-500', 'text-teal-600');
+      activeBtn.classList.remove('border-transparent', 'text-slate-400');
+
+      // Content
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+      document.getElementById(`content-${tabId}`).classList.remove('hidden');
+
+      // If switching to a tab that needs data and we have it, re-render just in case
+      if (currentShopData) {
+        if (tabId === 'sales') renderSalesHistory(currentShopData.orders);
+        if (tabId === 'inventory') renderInventory(currentShopData.inventory);
+        if (tabId === 'wallet') renderWalletHistory(currentShopData.transactions);
+      }
+    }
+
+    function toggleEditMode(enable = true) {
+      const view = document.getElementById('viewMode');
+      const edit = document.getElementById('editMode');
+      const toggleBtn = document.getElementById('toggleEditBtn');
+
+      if (enable) {
+        view.classList.add('hidden');
+        edit.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-eye mr-1.5"></i> View Mode';
+        toggleBtn.onclick = () => toggleEditMode(false);
+        toggleBtn.classList.replace('bg-teal-500', 'bg-slate-500');
+      } else {
+        view.classList.remove('hidden');
+        edit.classList.add('hidden');
+        toggleBtn.innerHTML = '<i class="fas fa-edit mr-1.5"></i> Edit';
+        toggleBtn.onclick = () => toggleEditMode(true);
+        toggleBtn.classList.replace('bg-slate-500', 'bg-teal-500');
+      }
+    }
+
+    async function viewShop(shopId) {
+      const basicShop = allShops.find(s => s._id === shopId);
+      if (!basicShop) return;
+
+      currentEditingShopId = shopId;
+      toggleEditMode(false);
+      switchTab('overview');
+
+      // Set basic info immediately for speed
+      document.getElementById('modalShopName').textContent = basicShop.businessName;
+      document.getElementById('modalShopId').textContent = `ID: #${shopId.substring(18).toUpperCase()}`;
+
+      const statusEl = document.getElementById('modalShopStatus');
+      const isApproved = basicShop.status === 'approved' || basicShop.status === 'Active';
+      statusEl.textContent = isApproved ? 'Active' : basicShop.status.toUpperCase();
+      statusEl.className = `inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase border-2 ${isApproved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`;
+
+      // Open modal
+      document.getElementById('shopProfileModal').classList.remove('hidden');
+
+      // Fetch 360 Data
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/${shopId}/360`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          currentShopData = data;
+          populateShopModal(data);
+        }
+      } catch (err) {
+        showToast('Error loading full details', 'error');
+      }
+    }
+
+    function populateShopModal(data) {
+      const s = data.profile;
+
+      // Overview stats
+      document.getElementById('v_stat_totalSales').textContent = `₹${(data.stats.totalSales || 0).toLocaleString()}`;
+      document.getElementById('v_stat_totalOrders').textContent = data.stats.totalOrders || 0;
+      document.getElementById('v_stat_totalProducts').textContent = data.stats.totalProducts || 0;
+
+      // Identity
+      document.getElementById('v_ownerName').textContent = s.name || '-';
+      document.getElementById('v_phone').textContent = s.phone || '-';
+      document.getElementById('v_email').textContent = s.email || '-';
+      document.getElementById('v_joinedDate').textContent = new Date(s.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('v_address').textContent = s.address || 'Address not provided';
+
+      // Profile Photo
+      const photoCircle = document.getElementById('modalProfileCircle');
+      if (s.profilePhotoUrl) {
+        photoCircle.innerHTML = `<img src="${fixImageUrl(s.profilePhotoUrl)}" class="h-full w-full object-cover">`;
+      } else {
+        photoCircle.innerHTML = `<i class="fas fa-store text-2xl text-slate-300"></i>`;
+      }
+
+      // Render KYC Document Cards Grid
+      const b = s.bankDetails || {};
+      const fixDocUrl = (u) => {
+        if (!u || typeof u !== 'string') return null;
+        const clean = u.trim();
+        if (!clean || clean === 'undefined' || clean === 'null' || clean === 'none' || clean.includes('undefined')) return null;
+        return fixImageUrl(clean);
+      };
+
+      const docs = [
+        {
+          key: 'aadhaarFront',
+          title: 'Aadhaar Card (Front)',
+          icon: 'fas fa-address-card text-teal-600',
+          number: s.aadhaarNumber ? `Aadhaar: ${s.aadhaarNumber}` : 'Not Provided',
+          url: fixDocUrl(s.aadhaarDocUrl || s.aadhaarFrontUrl || s.aadhaarFront)
+        },
+        {
+          key: 'aadhaarBack',
+          title: 'Aadhaar Card (Back)',
+          icon: 'fas fa-id-card text-teal-600',
+          number: s.aadhaarNumber ? `Aadhaar: ${s.aadhaarNumber}` : 'Not Provided',
+          url: fixDocUrl(s.aadhaarBackDocUrl || s.aadhaarBackUrl || s.aadhaarBack)
+        },
+        {
+          key: 'panCard',
+          title: 'PAN Card / ID Proof',
+          icon: 'fas fa-credit-card text-blue-600',
+          number: s.panNumber ? `PAN: ${s.panNumber}` : 'Not Provided',
+          url: fixDocUrl(s.panDocUrl || s.panCardUrl || s.panDoc)
+        },
+        {
+          key: 'licenseDoc',
+          title: 'GST / Business License',
+          icon: 'fas fa-file-invoice text-purple-600',
+          number: s.gstNumber ? `GST: ${s.gstNumber}` : (s.licenseNumber ? `Lic: ${s.licenseNumber}` : 'Not Provided'),
+          url: fixDocUrl(s.businessLicenseUrl || s.gstDocUrl || s.licenseDocUrl)
+        },
+        {
+          key: 'passbook',
+          title: 'Bank Passbook / Cheque',
+          icon: 'fas fa-university text-emerald-600',
+          number: b.accountNumber ? `A/C: ..${b.accountNumber.slice(-4)} (${b.bankName || 'Bank'})` : 'Not Provided',
+          url: fixDocUrl(b.bankDocUrl || b.passbookUrl || s.passbookDocUrl)
+        }
+      ];
+
+      const grid = document.getElementById('shopKycDocsGrid');
+      if (grid) {
+        grid.innerHTML = docs.map(d => {
+          const hasUrl = !!d.url;
+          return `
+            <div class="bg-slate-50 rounded-2xl border-2 border-slate-200 p-4 flex flex-col justify-between shadow-sm hover:border-teal-400 transition-all">
+              <div>
+                <div class="flex justify-between items-start mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-base shrink-0 shadow-sm">
+                      <i class="${d.icon}"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-black text-slate-900">${d.title}</h4>
+                      <p class="text-[10px] text-slate-500 font-semibold truncate max-w-[150px]">${d.number}</p>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${hasUrl ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+                    ${hasUrl ? '<i class="fas fa-check-circle mr-1"></i> Uploaded' : '<i class="fas fa-times-circle mr-1"></i> Missing'}
+                  </span>
+                </div>
+
+                ${hasUrl ? `
+                  <div class="h-32 w-full rounded-xl bg-slate-900 overflow-hidden border border-slate-200 relative group mb-3 cursor-pointer shadow-inner" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')">
+                    <img src="${d.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'h-full w-full bg-slate-900 flex flex-col items-center justify-center text-slate-300 p-2 text-center\\'><i class=\\'fas fa-file-excel text-2xl mb-1 text-teal-400\\'></i><span class=\\'text-[10px] font-bold text-slate-200\\'>File Unavailable</span></div>';">
+                    <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1.5 backdrop-blur-[2px]">
+                      <i class="fas fa-search-plus text-lg text-teal-400"></i>
+                      <span>View Full Screen</span>
+                    </div>
+                  </div>
+                ` : `
+                  <div class="h-32 w-full rounded-xl bg-white border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3">
+                    <i class="fas fa-file-circle-xmark text-2xl mb-1 text-slate-300"></i>
+                    <span class="text-[10px] font-bold text-slate-500">Not Uploaded</span>
+                  </div>
+                `}
+              </div>
+
+              <div class="flex gap-2 pt-2 border-t border-slate-200">
+                ${hasUrl ? `
+                  <button type="button" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-black py-2 rounded-xl flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                  <button type="button" onclick="rejectPartnerDocument('${s._id}', '${d.key}', '${d.title}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-black rounded-xl border border-rose-200 flex items-center justify-center transition-all cursor-pointer" title="Reject Document for Re-upload">
+                    <i class="fas fa-trash-alt mr-1"></i> Reject
+                  </button>
+                ` : `
+                  <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
+                    No Document Attached
+                  </button>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Bank
+      document.getElementById('v_bank_holderName').textContent = b.holderName || '-';
+      document.getElementById('v_bank_bankName').textContent = b.bankName || '-';
+      document.getElementById('v_bank_accountNumber').textContent = b.accountNumber || '-';
+      document.getElementById('v_bank_ifscCode').textContent = b.ifscCode || '-';
+
+      // Wallet
+      document.getElementById('v_walletBalance').textContent = `₹${(s.walletBalance || 0).toFixed(2)}`;
+
+      // Edit Fields
+      document.getElementById('e_businessName').value = s.businessName || '';
+      document.getElementById('e_name').value = s.name || '';
+      document.getElementById('e_phone').value = s.phone || '';
+      document.getElementById('e_address').value = s.address || '';
+      document.getElementById('e_aadhaarNumber').value = s.aadhaarNumber || '';
+      document.getElementById('e_panNumber').value = s.panNumber || '';
+      document.getElementById('e_bank_bankName').value = b.bankName || '';
+      document.getElementById('e_bank_ifscCode').value = b.ifscCode || '';
+      document.getElementById('e_bank_accountNumber').value = b.accountNumber || '';
+
+      // Bottom Actions
+      const actions = document.getElementById('modalActionButtons');
+      actions.innerHTML = '';
+      const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+      const hasDocs = isValidDoc(s.gstDocUrl) || isValidDoc(s.licenseDocUrl) || isValidDoc(s.aadhaarDocUrl) || isValidDoc(s.aadhaarFrontUrl) || isValidDoc(s.photoUrl);
+
+      if (s.status === 'pending' || s.status === 'blocked') {
+        if (hasDocs) {
+          actions.innerHTML += `<button onclick="approveShop('${s._id}', '${s.businessName.replace(/'/g, "\\'")}')" class="h-10 px-6 rounded-xl bg-emerald-500 text-white font-black text-[11px] hover:bg-emerald-600 shadow-md">APPROVE SHOP</button>`;
+        } else {
+          actions.innerHTML += `<button disabled class="h-10 px-6 rounded-xl bg-slate-100 border border-slate-200 text-slate-400 font-black text-[11px] cursor-not-allowed" title="Cannot approve: No KYC or License documents uploaded"><i class="fas fa-lock mr-1"></i> DOC MISSING</button>`;
+        }
+      }
+      if (s.status === 'approved' || s.status === 'Active') {
+        actions.innerHTML += `<button onclick="blockShop('${s._id}', '${s.businessName.replace(/'/g, "\\'")}')" class="h-10 px-6 rounded-xl bg-white border-2 border-rose-100 text-rose-600 font-black text-[11px] hover:bg-rose-50">BLOCK SHOP</button>`;
+      }
+    }
+
+    function renderSalesHistory(orders) {
+      const container = document.getElementById('sales-history-body');
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `<tr><td colspan="4" class="text-center py-10 text-slate-400 font-bold">No sales records yet.</td></tr>`;
+        return;
+      }
+      container.innerHTML = orders.map(o => `
+        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+          <td class="px-5 py-3">
+             <button onclick="openOrderModal('${o._id}')" class="text-sky-600 hover:text-sky-800 hover:underline text-xs font-black uppercase transition-colors">#${o._id.substring(18)}</button>
+          </td>
+          <td class="px-5 py-3">
+             <div class="font-bold">${o.buyerName}</div>
+             <div class="text-[9px] text-slate-400">${new Date(o.createdAt).toLocaleDateString()}</div>
+          </td>
+          <td class="px-5 py-3 text-right font-black text-slate-700">₹${o.totalAmount}</td>
+          <td class="px-5 py-3 text-center">
+            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-[9px] font-black">${o.status}</span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderInventory(items) {
+      const container = document.getElementById('inventory-grid');
+      if (!items || items.length === 0) {
+        container.innerHTML = `<div class="col-span-1 md:col-span-2 text-center py-10 text-slate-400 font-bold">No products found.</div>`;
+        return;
+      }
+      container.innerHTML = items.map(i => {
+        const hv = i.hasVariants && i.variants && i.variants.length > 0;
+        let variantHtml = '';
+        if (hv) {
+          variantHtml = `
+            <div class="mt-2 pt-2 border-t border-slate-50 space-y-1">
+              ${i.variants.map(v => `
+                <div class="flex justify-between items-center bg-slate-50/50 px-1.5 py-1 rounded-lg">
+                  <span class="text-[9px] font-bold text-slate-500 truncate mr-2">${v.label}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[9px] font-black text-teal-600">₹${v.price}</span>
+                    <span class="text-[8px] font-black ${v.stockQty < 5 ? 'text-rose-500' : 'text-slate-400'}">Qty: ${v.stockQty}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        return `
+          <div class="bg-white p-3.5 rounded-2xl border-2 border-slate-100 hover:border-teal-200 transition-all group h-full flex flex-col">
+            <div class="flex items-start gap-4">
+              <div class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden border border-slate-100 flex-shrink-0">
+                 <img src="${fixImageUrl(i.image)}" class="h-full w-full object-cover group-hover:scale-110 transition-transform" onerror="this.src='https://ui-avatars.com/api/?name=${i.name}&background=random'">
+              </div>
+              <div class="flex-1 min-w-0">
+                 <div class="flex items-center justify-between">
+                    <p class="text-[11px] font-black text-slate-900 truncate">${i.name}</p>
+                    ${hv ? '<span class="text-[8px] font-black bg-teal-50 text-teal-600 px-1 rounded uppercase">Varieties</span>' : ''}
+                 </div>
+                 ${!hv ? `
+                   <div class="flex items-center justify-between mt-1.5">
+                      <span class="text-[10px] font-bold text-teal-600">₹${i.price}</span>
+                      <span class="text-[9px] font-black ${i.stock < 10 ? 'text-rose-500' : 'text-slate-400'} uppercase">Stock: ${i.stock}</span>
+                   </div>
+                 ` : ''}
+              </div>
+            </div>
+            ${variantHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderWalletHistory(txns) {
+      const container = document.getElementById('wallet-history-body');
+      if (!txns || txns.length === 0) {
+        container.innerHTML = `<tr><td class="text-center py-10 text-slate-400 font-bold text-xs">No transaction history.</td></tr>`;
+        return;
+      }
+      container.innerHTML = txns.map(t => {
+        const isCredit = t.type === 'Credit' || t.amount > 0;
+        const color = isCredit ? 'emerald' : 'rose';
+        return `
+          <tr class="border-b border-slate-50">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-8 w-8 rounded-full bg-${color}-50 flex items-center justify-center text-${color}-500">
+                  <i class="fas ${isCredit ? 'fa-arrow-up' : 'fa-arrow-down'} text-xs"></i>
+                </div>
+                <div>
+                  <p class="text-[11px] font-black text-slate-900">${t.note || 'Wallet Adjustment'}</p>
+                  <p class="text-[9px] text-slate-400 font-bold">${new Date(t.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <p class="text-xs font-black text-${color}-600">${isCredit ? '+' : '-'}₹${Math.abs(t.amount).toFixed(2)}</p>
+              <p class="text-[9px] text-slate-400 uppercase font-black tracking-tight">${t.paymentMode || 'Adjustment'}</p>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Wallet Actions
+    function openWalletAction(type) {
+      document.getElementById('walletActionForm').classList.remove('hidden');
+      document.getElementById('walletActionTitle').textContent = `${type} NexCard Wallet`;
+      document.getElementById('walletActionTitle').className = type === 'Credit' ? 'text-emerald-600' : 'text-rose-600';
+      document.getElementById('w_amount').value = '';
+      document.getElementById('w_note').value = '';
+    }
+    function closeWalletAction() {
+      document.getElementById('walletActionForm').classList.add('hidden');
+    }
+
+    async function submitWalletTransaction() {
+      const type = document.getElementById('walletActionTitle').textContent.split(' ')[0];
+      const amount = parseFloat(document.getElementById('w_amount').value);
+      const mode = document.getElementById('w_mode').value;
+      const note = document.getElementById('w_note').value;
+
+      if (!amount || amount <= 0) return showToast('Please enter a valid amount', 'error');
+
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/${currentEditingShopId}/wallet/transaction`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ type, amount, mode, note })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Wallet updated successfully!', 'success');
+          closeWalletAction();
+          viewShop(currentEditingShopId); // Refresh modal data
+          fetchShops(); // Refresh main list
+        } else showToast(data.error || 'Transaction failed', 'error');
+      } catch (err) { showToast('Network Error', 'error'); }
+      finally { btn.disabled = false; btn.textContent = 'CONFIRM TRANSACTION'; }
+    }
+
+    async function saveShopEdits() {
+      if (!currentEditingShopId) return;
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        businessName: document.getElementById('e_businessName').value,
+        name: document.getElementById('e_name').value,
+        phone: document.getElementById('e_phone').value,
+        address: document.getElementById('e_address').value,
+        aadhaarNumber: document.getElementById('e_aadhaarNumber').value,
+        panNumber: document.getElementById('e_panNumber').value,
+        bankDetails: {
+          bankName: document.getElementById('e_bank_bankName').value,
+          accountNumber: document.getElementById('e_bank_accountNumber').value,
+          ifscCode: document.getElementById('e_bank_ifscCode').value
+        }
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/update/${currentEditingShopId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${AUTH_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast('Shop updated!', 'success');
+          fetchShops();
+          toggleEditMode(false);
+          setTimeout(() => viewShop(currentEditingShopId), 500);
+        } else showToast('Failed to update', 'error');
+      } catch (e) { showToast('Network Error', 'error'); }
+      finally { btn.disabled = false; btn.textContent = originalText; }
+    }
+
+    function closeShopProfile() {
+      document.getElementById('shopProfileModal').classList.add('hidden');
+    }
+
+    async function approveShop(shopId, shopName) {
+      if (!confirm(`Approve ${shopName}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/approve/${shopId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast(`${shopName} approved!`, 'success');
+          fetchShops();
+          viewShop(shopId);
+        } else showToast('Failed to approve', 'error');
+      } catch (e) { showToast('Network error', 'error'); }
+    }
+
+    async function blockShop(shopId, shopName) {
+      if (!confirm(`Block ${shopName}?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/shop/block/${shopId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          showToast(`${shopName} blocked!`, 'success');
+          fetchShops();
+          viewShop(shopId);
+        } else showToast('Failed to block', 'error');
+      } catch (e) { showToast('Network error', 'error'); }
+    }
+
+    function filterShops() {
+      const q = document.getElementById('shopSearchInput').value.toLowerCase();
+      const st = document.getElementById('shopStatusFilter').value;
+      const start = document.getElementById('shopStartDate').value;
+      const end = document.getElementById('shopEndDate').value;
+
+      const f = allShops.filter(s => {
+        const match = Object.values(s).join(' ').toLowerCase().includes(q);
+        const isApp = s.status === 'approved' || s.status === 'Active';
+        let matchSt = true;
+        if (st === 'Active') matchSt = isApp;
+        if (st === 'Pending') matchSt = s.status === 'pending';
+
+        let matchDate = true;
+        if (start || end) {
+          const joinedDate = s.joinedAt ? new Date(s.joinedAt).toISOString().split('T')[0] : null;
+          if (!joinedDate) {
+            matchDate = false;
+          } else {
+            if (start && joinedDate < start) matchDate = false;
+            if (end && joinedDate > end) matchDate = false;
+          }
+        }
+
+        return match && matchSt && matchDate;
+      });
+      renderShopsTable(f);
+    }
+
+    function filterOrders() {
+      const q = document.getElementById('orderSearchInput').value.toLowerCase();
+      const st = document.getElementById('orderStatusFilter').value;
+      const start = document.getElementById('orderStartDate').value;
+      const end = document.getElementById('orderEndDate').value;
+
+      const f = allOrders.filter(o => {
+        const text = `${o._id} ${o.shopName} ${o.buyerName} ${o.itemsSummary}`.toLowerCase();
+        const matchesQ = text.includes(q);
+        const matchesSt = st === 'All' || o.status === st;
+
+        let matchDate = true;
+        if (start || end) {
+          const orderDate = o.createdAt ? new Date(o.createdAt).toISOString().split('T')[0] : null;
+          if (!orderDate) {
+            matchDate = false;
+          } else {
+            if (start && orderDate < start) matchDate = false;
+            if (end && orderDate > end) matchDate = false;
+          }
+        }
+
+        return matchesQ && matchesSt && matchDate;
+      });
+      renderOrdersTable(f);
+    }
+
+    // Global Date Filter Handlers
+    function formatLocalDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function setGlobalDatePreset(preset) {
+      document.querySelectorAll('.global-preset-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-teal-700', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+      const activeBtn = document.getElementById(`btn-preset-${preset}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-600');
+        activeBtn.classList.add('bg-white', 'text-teal-700', 'shadow-sm');
+      }
+
+      const today = new Date();
+      let startDateStr = '';
+      let endDateStr = '';
+      let label = 'All Time';
+
+      if (preset === 'today') {
+        const start = formatLocalDate(today);
+        startDateStr = start;
+        endDateStr = start;
+        label = 'Today';
+      } else if (preset === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const yest = formatLocalDate(yesterday);
+        startDateStr = yest;
+        endDateStr = yest;
+        label = 'Yesterday';
+      } else if (preset === 'month') {
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        startDateStr = formatLocalDate(startOfMonth);
+        endDateStr = formatLocalDate(today);
+        label = 'This Month';
+      } else if (preset === 'all') {
+        startDateStr = '';
+        endDateStr = '';
+        label = 'All Time';
+      }
+
+      document.getElementById('globalStartDate').value = startDateStr;
+      document.getElementById('globalEndDate').value = endDateStr;
+
+      applyGlobalFilter(startDateStr, endDateStr, label);
+    }
+
+    function onGlobalDateChange() {
+      document.querySelectorAll('.global-preset-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-teal-700', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+
+      const start = document.getElementById('globalStartDate').value;
+      const end = document.getElementById('globalEndDate').value;
+
+      let label = 'Selected Period';
+      if (!start && !end) label = 'All Time';
+
+      applyGlobalFilter(start, end, label);
+    }
+
+    function applyGlobalFilter(startDate, endDate, label) {
+      const ordersLabel = document.getElementById('label-orders-period');
+      const revenueLabel = document.getElementById('label-revenue-period');
+      if (ordersLabel) ordersLabel.textContent = label;
+      if (revenueLabel) revenueLabel.textContent = label;
+
+      fetchShopStats(startDate, endDate);
+      fetchShops(startDate, endDate);
+      fetchShopOrders(startDate, endDate);
+    }
+
+    function openOrderModal(orderId) {
+      console.log('openOrderModal called with ID:', orderId);
+      try {
+        let order = allOrders.find(o => o._id === orderId);
+        if (!order && currentShopData && currentShopData.orders) {
+          order = currentShopData.orders.find(o => o._id === orderId);
+        }
+        if (!order) {
+          console.error('Order not found in allOrders or currentShopData.orders:', orderId);
+          alert('Error: Order details not found in local data.');
+          return;
+        }
+
+        const orderTitleId = document.getElementById('modalOrderTitleId');
+        if (orderTitleId) {
+          orderTitleId.textContent = `#${(order._id || '').substring(18).toUpperCase()}`;
+        }
+
+        const statusBadge = document.getElementById('modalOrderStatus');
+        if (statusBadge) {
+          statusBadge.textContent = order.status || 'NEW';
+          statusBadge.className = 'mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase border-2';
+          if (order.status === 'DELIVERED') {
+            statusBadge.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-700');
+          } else if (order.status === 'CANCELLED') {
+            statusBadge.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-700');
+          } else if (order.status === 'IN_PROGRESS' || order.status === 'ACCEPTED') {
+            statusBadge.classList.add('bg-sky-50', 'border-sky-200', 'text-sky-700');
+          } else {
+            statusBadge.classList.add('bg-slate-50', 'border-slate-300', 'text-slate-700');
+          }
+        }
+
+        const orderDateEl = document.getElementById('modalOrderDate');
+        if (orderDateEl) {
+          const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+          orderDateEl.textContent = dateStr;
+        }
+
+        // Customer Details
+        const deliveryAddress = order.deliveryAddress || {};
+        const customerNameEl = document.getElementById('modalCustomerName');
+        if (customerNameEl) customerNameEl.textContent = deliveryAddress.name || order.buyerName || 'N/A';
+
+        const customerPhoneEl = document.getElementById('modalCustomerPhone');
+        if (customerPhoneEl) customerPhoneEl.textContent = deliveryAddress.phone || order.buyerPhone || 'N/A';
+
+        const deliveryAddressEl = document.getElementById('modalDeliveryAddress');
+        if (deliveryAddressEl) deliveryAddressEl.textContent = deliveryAddress.fullAddress || order.buyerLocation || 'No Address Provided';
+
+        // Shop Details
+        const orderShopNameEl = document.getElementById('modalOrderShopName');
+        if (orderShopNameEl) orderShopNameEl.textContent = order.shopName || 'Unknown Shop';
+
+        const orderShopPhoneEl = document.getElementById('modalOrderShopPhone');
+        if (orderShopPhoneEl) orderShopPhoneEl.textContent = order.shopPhone || 'N/A';
+
+        // Items Body
+        const itemsBody = document.getElementById('modalOrderItemsBody');
+        if (itemsBody) {
+          itemsBody.innerHTML = '';
+          if (!order.items || order.items.length === 0) {
+            itemsBody.innerHTML = `<tr><td colspan="4" class="px-4 py-3 text-center text-slate-400 font-bold">No products found.</td></tr>`;
+          } else {
+            order.items.forEach(item => {
+              const row = document.createElement('tr');
+              const qty = item.quantity || 1;
+              const price = item.price || 0;
+              const total = price * qty;
+              row.innerHTML = `
+                <td class="px-4 py-3 border-b border-slate-100">
+                  <div class="font-black text-slate-900">${item.name || 'Unknown Item'}</div>
+                  ${item.variantLabel ? `<div class="text-[9px] text-slate-500 font-bold mt-0.5">${item.variantLabel}</div>` : ''}
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-slate-700 border-b border-slate-100">₹${(price || 0).toLocaleString()}</td>
+                <td class="px-4 py-3 text-right font-black text-slate-900 border-b border-slate-100">${qty}</td>
+                <td class="px-4 py-3 text-right font-black text-slate-900 border-b border-slate-100">₹${(total || 0).toLocaleString()}</td>
+              `;
+              itemsBody.appendChild(row);
+            });
+          }
+        }
+
+        // Financials
+        const subtotalEl = document.getElementById('modalOrderSubtotal');
+        if (subtotalEl) subtotalEl.textContent = `₹${(order.totalAmount || 0).toLocaleString()}`;
+
+        const commissionEl = document.getElementById('modalOrderCommission');
+        if (commissionEl) commissionEl.textContent = `-₹${(order.commissionAmount || 0).toLocaleString()}`;
+
+        const payoutEl = document.getElementById('modalOrderPayout');
+        if (payoutEl) payoutEl.textContent = `₹${(order.payoutAmount || 0).toLocaleString()}`;
+
+        // Payment Mode
+        const paymentModeEl = document.getElementById('modalOrderPaymentMode');
+        if (paymentModeEl) paymentModeEl.textContent = order.paymentMode || 'CASH';
+
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        if (orderDetailsModal) {
+          orderDetailsModal.classList.remove('hidden');
+        } else {
+          console.error('orderDetailsModal element not found in DOM!');
+          alert('Error: Modal element not found in DOM.');
+        }
+      } catch (err) {
+        console.error('Error in openOrderModal:', err);
+        alert('Error displaying order details: ' + err.message);
+      }
+    }
+
+    function closeOrderModal() {
+      const orderDetailsModal = document.getElementById('orderDetailsModal');
+      if (orderDetailsModal) orderDetailsModal.classList.add('hidden');
+    }
+
+    function exportShops() {
+      if (allShops.length === 0) return showToast('No data', 'info');
+      let csv = 'Shop ID,Shop Name,Phone,Email,Orders,Status\n';
+      allShops.forEach(s => {
+        csv += `${s._id},"${s.businessName}","${s.phone}","${s.email || ''}",${s.totalOrders || 0},${s.status}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'shops_export.csv';
+      a.click();
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toastMessage');
+      toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl transition-all ${type === 'success' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-white border-slate-300 text-slate-900'}`;
+      msg.textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+    let currentDocKeyForViewer = null;
+
+    function openDocViewer(title, url, docKey) {
+      if (!url) return showToast('Document URL not available', 'warning');
+      currentDocKeyForViewer = docKey || null;
+      document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
+      document.getElementById('docViewerDownloadBtn').href = url;
+
+      const img = document.getElementById('docViewerImage');
+      const errState = document.getElementById('docViewerErrorState');
+
+      if (img && errState) {
+        img.classList.remove('hidden');
+        errState.classList.add('hidden');
+        img.src = url;
+      }
+
+      const rejectBtn = document.getElementById('docViewerRejectBtn');
+      if (rejectBtn) {
+        if (docKey && currentEditingShopId) {
+          rejectBtn.onclick = () => rejectPartnerDocument(currentEditingShopId, docKey, title);
+          rejectBtn.classList.remove('hidden');
+        } else {
+          rejectBtn.classList.add('hidden');
+        }
+      }
+
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function handleDocViewerImageError(img) {
+      if (!img) return;
+      img.classList.add('hidden');
+      const errState = document.getElementById('docViewerErrorState');
+      if (errState) {
+        errState.classList.remove('hidden');
+      }
+    }
+
+    function closeDocViewer() {
+      const modal = document.getElementById('docViewerModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function rejectPartnerDocument(userId, docKey, docTitle) {
+      if (!confirm(`Are you sure you want to REJECT "${docTitle}"?\n\nThis will clear the document and allow the partner to re-upload it.`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/user/${userId}/reject-doc`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ docKey })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Document rejected successfully', 'success');
+          closeDocViewer();
+          viewShop(userId);
+          fetchShops();
+        } else {
+          showToast(data.error || 'Failed to reject document', 'error');
+        }
+      } catch (e) {
+        showToast('Network error: ' + e.message, 'error');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setGlobalDatePreset('all');
+    });
+  </script>
+
+  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
+  <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
+      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
+            <i class="fas fa-file-image text-lg"></i>
+          </div>
+          <div>
+            <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
+            <p class="text-[10px] text-purple-300 font-medium">Official Identification & Verification Document</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <i class="fas fa-trash-alt"></i> Reject Document
+          </button>
+          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
+            <i class="fas fa-download"></i> Download / Open
+          </a>
+          <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
+        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
+          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

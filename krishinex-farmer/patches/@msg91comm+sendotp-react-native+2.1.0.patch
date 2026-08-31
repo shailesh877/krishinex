@@ -1,0 +1,230 @@
+diff --git a/node_modules/@msg91comm/sendotp-react-native/index.ts b/node_modules/@msg91comm/sendotp-react-native/index.ts
+index 24e3d20..1153156 100644
+--- a/node_modules/@msg91comm/sendotp-react-native/index.ts
++++ b/node_modules/@msg91comm/sendotp-react-native/index.ts
+@@ -10,7 +10,7 @@ var tokenAuth: string = "";
+ const bridge = NativeModules.BiometricAuth;
+ 
+ if (!bridge) {
+-  console.error('BiometricAuth is undefined! Ensure the native module is properly linked.');
++  console.warn('BiometricAuth is undefined! Ensure the native module is properly linked. Bypassing crash for Expo Go headless OTP usage.');
+ }
+ 
+ /**
+@@ -154,118 +154,118 @@ export const BiometricAuthLegacy = {
+ 
+ 
+ export class OTPWidget {
+-    // Checks if the widget has been properly initialized with a widget ID and a token.
+-    // This is an internal method and should not be called directly.
+-    private static checkInitialization() {
+-        if (widgetId === "" || tokenAuth === "") {
+-            console.error("Widget not initialized. Call initializeWidget before using any method.")
+-            return false;
+-        }
+-        return true
++  // Checks if the widget has been properly initialized with a widget ID and a token.
++  // This is an internal method and should not be called directly.
++  private static checkInitialization() {
++    if (widgetId === "" || tokenAuth === "") {
++      console.error("Widget not initialized. Call initializeWidget before using any method.")
++      return false;
+     }
++    return true
++  }
+ 
+ 
+-    /**
+-    * Initializes the widget with necessary authentication details.
+-    * Must be called before using any other methods in the widget.
+-    * 
+-    * @param widgetid
+-    * @param tokenauth
+-    */
+-    static async initializeWidget(widgetid: string, tokenauth: string) {
+-        widgetId = widgetid
+-        tokenAuth = tokenauth
+-    }
++  /**
++  * Initializes the widget with necessary authentication details.
++  * Must be called before using any other methods in the widget.
++  * 
++  * @param widgetid
++  * @param tokenauth
++  */
++  static async initializeWidget(widgetid: string, tokenauth: string) {
++    widgetId = widgetid
++    tokenAuth = tokenauth
++  }
+ 
+ 
+-    /**
+-     * The sendOTP method is used to send an OTP to an identifier.
+-     * Identifier (string) - This is a mandatory argument. The identifier can be an email or mobile number (it must contain the country code without +)
+-     * 
+-     * @param body body Contains the identifier and other parameters necessary for sending an OTP.
+-     * @returns {Promise<any>} A Promise resolving to the send response or throws an error if the request fails.
+-     */
+-    static async sendOTP(body: any) {
+-        if (!this.checkInitialization()) return;
+-
+-        const payload = {
+-            widgetId: widgetId,
+-            tokenAuth: tokenAuth,
+-            ...body
+-        }
+-        try {
+-            const response = await ApiService.sendOTP(payload);
+-            return response;
+-        } catch (error) {
+-            console.error('Error sending OTP:', error);
+-            throw error; // Re-throw the error to propagate it to the caller
+-        }
++  /**
++   * The sendOTP method is used to send an OTP to an identifier.
++   * Identifier (string) - This is a mandatory argument. The identifier can be an email or mobile number (it must contain the country code without +)
++   * 
++   * @param body body Contains the identifier and other parameters necessary for sending an OTP.
++   * @returns {Promise<any>} A Promise resolving to the send response or throws an error if the request fails.
++   */
++  static async sendOTP(body: any) {
++    if (!this.checkInitialization()) return;
+ 
++    const payload = {
++      widgetId: widgetId,
++      tokenAuth: tokenAuth,
++      ...body
+     }
+-    /**
+-     * The verifyOtp method is used to verify an OTP entered by the user.
+-     * 
+-     * @param body body Must include the otp for verification and the reqId of the original OTP request.
+-     * @returns {Promise<any>} A Promise resolving to the verification response or throws an error if verification fails.
+-     */
+-    static async verifyOTP(body: any) {
+-        if (!this.checkInitialization()) return;
+-
+-        const payload = {
+-            widgetId: widgetId,
+-            tokenAuth: tokenAuth,
+-            ...body
+-        }
+-        try {
+-            const response = await ApiService.verifyOTP(payload);
+-            return response;
+-        } catch (error) {
+-            console.error('Error verifying OTP:', error);
+-            throw error; // Re-throw the error to propagate it to the caller
+-        }
++    try {
++      const response = await ApiService.sendOTP(payload);
++      return response;
++    } catch (error) {
++      console.error('Error sending OTP:', error);
++      throw error; // Re-throw the error to propagate it to the caller
++    }
++
++  }
++  /**
++   * The verifyOtp method is used to verify an OTP entered by the user.
++   * 
++   * @param body body Must include the otp for verification and the reqId of the original OTP request.
++   * @returns {Promise<any>} A Promise resolving to the verification response or throws an error if verification fails.
++   */
++  static async verifyOTP(body: any) {
++    if (!this.checkInitialization()) return;
+ 
++    const payload = {
++      widgetId: widgetId,
++      tokenAuth: tokenAuth,
++      ...body
+     }
++    try {
++      const response = await ApiService.verifyOTP(payload);
++      return response;
++    } catch (error) {
++      console.error('Error verifying OTP:', error);
++      throw error; // Re-throw the error to propagate it to the caller
++    }
++
++  }
+ 
+-    /**
+-     * The retryOtp method allows retrying the OTP if it was not received for any reason.
+-     * 
+-     * @param body body must include the req id and channel value for retrying the OTP.
+-     * @returns {Promise<any>} A Promise resolving to the response of the retry attempt or throws an error if the attempt fails.
+-     */
+-    static async retryOTP(body: any) {
+-        if (!this.checkInitialization()) return;
+-
+-        const payload = {
+-            widgetId: widgetId,
+-            tokenAuth: tokenAuth,
+-            ...body
+-        }
+-        try {
+-            const response = await ApiService.retryOTP(payload);
+-            return response;
+-        } catch (error) {
+-            console.error('Error sending retry OTP:', error);
+-            throw error; // Re-throw the error to propagate it to the caller
+-        }
++  /**
++   * The retryOtp method allows retrying the OTP if it was not received for any reason.
++   * 
++   * @param body body must include the req id and channel value for retrying the OTP.
++   * @returns {Promise<any>} A Promise resolving to the response of the retry attempt or throws an error if the attempt fails.
++   */
++  static async retryOTP(body: any) {
++    if (!this.checkInitialization()) return;
+ 
++    const payload = {
++      widgetId: widgetId,
++      tokenAuth: tokenAuth,
++      ...body
++    }
++    try {
++      const response = await ApiService.retryOTP(payload);
++      return response;
++    } catch (error) {
++      console.error('Error sending retry OTP:', error);
++      throw error; // Re-throw the error to propagate it to the caller
+     }
+ 
++  }
+ 
+-    /**
+-    * getWidgetProcess method retrieves the current configuration and process information for the widget.
+-    * 
+-    * @returns {Promise<any>} A Promise resolving to the widget's current process data or throws an error if the request fails.
+-    */
+-    static async getWidgetProcess() {
+-        if (!this.checkInitialization()) return;
+-        try {
+-            const response = await ApiService.getWidgetProcess(widgetId, tokenAuth);
+-            return response;
+-        } catch (error) {
+-            console.error('Error getting widget process:', error);
+-            throw error; // Re-throw the error to propagate it to the caller
+-        }
+ 
++  /**
++  * getWidgetProcess method retrieves the current configuration and process information for the widget.
++  * 
++  * @returns {Promise<any>} A Promise resolving to the widget's current process data or throws an error if the request fails.
++  */
++  static async getWidgetProcess() {
++    if (!this.checkInitialization()) return;
++    try {
++      const response = await ApiService.getWidgetProcess(widgetId, tokenAuth);
++      return response;
++    } catch (error) {
++      console.error('Error getting widget process:', error);
++      throw error; // Re-throw the error to propagate it to the caller
+     }
+ 
++  }
++
+ } 
+\ No newline at end of file

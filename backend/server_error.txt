@@ -1,0 +1,14 @@
+[2026-08-19T05:26:18.211Z] 500_ERROR: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+Stack: SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at parse (D:\Pasiware\khetify\backend\node_modules\body-parser\lib\types\json.js:91:21)
+    at D:\Pasiware\khetify\backend\node_modules\body-parser\lib\read.js:162:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+    at invokeCallback (D:\Pasiware\khetify\backend\node_modules\raw-body\index.js:238:16)
+    at done (D:\Pasiware\khetify\backend\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (D:\Pasiware\khetify\backend\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+URL: POST /api/auth/login-employee
+

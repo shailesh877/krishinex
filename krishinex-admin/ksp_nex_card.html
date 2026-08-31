@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="js/ksp_auth.js?v=1.0.2"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Nex Card | KSP Partner | KrishiNex</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .sidebar-item-active {
+            background: linear-gradient(to right, #eff6ff, #f0f9ff);
+            color: #1d4ed8;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+    <!-- Mobile Header -->
+    <header
+        class="md:hidden flex items-center justify-between px-4 h-16 bg-white border-b border-slate-200 sticky top-0 z-40">
+        <h1 class="text-lg font-black text-blue-600">Nex Card Portal</h1>
+        <button onclick="toggleSidebar()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-100">
+            <i class="fas fa-bars"></i>
+        </button>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 w-64 bg-white border-r-2 border-slate-200 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-50 flex flex-col">
+            <div class="p-6 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="h-10 w-10 bg-gradient-to-br from-blue-600 to-sky-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-black text-slate-900 leading-none">KSP Partner</h2>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-1">KrishiNex Platform
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+                <a href="ksp_dashboard.html"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+                        <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">Home Dashboard</span>
+                </a>
+
+                <a href="ksp_nex_card.html"
+                    class="sidebar-item-active group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+                        <i class="fas fa-id-card text-emerald-600"></i>
+                    </span>
+                    <span class="truncate font-black">Generate Nex Card</span>
+                </a>
+
+                <a href="#" onclick="openProfileModal()"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-violet-50 hover:to-purple-50 hover:text-violet-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-violet-100 group-hover:to-purple-100 transition-all">
+                        <i class="fas fa-user-circle text-slate-600 group-hover:text-violet-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">My Profile</span>
+                </a>
+
+                <a href="#" onclick="openSupportModal()"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-50 hover:text-amber-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-orange-100 transition-all">
+                        <i class="fas fa-headset text-slate-600 group-hover:text-amber-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">Customer Support</span>
+                </a>
+
+                <a href="#" onclick="openKspPinModal()"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-indigo-100 transition-all">
+                        <i class="fas fa-lock text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">KSP PIN</span>
+                </a>
+
+                <a href="#" onclick="openChangePassModal()"
+                    class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-rose-50 hover:to-orange-50 hover:text-rose-700 transition-all duration-200">
+                    <span
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-rose-100 group-hover:to-orange-100 transition-all">
+                        <i class="fas fa-shield-alt text-slate-600 group-hover:text-rose-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">Change Password</span>
+                </a>
+
+                <!--
+                <a href="withdraw_cash.html" class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+                        <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+                    </span>
+                    <span class="truncate font-semibold">Withdraw Cash</span>
+                </a>
+                -->
+            </nav>
+
+            <div class="p-4 border-t border-slate-100">
+                <div class="bg-slate-50 rounded-2xl p-4 flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase leading-none">Partner</p>
+                        <p id="kspPartnerName" class="text-xs font-black text-slate-900 truncate mt-1">N/A</p>
+                        <div class="flex items-center gap-1 mt-1 flex-wrap">
+                            <span id="kspStatusBadge"
+                                class="hidden inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-slate-200 text-slate-500">UNKNOWN</span>
+                            <span id="kspTypeBadge"
+                                class="hidden inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-violet-100 text-violet-700">DIGITAL</span>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-500 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Profile Modal -->
+        <div id="profileModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeProfileModal()"></div>
+            <div
+                class="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out] max-h-[95vh] flex flex-col">
+                <!-- Header Banner -->
+                <div class="bg-gradient-to-br from-violet-600 to-purple-700 p-7 pb-14 relative shrink-0">
+                    <button onclick="closeProfileModal()"
+                        class="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-all"><i
+                            class="fas fa-times"></i></button>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="h-16 w-16 rounded-2xl bg-white/20 flex items-center justify-center text-white text-2xl shadow-xl shrink-0">
+                            <i class="fas fa-user-tie"></i></div>
+                        <div class="text-left">
+                            <h2 id="profileName" class="text-lg font-black text-white leading-tight">--</h2>
+                            <p id="profileBizName" class="text-violet-200 text-[11px] font-bold mt-0.5">--</p>
+                            <div class="flex gap-1.5 mt-2 flex-wrap">
+                                <span id="profileTypeBadge"
+                                    class="px-2.5 py-0.5 bg-white/20 text-white text-[9px] font-black rounded-full uppercase tracking-widest">KSP
+                                    Digital</span>
+                                <span id="profileStatusBadge2"
+                                    class="px-2.5 py-0.5 bg-emerald-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Switcher -->
+                <div class="px-5 -mt-7 relative z-10 shrink-0">
+                    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 flex p-1 gap-1">
+                        <button onclick="switchProfileTab('account')" id="tabBtnAccount"
+                            class="flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all bg-violet-600 text-white shadow-sm">Account
+                            Details</button>
+                        <button onclick="switchProfileTab('bank')" id="tabBtnBank"
+                            class="flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-700">Bank
+                            Details</button>
+                    </div>
+                </div>
+
+                <!-- Scrollable Content -->
+                <div class="overflow-y-auto custom-scroll flex-1 px-5 pb-5 pt-3">
+
+                    <!-- Account Details Tab -->
+                    <div id="tabAccount" class="space-y-3">
+                        <!-- KSP ID -->
+                        <div class="flex items-center gap-3 p-3.5 bg-violet-50 rounded-2xl border border-violet-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-violet-600 flex items-center justify-center text-white shrink-0">
+                                <i class="fas fa-fingerprint text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-violet-500 font-black uppercase tracking-widest">KSP PROFILE
+                                    ID (FINAL)</p>
+                                <p id="profileKspId" data-v="v2.5"
+                                    class="text-[11px] font-black text-violet-900 mt-0.5 font-mono break-all">--</p>
+                            </div>
+                            <button onclick="copyToClipboard('profileKspId')"
+                                class="h-8 w-8 rounded-xl bg-violet-100 flex items-center justify-center text-violet-600 hover:bg-violet-200 transition-all shrink-0"
+                                title="Copy ID"><i class="fas fa-copy text-xs"></i></button>
+                        </div>
+                        <!-- Phone -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                                <i class="fas fa-phone text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Phone Number
+                                </p>
+                                <p id="profilePhone" class="text-sm font-black text-slate-900 mt-0.5">--</p>
+                            </div>
+                        </div>
+                        <!-- Email -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                                <i class="fas fa-envelope text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Email Address
+                                </p>
+                                <p id="profileEmail" class="text-sm font-bold text-slate-700 mt-0.5">--</p>
+                            </div>
+                        </div>
+                        <!-- Address -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                                <i class="fas fa-map-marker-alt text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Address</p>
+                                <p id="profileAddress" class="text-sm font-bold text-slate-700 mt-0.5 leading-snug">--
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Wallet Number -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 shrink-0">
+                                <i class="fas fa-credit-card text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Wallet /
+                                    NexCard ID</p>
+                                <p id="profileWalletNo"
+                                    class="text-sm font-black text-slate-900 mt-0.5 font-mono tracking-wider">--</p>
+                            </div>
+                        </div>
+                        <!-- Balance -->
+                        <div
+                            class="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-emerald-500 flex items-center justify-center text-white shrink-0">
+                                <i class="fas fa-wallet text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-500 font-black uppercase tracking-widest">Current Wallet
+                                    Balance</p>
+                                <p id="profileBalance" class="text-xl font-black text-emerald-600 mt-0.5">Rs.0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Details Tab -->
+                    <div id="tabBank" class="hidden space-y-3">
+                        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-start gap-3">
+                            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                            <p class="text-[11px] text-blue-700 font-bold leading-relaxed">These bank details are used
+                                for your payout processing. To make any changes, please contact the admin.</p>
+                        </div>
+                        <!-- Account Holder -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                                <i class="fas fa-user text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Account Holder
+                                    Name</p>
+                                <p id="profileBankHolder" class="text-sm font-black text-slate-900 mt-0.5">--</p>
+                            </div>
+                        </div>
+                        <!-- Bank Name -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+                                <i class="fas fa-building-columns text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Bank Name</p>
+                                <p id="profileBankName" class="text-sm font-black text-slate-900 mt-0.5">--</p>
+                            </div>
+                        </div>
+                        <!-- Account Number -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-teal-100 flex items-center justify-center text-teal-600 shrink-0">
+                                <i class="fas fa-hashtag text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Account Number
+                                </p>
+                                <p id="profileBankAccNo"
+                                    class="text-sm font-black text-slate-900 mt-0.5 font-mono tracking-widest">--</p>
+                            </div>
+                            <button onclick="copyToClipboard('profileBankAccNo')"
+                                class="h-8 w-8 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-300 transition-all shrink-0"
+                                title="Copy Account No"><i class="fas fa-copy text-xs"></i></button>
+                        </div>
+                        <!-- IFSC -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                                <i class="fas fa-code text-sm"></i></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">IFSC Code</p>
+                                <p id="profileBankIfsc"
+                                    class="text-sm font-black text-slate-900 mt-0.5 font-mono tracking-widest uppercase">
+                                    --</p>
+                            </div>
+                            <button onclick="copyToClipboard('profileBankIfsc')"
+                                class="h-8 w-8 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-300 transition-all shrink-0"
+                                title="Copy IFSC"><i class="fas fa-copy text-xs"></i></button>
+                        </div>
+                        <!-- Bank Address -->
+                        <div class="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div
+                                class="h-9 w-9 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+                                <i class="fas fa-location-dot text-sm"></i></div>
+                            <div>
+                                <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Bank Branch
+                                    Address</p>
+                                <p id="profileBankAddr" class="text-sm font-bold text-slate-700 mt-0.5 leading-snug">--
+                                </p>
+                            </div>
+                        </div>
+                        <!-- No bank details notice -->
+                        <div id="noBankDetailsMsg" class="hidden p-5 text-center">
+                            <div
+                                class="h-14 w-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-2xl mb-3">
+                                <i class="fas fa-building-columns"></i></div>
+                            <p class="text-sm font-black text-slate-400">Bank details not added yet.</p>
+                            <p class="text-[11px] font-bold text-slate-400 mt-1">Admin se bank details add karwayein
+                                payout ke liye.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-5 pb-5 pt-2 shrink-0">
+                    <button onclick="closeProfileModal()"
+                        class="w-full h-11 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-700 transition-all text-sm">Close
+                        Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Support / Raise Ticket Modal -->
+        <div id="supportModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeSupportModal()"></div>
+            <div
+                class="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center text-white text-xl">
+                            <i class="fas fa-headset"></i></div>
+                        <div>
+                            <h3 class="text-lg font-black text-white">Customer Support</h3>
+                            <p class="text-amber-100 text-[11px] font-bold">Koi bhi problem report karein</p>
+                        </div>
+                    </div>
+                    <button onclick="closeSupportModal()"
+                        class="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-all"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <!-- Success State (hidden by default) -->
+                <div id="supportSuccessState" class="hidden p-10 text-center">
+                    <div
+                        class="h-20 w-20 rounded-3xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-4xl mb-5">
+                        <i class="fas fa-check-circle"></i></div>
+                    <h3 class="font-black text-slate-900 text-xl">Ticket Submitted!</h3>
+                    <p class="text-slate-500 text-sm font-bold mt-2 leading-relaxed">Ticket ID: <span
+                            id="ticketIdDisplay" class="text-slate-900 font-black font-mono"></span><br />Team 24-48
+                        hours mein respond karega.</p>
+                    <button onclick="closeSupportModal()"
+                        class="w-full mt-6 h-12 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-700 transition-all">Close</button>
+                </div>
+                <!-- Form State -->
+                <div id="supportFormState" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scroll">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Issue
+                            Category *</label>
+                        <select id="supportCategory"
+                            class="block w-full h-12 px-4 mt-1 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition-all">
+                            <option value="">-- Select Category --</option>
+                            <option value="Transaction Issue">Transaction Issue (Recharge/Withdraw)</option>
+                            <option value="Account Blocked">Account Blocked / Login Problem</option>
+                            <option value="Balance Deducted">Balance Deducted - No Service</option>
+                            <option value="Card Generation">Nex Card Generation Issue</option>
+                            <option value="OTP Not Received">OTP Not Received</option>
+                            <option value="Commission Missing">Commission Not Credited</option>
+                            <option value="Other">Other Issue</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Issue
+                            Subject *</label>
+                        <input type="text" id="supportSubject"
+                            class="block w-full h-12 px-4 mt-1 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition-all"
+                            placeholder="Short description of the issue">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Describe
+                            Your Problem *</label>
+                        <textarea id="supportDesc" rows="4"
+                            class="block w-full px-4 py-3 mt-1 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-amber-500 transition-all resize-none"
+                            placeholder="Apni problem detail mein likhein... e.g. amount, date, transaction ID"></textarea>
+                    </div>
+                    <div>
+                        <label
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Priority</label>
+                        <div class="flex gap-2 mt-1">
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="supportPriority"
+                                    value="Normal" class="sr-only peer" checked>
+                                <div
+                                    class="h-10 flex items-center justify-center rounded-xl border-2 border-slate-200 font-black text-xs text-slate-500 peer-checked:border-amber-500 peer-checked:bg-amber-50 peer-checked:text-amber-700 transition-all">
+                                    Normal</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="supportPriority" value="High"
+                                    class="sr-only peer">
+                                <div
+                                    class="h-10 flex items-center justify-center rounded-xl border-2 border-slate-200 font-black text-xs text-slate-500 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700 transition-all">
+                                    High</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="supportPriority"
+                                    value="Urgent" class="sr-only peer">
+                                <div
+                                    class="h-10 flex items-center justify-center rounded-xl border-2 border-slate-200 font-black text-xs text-slate-500 peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700 transition-all">
+                                    Urgent</div>
+                            </label>
+                        </div>
+                    </div>
+                    <button onclick="submitSupportTicket()" id="supportSubmitBtn"
+                        class="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:from-amber-600 hover:to-orange-600">
+                        <i class="fas fa-paper-plane"></i> Submit Ticket
+                    </button>
+                    <p class="text-[10px] text-slate-400 text-center font-bold">Hum 24-48 hours mein contact karenge.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KSP PIN Modal -->
+        <div id="kspPinModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeKspPinModal()"></div>
+            <div
+                class="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 border-2 border-white animate-[fadeIn_0.3s_ease-out]">
+                <div class="text-center mb-6">
+                    <div
+                        class="h-14 w-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 text-2xl mx-auto mb-4">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">KSP Recharge PIN</h3>
+                    <p class="text-xs font-bold text-slate-400 mt-1">Recharge authorize karne ke liye 4-digit PIN</p>
+                </div>
+
+                <!-- Set PIN Form (shown if no PIN set) -->
+                <div id="setPinForm" class="space-y-4">
+                    <div class="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                        <p class="text-[11px] text-blue-700 font-bold"><i class="fas fa-info-circle mr-1"></i>Pehli baar
+                            PIN set karein. Yeh PIN recharge ke time use hoga.</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New PIN (4
+                            digits)</label>
+                        <input type="password" id="newPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                            class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm
+                            PIN</label>
+                        <input type="password" id="confirmPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                            class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••">
+                    </div>
+                    <button onclick="handleSetPin()" id="setPinBtn"
+                        class="w-full h-12 bg-blue-600 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-blue-700">
+                        <i class="fas fa-lock"></i> Set PIN
+                    </button>
+                </div>
+
+                <!-- Update PIN Form (shown if PIN already set) -->
+                <div id="updatePinForm" class="hidden space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Current
+                            PIN</label>
+                        <input type="password" id="oldPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                            class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New PIN (4
+                            digits)</label>
+                        <input type="password" id="updateNewPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                            class="block w-full h-12 px-4 text-center text-2xl font-black tracking-[0.5em] bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••">
+                    </div>
+                    <button onclick="handleUpdatePin()" id="updatePinBtn"
+                        class="w-full h-12 bg-indigo-600 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-indigo-700">
+                        <i class="fas fa-key"></i> Update PIN
+                    </button>
+                </div>
+                <button onclick="closeKspPinModal()"
+                    class="w-full mt-4 py-2 text-slate-400 font-bold text-xs uppercase hover:text-slate-600 transition-colors">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="changePassModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeChangePassModal()"></div>
+            <div
+                class="relative bg-white w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 border-2 border-white animate-[fadeIn_0.3s_ease-out]">
+                <div class="text-center mb-6">
+                    <div
+                        class="h-14 w-14 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 text-2xl mx-auto mb-4">
+                        <i class="fas fa-lock-open"></i>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">Change Password</h3>
+                    <p class="text-xs font-bold text-slate-400 mt-1">Naya password set karein</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Old
+                            Password</label>
+                        <input type="password" id="oldPass"
+                            class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">New
+                            Password</label>
+                        <input type="password" id="newPass"
+                            class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Confirm New
+                            Password</label>
+                        <input type="password" id="confNewPass"
+                            class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                            placeholder="••••••••">
+                    </div>
+                    <button onclick="handleChangePassword()" id="changePassBtn"
+                        class="w-full h-12 bg-slate-900 text-white font-black rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] mt-2">
+                        Update Password
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-64 p-4 md:p-8 space-y-8 animate-[fadeIn_0.5s_ease-out]">
+            <header class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Generate Nex Card</h1>
+                    <p class="text-xs text-slate-500 font-bold mt-1">Issue unique 16-digit cards to farmers and partners
+                        instantly.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none">KSP
+                            Wallet</p>
+                        <p id="kspBalanceHeader" class="text-sm font-black text-slate-900 mt-1">₹0.00</p>
+                    </div>
+                    <div class="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Card Search & Issuance -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <section id="actionSection" class="relative lg:col-span-12 xl:col-span-7 space-y-8">
+                    <!-- Issuance Card -->
+                    <div
+                        class="bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden flex flex-col">
+                        <div class="p-6 border-b-2 border-slate-50 flex items-center justify-between bg-slate-50/50">
+                            <h2 class="text-base font-black text-slate-900 italic">Card Issuance Portal</h2>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black rounded-full uppercase">Secure
+                                Generation</span>
+                        </div>
+
+                        <div class="p-8 space-y-8">
+                            <div class="text-center space-y-2">
+                                <h3 class="text-2xl font-black text-slate-900">Find Registered User</h3>
+                                <p class="text-sm text-slate-500 font-bold italic">User ke Khetify registered mobile
+                                    number se search karein</p>
+                            </div>
+
+                            <div class="relative group max-w-lg mx-auto">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i
+                                        class="fas fa-phone text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                                </div>
+                                <input type="number" id="searchPhone"
+                                    class="block w-full h-16 pl-12 pr-28 bg-slate-50 border-2 border-slate-200 rounded-2xl text-xl font-bold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-8 focus:ring-blue-100 outline-none transition-all placeholder:font-medium tracking-wider"
+                                    placeholder="Enter Phone Number">
+                                <div class="absolute inset-y-0 right-2 flex items-center">
+                                    <button onclick="searchUser()" id="searchBtn"
+                                        class="h-12 px-6 bg-slate-900 text-white rounded-xl font-black text-xs hover:bg-blue-600 transition-all">
+                                        SEARCH
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Single User Result Area -->
+                            <div id="resultsArea"
+                                class="hidden animate-[fadeIn_0.5s_ease-out] border-t-2 border-slate-50 pt-8">
+                                <div id="userList" class="grid gap-4 sm:grid-cols-2">
+                                    <!-- User cards injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Generation History -->
+                <section class="lg:col-span-12 xl:col-span-5 space-y-6">
+                    <div class="bg-white rounded-[2.5rem] border-2 border-slate-200 shadow-xl p-6 h-full flex flex-col">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-base font-black text-slate-900 italic">Recent Issuances</h2>
+                            <button onclick="fetchHistory()"
+                                class="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-blue-500 transition-colors">
+                                <i class="fas fa-rotate"></i>
+                            </button>
+                        </div>
+
+                        <div id="history-container"
+                            class="flex-1 space-y-4 overflow-y-auto custom-scroll pr-2 max-h-[500px]">
+                            <!-- History items injected here -->
+                            <div class="py-20 text-center opacity-30 font-black italic text-xs">Loading Issuance Log...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl hidden animate-[slideInRight_0.3s_ease-out]">
+        <p id="toastMessage" class="text-sm font-black"></p>
+    </div>
+
+    <script>
+
+        const AUTH_TOKEN = localStorage.getItem('kspToken');
+        if (!AUTH_TOKEN) window.location.href = 'ksp_login.html';
+
+        async function loadProfile() {
+            try {
+                const res = await fetch(`${API_BASE}/ksp/stats?v=${Date.now()}`, {
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('kspPartnerName').textContent = data.name || 'Partner';
+                    document.getElementById('kspBalanceHeader').textContent = `₹${(data.balance || 0).toLocaleString()}`;
+
+                    const badge = document.getElementById('kspStatusBadge');
+                    if (badge && data && data.status) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = data.status;
+                        if (data.status === 'approved') badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-emerald-100 text-emerald-700";
+                        else if (data.status === 'blocked') badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-rose-100 text-rose-700";
+                        else badge.className = "inline-block mt-1 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest rounded bg-amber-100 text-amber-700";
+                    }
+
+                    if (data && data.status !== 'approved') {
+                        const existingOverlay = document.getElementById('kspInactiveOverlay');
+                        if (!existingOverlay) {
+                            const overlay = document.createElement('div');
+                            overlay.id = 'kspInactiveOverlay';
+                            overlay.className = "absolute inset-0 bg-slate-900/10 backdrop-blur-[3px] z-[55] flex items-center justify-center rounded-[2.5rem]";
+                            overlay.innerHTML = `<div class="bg-white px-6 py-5 rounded-[2rem] shadow-2xl border-2 border-rose-100/50 text-center space-y-3 animate-[fadeIn_0.4s_ease-out]"><div class="h-14 w-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto text-2xl shadow-sm"><i class="fas fa-ban"></i></div><div><h3 class="font-black text-slate-900 text-lg tracking-tight">Account Inactive</h3><p class="text-xs text-slate-500 font-bold mt-1 leading-tight">Your franchise status is <span class="uppercase text-rose-600 font-black">${data.status}</span>.<br/>Please contact KrishiNex Admin.</p></div></div>`;
+                            const actionSection = document.getElementById('actionSection');
+                            if (actionSection) actionSection.appendChild(overlay);
+                        }
+                    }
+
+                    // kspType badge
+                    const typeBadge = document.getElementById('kspTypeBadge');
+                    if (typeBadge && data.kspType) {
+                        typeBadge.textContent = data.kspType;
+                        typeBadge.classList.remove('hidden');
+                        typeBadge.className = data.kspType === 'KSP Prime'
+                            ? 'inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-amber-100 text-amber-700'
+                            : 'inline-block px-1.5 py-0.5 text-[7px] font-black uppercase tracking-widest rounded bg-violet-100 text-violet-700';
+                    }
+
+                    // Cache profile data globally for Profile modal
+                    window._kspProfileData = data;
+                }
+            } catch (err) { console.error('Profile load error', err); }
+        }
+
+        /* ---- Profile Modal ---- */
+        function openProfileModal() {
+            const d = window._kspProfileData || {};
+            // Header
+            document.getElementById('profileName').textContent = d.name || '--';
+            document.getElementById('profileBizName').textContent = d.businessName || 'KSP Partner';
+            document.getElementById('profileTypeBadge').textContent = d.kspType || 'KSP Digital';
+            const sBadge = document.getElementById('profileStatusBadge2');
+            sBadge.textContent = (d.status || 'unknown').toUpperCase();
+            if (d.status === 'approved') sBadge.className = 'px-2.5 py-0.5 bg-emerald-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest';
+            else if (d.status === 'blocked') sBadge.className = 'px-2.5 py-0.5 bg-rose-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest';
+            else sBadge.className = 'px-2.5 py-0.5 bg-amber-400/30 text-white text-[9px] font-black rounded-full uppercase tracking-widest';
+
+            // Account Details tab
+            document.getElementById('profileKspId').textContent = d.kspPartnerId || d.kspId || '--';
+            document.getElementById('profilePhone').textContent = d.phone || '--';
+            document.getElementById('profileEmail').textContent = d.email || 'Not Set';
+            document.getElementById('profileAddress').textContent = d.address || '--';
+            document.getElementById('profileWalletNo').textContent = d.walletNumber || 'Not Assigned';
+            document.getElementById('profileBalance').textContent = `Rs.${((d.balance || 0).toLocaleString('en-IN'))}`;
+
+            // Bank Details tab
+            const bd = d.bankDetails || {};
+            const hasBankDetails = bd.accountNumber || bd.bankName || bd.holderName;
+            document.getElementById('noBankDetailsMsg').classList.toggle('hidden', !!hasBankDetails);
+            document.getElementById('profileBankHolder').textContent = bd.holderName || 'Not Added';
+            document.getElementById('profileBankName').textContent = bd.bankName || 'Not Added';
+            document.getElementById('profileBankAccNo').textContent = bd.accountNumber || '--';
+            document.getElementById('profileBankIfsc').textContent = bd.ifscCode || '--';
+            document.getElementById('profileBankAddr').textContent = bd.bankAddress || '--';
+
+            // Reset to Account tab
+            switchProfileTab('account');
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
+
+        function switchProfileTab(tab) {
+            const isAcc = tab === 'account';
+            document.getElementById('tabAccount').classList.toggle('hidden', !isAcc);
+            document.getElementById('tabBank').classList.toggle('hidden', isAcc);
+            document.getElementById('tabBtnAccount').className = isAcc
+                ? 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all bg-violet-600 text-white shadow-sm'
+                : 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-700';
+            document.getElementById('tabBtnBank').className = !isAcc
+                ? 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all bg-violet-600 text-white shadow-sm'
+                : 'flex-1 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-700';
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId)?.textContent?.trim();
+            if (!text || text === '--') return showToast('Kuch copy nahi hua', 'error');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Copy failed', 'error');
+            });
+        }
+
+        /* ---- Support / Ticket Modal ---- */
+        function openSupportModal() {
+            document.getElementById('supportModal').classList.remove('hidden');
+            document.getElementById('supportSuccessState').classList.add('hidden');
+            document.getElementById('supportFormState').classList.remove('hidden');
+        }
+        function closeSupportModal() { document.getElementById('supportModal').classList.add('hidden'); }
+
+        async function submitSupportTicket() {
+            const category = document.getElementById('supportCategory').value;
+            const subject = document.getElementById('supportSubject').value.trim();
+            const desc = document.getElementById('supportDesc').value.trim();
+            const priority = document.querySelector('input[name="supportPriority"]:checked')?.value || 'Normal';
+
+            if (!category) return showToast('Category select karein', 'error');
+            if (!subject) return showToast('Subject likhein', 'error');
+            if (!desc || desc.length < 10) return showToast('Thoda aur detail mein likhein', 'error');
+
+            const btn = document.getElementById('supportSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Submitting...';
+
+            try {
+                const d = window._kspProfileData || {};
+                const res = await fetch(`${API_BASE}/ksp/support-ticket`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+                    body: JSON.stringify({ category, subject, description: desc, priority, partnerName: d.name, partnerPhone: d.phone })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('supportFormState').classList.add('hidden');
+                    document.getElementById('supportSuccessState').classList.remove('hidden');
+                    document.getElementById('ticketIdDisplay').textContent = data.ticketId || 'TKT-' + Date.now().toString().slice(-6);
+                    // Reset form
+                    document.getElementById('supportCategory').value = '';
+                    document.getElementById('supportSubject').value = '';
+                    document.getElementById('supportDesc').value = '';
+                } else {
+                    showToast(data.error || 'Submission failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network Error', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Ticket';
+            }
+        }
+
+        async function openKspPinModal() {
+            try {
+                const res = await fetch(`${API_BASE}/ksp/recharge/check-pin`, {
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+                });
+                const data = await res.json();
+                if (data.hasPin) {
+                    document.getElementById('setPinForm').classList.add('hidden');
+                    document.getElementById('updatePinForm').classList.remove('hidden');
+                } else {
+                    document.getElementById('setPinForm').classList.remove('hidden');
+                    document.getElementById('updatePinForm').classList.add('hidden');
+                }
+                document.getElementById('kspPinModal').classList.remove('hidden');
+            } catch (e) {
+                showToast('Failed to check PIN status', 'error');
+            }
+        }
+
+        function closeKspPinModal() {
+            document.getElementById('kspPinModal').classList.add('hidden');
+            // Clear inputs
+            ['newPinInput', 'confirmPinInput', 'oldPinInput', 'updateNewPinInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+
+        async function handleSetPin() {
+            const pin = document.getElementById('newPinInput').value;
+            const confirm = document.getElementById('confirmPinInput').value;
+            if (!pin || pin.length !== 4) return showToast('Enter 4-digit PIN', 'error');
+            if (pin !== confirm) return showToast('PINs do not match', 'error');
+
+            const btn = document.getElementById('setPinBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Setting...';
+
+            try {
+                const res = await fetch(`${API_BASE}/ksp/recharge/set-pin`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('KSP PIN set successfully!', 'success');
+                    closeKspPinModal();
+                } else {
+                    showToast(data.error || 'Failed to set PIN', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while setting PIN', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Set PIN';
+            }
+        }
+
+        async function handleUpdatePin() {
+            const oldPin = document.getElementById('oldPinInput').value;
+            const newPin = document.getElementById('updateNewPinInput').value;
+            if (!oldPin || oldPin.length !== 4) return showToast('Enter current 4-digit PIN', 'error');
+            if (!newPin || newPin.length !== 4) return showToast('Enter new 4-digit PIN', 'error');
+
+            const btn = document.getElementById('updatePinBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+
+            try {
+                const res = await fetch(`${API_BASE}/ksp/recharge/update-pin`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ oldPin, newPin })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('KSP PIN updated successfully!', 'success');
+                    closeKspPinModal();
+                } else {
+                    showToast(data.error || 'Failed to update PIN', 'error');
+                }
+            } catch (e) {
+                showToast('Network error while updating PIN', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-key"></i> Update PIN';
+            }
+        }
+        
+        window._availableCards = [];
+        async function fetchAvailableCards() {
+            try {
+                const res = await fetch(`${API_BASE}/ksp/available-cards`, {
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+                });
+                if (res.ok) {
+                    window._availableCards = await res.json();
+                    console.log('Inventory Loaded:', window._availableCards.length);
+                }
+            } catch (e) { console.error('Failed to load card inventory'); }
+        }
+
+        async function searchUser() {
+            const phone = document.getElementById('searchPhone').value;
+            if (phone.length < 10) return showToast('Please enter valid mobile number', 'error');
+
+            const btn = document.getElementById('searchBtn');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_BASE}/ksp/search-user`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone })
+                });
+
+                const users = await res.json();
+                if (res.ok) {
+                    renderUsers(users);
+                } else {
+                    showToast(users.error || 'User not found', 'error');
+                }
+            } catch (err) {
+                showToast('Search failed: Check connection', 'error');
+            } finally {
+                btn.innerHTML = 'SEARCH';
+                btn.disabled = false;
+            }
+        }
+
+        function renderUsers(users) {
+            const list = document.getElementById('userList');
+            document.getElementById('resultsArea').classList.remove('hidden');
+            list.innerHTML = '';
+
+            if (users.length === 0) {
+                list.innerHTML = `<div class="col-span-full py-10 text-center text-slate-400 font-bold italic">User record nahi mila.</div>`;
+                return;
+            }
+
+            users.forEach(u => {
+                const isFarmer = u.role === 'farmer';
+                const roleColor = isFarmer ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700';
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border-2 border-slate-100 rounded-3xl p-6 space-y-5 hover:border-blue-300 hover:bg-white hover:shadow-2xl transition-all group animate-[fadeIn_0.3s_ease-out]";
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="h-12 w-12 rounded-2xl bg-white border-2 border-slate-100 flex items-center justify-center font-black text-blue-600 shadow-sm group-hover:scale-110 transition-transform">
+                            ${u.name.substring(0, 1)}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-base font-black text-slate-900 truncate">${u.name}</h4>
+                            <span class="px-2 py-0.5 ${roleColor} text-[9px] font-black rounded uppercase tracking-tighter">${u.role}</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                         <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Phone Number</p>
+                         <p class="text-sm font-bold text-slate-900">+91 ${u.phone}</p>
+                    </div>
+
+                    ${u.cardNumber ? `
+                        <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 text-center">
+                            <p class="text-[9px] font-black text-emerald-600 opacity-60 mb-1">EXISTING NEX CARD</p>
+                            <p class="font-mono text-emerald-700 font-black tracking-[0.2em] text-sm">${u.cardNumber}</p>
+                        </div>
+                    ` : `
+                        <div class="space-y-3">
+                            <div class="relative">
+                                <input type="text" id="manualCard_${u._id}" maxlength="16"
+                                    placeholder="Enter 16-digit Card Number"
+                                    class="w-full h-14 px-4 bg-white border-2 border-slate-200 rounded-2xl font-mono text-lg font-black tracking-[0.1em] focus:border-blue-500 outline-none transition-all">
+                            </div>
+                            <button onclick="generateCard('${u._id}', '${u.name}')" class="w-full h-14 bg-blue-600 text-white rounded-2xl font-black text-xs hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-3">
+                                <i class="fas fa-plus-circle"></i> ALLOT NEX CARD
+                            </button>
+                        </div>
+
+                    `}
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        async function generateCard(userId, name) {
+            const cardNum = document.getElementById(`manualCard_${userId}`).value;
+            if (!cardNum || cardNum.length !== 16) {
+                return showToast('Sahi 16-digit card number daalein', 'error');
+            }
+
+            if (!confirm(`${name} ke liye Nex Card (${cardNum}) generate karein?`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/ksp/generate-card`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, cardNumber: cardNum })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Nex Card Issued Successfully!', 'success');
+                    await fetchAvailableCards();
+                    searchUser();
+                    fetchHistory();
+                } else {
+                    showToast(data.error || 'Failed to issue card', 'error');
+                }
+            } catch (err) { showToast('Network Error', 'error'); }
+        }
+
+        async function fetchHistory() {
+            try {
+                const res = await fetch(`${API_BASE}/ksp/card-history`, {
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+                });
+                const data = await res.json();
+                const container = document.getElementById('history-container');
+
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="py-20 text-center opacity-30 font-black italic text-xs">No Recent History</div>`;
+                    return;
+                }
+
+                container.innerHTML = data.map(h => `
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-white hover:shadow-lg transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <i class="fas fa-address-card"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-slate-900 group-hover:text-blue-600 transition-colors">${h.targetUserId ? h.targetUserId.name : 'Unknown'}</p>
+                                <p class="text-[9px] text-slate-500 font-bold mt-1">${new Date(h.generatedAt).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                             <p class="font-mono text-[11px] font-black text-slate-900 tracking-wider">${h.cardNumber}</p>
+                             <span class="text-[8px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-600 font-black uppercase">ISSUED</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { console.error('History fetch error:', err); }
+        }
+
+        function openChangePassModal() {
+            document.getElementById('changePassModal').classList.remove('hidden');
+        }
+
+        function closeChangePassModal() {
+            document.getElementById('changePassModal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const oldPassword = document.getElementById('oldPass').value;
+            const newPassword = document.getElementById('newPass').value;
+            const confPassword = document.getElementById('confNewPass').value;
+
+            if (!oldPassword || !newPassword) return showToast('Sab details bhoriye bhai', 'error');
+            if (newPassword !== confPassword) return showToast('Passwords match nahi ho rahe', 'error');
+
+            const btn = document.getElementById('changePassBtn');
+            try {
+                btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Updating...';
+                const res = await fetch(`${API_BASE}/ksp/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('kspToken')}`
+                    },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Password Updated! Please login again.', 'success');
+                    setTimeout(() => logout(), 2000);
+                } else {
+                    showToast(data.error || 'Failed to update', 'error');
+                }
+            } catch (err) { showToast('Network Error', 'error'); }
+            finally { btn.disabled = false; btn.innerHTML = 'Update Password'; }
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const txt = document.getElementById('toastMessage');
+            txt.textContent = msg;
+            toast.className = `fixed bottom-6 right-6 z-[100] rounded-2xl border-2 px-6 py-4 shadow-2xl ${type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'ksp_login.html';
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadProfile();
+            await fetchAvailableCards();
+            fetchHistory();
+        });
+    </script>
+</body>
+
+</html>

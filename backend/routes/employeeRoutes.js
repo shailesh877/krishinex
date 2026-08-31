@@ -1,0 +1,6527 @@
+const express = require('express');
+const router = express.Router();
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
+const User = require('../models/User');
+const Order = require('../models/Order');
+const Rental = require('../models/Rental');
+const Machine = require('../models/Machine');
+const SoilRequest = require('../models/SoilRequest');
+const { Chat, Message } = require('../models/Chat');
+const Item = require('../models/Item');
+const ShopOrder = require('../models/ShopOrder');
+const Transaction = require('../models/Transaction');
+const LabourJob = require('../models/LabourJob');
+const SellRequest = require('../models/SellRequest');
+const FieldTask = require('../models/FieldTask');
+const FranchiseSale = require('../models/FranchiseSale');
+const FieldLead = require('../models/FieldLead');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const mongoose = require('mongoose');
+const Settings = require('../models/Settings');
+const KSPCardLog = require('../models/KSPCardLog');
+const NexCard = require('../models/NexCard');
+
+
+const parseQuantityInQuintals = (qtyStr) => {
+    if (!qtyStr) return 0;
+    const str = String(qtyStr);
+    const quintalMatch = str.match(/\(?([\d.]+)\s*Quintal\)?/i);
+    if (quintalMatch) return parseFloat(quintalMatch[1]) || 0;
+    if (str.toLowerCase().includes('quintal')) return parseFloat(str) || 0;
+    if (str.toLowerCase().includes('kg')) return (parseFloat(str) || 0) / 100;
+    return parseFloat(str) || 0;
+};
+
+const parsePriceInQuintals = (priceStr) => {
+    if (!priceStr) return 0;
+    const str = String(priceStr);
+
+    // Extract all numbers that look like prices
+    const matches = str.match(/\d+(\.\d+)?/g);
+    if (!matches) return 0;
+
+    const prices = matches.map(m => parseFloat(m));
+
+    // If we have "(₹100 / Quintal)" or similar, prioritize that specific number
+    const qmatch = str.match(/₹?(\d+(\.\d+)?)\s*\/\s*Quintal/i);
+    if (qmatch) return parseFloat(qmatch[1]) || 0;
+
+    // Aggressive heuristic: If "KG" and a higher number is present, it's likely the Quintal rate
+    // e.g., "1 / KG (₹100 / Quintal)" -> 100 is higher than 1.
+    if (prices.length > 1) {
+        return Math.max(...prices);
+    }
+
+    // Fallback: If only one number and it says / KG, multiply by 100
+    if (str.toLowerCase().includes('/ kg') && prices.length === 1) {
+        return prices[0] * 100;
+    }
+
+    return prices[0] || 0;
+};
+
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+const chatMediaStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || (file.mimetype.includes('audio') ? '.m4a' : '.jpg');
+        cb(null, `chat_${Date.now()}${ext}`);
+    }
+});
+const uploadChatMedia = multer({
+    storage: chatMediaStorage,
+    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB for audio/video
+});
+
+const leadPhotoStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        cb(null, `lead_${Date.now()}${ext}`);
+    }
+});
+const uploadLeadPhoto = multer({ storage: leadPhotoStorage });
+
+// @route   GET /api/employee/dashboard
+// @desc    Get dashboard statistics for specific Employee
+// @access  Private
+router.get('/dashboard', protect, async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const empId = req.user.id;
+
+        const user = await User.findById(empId).select('employeeModules');
+        const allowedModules = user && user.employeeModules && user.employeeModules.length > 0
+            ? user.employeeModules
+            : ['labour', 'equipment', 'soil', 'doctor'];
+
+        // Calculate exact counts dynamically based on pending/completed models
+        // NOTE: We count all assigned tasks regardless of allowedModules to keep overview accurate.
+        // Module access will still control visibility of specific action cards.
+
+        // Labour Jobs
+        const pendingOrders = await LabourJob.countDocuments({ assignedTo: empId, status: { $in: ['Pending', 'Accepted', 'In Progress'] } });
+        const completedOrders = await LabourJob.countDocuments({ assignedTo: empId, status: 'Completed' });
+        const totalOrders = await LabourJob.countDocuments({ assignedTo: empId });
+        const todayNewOrders = await LabourJob.countDocuments({ assignedTo: empId, createdAt: { $gte: today } });
+        const todayPendingOrders = await LabourJob.countDocuments({ assignedTo: empId, status: 'Pending', createdAt: { $gte: today } });
+        const todayCompletedOrders = await LabourJob.countDocuments({ assignedTo: empId, status: 'Completed', updatedAt: { $gte: today } });
+
+        // Rentals (Machine Tasks)
+        const pendingRentals = await Rental.countDocuments({ assignedFieldExec: empId, status: { $in: ['New', 'Accepted', 'In Progress'] } });
+        const completedRentals = await Rental.countDocuments({ assignedFieldExec: empId, status: 'Completed' });
+        const totalRentals = await Rental.countDocuments({ assignedFieldExec: empId });
+        const todayNewRentals = await Rental.countDocuments({ assignedFieldExec: empId, createdAt: { $gte: today } });
+        const todayPendingRentals = await Rental.countDocuments({ assignedFieldExec: empId, status: { $in: ['New', 'Accepted'] }, createdAt: { $gte: today } });
+        const todayCompletedRentals = await Rental.countDocuments({ assignedFieldExec: empId, status: 'Completed', updatedAt: { $gte: today } });
+
+        // Soil Requests
+        const pendingSoil = await SoilRequest.countDocuments({ lab: empId, status: { $in: ['New', 'Accepted', 'InProgress'] } });
+        const completedSoil = await SoilRequest.countDocuments({ lab: empId, status: 'Completed' });
+        const totalSoil = await SoilRequest.countDocuments({ lab: empId });
+        const todayNewSoil = await SoilRequest.countDocuments({ lab: empId, createdAt: { $gte: today } });
+        const todayPendingSoil = await SoilRequest.countDocuments({ lab: empId, status: { $in: ['New', 'Accepted'] }, createdAt: { $gte: today } });
+        const todayCompletedSoil = await SoilRequest.countDocuments({ lab: empId, status: 'Completed', updatedAt: { $gte: today } });
+
+        // Doctor Chats
+        const pendingChats = await Chat.countDocuments({ doctor: empId, unreadByDoctor: { $gt: 0 } });
+        const totalChats = await Chat.countDocuments({ doctor: empId });
+        const todayNewChats = await Chat.countDocuments({ doctor: empId, createdAt: { $gte: today } });
+
+        // Field Tasks
+        const pendingField = await FieldTask.countDocuments({ executive: empId, status: { $in: ['Pending', 'Accepted'] } });
+        const completedField = await FieldTask.countDocuments({ executive: empId, status: 'Completed' });
+        const totalField = await FieldTask.countDocuments({ executive: empId });
+        const todayNewField = await FieldTask.countDocuments({ executive: empId, createdAt: { $gte: today } });
+        const todayPendingField = await FieldTask.countDocuments({ executive: empId, status: { $in: ['Pending', 'Accepted'] }, createdAt: { $gte: today } });
+        const todayCompletedField = await FieldTask.countDocuments({ executive: empId, status: 'Completed', updatedAt: { $gte: today } });
+
+        // Doctor Consultations (Assigned Tickets)
+        const DoctorConsultation = require('../models/DoctorConsultation');
+        const pendingConsults = await DoctorConsultation.countDocuments({ assignedTo: empId, status: { $in: ['Pending', 'Contacted'] } });
+        const completedConsults = await DoctorConsultation.countDocuments({ assignedTo: empId, status: 'Resolved' });
+        const totalConsults = await DoctorConsultation.countDocuments({ assignedTo: empId });
+        const todayNewConsults = await DoctorConsultation.countDocuments({ assignedTo: empId, createdAt: { $gte: today } });
+
+        // Total computations
+        const totalPending = pendingOrders + pendingRentals + pendingSoil + pendingChats + pendingField + pendingConsults;
+        const totalCompleted = completedOrders + completedRentals + completedSoil + completedField + completedConsults;
+        const totalAssigned = totalOrders + totalRentals + totalSoil + totalChats + totalField + totalConsults;
+
+        // Today computations
+        const todayNew = todayNewOrders + todayNewRentals + todayNewSoil + todayNewChats + todayNewField + todayNewConsults;
+        const todayPending = todayPendingOrders + todayPendingRentals + todayPendingSoil + todayPendingField;
+        const todayCompleted = todayCompletedOrders + todayCompletedRentals + todayCompletedSoil + todayCompletedField;
+
+        res.json({
+            overviewStats: {
+                totalAssigned: totalAssigned,
+                totalPending: totalPending,
+                totalCompleted: totalCompleted,
+            },
+            todayStats: {
+                todayNew: todayNew,
+                todayPending: todayPending,
+                todayCompleted: todayCompleted,
+            },
+            access: {
+                // Dynamically returning accessible modules for the employee based on User model.
+                modules: allowedModules
+            }
+        });
+
+    } catch (e) {
+        console.error('Employee dash error:', e);
+        res.status(500).json({ error: 'Server error fetching employee dashboard' });
+    }
+});
+
+// @route   GET /api/employee/all-tasks
+// @desc    Get all tasks/jobs assigned to this employee across all modules
+// @access  Private
+router.get('/all-tasks', protect, async (req, res) => {
+    try {
+        const empId = req.user.id;
+        const user = await User.findById(empId).select('employeeModules');
+        const allowedModules = user && user.employeeModules && user.employeeModules.length > 0
+            ? user.employeeModules
+            : ['labour', 'equipment', 'soil', 'doctor'];
+
+        let allTasks = [];
+
+        // 1. Labour Jobs
+        const jobs = await LabourJob.find({ assignedTo: empId }).populate('farmer', 'name').lean();
+        jobs.forEach(j => {
+            allTasks.push({
+                _id: j._id,
+                module: 'labour',
+                title: 'Labour Task',
+                subtitle: `Farmer: ${j.farmer ? j.farmer.name : 'Unknown'}`,
+                status: j.status || 'Pending',
+                date: j.createdAt
+            });
+        });
+
+        // 2. Soil
+        const soils = await SoilRequest.find({ lab: empId }).populate('farmer', 'name').lean();
+        soils.forEach(s => {
+            allTasks.push({
+                _id: s._id,
+                module: 'soil',
+                title: 'Soil Testing Request',
+                subtitle: `Farmer: ${s.farmer ? s.farmer.name : 'Unknown'}`,
+                status: s.status,
+                date: s.createdAt
+            });
+        });
+
+        // 3. Rentals (Machine tasks)
+        const rentals = await Rental.find({ assignedFieldExec: empId }).populate('buyer', 'name').populate('machine', 'name').lean();
+        rentals.forEach(r => {
+            allTasks.push({
+                _id: r._id,
+                module: 'equipment',
+                title: `Machine: ${r.machine ? r.machine.name : 'Rental'}`,
+                subtitle: `Farmer: ${r.buyer ? r.buyer.name : 'Unknown'}`,
+                status: r.status,
+                date: r.createdAt
+            });
+        });
+
+        // 4. Doctor Chats
+        const chats = await Chat.find({ doctor: empId }).populate('farmer', 'name').lean();
+        chats.forEach(c => {
+            allTasks.push({
+                _id: c._id,
+                module: 'doctor',
+                title: 'Crop Advisory (Doctor)',
+                subtitle: `Farmer: ${c.farmer ? c.farmer.name : 'Unknown'}`,
+                status: c.unreadByDoctor > 0 ? 'new message' : 'read',
+                date: c.lastTime || c.createdAt
+            });
+        });
+
+        // 5. Field Tasks (New)
+        const fieldTasks = await FieldTask.find({ executive: empId }).lean();
+        fieldTasks.forEach(ft => {
+            allTasks.push({
+                _id: ft._id,
+                module: 'field',
+                title: ft.taskType,
+                subtitle: `Partner: ${ft.partnerName} | Loc: ${ft.location}`,
+                mobileNumber: ft.mobileNumber,
+                status: ft.status || 'Pending',
+                date: ft.createdAt
+            });
+        });
+
+        // 6. Doctor Consultations (Assigned Tickets)
+        const DoctorConsultation = require('../models/DoctorConsultation');
+        const consultations = await DoctorConsultation.find({ assignedTo: empId }).lean();
+        consultations.forEach(dc => {
+            allTasks.push({
+                _id: dc._id,
+                module: 'doctor_ticket',
+                title: `Doctor Consultation: ${dc.cropName}`,
+                subtitle: `Farmer: ${dc.name}`,
+                status: dc.status || 'Pending',
+                date: dc.createdAt
+            });
+        });
+
+        // Sort by newest first
+        allTasks.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json(allTasks);
+    } catch (e) {
+        console.error('All tasks fetch error:', e);
+        res.status(500).json({ error: 'Failed to fetch all tasks' });
+    }
+});
+
+// @route   GET /api/employee/labour-tasks
+// @desc    Get all labour tasks (LabourJob) assigned to this employee
+// @access  Private
+router.get('/labour-tasks', protect, async (req, res) => {
+    try {
+        const tasks = await LabourJob.find({ assignedTo: req.user.id })
+            .populate('farmer', 'name phone address profilePhotoUrl aadhaarNumber location')
+            .populate('labour', 'name businessName phone address profilePhotoUrl labourDetails rating')
+            .sort({ createdAt: -1 });
+
+        // Map to the shape expected by the frontend (which expects 'Order' like fields)
+        const mapped = tasks.map(t => {
+            let assignedStatus = 'new';
+            if (t.status === 'Accepted' || t.status === 'In Progress') assignedStatus = 'ok';
+            else if (t.status === 'Completed') assignedStatus = 'delivered'; // frontend maps delivered to completed
+            else if (t.status === 'Cancelled') assignedStatus = 'cancelled';
+
+            return {
+                ...t.toObject(),
+                buyer: t.farmer, // Map farmer to buyer for frontend compatibility
+                crop: t.workType, // Map workType to crop
+                quantity: t.acresCovered || t.hoursWorked || 0,
+                assignedStatus: assignedStatus
+            };
+        });
+
+        res.json(mapped);
+    } catch (error) {
+        console.error('Fetch employee labour tasks error:', error);
+        res.status(500).json({ error: 'Failed to fetch labour tasks' });
+    }
+});
+
+// @route   PATCH /api/employee/labour-tasks/:id/status
+// @desc    Update labour task (LabourJob) status
+// @access  Private
+router.patch('/labour-tasks/:id/status', protect, async (req, res) => {
+    try {
+        const { status } = req.body;
+
+        // Map Partner App status to LabourJob status
+        let newStatus = 'Pending';
+        if (status === 'accepted' || status === 'ok') newStatus = 'Accepted';
+        else if (status === 'completed') newStatus = 'Completed';
+        else if (status === 'remove' || status === 'cancelled') newStatus = 'Cancelled';
+        else if (status === 'in-progress') newStatus = 'In Progress';
+
+        const job = await LabourJob.findOneAndUpdate(
+            { _id: req.params.id, assignedTo: req.user.id },
+            { status: newStatus },
+            { new: true }
+        );
+
+        if (!job) return res.status(404).json({ error: 'Task not found' });
+        res.json({ message: 'Task status updated', job });
+    } catch (error) {
+        console.error('Update employee task status error:', error);
+        res.status(500).json({ error: 'Failed to update task status' });
+    }
+});
+
+// @route   GET /api/employee/machine-tasks
+// @desc    Get all machine rentals assigned to machines owned by this employee
+// @access  Private
+router.get('/machine-tasks', protect, async (req, res) => {
+    try {
+        // Find all machines owned by this employee
+        const myMachines = await Machine.find({ owner: req.user.id }).select('_id');
+        const machineIds = myMachines.map(m => m._id);
+
+        const rentals = await Rental.find({ machine: { $in: machineIds } })
+            .populate('machine', 'name priceDay priceHour')
+            .populate('buyer', 'name phone address profilePhotoUrl aadhaarNumber location')
+            .sort({ createdAt: -1 });
+
+        res.json(rentals);
+    } catch (error) {
+        console.error('Fetch employee machine tasks error:', error);
+        res.status(500).json({ error: 'Failed to fetch machine tasks' });
+    }
+});
+
+// @route   PATCH /api/employee/machine-tasks/:id/status
+// @desc    Update machine task (Rental) status
+// @access  Private
+router.patch('/machine-tasks/:id/status', protect, async (req, res) => {
+    try {
+        const { status } = req.body;
+        // Frontend: new -> accepted -> in-progress -> completed
+        // Backend Rental: New | Accepted | Completed | Cancelled
+        const statusMap = {
+            'new': 'New',
+            'accepted': 'Accepted',
+            'in-progress': 'Accepted',
+            'completed': 'Completed'
+        };
+        const dbStatus = statusMap[status];
+        if (!dbStatus) return res.status(400).json({ error: 'Invalid status' });
+
+        const rental = await Rental.findByIdAndUpdate(
+            req.params.id,
+            { status: dbStatus },
+            { new: true }
+        );
+        if (!rental) return res.status(404).json({ error: 'Rental not found' });
+        res.json({ message: 'Status updated', rental });
+    } catch (error) {
+        console.error('Update machine task status error:', error);
+        res.status(500).json({ error: 'Failed to update machine task status' });
+    }
+});
+
+// @route   GET /api/employee/soil-tasks
+// @desc    Get all soil test requests assigned to this employee (as lab)
+// @access  Private
+router.get('/soil-tasks', protect, async (req, res) => {
+    try {
+        const requests = await SoilRequest.find({ lab: req.user.id })
+            .populate('farmer', 'name phone address profilePhotoUrl aadhaarNumber location')
+            .sort({ createdAt: -1 });
+        res.json(requests);
+    } catch (error) {
+        console.error('Fetch employee soil tasks error:', error);
+        res.status(500).json({ error: 'Failed to fetch soil tasks' });
+    }
+});
+
+// @route   PATCH /api/employee/soil-tasks/:id/status
+// @desc    Update soil task status
+// @access  Private
+router.patch('/soil-tasks/:id/status', protect, async (req, res) => {
+    try {
+        const { status } = req.body;
+        // Frontend status -> DB status mapping
+        const statusMap = {
+            'new': 'New',
+            'sample-picked': 'Accepted',
+            'sent-to-lab': 'InProgress',
+            'reported': 'Completed'
+        };
+        const dbStatus = statusMap[status];
+        if (!dbStatus) return res.status(400).json({ error: 'Invalid status' });
+
+        const request = await SoilRequest.findOneAndUpdate(
+            { _id: req.params.id, lab: req.user.id },
+            { status: dbStatus },
+            { new: true }
+        );
+        if (!request) return res.status(404).json({ error: 'Soil request not found' });
+        res.json({ message: 'Status updated', request });
+    } catch (error) {
+        console.error('Update soil task status error:', error);
+        res.status(500).json({ error: 'Failed to update soil task status' });
+    }
+});
+
+// ============ DOCTOR CHAT ROUTES ============
+
+// @route   GET /api/employee/doctor-chats
+// @desc    Get all doctor chat rooms for this employee (doctor)
+// @access  Private
+router.get('/doctor-chats', protect, async (req, res) => {
+    try {
+        // Return all chats — blocked ones will show with Unblock option in UI
+        const chats = await Chat.find({ doctor: req.user.id })
+            .populate('farmer', 'name phone address profilePhotoUrl aadhaarNumber location')
+            .sort({ lastTime: -1 });
+        res.json(chats);
+    } catch (e) {
+        console.error('Fetch doctor chats error:', e);
+        res.status(500).json({ error: 'Failed to fetch chats' });
+    }
+});
+
+// @route   GET /api/employee/doctor-chats/:id/messages
+// @desc    Get all messages in a chat room
+// @access  Private
+router.get('/doctor-chats/:id/messages', protect, async (req, res) => {
+    try {
+        const msgs = await Message.find({ chat: req.params.id })
+            .sort({ createdAt: 1 });
+        // Mark as read by doctor
+        await Chat.findByIdAndUpdate(req.params.id, { unreadByDoctor: 0 });
+        res.json(msgs);
+    } catch (e) {
+        console.error('Fetch messages error:', e);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
+// @route   PATCH /api/employee/doctor-chats/:id/block
+// @desc    Block or unblock a chat room
+// @access  Private
+router.patch('/doctor-chats/:id/block', protect, async (req, res) => {
+    try {
+        const { block } = req.body; // true = block, false = unblock
+        const chat = await Chat.findOneAndUpdate(
+            { _id: req.params.id, doctor: req.user.id },
+            { isBlocked: !!block },
+            { new: true }
+        );
+        if (!chat) return res.status(404).json({ error: 'Chat not found' });
+        res.json({ message: block ? 'Farmer blocked' : 'Farmer unblocked', isBlocked: chat.isBlocked });
+    } catch (e) {
+        console.error('Block/unblock chat error:', e);
+        res.status(500).json({ error: 'Failed to update block status' });
+    }
+});
+
+// @route   GET /api/employee/doctor-chats/:id/block-status
+// @desc    Get blocked status of a specific chat
+// @access  Private
+router.get('/doctor-chats/:id/block-status', protect, async (req, res) => {
+    try {
+        const chat = await Chat.findOne({ _id: req.params.id, doctor: req.user.id }).select('isBlocked');
+        if (!chat) return res.status(404).json({ error: 'Chat not found' });
+        res.json({ isBlocked: chat.isBlocked });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to get block status' });
+    }
+});
+
+// @route   POST /api/employee/doctor-chats/:id/messages
+// @desc    Send a message in a chat room
+// @access  Private
+router.post('/doctor-chats/:id/messages', protect, async (req, res) => {
+    try {
+        const { text, mediaUrl, mediaType, audioDuration } = req.body;
+        if (!text && !mediaUrl) return res.status(400).json({ error: 'Empty message' });
+
+        const msg = new Message({
+            chat: req.params.id,
+            sender: req.user.id,
+            text: (text || '').trim(),
+            mediaUrl: mediaUrl || '',
+            mediaType: mediaType || '',
+            audioDuration: audioDuration || 0,
+            fromDoctor: true
+        });
+        await msg.save();
+
+        // Update chat's last message
+        await Chat.findByIdAndUpdate(req.params.id, {
+            lastMessage: text.trim(),
+            lastTime: new Date()
+        });
+
+        res.json(msg);
+    } catch (e) {
+        console.error('Send message error:', e);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+// @route   POST /api/employee/doctor-chats
+// @desc    Create a new chat room (for testing / admin use)
+// @access  Private
+router.post('/doctor-chats', protect, async (req, res) => {
+    try {
+        const { farmerId, cropName } = req.body;
+        // Check if chat already exists
+        let chat = await Chat.findOne({ farmer: farmerId, doctor: req.user.id });
+        if (!chat) {
+            chat = new Chat({ farmer: farmerId, doctor: req.user.id, cropName: cropName || '' });
+            await chat.save();
+        }
+        res.json(chat);
+    } catch (e) {
+        console.error('Create chat error:', e);
+        res.status(500).json({ error: 'Failed to create chat' });
+    }
+});
+
+// @route   POST /api/employee/upload-chat-media
+// @desc    Upload image or audio for chat
+// @access  Private
+router.post('/upload-chat-media', protect, uploadChatMedia.single('file'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        const baseUrl = process.env.BASE_URL || `https://demo.ranx24.com`;
+        const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        res.json({ url: fileUrl });
+    } catch (e) {
+        console.error('Chat media upload error:', e);
+        res.status(500).json({ error: 'Upload failed' });
+    }
+});
+
+// ============ ADMIN EMPLOYEE MANAGEMENT ROUTES ============
+
+// @route   GET /api/employee/admin/all
+// @desc    Get all employees and sub-admins/superadmins for management
+// @access  Private/Admin
+router.get('/admin/all', protect, checkModule('employees'), async (req, res) => {
+    try {
+        const isSuperadmin = req.user && (req.user.role === 'admin' || req.user.role === 'superadmin');
+        const roles = isSuperadmin ? ['employee', 'admin'] : ['employee'];
+        if (req.query.includeFieldExecutives === 'true') {
+            roles.push('field_executive');
+        }
+        const employees = await User.find({ role: { $in: roles } }).select('-password').sort({ createdAt: -1 });
+        res.json(employees);
+    } catch (e) {
+        console.error('Admin fetch employees error:', e);
+        res.status(500).json({ error: 'Failed to fetch employees' });
+    }
+});
+
+// @route   POST /api/employee/admin/create
+// @desc    Create a new employee or superadmin
+// @access  Private/Admin
+router.post('/admin/create', protect, checkModule('employees'), async (req, res) => {
+    try {
+        const { name, email, phone, address, employeeCode, password, employeeModules, role } = req.body;
+
+        if (!name || !email || !password || !employeeCode) {
+            return res.status(400).json({ error: 'Name, Email, Password and Employee Code are required' });
+        }
+
+        const isSuperadmin = req.user && (req.user.role === 'admin' || req.user.role === 'superadmin');
+
+        // Security Enforcement: Only Superadmins can assign the admin/superadmin role
+        let targetRole = 'employee';
+        if (role === 'admin' || role === 'superadmin') {
+            if (isSuperadmin) {
+                targetRole = 'admin';
+            } else {
+                return res.status(403).json({ error: 'Security Violation: Only Superadmins can create Admin accounts.' });
+            }
+        }
+
+        const existingUser = await User.findOne({ $or: [{ email }, { phone }, { employeeCode }] });
+        if (existingUser) {
+            return res.status(400).json({ error: 'User with this email, phone or employee code already exists' });
+        }
+
+        const newUser = new User({
+            name,
+            email,
+            phone,
+            address,
+            employeeCode,
+            password,
+            role: targetRole,
+            status: 'approved',
+            employeeModules: targetRole === 'admin' ? ['all'] : (employeeModules || [])
+        });
+
+        await newUser.save();
+        res.status(201).json(newUser);
+    } catch (e) {
+        console.error('Admin create employee error:', e);
+        res.status(500).json({ error: 'Failed to create employee' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/:id
+// @desc    Update employee or admin details, role, and access
+// @access  Private/Admin
+router.patch('/admin/:id', protect, checkModule('employees'), async (req, res) => {
+    try {
+        const isSuperadmin = req.user && (req.user.role === 'admin' || req.user.role === 'superadmin');
+
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+        // Security Enforcement: Regular employees cannot modify Superadmin accounts
+        if (targetUser.role === 'admin' && !isSuperadmin) {
+            return res.status(403).json({ error: 'Security Violation: Regular employees cannot modify Superadmin accounts.' });
+        }
+
+        const updates = { ...req.body };
+        if (updates.role) {
+            if (updates.role === 'admin' || updates.role === 'superadmin') {
+                if (!isSuperadmin) {
+                    return res.status(403).json({ error: 'Security Violation: Regular employees cannot elevate users to Admin status.' });
+                }
+                updates.role = 'admin';
+                updates.employeeModules = ['all'];
+            } else {
+                updates.role = 'employee';
+            }
+        }
+
+        const employee = await User.findByIdAndUpdate(
+            req.params.id,
+            updates,
+            { new: true }
+        ).select('-password');
+
+        res.json(employee);
+    } catch (e) {
+        console.error('Admin update employee error:', e);
+        res.status(500).json({ error: 'Failed to update user' });
+    }
+});
+
+// @route   DELETE /api/employee/admin/:id
+// @desc    Delete an employee or admin account
+// @access  Private/Admin
+router.delete('/admin/:id', protect, checkModule('employees'), async (req, res) => {
+    try {
+        if (req.params.id === req.user.id) {
+            return res.status(400).json({ error: 'You cannot delete your own active account.' });
+        }
+
+        const isSuperadmin = req.user && (req.user.role === 'admin' || req.user.role === 'superadmin');
+        const targetUser = await User.findById(req.params.id);
+        if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+        // Security Enforcement: Regular employees cannot delete Superadmin accounts
+        if (targetUser.role === 'admin' && !isSuperadmin) {
+            return res.status(403).json({ error: 'Security Violation: Regular employees cannot delete Superadmin accounts.' });
+        }
+
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Account deleted successfully' });
+    } catch (e) {
+        console.error('Admin delete employee error:', e);
+        res.status(500).json({ error: 'Failed to delete user' });
+    }
+});
+
+// @route   GET /api/employee/farmer-lookup
+// @desc    Lookup farmer by cardNumber (16 digits) or phone (10 digits)
+// @access  Private (Employee/Field Executive)
+router.get('/farmer-lookup', protect, async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.status(400).json({ error: 'Search query is required' });
+
+        const farmers = await User.find({
+            $or: [
+                { cardNumber: query },
+                { phone: new RegExp(query) }
+            ]
+        }).select('name phone address walletBalance profilePhotoUrl cardNumber role');
+
+        if (!farmers || farmers.length === 0) return res.status(404).json({ error: 'No user found' });
+
+        // Map roles for cleaner display if needed, but let's return all and filter in next step
+        res.json(farmers);
+    } catch (error) {
+        console.error('Farmer lookup error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// @route   GET /api/employee/recharge-history
+// @desc    Get recharge history for the logged in employee
+// @access  Private (Employee/Field Executive)
+router.get('/recharge-history', protect, async (req, res) => {
+    try {
+        const history = await Transaction.find({
+            performedBy: req.user.id,
+            module: 'Platform'
+        })
+            .populate('recipient', 'name phone profilePhotoUrl')
+            .sort({ createdAt: -1 })
+            .limit(30);
+
+        res.json(history);
+    } catch (error) {
+        console.error('Recharge history error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// @route   GET /api/employee/recharge-stats
+// @desc    Get pending cash collection stats for the employee
+// @access  Private (Employee/Field Executive)
+router.get('/recharge-stats', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('collectedCash');
+        res.json({ pendingAmount: user.collectedCash || 0 });
+    } catch (error) {
+        console.error('Recharge stats error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// @route   POST /api/employee/recharge-farmer
+// @desc    Recharge farmer wallet via 11-digit cardNumber or 10-digit phone
+// @access  Private (Field Executive or Admin or Employee)
+router.post('/recharge-farmer', protect, async (req, res) => {
+    try {
+        const { cardNumber, phone, amount } = req.body;
+        if ((!cardNumber && !phone) || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Valid card number or phone and amount are required' });
+        }
+
+        // Only allow field_executive, admin, or employee
+        if (req.user.role !== 'field_executive' && req.user.role !== 'admin' && req.user.role !== 'employee') {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const query = cardNumber ? { cardNumber } : { phone };
+        const farmer = await User.findOne({ ...query, role: { $in: ['farmer', 'buyer'] } });
+
+        if (!farmer) {
+            return res.status(404).json({ error: 'Farmer not found' });
+        }
+
+        // 1. Update Farmer Wallet
+        farmer.walletBalance = (farmer.walletBalance || 0) + Number(amount);
+        await farmer.save();
+
+        // 2. Increment Employee Collection (if FE/Employee)
+        if (req.user.role === 'field_executive' || req.user.role === 'employee') {
+            await User.findByIdAndUpdate(req.user.id, { $inc: { collectedCash: Number(amount) } });
+        }
+
+        // 3. Create Transaction for Farmer
+        const shortId = Date.now().toString().slice(-8).toUpperCase();
+        const employeeName = req.user.name || 'Field Executive';
+
+        await Transaction.create({
+            transactionId: `RECH-${shortId}`,
+            recipient: farmer._id,
+            performedBy: req.user.id,
+            module: 'Platform',
+            amount: Number(amount),
+            type: 'Credit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            note: `Wallet Recharge by ${employeeName} (Partner App)`
+        });
+
+        // 4. Dynamic Auto-Repayment (If farmer has debt and wallet balance, sweep it)
+        const { processAutoRepayment } = require('../services/repaymentService');
+        await processAutoRepayment(farmer._id);
+
+        // Fetch updated farmer for final balance in response
+        const updatedFarmer = await User.findById(farmer._id);
+
+        res.json({
+            message: 'Recharge successful',
+            newBalance: updatedFarmer.walletBalance,
+            farmerName: updatedFarmer.name
+        });
+    } catch (error) {
+        console.error('Recharge farmer error:', error);
+        res.status(500).json({ error: 'Server error during recharge: ' + error.message });
+    }
+});
+
+// @route   GET /api/employee/admin/recharge-logs
+// @desc    Get all wallet recharges for admin tracking
+// @access  Private/Admin
+router.get('/admin/recharge-logs', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        let query = {
+            module: 'Platform',
+            type: 'Credit',
+            paymentMode: 'Cash'
+        };
+        if (all !== 'true' && startDate && endDate) {
+            query.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+            };
+        }
+        const logs = await Transaction.find(query)
+            .populate('recipient', 'name phone cardNumber')
+            .populate('performedBy', 'name role employeeCode')
+            .sort({ createdAt: -1 });
+
+        res.json(logs);
+    } catch (error) {
+        console.error('Get recharge logs error:', error);
+        res.status(500).json({ error: 'Failed to fetch recharge logs' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/recharge-logs/:id/collect
+// @desc    Mark a cash recharge as collected by admin
+// @access  Private/Admin
+router.patch('/admin/recharge-logs/:id/collect', protect, async (req, res) => {
+    try {
+        const log = await Transaction.findById(req.params.id);
+        if (!log) return res.status(404).json({ error: 'Transaction log not found' });
+
+        if (log.cashCollectedByAdmin) {
+            return res.status(400).json({ error: 'This transaction is already marked as collected' });
+        }
+
+        // 1. Mark as collected
+        log.cashCollectedByAdmin = true;
+        await log.save();
+
+        // 2. Deduct from Field Executive's balance
+        if (log.performedBy) {
+            const executive = await User.findById(log.performedBy);
+            if (executive && (executive.role === 'field_executive' || executive.role === 'employee')) {
+                // Decrement the collectedCash by the recharge amount
+                const currentBalance = executive.collectedCash || 0;
+                const newBalance = Math.max(0, currentBalance - (log.amount || 0));
+                executive.collectedCash = newBalance;
+                await executive.save();
+
+                // 3. Create a DEBIT transaction for the Field Executive to show in their history
+                await Transaction.create({
+                    transactionId: `DEP-${Date.now().toString().slice(-8)}`,
+                    recipient: log.recipient, // Current recipient of original recharge
+                    performedBy: log.performedBy, // Executive
+                    module: 'Platform',
+                    amount: log.amount,
+                    type: 'Debit',
+                    payerName: 'Admin Office',
+                    paymentMode: 'Cash',
+                    status: 'Completed',
+                    note: `Cash Collected by Admin (Individual Recharge Ref: ${log.transactionId})`
+                });
+            }
+        }
+
+        res.json({ message: 'Cash marked as collected and balance updated', log });
+    } catch (error) {
+        console.error('Mark collection error:', error);
+        res.status(500).json({ error: 'Failed to mark collection' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/field-executive/:id/reset-collection
+// @desc    Reset field executive's cash collection to 0 and mark all as collected
+// @access  Private/Admin
+router.patch('/admin/field-executive/:id/reset-collection', protect, checkModule('users'), async (req, res) => {
+    try {
+        const executiveId = req.params.id;
+        const executive = await User.findById(executiveId);
+        if (!executive) return res.status(404).json({ error: 'Executive not found' });
+
+        const amountToClear = executive.collectedCash || 0;
+
+        // 1. Reset collectedCash in User model
+        executive.collectedCash = 0;
+        await executive.save();
+
+        // 2. Mark all pending cash transactions as collected
+        await Transaction.updateMany(
+            { performedBy: executiveId, module: 'Platform', type: 'Credit', cashCollectedByAdmin: false },
+            { cashCollectedByAdmin: true }
+        );
+
+        // 3. Create a single DEBIT transaction for the Field Executive history
+        if (amountToClear > 0) {
+            await Transaction.create({
+                transactionId: `DEP-FULL-${Date.now().toString().slice(-8)}`,
+                recipient: executiveId, // Setting executive as recipient for wallet deposit
+                performedBy: executiveId, // Executive
+                module: 'Platform',
+                amount: amountToClear,
+                type: 'Debit',
+                payerName: 'Admin Office',
+                paymentMode: 'Cash',
+                status: 'Completed',
+                note: `Full Wallet Cash Deposit to Admin Office`
+            });
+        }
+
+        res.json({ message: 'Collection reset successful and deposit recorded' });
+    } catch (error) {
+        console.error('Reset collection error:', error);
+        res.status(500).json({ error: 'Failed to reset collection' });
+    }
+});
+
+// =============================================
+// ADMIN: FARMERS & USERS MANAGEMENT ROUTES
+// =============================================
+
+// @route   GET /api/employee/admin/farmers
+// @desc    Get all farmers (role: 'buyer') with stats for admin management
+// @access  Private/Admin
+router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let query = { role: { $in: ['farmer', 'buyer', 'user', 'customer'] } };
+        const cleanStart = startDate && startDate.trim() !== '' ? startDate.trim() : null;
+        const cleanEnd = endDate && endDate.trim() !== '' ? endDate.trim() : null;
+
+        if (cleanStart || cleanEnd) {
+            query.createdAt = {};
+            if (cleanStart) query.createdAt.$gte = new Date(cleanStart);
+            if (cleanEnd) {
+                const end = new Date(cleanEnd);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+        const farmers = await User.find(query)
+            .select('name phone email address status aadhaarNumber aadhaarDocUrl aadhaarBackDocUrl panNumber panDocUrl bankDetails walletBalance walletNumber cardNumber profilePhotoUrl creditLimit creditUsed createdAt')
+            .sort({ createdAt: -1 });
+
+        // Get stats per farmer concurrently
+        const result = await Promise.all(farmers.map(async f => {
+            const [orders, completed, sellReqs] = await Promise.all([
+                Order.countDocuments({ buyer: f._id }),
+                Order.countDocuments({ buyer: f._id, status: 'completed' }),
+                SellRequest.countDocuments({ farmer: f._id })
+            ]);
+
+            return {
+                _id: f._id,
+                name: f.name,
+                phone: f.phone,
+                email: f.email || '',
+                location: f.address || 'N/A',
+                status: f.status || 'pending',
+                aadhaarNumber: f.aadhaarNumber || '',
+                aadhaarDocUrl: f.aadhaarDocUrl || '',
+                aadhaarBackDocUrl: f.aadhaarBackDocUrl || '',
+                panNumber: f.panNumber || '',
+                panDocUrl: f.panDocUrl || '',
+                bankDetails: f.bankDetails || {},
+                profilePhotoUrl: f.profilePhotoUrl || '',
+                kycStatus: (f.aadhaarNumber || f.panNumber) ? 'verified' : 'pending',
+                walletBalance: f.walletBalance || 0,
+                walletNumber: f.walletNumber || '',
+                cardNumber: f.cardNumber || '',
+                creditLimit: f.creditLimit || 0,
+                creditUsed: f.creditUsed || 0,
+                totalOrders: orders + sellReqs,
+                completedOrders: completed,
+                joinedAt: f.createdAt
+            };
+        }));
+
+        res.json(result);
+    } catch (e) {
+        console.error('Admin farmers error:', e);
+        res.status(500).json({ error: 'Failed to fetch farmers' });
+    }
+});
+
+// @route   POST /api/employee/admin/generate-card/:userId
+// @desc    Assign a Nex Card number to a user from inventory
+// @access  Private/Admin
+router.post('/admin/generate-card/:userId', protect, async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User account not found.' });
+
+        if (user.role === 'admin' || user.role === 'field_executive' || (user.role === 'employee' && user.employeeModules && user.employeeModules.includes('users'))) {
+            return next();
+        }
+        res.status(403).json({ error: 'Access denied. Card generation permission required.' });
+    } catch (e) {
+        console.error('Permission check error:', e);
+        res.status(500).json({ error: 'Server error check permissions' });
+    }
+}, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (user.status !== 'approved' && user.status !== 'pending') {
+            return res.status(400).json({ error: 'User must be approved or pending before assigning a card' });
+        }
+
+        const { cardNumber } = req.body;
+
+        if (!cardNumber) {
+            return res.status(400).json({ error: 'Card number is required. Random generation is disabled.' });
+        }
+
+        // 1. Check if card exists in NexCard inventory
+        const nexCard = await NexCard.findOne({ cardNumber });
+        if (!nexCard) {
+            return res.status(400).json({ error: 'Card number does not exist in inventory' });
+        }
+
+        // 2. Check if card is already assigned in NexCard inventory
+        if (nexCard.status === 'assigned') {
+            // Check if it's already assigned to THIS user (no change needed)
+            if (nexCard.assignedTo && nexCard.assignedTo.toString() === user._id.toString()) {
+                return res.json({ message: 'This card is already assigned to this user', cardNumber });
+            }
+            return res.status(400).json({ error: 'This card number is already assigned to another user (Inventory)' });
+        }
+
+        // 2b. DOUBLE CHECK: Check if any User already has this card number (Extra Safety)
+        const userWithCard = await User.findOne({ cardNumber, _id: { $ne: user._id } });
+        if (userWithCard) {
+            return res.status(400).json({ error: `This card is already assigned to user: ${userWithCard.name}` });
+        }
+
+        // 3. Handle old card if exists
+        if (user.cardNumber) {
+            const oldCard = await NexCard.findOne({ cardNumber: user.cardNumber });
+            if (oldCard) {
+                oldCard.status = 'available';
+                oldCard.assignedTo = null;
+                oldCard.assignedAt = null;
+                await oldCard.save();
+            }
+        }
+
+        // 4. Assign new card
+        nexCard.status = 'assigned';
+        nexCard.assignedTo = user._id;
+        nexCard.assignedAt = new Date();
+        await nexCard.save();
+
+        user.cardNumber = cardNumber;
+        if (user.status === 'pending') {
+            user.status = 'approved';
+        }
+        await user.save();
+
+        res.json({ message: 'Card number assigned successfully', cardNumber });
+    } catch (e) {
+        console.error('Admin assign card error:', e);
+        res.status(500).json({ error: 'Failed to assign card number: ' + e.message });
+    }
+});
+
+// @route   GET /api/employee/admin/farmers/stats
+// @desc    Get KPI stats for farmers dashboard
+// @access  Private/Admin
+router.get('/admin/farmers/stats', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let userQuery = { role: { $in: ['farmer', 'buyer'] } };
+        let orderQuery = {};
+        let sellQuery = {};
+
+        if (startDate || endDate) {
+            userQuery.createdAt = {};
+            orderQuery.createdAt = {};
+            sellQuery.createdAt = {};
+            if (startDate) {
+                const start = new Date(startDate);
+                userQuery.createdAt.$gte = start;
+                orderQuery.createdAt.$gte = start;
+                sellQuery.createdAt.$gte = start;
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                userQuery.createdAt.$lte = end;
+                orderQuery.createdAt.$lte = end;
+                sellQuery.createdAt.$lte = end;
+            }
+        }
+
+        const totalFarmers = await User.countDocuments(userQuery);
+        const activeFarmers = await User.countDocuments({ ...userQuery, status: 'approved' });
+        const pendingFarmers = await User.countDocuments({ ...userQuery, status: 'pending' });
+        const kycVerified = await User.countDocuments({ ...userQuery, aadhaarNumber: { $exists: true, $ne: '' } });
+
+        // Count pending from both models
+        const pendingOrders = await Order.countDocuments({ ...orderQuery, status: 'pending' });
+        const pendingSellReqs = await SellRequest.countDocuments({ ...sellQuery, status: 'pending' });
+        const newRequests = pendingOrders + pendingSellReqs;
+
+        const assignedOrders = await Order.countDocuments({ ...orderQuery, status: { $in: ['accepted', 'in-progress'] } });
+        const assignedSellReqs = await SellRequest.countDocuments({ ...sellQuery, status: { $in: ['accepted', 'in-progress'] } });
+        const assigned = assignedOrders + assignedSellReqs;
+
+        const completedOrders = await Order.countDocuments({ ...orderQuery, status: 'completed' });
+        const completedSellReqs = await SellRequest.countDocuments({ ...sellQuery, status: 'completed' });
+        const completed = completedOrders + completedSellReqs;
+
+        // Wallet & Credit Calculations
+        const allFarmersList = await User.find(userQuery).select('status walletBalance walletRechargeStatus walletRechargeAmount creditLimit creditUsed');
+        let approvedWalletAmt = 0;
+        let pendingWalletAmt = 0;
+        let totalCreditLimit = 0;
+        let totalCreditUsed = 0;
+
+        allFarmersList.forEach(f => {
+            if (f.status === 'approved') {
+                approvedWalletAmt += (f.walletBalance || 0);
+            } else {
+                pendingWalletAmt += (f.walletBalance || 0);
+            }
+            if (f.walletRechargeStatus === 'PENDING') {
+                pendingWalletAmt += (f.walletRechargeAmount || 0);
+            }
+            totalCreditLimit += (f.creditLimit || 0);
+            totalCreditUsed += (f.creditUsed || 0);
+        });
+
+        res.json({ 
+            totalFarmers, 
+            activeFarmers, 
+            pendingFarmers, 
+            kycVerified, 
+            newRequests, 
+            assigned, 
+            completed,
+            approvedWalletAmt,
+            pendingWalletAmt,
+            totalCreditAvailable: totalCreditLimit - totalCreditUsed
+        });
+    } catch (e) {
+        console.error('Farmers stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// =============================================
+// ADMIN: SOIL TESTING LAB MANAGEMENT ROUTES
+// =============================================
+
+// @route   GET /api/employee/admin/soil-labs/stats
+// @desc    Get KPI stats for Soil Labs dashboard (Admin)
+// @access  Private/Admin
+router.get('/admin/soil-labs/stats', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const totalLabs = await User.countDocuments({ role: 'soil' });
+        const activeLabs = await User.countDocuments({ role: 'soil', status: 'approved' });
+
+        const { startDate, endDate } = req.query;
+        let query = {};
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const allRequests = await SoilRequest.find(query);
+
+        const totalTests = allRequests.length;
+        const thisMonthTests = allRequests.filter(r => r.createdAt >= startOfMonth).length;
+        const totalRevenue = allRequests.reduce((sum, req) => sum + (req.price || 0), 0);
+        const thisMonthRevenue = allRequests
+            .filter(r => r.createdAt >= startOfMonth)
+            .reduce((sum, req) => sum + (req.price || 0), 0);
+
+        const npkTests = allRequests.filter(r => r.testType === 'NPK');
+        const phTests = allRequests.filter(r => r.testType === 'pH');
+        const microTests = allRequests.filter(r => r.testType === 'Micro Nutrients');
+
+        const activeLabsList = await User.find({ role: 'soil', status: 'approved' });
+
+        const calcAvgPrice = (arr) => arr.length > 0 ? (arr.reduce((s, r) => s + (r.price || 0), 0) / arr.length).toFixed(0) : 0;
+        const calcAvgTAT = (testName) => {
+            const labsWithTest = activeLabsList.filter(lab => lab.soilDetails && lab.soilDetails.testTypes && lab.soilDetails.testTypes.includes(testName));
+            if (labsWithTest.length === 0) return 3; // default
+            return Number((labsWithTest.reduce((s, lab) => s + (lab.soilDetails.tatDays || 3), 0) / labsWithTest.length).toFixed(1));
+        };
+
+        res.json({
+            totalLabs,
+            activeLabs,
+            totalTests,
+            thisMonthTests,
+            totalRevenue,
+            thisMonthRevenue,
+            activeRate: totalLabs > 0 ? ((activeLabs / totalLabs) * 100).toFixed(1) : 0,
+            testTypes: {
+                npk: { tests: npkTests.length, avgPrice: calcAvgPrice(npkTests), avgTAT: calcAvgTAT('NPK') },
+                ph: { tests: phTests.length, avgPrice: calcAvgPrice(phTests), avgTAT: calcAvgTAT('pH') },
+                microNutrients: { tests: microTests.length, avgPrice: calcAvgPrice(microTests), avgTAT: calcAvgTAT('Micro Nutrients') }
+            }
+        });
+    } catch (e) {
+        console.error('Admin soil labs stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch soil lab stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/soil-labs
+// @desc    Get all active soil labs with their stats
+// @access  Private/Admin
+router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let labQuery = { role: 'soil' };
+        let testQuery = { status: 'Completed' };
+        if (startDate || endDate) {
+            labQuery.createdAt = {};
+            testQuery.createdAt = {};
+            if (startDate) {
+                const start = new Date(startDate);
+                labQuery.createdAt.$gte = start;
+                testQuery.createdAt.$gte = start;
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                labQuery.createdAt.$lte = end;
+                testQuery.createdAt.$lte = end;
+            }
+        }
+
+        const labs = await User.find(labQuery)
+            .select('name businessName phone email address status employeeCode soilDetails createdAt aadhaarDocUrl aadhaarBackDocUrl businessLicenseUrl bankDetails')
+            .sort({ createdAt: -1 });
+
+        const result = await Promise.all(labs.map(async lab => {
+            const completedTests = await SoilRequest.countDocuments({ lab: lab._id, ...testQuery });
+
+            return {
+                _id: lab._id,
+                labName: lab.businessName || lab.name,
+                labCode: lab.employeeCode || lab._id.toString().substring(18),
+                phone: lab.phone,
+                email: lab.email || '',
+                location: lab.address,
+                status: lab.status,
+                testTypes: (lab.soilDetails && lab.soilDetails.testTypes) ? lab.soilDetails.testTypes : [],
+                tatDays: (lab.soilDetails && lab.soilDetails.tatDays) ? lab.soilDetails.tatDays : 3,
+                testsDone: completedTests,
+                documentUrl: lab.aadhaarDocUrl || '',
+                aadhaarBackDocUrl: lab.aadhaarBackDocUrl || '',
+                businessLicenseUrl: lab.businessLicenseUrl || '',
+                bankDetails: lab.bankDetails || {},
+                joinedAt: lab.createdAt
+            };
+        }));
+
+        res.json(result);
+    } catch (e) {
+        console.error('Admin soil labs error:', e);
+        res.status(500).json({ error: 'Failed to fetch soil labs' });
+    }
+});
+
+// @route   GET /api/employee/admin/users/:id
+// @desc    Get full user profile for admin (bank details, docs etc)
+// @access  Private/Admin
+router.get('/admin/users/:id', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .select('-password');
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (e) {
+        console.error('Admin get user error:', e);
+        res.status(500).json({ error: 'Failed to fetch user' });
+    }
+});
+
+// @route   PUT /api/employee/admin/users/:id/bank-details
+// @desc    Admin: Update user bank details
+// @access  Private/Admin
+router.put('/admin/users/:id/bank-details', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { holderName, bankName, accountNumber, ifscCode, bankAddress } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const b = user.bankDetails || {};
+        user.bankDetails = {
+            holderName: holderName !== undefined ? holderName : b.holderName || '',
+            bankName: bankName !== undefined ? bankName : b.bankName || '',
+            accountNumber: accountNumber !== undefined ? accountNumber : b.accountNumber || '',
+            ifscCode: ifscCode !== undefined ? ifscCode : b.ifscCode || '',
+            bankAddress: bankAddress !== undefined ? bankAddress : b.bankAddress || '',
+            bankDocUrl: b.bankDocUrl || ''
+        };
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Bank details updated by admin', bankDetails: user.bankDetails });
+    } catch (e) {
+        console.error('Admin update bank details error:', e);
+        res.status(500).json({ error: 'Failed to update bank details' });
+    }
+});
+
+// @route   PUT /api/employee/admin/users/:id/soil-details
+// @desc    Admin: Update soil lab details (tatDays, testTypes)
+// @access  Private/Admin
+router.put('/admin/users/:id/soil-details', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { tatDays, testTypes } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (!user.soilDetails) {
+            user.soilDetails = { tatDays: 3, testTypes: [] };
+        }
+
+        if (tatDays !== undefined) user.soilDetails.tatDays = Number(tatDays);
+        if (testTypes !== undefined) user.soilDetails.testTypes = testTypes;
+
+        user.markModified('soilDetails');
+        await user.save();
+        res.json({ message: 'Soil details updated successfully', soilDetails: user.soilDetails });
+    } catch (e) {
+        console.error('Admin update soil details error:', e);
+        res.status(500).json({ error: 'Failed to update soil details' });
+    }
+});
+
+// @route   GET /api/employee/admin/soil-requests
+// @desc    Get all soil test requests (orders) for admin
+// @access  Private/Admin
+router.get('/admin/soil-requests', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let query = {};
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const requests = await SoilRequest.find(query)
+            .populate('farmer', 'name phone address')
+            .populate('lab', 'name businessName phone address')
+            .sort({ createdAt: -1 })
+            .limit(200);
+
+        const result = requests.map(r => ({
+            _id: r._id,
+            farmerName: r.farmer ? r.farmer.name : 'Unknown',
+            farmerPhone: r.farmer ? r.farmer.phone : '',
+            labName: r.lab ? (r.lab.businessName || r.lab.name) : 'Unknown',
+            testType: r.testType,
+            price: r.price,
+            paymentMethod: r.paymentMethod || 'cash',
+            paymentStatus: r.paymentStatus || 'Pending',
+            status: r.status,
+            createdAt: r.createdAt,
+            state: r.state || '',
+            district: r.district || '',
+            village: r.village || '',
+            sampleLocation: r.village ? `${r.village}, ${r.district}, ${r.state}` : (r.farmer ? r.farmer.address : 'N/A'),
+            cropName: r.cropName || 'N/A',
+            sampleType: r.sampleType || 'Field Soil',
+            visitType: r.visitType || 'I will visit lab',
+            reportUrl: r.reportUrl || '',
+            advisoryText: r.advisoryText || ''
+        }));
+
+        res.json(result);
+    } catch (e) {
+        console.error('Admin soil requests error:', e);
+        res.status(500).json({ error: 'Failed to fetch soil requests' });
+    }
+});
+
+// @route   PUT /api/employee/admin/soil-requests/:id/assign
+// @desc    Assign a lab partner to a soil test request
+// @access  Private/Admin
+router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { labId } = req.body;
+        if (!labId) return res.status(400).json({ error: 'labId is required' });
+
+        const lab = await User.findById(labId);
+        if (!lab || lab.role !== 'soil') {
+            return res.status(404).json({ error: 'Lab partner not found' });
+        }
+
+        const request = await SoilRequest.findByIdAndUpdate(
+            req.params.id,
+            { lab: labId, status: 'New' },
+            { new: true }
+        ).populate('farmer', 'name');
+
+        if (!request) return res.status(404).json({ error: 'Soil request not found' });
+
+        // Send notification to lab partner
+        try {
+            const { sendNotification } = require('../services/notificationService');
+            await sendNotification(labId, {
+                title: 'New Soil Test Assigned',
+                messageEn: `A new soil test request from ${request.farmer ? request.farmer.name : 'a farmer'} has been assigned to you.`,
+                messageHi: `एक नया मिट्टी परीक्षण अनुरोध ${request.farmer ? request.farmer.name : 'एक किसान'} से आपको सौंपा गया है।`,
+                type: 'soil_test',
+                refId: request._id.toString()
+            });
+
+            // Send notification to farmer
+            if (request.farmer) {
+                const notifMsgEn = `Your soil test request has been assigned to a lab partner.`;
+                const notifMsgHi = `आपके मिट्टी परीक्षण अनुरोध को एक लैब पार्टनर को सौंपा गया है।`;
+                await sendNotification(request.farmer, {
+                    title: 'Soil Test Update',
+                    messageEn: notifMsgEn,
+                    messageHi: notifMsgHi,
+                    type: 'soil_test',
+                    refId: request._id.toString()
+                }).catch(() => { }); // Catch notification errors to not block main flow
+            }
+        } catch (notifError) {
+            console.error('Notification error (ignoring):', notifError);
+        }
+
+        res.json({ message: 'Lab assigned successfully', request });
+    } catch (error) {
+        console.error('Assign lab error:', error);
+        res.status(500).json({ error: 'Failed to assign lab' });
+    }
+});
+
+// =============================================
+// ADMIN: CROP SELL REQUESTS MANAGEMENT ROUTES
+// =============================================
+
+// @route   GET /api/employee/admin/crop-requests
+// @desc    Get all crop sell requests (orders) for admin
+// @access  Private/Admin
+router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let orderQuery = {};
+        let sellQuery = {};
+
+        if (startDate || endDate) {
+            orderQuery.createdAt = {};
+            sellQuery.createdAt = {};
+            if (startDate) {
+                const start = new Date(startDate);
+                orderQuery.createdAt.$gte = start;
+                sellQuery.createdAt.$gte = start;
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                orderQuery.createdAt.$lte = end;
+                sellQuery.createdAt.$lte = end;
+            }
+        }
+
+        const [orders, sellRequests] = await Promise.all([
+            Order.find(orderQuery)
+                .populate('buyer', 'name phone address')
+                .populate('assignedTo', 'name phone businessName')
+                .populate({
+                    path: 'sellRequestId',
+                    select: 'expectedPrice moisture bagCount notes images'
+                })
+                .sort({ createdAt: -1 })
+                .lean(),
+            SellRequest.find(sellQuery)
+                .populate('farmer', 'name phone address')
+                .populate('mandi', 'name')
+                .populate('assignedTo', 'name phone businessName')
+                .sort({ createdAt: -1 })
+                .lean()
+        ]);
+
+        const orderResult = orders.map(o => ({
+            _id: o._id,
+            farmerName: o.farmerName || (o.buyer && o.buyer.name) || 'Unknown',
+            farmerPhone: o.farmerMobile || (o.buyer && o.buyer.phone) || '',
+            location: o.village ? `${o.village}, ${o.district}` : (o.location || 'N/A'),
+            crop: o.crop,
+            quantity: o.quantity,
+            variety: o.variety || '',
+            pricePerQuintal: o.pricePerQuintal || 0,
+            status: o.status,
+            imageUrl: o.imageUrl || '',
+            images: o.imageUrl ? [o.imageUrl] : [],
+            note: o.note || '',
+            assignedBuyer: o.assignedTo ? { name: o.assignedTo.name || o.assignedTo.businessName, phone: o.assignedTo.phone } : null,
+            buyerId: o.assignedTo ? o.assignedTo._id : null,
+            farmerId: (o.buyer && o.buyer._id) ? o.buyer._id : null,
+            createdAt: o.createdAt,
+            source: 'order',
+            // Enriched fields for details modal
+            expectedPrice: o.sellRequestId?.expectedPrice || (o.pricePerQuintal ? `₹${o.pricePerQuintal}/Q` : '—'),
+            moisture: o.sellRequestId?.moisture || '',
+            bagCount: o.sellRequestId?.bagCount || '',
+            payment: o.payment || 'COD',
+            amount: o.amount || 0,
+            cancelReason: o.cancelReason || '',
+            amountReceived: o.amountReceived || 0,
+            farmerAmount: o.farmerAmount || 0,
+            settlement: o.settlement || 'pending',
+            commission: o.commission || 0,
+            commissionRate: o.commissionRate || 0
+        }));
+
+        const sellResult = sellRequests.map(s => ({
+            _id: s._id,
+            farmerName: s.farmer ? s.farmer.name : 'Unknown',
+            farmerPhone: s.farmer ? s.farmer.phone : '',
+            location: s.mandi ? s.mandi.name : (s.farmer ? s.farmer.address : 'N/A'),
+            crop: s.cropName,
+            quantity: s.quantity,
+            variety: s.variety || '',
+            pricePerQuintal: 0, // Not sold yet
+            status: s.status,
+            imageUrl: (s.images && s.images.length > 0) ? s.images[0] : '',
+            images: s.images || [],
+            note: s.notes || '',
+            assignedBuyer: s.assignedTo ? { name: s.assignedTo.name || s.assignedTo.businessName, phone: s.assignedTo.phone } : null,
+            buyerId: s.assignedTo ? s.assignedTo._id : null,
+            farmerId: s.farmer ? s.farmer._id : null,
+            createdAt: s.createdAt,
+            source: 'sell-request',
+            // Enriched fields for details modal
+            expectedPrice: s.expectedPrice || '—',
+            moisture: s.moisture || '',
+            bagCount: s.bagCount || '',
+            payment: '—',
+            amount: 0,
+            cancelReason: '',
+            amountReceived: 0,
+            farmerAmount: 0,
+            settlement: '—',
+            commission: 0,
+            commissionRate: s.commissionRate || 0
+        }));
+
+        // Combine and sort by date
+        const combined = [...orderResult, ...sellResult].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.json(combined);
+    } catch (e) {
+        console.error('Crop requests error:', e);
+        res.status(500).json({ error: 'Failed to fetch crop requests' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer-partners
+// @desc    Get all buyer partners (role: 'buyer') for assignment dropdown
+// @access  Private/Admin  
+router.get('/admin/buyer-partners', protect, checkModule('doctor'), async (req, res) => {
+    try {
+        // Note: In this system, buyer partners have role 'buyer' and are approved
+        // They are different from farmer-buyers; we use them to match crop sell requests
+        const buyers = await User.find({ role: 'buyer', status: 'approved' })
+            .select('name phone businessName address')
+            .sort({ name: 1 });
+
+        res.json(buyers.map(b => ({
+            _id: b._id,
+            name: b.businessName || b.name,
+            phone: b.phone,
+            location: b.address || 'N/A'
+        })));
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch buyers' });
+    }
+});
+
+// @route   PUT /api/employee/admin/crop-requests/:id/assign
+// @desc    Assign a crop request to a buyer partner
+// @access  Private/Admin
+router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), async (req, res) => {
+    try {
+        const { buyerId } = req.body;
+        if (!buyerId) return res.status(400).json({ error: 'buyerId is required' });
+
+        // 1. Try finding as an existing Order first (Re-assignment)
+        let order = await Order.findById(req.params.id).populate('sellRequestId');
+        if (order) {
+            order.assignedTo = buyerId;
+            order.status = 'accepted';
+            order.assignedStatus = 'new'; // Reset so the new buyer sees it in Pending
+            order.cancelReason = ''; // Clear any previous cancel reason
+            await order.save();
+
+            // Send immediate notification to farmer on re-assignment
+            try {
+                if (order.sellRequestId) {
+                    const sReq = order.sellRequestId;
+                    const farmer = await User.findById(sReq.farmer);
+                    if (farmer && sReq.otp) {
+                        const buyer = await User.findById(buyerId);
+                        const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
+                        const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${order.crop}).`;
+                        const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - आपके ${order.crop} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
+
+                        const { sendNotification: sNotif } = require('../services/notificationService');
+                        const { sendOtp: sOtp } = require('../services/msg91');
+
+                        console.log(`[ORDER-ASSIGN-DEBUG] Sending Re-assign OTP to farmer ${farmer._id}`);
+                        await sNotif(farmer._id, {
+                            title: `Order #${order._id.toString().slice(-6)} (OTP: ${sReq.otp})`,
+                            messageEn: msgEn,
+                            messageHi: msgHi,
+                            type: 'crop_sale',
+                            refId: order._id.toString()
+                        });
+                        if (farmer.phone) await sOtp(farmer.phone.replace(/[^0-9]/g, ''), sReq.otp).catch(err => console.error('[ORDER-ASSIGN-DEBUG] SMS Error:', err.message));
+                    }
+                }
+            } catch (err) { console.error('[ORDER-ASSIGN-DEBUG] Notification error during re-assignment:', err); }
+
+            const populated = await Order.findById(order._id).populate('assignedTo', 'name phone businessName');
+            return res.json({ message: 'Buyer reassigned successfully', order: populated });
+        }
+
+        // 2. If not an Order, check if it's a SellRequest (initial assignment)
+        const sellReq = await SellRequest.findById(req.params.id).populate('farmer').populate('mandi');
+        if (sellReq) {
+            const { newPrice, buyerId: bodyBuyerId } = req.body;
+            const buyer = await User.findById(buyerId || bodyBuyerId);
+            if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
+
+            const otp = Math.floor(1000 + Math.random() * 9000).toString();
+            const finalPrice = newPrice || parsePriceInQuintals(sellReq.expectedPrice);
+
+            const settings = await Settings.getSettings();
+            const bCommissionRate = sellReq.commissionRate || settings.commissions.buyerTrading || 0;
+            const qty = parseQuantityInQuintals(sellReq.quantity);
+            const cropPrice = qty * finalPrice;
+            const commissionAmount = (cropPrice * bCommissionRate) / 100;
+
+            const newOrder = new Order({
+                buyer: buyerId,
+                assignedTo: buyerId,
+                farmerName: sellReq.farmer ? sellReq.farmer.name : 'Unknown',
+                farmerMobile: sellReq.farmer ? sellReq.farmer.phone : '',
+                village: sellReq.farmer ? (sellReq.farmer.address || 'N/A') : 'N/A',
+                district: '',
+                state: '',
+                location: sellReq.mandi ? sellReq.mandi.name : (sellReq.farmer ? (sellReq.farmer.address || 'N/A') : 'N/A'),
+                crop: sellReq.cropName,
+                quantity: sellReq.quantity,
+                variety: sellReq.variety || '',
+                pricePerQuintal: finalPrice,
+                pricePerKg: finalPrice / 100,
+                amount: cropPrice,
+                commission: commissionAmount,
+                commissionRate: bCommissionRate,
+                imageUrl: (sellReq.images && sellReq.images.length > 0) ? sellReq.images[0] : '',
+                note: sellReq.notes || '',
+                status: 'accepted',
+                assignedStatus: 'new',
+                sellRequestId: sellReq._id
+            });
+            await newOrder.save();
+
+            sellReq.status = 'accepted';
+            sellReq.assignedTo = buyerId;
+            sellReq.otp = otp;
+            sellReq.adminPrice = finalPrice;
+            await sellReq.save();
+
+            // Send immediate notification to farmer on initial assignment
+            try {
+                if (sellReq.farmer) {
+                    const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
+                    const msgEn = `OTP: ${otp} - ORDER: #${newOrder._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${sellReq.cropName}).`;
+                    const msgHi = `OTP: ${otp} - ऑर्डर: #${newOrder._id.toString().slice(-6)} - आपके ${sellReq.cropName} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
+
+                    const { sendNotification: sNotif } = require('../services/notificationService');
+                    const { sendOtp: sOtp } = require('../services/msg91');
+
+                    console.log(`[ORDER-ASSIGN-DEBUG] Sending Initial-Assign OTP to farmer ${sellReq.farmer._id}`);
+                    await sNotif(sellReq.farmer._id, {
+                        title: `Order #${newOrder._id.toString().slice(-6)} (OTP: ${otp})`,
+                        messageEn: msgEn,
+                        messageHi: msgHi,
+                        type: 'crop_sale',
+                        refId: newOrder._id.toString()
+                    });
+                    if (sellReq.farmer.phone) await sOtp(sellReq.farmer.phone.replace(/[^0-9]/g, ''), otp).catch(err => console.error('[ORDER-ASSIGN-DEBUG] SMS Error:', err.message));
+                }
+            } catch (err) { console.error('[ORDER-ASSIGN-DEBUG] Notification error during assignment:', err); }
+
+            const populated = await Order.findById(newOrder._id).populate('assignedTo', 'name phone businessName');
+            return res.json({ message: 'Buyer assigned and Order created', order: populated });
+        }
+
+        return res.status(404).json({ error: 'Request not found' });
+    } catch (e) {
+        console.error('Assign error:', e);
+        res.status(500).json({ error: 'Failed to assign buyer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/crop-requests/:id/update-price
+// @desc    Update only the price of a crop request or order
+// @access  Private/Admin
+router.put('/admin/crop-requests/:id/update-price', protect, checkModule('doctor'), async (req, res) => {
+    try {
+        const { newPrice } = req.body;
+        if (newPrice === undefined || newPrice === null) {
+            return res.status(400).json({ error: 'newPrice is required' });
+        }
+
+        const finalPrice = parseFloat(newPrice);
+        if (isNaN(finalPrice)) return res.status(400).json({ error: 'Invalid price' });
+
+        // 1. Try finding as an Order first
+        let order = await Order.findById(req.params.id);
+        if (order) {
+            order.pricePerQuintal = finalPrice;
+            order.pricePerKg = finalPrice / 100;
+
+            // Recalculate amount and commission
+            const qty = parseQuantityInQuintals(order.quantity);
+            order.amount = qty * finalPrice;
+
+            // Use commission rate from order or settings
+            let bCommissionRate = order.commissionRate;
+            if (bCommissionRate === undefined || bCommissionRate === null) {
+                const settings = await Settings.getSettings();
+                bCommissionRate = settings.commissions.buyerTrading || 0;
+            }
+            order.commission = (order.amount * bCommissionRate) / 100;
+
+            await order.save();
+
+            // Sync with SellRequest if linked
+            if (order.sellRequestId) {
+                await SellRequest.findByIdAndUpdate(order.sellRequestId, {
+                    adminPrice: finalPrice,
+                    totalAmount: order.amount
+                });
+            }
+
+            return res.json({ message: 'Price updated and totals recalculated', order });
+        }
+
+        // 2. If not an Order, check SellRequest
+        const sellReq = await SellRequest.findById(req.params.id);
+        if (sellReq) {
+            sellReq.adminPrice = finalPrice;
+            await sellReq.save();
+            return res.json({ message: 'SellRequest price updated', sellRequest: sellReq });
+        }
+
+        return res.status(404).json({ error: 'Request/Order not found' });
+    } catch (e) {
+        console.error('Update price error:', e);
+        res.status(500).json({ error: 'Failed to update price' });
+    }
+});
+
+// @route   PUT /api/employee/admin/block/:id
+// @desc    Block a user
+// @access  Private/Admin
+router.put('/admin/block/:id', protect, checkModule('users'), async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, { status: 'blocked' }, { new: true });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json({ message: `${user.name} blocked successfully` });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to block user' });
+    }
+});
+
+// @route   PUT /api/employee/admin/unblock/:id
+// @desc    Unblock a user (set back to approved)
+// @access  Private/Admin
+router.put('/admin/unblock/:id', protect, checkModule('users'), async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json({ message: `${user.name} unblocked successfully` });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to unblock user' });
+    }
+});
+
+// @route   PUT /api/employee/admin/approve/:id
+// @desc    Approve a pending user (Requires uploaded KYC/License documents)
+// @access  Private/Admin
+router.put('/admin/approve/:id', protect, checkModule('users'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+        const hasDoc = isValidDoc(user.aadhaarDocUrl) || isValidDoc(user.aadhaarFrontUrl) || isValidDoc(user.aadhaarBackDocUrl) || isValidDoc(user.panDocUrl) || isValidDoc(user.licenseDocUrl) || isValidDoc(user.gstDocUrl) || isValidDoc(user.certDocUrl) || isValidDoc(user.profilePhotoUrl);
+
+        if (!hasDoc) {
+            return res.status(400).json({ error: 'KYC approval failed: No identification or license documents uploaded for this account.' });
+        }
+
+        user.status = 'approved';
+        await user.save();
+        res.json({ message: `${user.name} approved successfully` });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to approve user' });
+    }
+});
+
+
+// =====================================================================
+// BUYER TRADING (B2B) - ADMIN ROUTES
+// =====================================================================
+
+// @route   GET /api/employee/admin/buyer/stats
+// @desc    KPI cards: total buyers, active buyers, total orders, outstanding
+// @access  Private/Admin
+router.get('/admin/buyer/stats', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let start, end;
+        if (hasFilter) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        const buyerQuery = { role: 'buyer' };
+        const activeBuyerQuery = { role: 'buyer', status: 'approved' };
+        const pendingBuyerQuery = { role: 'buyer', status: 'pending' };
+
+        const totalBuyers = await User.countDocuments(buyerQuery);
+        const activeBuyers = await User.countDocuments(activeBuyerQuery);
+        const pendingBuyers = await User.countDocuments(pendingBuyerQuery);
+
+        let orderQuery = {};
+        if (hasFilter) {
+            orderQuery.createdAt = { $gte: start, $lte: end };
+        }
+        const allOrders = await Order.find(orderQuery).lean();
+        const totalOrders = allOrders.length;
+
+        const settings = await Settings.getSettings();
+        const globalCommissionRate = settings.commissions.buyerTrading || 0;
+
+        // Outstanding = sum of (totalPayable - amountReceived) of non-cancelled orders
+        let outstandingAmount = 0;
+        allOrders.forEach(o => {
+            if (o.status !== 'cancelled') {
+                const qty = parseQuantityInQuintals(o.quantity);
+                const commission = o.commission !== undefined && o.commission !== null ? o.commission : (qty * (o.pricePerQuintal || 0) * globalCommissionRate / 100);
+                const farmerPayout = o.farmerAmount || (qty * (o.pricePerQuintal || 0));
+                const totalPayable = farmerPayout + commission;
+                const amountReceived = o.amountReceived || 0;
+                outstandingAmount += Math.max(0, totalPayable - amountReceived);
+            }
+        });
+
+        // Period or monthly orders
+        let monthlyOrders;
+        if (hasFilter) {
+            monthlyOrders = allOrders.length;
+        } else {
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            monthlyOrders = allOrders.filter(o => new Date(o.createdAt) >= startOfMonth).length;
+        }
+
+        res.json({
+            totalBuyers,
+            activeBuyers,
+            pendingBuyers,
+            totalOrders,
+            outstandingAmount,
+            monthlyOrders
+        });
+    } catch (e) {
+        console.error('Buyer stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch buyer stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyers
+// @desc    All buyer profiles with their order stats
+// @access  Private/Admin
+router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let userQuery = { role: { $in: ['buyer', 'crop-buyer'] } };
+        let orderQuery = {};
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            orderQuery.createdAt = { $gte: start, $lte: end };
+        }
+
+        const buyers = await User.find(userQuery).sort({ createdAt: -1 });
+
+        const settings = await Settings.getSettings();
+        const globalCommissionRate = settings.commissions.buyerTrading || 0;
+
+        const enriched = await Promise.all(buyers.map(async (b) => {
+            let userOrderQuery = { buyer: b._id, ...orderQuery };
+            const orders = await Order.find(userOrderQuery).lean();
+
+            let totalPurchaseQty = 0;
+            let totalValue = 0;
+            let outstanding = 0;
+
+            orders.forEach(o => {
+                if (o.status !== 'cancelled') {
+                    const qty = parseQuantityInQuintals(o.quantity);
+                    totalPurchaseQty += qty;
+
+                    const commission = o.commission !== undefined && o.commission !== null ? o.commission : (qty * (o.pricePerQuintal || 0) * globalCommissionRate / 100);
+                    const farmerPayout = o.farmerAmount || (qty * (o.pricePerQuintal || 0));
+                    const totalPayable = farmerPayout + commission;
+                    const amountReceived = o.amountReceived || 0;
+
+                    totalValue += totalPayable;
+                    outstanding += Math.max(0, totalPayable - amountReceived);
+                }
+            });
+
+            return {
+                _id: b._id,
+                name: b.name,
+                businessName: b.businessName || b.name,
+                phone: b.phone,
+                email: b.email || '',
+                address: b.address,
+                status: b.status,
+                profilePhotoUrl: b.profilePhotoUrl || '',
+                aadhaarNumber: b.aadhaarNumber || '',
+                aadhaarDocUrl: b.aadhaarDocUrl || '',
+                aadhaarBackDocUrl: b.aadhaarBackDocUrl || '',
+                joinedAt: b.createdAt,
+                totalOrders: orders.length,
+                totalPurchaseQty: Math.round(totalPurchaseQty),
+                totalValue,
+                outstandingAmount: outstanding,
+                bankDetails: {
+                    holderName: b.bankDetails?.holderName || '',
+                    bankName: b.bankDetails?.bankName || '',
+                    accountNumber: b.bankDetails?.accountNumber || '',
+                    ifscCode: b.bankDetails?.ifscCode || '',
+                    bankAddress: b.bankDetails?.bankAddress || '',
+                    bankDocUrl: b.bankDetails?.bankDocUrl || ''
+                }
+            };
+        }));
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Buyers list error:', e);
+        res.status(500).json({ error: 'Failed to fetch buyers' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer/:id/orders
+// @desc    Get all orders for a specific buyer
+// @access  Private/Admin
+router.get('/admin/buyer/:id/orders', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const orders = await Order.find({ buyer: req.params.id })
+            .sort({ createdAt: -1 });
+
+        const settings = await Settings.getSettings();
+        const commissionRate = settings.commissions.buyerTrading || 0;
+
+        const enriched = orders.map(o => {
+            const qty = parseQuantityInQuintals(o.quantity);
+            const cropPrice = qty * (o.pricePerQuintal || 0);
+            const commission = o.commission || (cropPrice * commissionRate / 100);
+            const totalPayable = cropPrice + commission;
+
+            return {
+                ...o.toObject(),
+                totalPayable,
+                orderId: `#ORD-${o._id.toString().slice(-6).toUpperCase()}`
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Fetch buyer orders error:', e);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer/:id/wallet
+// @desc    Get buyer wallet balance and B2B transactions
+// @access  Private/Admin
+router.get('/admin/buyer/:id/wallet', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('walletBalance name');
+        if (!user) return res.status(404).json({ error: 'Buyer not found' });
+
+        const transactions = await Transaction.find({
+            recipient: req.params.id,
+            module: 'BuyerTrading'
+        }).sort({ createdAt: -1 }).limit(100);
+
+        res.json({
+            balance: user.walletBalance || 0,
+            transactions
+        });
+    } catch (e) {
+        console.error('Fetch buyer wallet error:', e);
+        res.status(500).json({ error: 'Failed to fetch wallet data' });
+    }
+});
+
+// @route   POST /api/employee/admin/buyer/:id/wallet/transaction
+// @desc    Admin: Perform manual Credit/Debit on buyer wallet
+// @access  Private/Admin
+router.post('/admin/buyer/:id/wallet/transaction', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { type, amount, note, paymentMode } = req.body;
+        const amt = Number(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+        if (!['Credit', 'Debit'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Buyer not found' });
+
+        if (type === 'Debit' && (user.walletBalance || 0) < amt) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        if (type === 'Credit') user.walletBalance = (user.walletBalance || 0) + amt;
+        else user.walletBalance = (user.walletBalance || 0) - amt;
+
+        await user.save();
+
+        const txn = new Transaction({
+            transactionId: `TXN-B2B-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            recipient: user._id,
+            module: 'BuyerTrading',
+            amount: amt,
+            type: type === 'Credit' ? 'Credit' : 'Payout',
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            note: note || `Manual ${type} by Admin`,
+            performedBy: req.user.id
+        });
+        await txn.save();
+
+        res.json({ message: `Wallet ${type}ed successfully`, balance: user.walletBalance });
+    } catch (e) {
+        console.error('Buyer manual transaction error:', e);
+        res.status(500).json({ error: 'Failed to perform transaction' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer/requests
+// @desc    All pending buyer purchase requests (orders with status pending)
+// @access  Private/Admin
+router.get('/admin/buyer/requests', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { status: 'pending' };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const requests = await Order.find(query)
+            .populate('buyer', 'name phone businessName address')
+            .sort({ createdAt: -1 })
+            .limit(50);
+
+        const enriched = requests.map(r => ({
+            _id: r._id,
+            buyerName: r.buyer?.businessName || r.buyer?.name || 'Unknown',
+            buyerPhone: r.buyer?.phone || '',
+            buyerLocation: r.buyer?.address || r.location,
+            crop: r.crop,
+            quantity: r.quantity,
+            variety: r.variety || '',
+            pricePerQuintal: r.pricePerQuintal || 0,
+            status: r.status,
+            note: r.note || '',
+            createdAt: r.createdAt,
+            assignedTo: r.assignedTo || null,
+            farmerName: r.farmerName || '',
+            farmerMobile: r.farmerMobile || ''
+        }));
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Buyer requests error:', e);
+        res.status(500).json({ error: 'Failed to fetch buyer requests' });
+    }
+});
+
+// @route   GET /api/employee/admin/buyer/reconciliation
+// @desc    Payment reconciliation: all non-pending orders for admin review
+// @access  Private/Admin
+router.get('/admin/buyer/reconciliation', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { status: { $in: ['accepted', 'in-progress', 'completed'] } };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const orders = await Order.find(query)
+            .populate('buyer', 'name phone businessName address')
+            .sort({ createdAt: -1 })
+            .limit(100);
+
+        const settings = await Settings.getSettings();
+        const globalCommissionRate = settings.commissions.buyerTrading || 0;
+
+        const enriched = orders.map(o => {
+            const qty = parseQuantityInQuintals(o.quantity);
+
+            // Prioritize explicitly saved values from the delivery/edit process
+            const commission = o.commission !== undefined && o.commission !== null ? o.commission : (qty * (o.pricePerQuintal || 0) * globalCommissionRate / 100);
+            const farmerPayout = o.farmerAmount || (qty * (o.pricePerQuintal || 0));
+            const totalPayable = o.amountReceived || (farmerPayout + commission);
+
+            const amountReceived = o.amountReceived || 0; // Legacy or partial payments if any
+            const pendingAmount = Math.max(0, totalPayable - amountReceived);
+
+            let settlement = o.settlement || 'pending';
+            // Auto-derive if not explicitly set
+            if (!o.settlement || o.settlement === 'pending') {
+                if (o.status === 'completed' && totalPayable > 0 && amountReceived >= totalPayable) settlement = 'settled';
+                else if (o.status === 'in-progress' || amountReceived > 0) settlement = 'in-progress';
+            }
+
+            return {
+                _id: o._id,
+                orderId: `#ORD-${o._id.toString().slice(-6).toUpperCase()}`,
+                buyerName: o.buyer?.businessName || o.buyer?.name || 'Unknown',
+                buyerPhone: o.buyer?.phone || '',
+                buyerLocation: o.buyer?.address || '',
+                crop: o.crop,
+                quantity: o.quantity,
+                totalPayable,
+                commission,
+                amountReceived,
+                pendingAmount,
+                farmerPayout,
+                settlement,
+                status: o.status,
+                farmerName: o.farmerName || '',
+                farmerMobile: o.farmerMobile || '',
+                pricePerQuintal: o.pricePerQuintal || 0,
+                village: o.village || '',
+                district: o.district || '',
+                state: o.state || '',
+                variety: o.variety || '',
+                location: o.location || '',
+                note: o.note || '',
+                commissionRate: o.commissionRate || 0,
+                createdAt: o.createdAt
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Reconciliation error:', e);
+        res.status(500).json({ error: 'Failed to fetch reconciliation data' });
+    }
+});
+
+// @route   PUT /api/employee/admin/buyer/assign-farmer/:orderId
+// @desc    Admin assigns a farmer to a buyer's pending order
+// @access  Private/Admin
+router.put('/admin/buyer/assign-farmer/:orderId', protect, checkModule('buyer'), async (req, res) => {
+    try {
+        const { farmerName, farmerMobile, village, district, state, pricePerQuintal, amount } = req.body;
+        if (!farmerName) return res.status(400).json({ error: 'Farmer name is required' });
+
+        const order = await Order.findByIdAndUpdate(
+            req.params.orderId,
+            { farmerName, farmerMobile: farmerMobile || '', village: village || '', district: district || '', state: state || '', pricePerQuintal: pricePerQuintal || 0, farmerAmount: amount || 0, status: 'accepted' },
+            { new: true }
+        ).populate('buyer', 'name phone businessName');
+
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+        res.json({ message: 'Farmer assigned successfully', order });
+    } catch (e) {
+        console.error('Assign farmer error:', e);
+        res.status(500).json({ error: 'Failed to assign farmer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/buyer/approve/:buyerId
+// @desc    Approve a buyer (set status to approved)
+// @access  Private/Admin
+router.put('/admin/buyer/approve/:buyerId', protect, checkModule('users'), async (req, res) => {
+    try {
+        const buyer = await User.findOneAndUpdate(
+            { _id: req.params.buyerId, role: 'buyer' },
+            { status: 'approved' },
+            { new: true }
+        );
+        if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
+        res.json({ message: `${buyer.businessName || buyer.name} approved`, buyer });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to approve buyer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/buyer/update/:buyerId
+// @desc    Admin/Authorized Employee can update ANY field of a buyer
+router.put('/admin/buyer/update/:buyerId', protect, checkModule('users'), async (req, res) => {
+    try {
+        const buyer = await User.findById(req.params.buyerId);
+        if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
+
+        // Update fields if provided
+        if (req.body.name) buyer.name = req.body.name;
+        if (req.body.email) buyer.email = req.body.email;
+        if (req.body.phone) buyer.phone = req.body.phone;
+        if (req.body.address) buyer.address = req.body.address;
+        if (req.body.businessName) buyer.businessName = req.body.businessName;
+        if (req.body.aadhaarNumber) buyer.aadhaarNumber = req.body.aadhaarNumber;
+
+        // Update Bank Details
+        if (req.body.bankDetails) {
+            const b = req.body.bankDetails;
+            buyer.bankDetails = {
+                holderName: b.holderName || (buyer.bankDetails ? buyer.bankDetails.holderName : ''),
+                bankName: b.bankName || (buyer.bankDetails ? buyer.bankDetails.bankName : ''),
+                accountNumber: b.accountNumber || (buyer.bankDetails ? buyer.bankDetails.accountNumber : ''),
+                ifscCode: b.ifscCode || (buyer.bankDetails ? buyer.bankDetails.ifscCode : ''),
+                bankAddress: b.bankAddress || (buyer.bankDetails ? buyer.bankDetails.bankAddress : ''),
+                bankDocUrl: buyer.bankDetails ? buyer.bankDetails.bankDocUrl : ''
+            };
+        }
+
+        await buyer.save();
+        res.json({
+            message: 'Buyer profile updated successfully by Admin', buyer: {
+                ...buyer.toObject(),
+                bankDetails: {
+                    holderName: buyer.bankDetails?.holderName || '',
+                    bankName: buyer.bankDetails?.bankName || '',
+                    accountNumber: buyer.bankDetails?.accountNumber || '',
+                    ifscCode: buyer.bankDetails?.ifscCode || '',
+                    bankAddress: buyer.bankDetails?.bankAddress || '',
+                    bankDocUrl: buyer.bankDetails?.bankDocUrl || ''
+                }
+            }
+        });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// @route   PUT /api/employee/admin/buyer/reject/:buyerId
+// @desc    Reject/suspend a buyer
+// @access  Private/Admin
+router.put('/admin/buyer/reject/:buyerId', protect, checkAdmin, async (req, res) => {
+    try {
+        const buyer = await User.findOneAndUpdate(
+            { _id: req.params.buyerId, role: 'buyer' },
+            { status: 'rejected' },
+            { new: true }
+        );
+        if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
+        res.json({ message: `${buyer.businessName || buyer.name} rejected`, buyer });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to reject buyer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/buyer/order-status/:orderId
+// @desc    Update order status (accepted ? in-progress ? completed / cancelled)
+// @access  Private/Admin
+router.put('/admin/buyer/order-status/:orderId', protect, checkAdmin, async (req, res) => {
+    try {
+        const { status } = req.body;
+        const validStatuses = ['accepted', 'in-progress', 'completed', 'cancelled'];
+        if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+        const order = await Order.findByIdAndUpdate(
+            req.params.orderId,
+            { status },
+            { new: true }
+        ).populate('buyer', 'name businessName phone');
+
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+        res.json({ message: `Order status updated to ${status}`, order });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to update order status' });
+    }
+});
+
+// @route   PUT /api/employee/admin/buyer/payment/:orderId
+// @desc    Record payment received + farmer payout + mark settlement
+// @access  Private/Admin
+router.put('/admin/buyer/payment/:orderId', protect, checkAdmin, async (req, res) => {
+    try {
+        const { amountReceived, farmerAmount, settlement } = req.body;
+
+        const update = {};
+        if (amountReceived !== undefined) update.amountReceived = Number(amountReceived);
+        if (farmerAmount !== undefined) update.farmerAmount = Number(farmerAmount);
+        if (settlement !== undefined) update.settlement = settlement;
+
+        // Auto-complete order if fully settled
+        if (settlement === 'settled') update.status = 'completed';
+
+        const order = await Order.findByIdAndUpdate(req.params.orderId, update, { new: true })
+            .populate('buyer', 'name businessName phone');
+
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+        res.json({ message: 'Payment updated', order });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to update payment' });
+    }
+});
+
+// =====================================================================
+// BUYER TRADING - CSV EXPORT ROUTES (use Authorization header)
+// =====================================================================
+
+function escapeCSV(val) {
+    if (val === null || val === undefined) return '';
+    return '"' + String(val).replace(/"/g, '""') + '"';
+}
+
+// @route   GET /api/employee/admin/buyer/export/buyers
+// @access  Private/Admin
+router.get('/admin/buyer/export/buyers', protect, checkAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let userQuery = { role: 'buyer' };
+        let orderQuery = {};
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            orderQuery.createdAt = { $gte: start, $lte: end };
+        }
+
+        const buyers = await User.find(userQuery).lean();
+        const orders = await Order.find({ buyer: { $in: buyers.map(b => b._id) }, ...orderQuery }).lean();
+        const rows = buyers.map(b => {
+            const ob = orders.filter(o => String(o.buyer) === String(b._id));
+            const totalQty = ob.reduce((s, o) => s + (o.quantity || 0), 0);
+            const totalVal = ob.reduce((s, o) => s + (o.totalAmount || 0), 0);
+            return [escapeCSV(b.businessName || b.name), escapeCSV(b.phone), escapeCSV(b.email), escapeCSV(b.address), ob.length, totalQty, totalVal, escapeCSV(b.status)].join(',');
+        });
+        const csv = '\uFEFF' + 'Name,Phone,Email,Address,Total Orders,Total Qty (Q),Total Value (Rs),Status\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="Buyers_Export.csv"');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        res.send(csv);
+    } catch (e) { res.status(500).json({ error: 'Export failed' }); }
+});
+
+// @route   GET /api/employee/admin/buyer/export/requests
+// @access  Private/Admin
+router.get('/admin/buyer/export/requests', protect, checkAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { status: 'pending' };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const orders = await Order.find(query).populate('buyer', 'name phone businessName address').lean();
+        const rows = orders.map(o => {
+            const b = o.buyer || {};
+            return [escapeCSV(b.businessName || b.name), escapeCSV(b.phone), escapeCSV(b.address), escapeCSV(o.crop), o.quantity || '', o.pricePerQuintal || '', escapeCSV(o.note), escapeCSV(new Date(o.createdAt).toLocaleDateString('en-IN'))].join(',');
+        });
+        const csv = '\uFEFF' + 'Buyer,Phone,Location,Crop,Quantity (Q),Rate (Rs/Q),Note,Date\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="Buyer_Requests.csv"');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        res.send(csv);
+    } catch (e) { res.status(500).json({ error: 'Export failed' }); }
+});
+
+// @route   GET /api/employee/admin/buyer/export/reconciliation
+// @access  Private/Admin
+router.get('/admin/buyer/export/reconciliation', protect, checkAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { status: { $ne: 'pending' } };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const settings = await Settings.getSettings();
+        const commissionRate = settings.commissions.buyerTrading || 0;
+        const orders = await Order.find(query).populate('buyer', 'name phone businessName address').lean();
+
+        const rows = orders.map(o => {
+            const b = o.buyer || {};
+            const qty = parseQuantityInQuintals(o.quantity);
+            const cropPrice = qty * (o.pricePerQuintal || 0);
+            const commission = o.commission || (cropPrice * commissionRate / 100);
+            const totalPayable = cropPrice + commission;
+            const amountReceived = o.amountReceived || 0;
+            return [escapeCSV(o._id), escapeCSV(new Date(o.createdAt).toLocaleDateString('en-IN')), escapeCSV(b.businessName || b.name), escapeCSV(b.address), escapeCSV(o.crop), qty, totalPayable, amountReceived, totalPayable - amountReceived, o.farmerAmount || 0, escapeCSV(o.settlement || 'pending')].join(',');
+        });
+        const csv = '\uFEFF' + 'Order ID,Date,Buyer,Location,Crop,Quantity (Q),Total Payable (Rs),Amount Received (Rs),Pending (Rs),Farmer Payout (Rs),Settlement\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="Payment_Reconciliation.csv"');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        res.send(csv);
+    } catch (e) { res.status(500).json({ error: 'Export failed' }); }
+});
+
+// ==================== SHOP E-COMMERCE ADMIN (B2B/B2C) ====================
+
+// @route   GET /api/employee/admin/shop/stats
+// @access  Private/Admin
+router.get('/admin/shop/stats', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const [totalShops, activeShops, totalProducts] = await Promise.all([
+            User.countDocuments({ role: 'shop' }),
+            User.countDocuments({ role: 'shop', status: 'approved' }),
+            Item.countDocuments()
+        ]);
+
+        const { startDate, endDate } = req.query;
+        let orderQuery = {};
+        if (startDate || endDate) {
+            orderQuery.createdAt = {};
+            if (startDate) orderQuery.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                orderQuery.createdAt.$lte = end;
+            }
+        } else if (req.query.startDate === undefined && req.query.endDate === undefined) {
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            orderQuery.createdAt = { $gte: startOfMonth };
+        }
+
+        const ordersFiltered = await ShopOrder.find(orderQuery).lean();
+        const totalRevenue = ordersFiltered.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+        const lowStockItems = await Item.find({ stockQty: { $lt: 20 } })
+            .populate('owner', 'businessName name phone')
+            .lean();
+
+        const lowStockAlerts = lowStockItems.map(i => ({
+            _id: i._id,
+            itemName: i.name, 
+            shopName: i.owner?.businessName || i.owner?.name || 'Unknown',
+            shopPhone: i.owner?.phone || '',
+            stock: i.stockQty || 0
+        }));
+
+        res.json({
+            totalShops,
+            activeShops,
+            totalProducts,
+            thisMonthOrders: ordersFiltered.length,
+            thisMonthRevenue: totalRevenue,
+            lowStockCount: lowStockAlerts.length,
+            lowStockAlerts
+        });
+    } catch (e) {
+        console.error('Shop stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch shop stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/shops
+// @access  Private/Admin
+router.get('/admin/shops', protect, checkModule('shops'), async (req, res) => {
+    try {
+        console.log('Fetching all shops for admin...');
+        const { startDate, endDate } = req.query;
+        let query = { role: 'shop' };
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const shops = await User.find(query).sort({ createdAt: -1 }).lean();
+
+        const enriched = await Promise.all(shops.map(async (s) => {
+            const [items, totalOrdersDocs] = await Promise.all([
+                Item.find({ owner: s._id }).select('category').lean(),
+                ShopOrder.find({ owner: s._id }).select('status').lean()
+            ]);
+
+            const categories = [...new Set(items.map(i => i.category || 'General'))];
+
+            return {
+                _id: s._id,
+                businessName: s.businessName || s.name,
+                name: s.name,
+                phone: s.phone,
+                email: s.email,
+                address: s.address,
+                status: s.status,
+                joinedAt: s.createdAt,
+                totalProducts: items.length,
+                categories,
+                totalOrders: totalOrdersDocs.length,
+                fulfilledOrders: totalOrdersDocs.filter(o => o.status === 'DELIVERED').length,
+                // Additional Info
+                aadhaarNumber: s.aadhaarNumber,
+                aadhaarDocUrl: s.aadhaarDocUrl,
+                aadhaarBackDocUrl: s.aadhaarBackDocUrl,
+                panNumber: s.panNumber,
+                panDocUrl: s.panDocUrl,
+                gstNumber: s.gstNumber,
+                licenseNumber: s.licenseNumber,
+                businessLicenseUrl: s.businessLicenseUrl,
+                bankDetails: s.bankDetails
+            };
+        }));
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Shops fetch error:', e);
+        res.status(500).json({ error: 'Failed to fetch shops' });
+    }
+});
+
+// @route   GET /api/employee/admin/shop/orders
+// @access  Private/Admin
+router.get('/admin/shop/orders', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let query = {};
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const orders = await ShopOrder.find(query)
+            .populate('owner', 'businessName name phone address')
+            .populate('buyer', 'name businessName phone address')
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .lean();
+
+        const Settings = require('../models/Settings');
+        const settings = await Settings.getSettings();
+        const shopCommissionPercent = settings.commissions.shop || 0;
+
+        const enriched = orders.map(o => {
+            const itemCount = o.items ? o.items.length : 0;
+            const topItem = o.items && o.items.length > 0 ? o.items[0].name : 'Unknown Item';
+            const itemString = itemCount > 1 ? `${topItem} + ${itemCount - 1} more` : topItem;
+
+            const totalAmount = o.totalAmount || 0;
+            const commissionAmount = Math.round((totalAmount * shopCommissionPercent) / 100);
+            const payoutAmount = totalAmount - commissionAmount;
+
+            return {
+                _id: o._id,
+                shopName: o.owner?.businessName || o.owner?.name || 'Unknown Shop',
+                shopPhone: o.owner?.phone || '',
+                buyerName: o.buyer?.name || o.buyer?.businessName || 'Unknown Buyer',
+                buyerPhone: o.buyer?.phone || '',
+                buyerLocation: o.buyer?.address || o.deliveryAddress?.fullAddress || 'No Address',
+                itemsSummary: itemString,
+                itemCount,
+                totalAmount,
+                commissionAmount,
+                payoutAmount,
+                paymentMode: o.paymentMode || 'CASH',
+                status: o.status,
+                items: o.items || [],
+                deliveryAddress: o.deliveryAddress || {},
+                createdAt: o.createdAt
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Shop orders error:', e);
+        res.status(500).json({ error: 'Failed to fetch shop orders' });
+    }
+});
+
+// @route   GET /api/employee/admin/shop/:id/360
+// @desc    Get complete shop details (360-degree view)
+router.get('/admin/shop/:id/360', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const shopId = req.params.id;
+        const Settings = require('../models/Settings');
+        const [shop, orders, transactions, inventory, settings] = await Promise.all([
+            User.findById(shopId).lean(),
+            ShopOrder.find({ owner: shopId }).populate('buyer', 'name phone address').sort({ createdAt: -1 }).limit(50).lean(),
+            Transaction.find({ recipient: shopId, module: 'Shop' }).sort({ createdAt: -1 }).limit(50).lean(),
+            require('../models/Item').find({ owner: shopId }).lean(),
+            Settings.getSettings()
+        ]);
+
+        if (!shop) return res.status(404).json({ error: 'Shop partner not found' });
+
+        const shopCommissionPercent = settings.commissions.shop || 0;
+
+        const totalSales = orders
+            .filter(o => o.status === 'DELIVERED')
+            .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+        const activeProducts = inventory.filter(p => (p.stockQty || 0) > 0).length;
+
+        res.json({
+            profile: {
+                _id: shop._id,
+                name: shop.name,
+                businessName: shop.businessName || shop.name,
+                phone: shop.phone,
+                email: shop.email || '',
+                address: shop.address,
+                status: shop.status,
+                profilePhotoUrl: shop.profilePhotoUrl || '',
+                aadhaarNumber: shop.aadhaarNumber || '',
+                aadhaarDocUrl: shop.aadhaarDocUrl || '',
+                aadhaarBackDocUrl: shop.aadhaarBackDocUrl || '',
+                panNumber: shop.panNumber || '',
+                panDocUrl: shop.panDocUrl || '',
+                gstNumber: shop.gstNumber || '',
+                licenseNumber: shop.licenseNumber || '',
+                businessLicenseUrl: shop.businessLicenseUrl || '',
+                walletBalance: shop.walletBalance || 0,
+                bankDetails: shop.bankDetails || {},
+                joinedAt: shop.createdAt
+            },
+            stats: {
+                totalOrders: orders.length,
+                totalSales,
+                activeProducts,
+                totalProducts: inventory.length
+            },
+            orders: orders.map(o => {
+                const itemCount = o.items ? o.items.length : 0;
+                const topItem = o.items && o.items.length > 0 ? o.items[0].name : 'Unknown Item';
+                const itemString = itemCount > 1 ? `${topItem} + ${itemCount - 1} more` : topItem;
+
+                const totalAmount = o.totalAmount || 0;
+                const commissionAmount = Math.round((totalAmount * shopCommissionPercent) / 100);
+                const payoutAmount = totalAmount - commissionAmount;
+
+                return {
+                    _id: o._id,
+                    shopName: shop.businessName || shop.name || 'Unknown Shop',
+                    shopPhone: shop.phone || '',
+                    buyerName: o.buyer?.name || o.buyer?.businessName || 'Unknown Buyer',
+                    buyerPhone: o.buyer?.phone || '',
+                    buyerLocation: o.buyer?.address || o.deliveryAddress?.fullAddress || 'No Address',
+                    itemsSummary: itemString,
+                    itemCount,
+                    totalAmount,
+                    commissionAmount,
+                    payoutAmount,
+                    paymentMode: o.paymentMode || 'CASH',
+                    status: o.status,
+                    items: o.items || [],
+                    deliveryAddress: o.deliveryAddress || {},
+                    createdAt: o.createdAt
+                };
+            }),
+            transactions,
+            inventory: inventory.map(p => ({
+                _id: p._id,
+                name: p.name,
+                image: p.imageUrl || '',
+                price: p.price,
+                stock: p.stockQty,
+                category: p.category,
+                hasVariants: p.hasVariants || false,
+                variants: p.variants || []
+            }))
+        });
+    } catch (e) {
+        console.error('Shop 360 error:', e);
+        res.status(500).json({ error: 'Failed to fetch details' });
+    }
+});
+
+// @route   POST /api/employee/admin/shop/:id/wallet/transaction
+router.post('/admin/shop/:id/wallet/transaction', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const { amount, type, note, paymentMode } = req.body;
+        const shop = await User.findById(req.params.id);
+        if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
+        const numAmount = Number(amount);
+        if (type === 'Credit') {
+            shop.walletBalance = (shop.walletBalance || 0) + numAmount;
+        } else {
+            shop.walletBalance = (shop.walletBalance || 0) - numAmount;
+        }
+
+        await shop.save();
+
+        const transaction = await Transaction.create({
+            transactionId: `ADM-SHOP-${Date.now()}-${req.params.id.slice(-4)}`,
+            recipient: shop._id,
+            module: 'Shop',
+            amount: numAmount,
+            type: type,
+            paymentMode: paymentMode || 'NexCard Wallet',
+            status: 'Completed',
+            performedBy: req.user.id,
+            note: note || `Admin manual ${type}`
+        });
+
+        res.json({ message: 'Transaction successful', balance: shop.walletBalance, transaction });
+    } catch (e) {
+        res.status(500).json({ error: 'Transaction failed' });
+    }
+});
+
+// @route   PUT /api/employee/admin/shop/approve/:id
+// @access  Private/Admin
+router.put('/admin/shop/approve/:id', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const shop = await User.findById(req.params.id);
+        if (!shop) return res.status(404).json({ error: 'Shop not found' });
+        shop.status = 'approved';
+        await shop.save();
+        res.json({ message: 'Shop approved' });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   PUT /api/employee/admin/shop/block/:id
+// @access  Private/Admin
+router.put('/admin/shop/block/:id', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const shop = await User.findById(req.params.id);
+        if (!shop) return res.status(404).json({ error: 'Shop not found' });
+        shop.status = 'blocked';
+        await shop.save();
+        res.json({ message: 'Shop blocked' });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   PUT /api/employee/admin/shop/update/:id
+// @desc    Update shop partner details
+// @access  Private/Admin
+router.put('/admin/shop/update/:id', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const shop = await User.findById(req.params.id);
+        if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
+        const {
+            name, businessName, email, phone, address,
+            aadhaarNumber, panNumber, gstNumber, licenseNumber,
+            bankDetails
+        } = req.body;
+
+        if (name) shop.name = name;
+        if (businessName) shop.businessName = businessName;
+        if (email) shop.email = email;
+        if (phone) shop.phone = phone;
+        if (address) shop.address = address;
+        if (aadhaarNumber) shop.aadhaarNumber = aadhaarNumber;
+        if (panNumber) shop.panNumber = panNumber;
+        if (gstNumber) shop.gstNumber = gstNumber;
+        if (licenseNumber) shop.licenseNumber = licenseNumber;
+
+        if (bankDetails) {
+            if (!shop.bankDetails) shop.bankDetails = {};
+            if (bankDetails.holderName !== undefined) shop.bankDetails.holderName = bankDetails.holderName;
+            if (bankDetails.bankName !== undefined) shop.bankDetails.bankName = bankDetails.bankName;
+            if (bankDetails.accountNumber !== undefined) shop.bankDetails.accountNumber = bankDetails.accountNumber;
+            if (bankDetails.ifscCode !== undefined) shop.bankDetails.ifscCode = bankDetails.ifscCode;
+            if (bankDetails.bankAddress !== undefined) shop.bankDetails.bankAddress = bankDetails.bankAddress;
+            shop.markModified('bankDetails');
+        }
+
+        await shop.save();
+        res.json({ message: 'Shop details updated successfully' });
+    } catch (e) {
+        console.error('Update shop error:', e);
+        res.status(500).json({ error: 'Failed to update shop' });
+    }
+});
+
+// =============================================
+// ADMIN: LABOUR AGGREGATION MANAGEMENT ROUTES
+// =============================================
+
+// @route   GET /api/employee/admin/labour/stats
+// @desc    Get KPI stats for Labour dashboard (Admin)
+// @access  Private/Admin
+router.get('/admin/labour/stats', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let start, end;
+        if (hasFilter) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        const labourRoleQuery = { $or: [{ role: 'labour' }, { role: 'labourer' }, { labourDetails: { $exists: true } }] };
+
+        const labourQuery = hasFilter ? { ...labourRoleQuery, createdAt: { $gte: start, $lte: end } } : labourRoleQuery;
+        const activeLabourQuery = hasFilter ? { ...labourRoleQuery, 'labourDetails.availability': 'active', createdAt: { $gte: start, $lte: end } } : { ...labourRoleQuery, 'labourDetails.availability': 'active' };
+        const kycQuery = hasFilter ? { ...labourRoleQuery, status: 'approved', createdAt: { $gte: start, $lte: end } } : { ...labourRoleQuery, status: 'approved' };
+        const activeJobsQuery = hasFilter ? { status: 'In Progress', createdAt: { $gte: start, $lte: end } } : { status: 'In Progress' };
+        const totalCompletedJobsQuery = hasFilter ? { status: 'Completed', createdAt: { $gte: start, $lte: end } } : { status: 'Completed' };
+
+        const totalLabourers = await User.countDocuments(labourQuery);
+        const activeLabourers = await User.countDocuments(activeLabourQuery);
+        const kycVerified = await User.countDocuments(kycQuery);
+        const activeJobs = await LabourJob.countDocuments(activeJobsQuery);
+        const totalJobsCompleted = await LabourJob.countDocuments(totalCompletedJobsQuery);
+
+        let revenueQuery = { status: 'Completed' };
+        if (hasFilter) {
+            revenueQuery.createdAt = { $gte: start, $lte: end };
+        } else {
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            revenueQuery.createdAt = { $gte: startOfMonth };
+        }
+
+        const recentJobs = await LabourJob.find(revenueQuery);
+        const thisMonthRevenue = recentJobs.reduce((sum, job) => sum + (job.amount || 0), 0);
+
+        res.json({
+            totalLabourers,
+            activeLabourers,
+            kycVerified,
+            activeJobs,
+            totalJobsCompleted,
+            thisMonthRevenue
+        });
+    } catch (e) {
+        console.error('Admin labour stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch labour stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/labours
+// @desc    Get all labourers with their skills and aggregated job stats
+// @access  Private/Admin
+router.get('/admin/labours', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { $or: [{ role: 'labour' }, { role: 'labourer' }, { labourDetails: { $exists: true } }] };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const labours = await User.find(query)
+            .select('name businessName phone email address status employeeCode createdAt aadhaarNumber aadhaarDocUrl aadhaarBackDocUrl labourDetails bankDetails walletBalance ratePerDay ratePerHour jobNotificationOn whatsappOn maxDistanceKm')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const enriched = labours.map(labour => {
+            return {
+                _id: labour._id,
+                name: labour.businessName || labour.name,
+                labourCode: labour.employeeCode || labour._id.toString().substring(18),
+                phone: labour.phone,
+                email: labour.email || '',
+                address: labour.address || '',
+                location: labour.address || '',
+                status: labour.status,
+                joinedAt: labour.createdAt,
+                skills: labour.labourDetails?.skills || [],
+                availability: labour.labourDetails?.availability || 'inactive',
+                jobsDone: labour.labourDetails?.jobsCompleted || 0,
+                rating: labour.labourDetails?.rating || 0,
+                labourDetails: labour.labourDetails || {},
+                aadhaarNumber: labour.aadhaarNumber || '',
+                aadhaarDocUrl: labour.aadhaarDocUrl || '',
+                aadhaarBackDocUrl: labour.aadhaarBackDocUrl || '',
+                walletBalance: labour.walletBalance || 0,
+                ratePerDay: labour.ratePerDay || 700,
+                ratePerHour: labour.ratePerHour || 90,
+                bankDetails: labour.bankDetails || {},
+                jobNotificationOn: labour.jobNotificationOn,
+                whatsappOn: labour.whatsappOn,
+                maxDistanceKm: labour.maxDistanceKm || 15,
+                createdAt: labour.createdAt
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Admin labourers fetch error:', e);
+        res.status(500).json({ error: 'Failed to fetch labourers' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/update/:id
+// @desc    Admin: Update any field of a labourer (bypassing restriction)
+// @access  Private/Admin
+router.put('/admin/labour/update/:id', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user || user.role !== 'labour') return res.status(404).json({ error: 'Labourer not found' });
+
+        // Update basic fields
+        if (req.body.name) {
+            user.name = req.body.name;
+            user.businessName = req.body.name;
+        }
+        if (req.body.phone) user.phone = req.body.phone;
+        if (req.body.email) user.email = req.body.email;
+        if (req.body.address) user.address = req.body.address;
+        if (req.body.aadhaarNumber) user.aadhaarNumber = req.body.aadhaarNumber;
+
+        // Update Bank Details
+        if (req.body.bankDetails) {
+            const b = req.body.bankDetails;
+            user.bankDetails = {
+                holderName: b.holderName || (user.bankDetails ? user.bankDetails.holderName : ''),
+                bankName: b.bankName || (user.bankDetails ? user.bankDetails.bankName : ''),
+                accountNumber: b.accountNumber || (user.bankDetails ? user.bankDetails.accountNumber : ''),
+                ifscCode: b.ifscCode || (user.bankDetails ? user.bankDetails.ifscCode : ''),
+                bankAddress: b.bankAddress || (user.bankDetails ? user.bankDetails.bankAddress : ''),
+                bankDocUrl: b.bankDocUrl || (user.bankDetails ? user.bankDetails.bankDocUrl : '')
+            };
+        }
+
+        // Update Labour Details (Skills & Description)
+        if (user.role === 'labour') {
+            if (!user.labourDetails) user.labourDetails = { skills: [] };
+            if (req.body.skills !== undefined) {
+                user.labourDetails.skills = Array.isArray(req.body.skills) ? req.body.skills : [req.body.skills];
+            }
+            if (req.body.skillDescription !== undefined) {
+                user.labourDetails.skillDescription = req.body.skillDescription;
+            }
+            user.markModified('labourDetails');
+        }
+
+        await user.save();
+        res.json({ message: 'Labourer profile updated successfully by Admin', user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// @route   GET /api/employee/admin/labour/jobs
+// @desc    Get all recent labour jobs
+// @access  Private/Admin
+router.get('/admin/labour/jobs', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = {};
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const jobs = await LabourJob.find(query)
+            .populate('labour', 'name businessName address')
+            .populate('farmer', 'name address')
+            .populate('assignedTo', 'name employeeCode')
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .lean();
+
+        const enriched = jobs.map(job => {
+            return {
+                _id: job._id,
+                labourName: job.labour?.businessName || job.labour?.name || 'Unknown',
+                labourLocation: job.labour?.address || '',
+                farmerName: job.farmer?.name || 'Unknown',
+                farmerLocation: job.farmer?.address || '',
+                workType: job.workType,
+                priceType: job.priceType || 'daily',
+                hours: job.hours || 0,
+                days: job.days || 0,
+                hoursWorked: job.hoursWorked,
+                acresCovered: job.acresCovered,
+                amount: job.amount,
+                platformCommission: job.platformCommission || 0,
+                ownerPayout: job.ownerPayout || 0,
+                fromDate: job.fromDate,
+                toDate: job.toDate,
+                rating: job.rating,
+                status: job.status,
+                assignedTo: job.assignedTo?._id || null,
+                assignedEmployeeName: job.assignedTo?.name || null,
+                assignedEmployeeId: job.assignedTo?.employeeCode || null,
+                createdAt: job.createdAt
+            };
+        });
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Admin labour jobs fetch error:', e);
+        res.status(500).json({ error: 'Failed to fetch labour jobs' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/labour/jobs/:id/assign
+// @desc    Assign a labour job to an employee
+// @access  Private/Admin
+router.patch('/admin/labour/jobs/:id/assign', protect, checkModule('labour'), async (req, res) => {
+    try {
+        console.log('--- LABOUR ASSIGN REQUEST RECEIVED ---');
+        console.log('ID:', req.params.id);
+        console.log('Body:', req.body);
+
+        const { employeeId } = req.body;
+        if (!employeeId) return res.status(400).json({ error: 'Employee ID is required' });
+
+        const job = await LabourJob.findByIdAndUpdate(
+            req.params.id,
+            { assignedTo: employeeId },
+            { new: true }
+        );
+
+        if (!job) {
+            console.log('Job not found:', req.params.id);
+            return res.status(404).json({ error: 'Job not found' });
+        }
+
+        console.log('Job assigned successfully');
+        res.json({ message: 'Job assigned successfully', job });
+    } catch (e) {
+        console.error('Admin labour job assign error:', e);
+        res.status(500).json({ error: 'Failed to assign job: ' + e.message });
+    }
+});
+// @desc    Export all labourers as CSV
+// @access  Private/Admin
+router.get('/admin/labour/export', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { role: 'labour' };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const labourers = await User.find(query).lean();
+        const rows = labourers.map(l => {
+            const skills = (l.labourDetails?.skills || []).join('; ');
+            const availability = l.labourDetails?.availability || 'inactive';
+            const jobsDone = l.labourDetails?.jobsCompleted || 0;
+            const rating = l.labourDetails?.rating || 0;
+
+            return [
+                escapeCSV(l.businessName || l.name),
+                escapeCSV(l.phone),
+                escapeCSV(l.address || ''),
+                escapeCSV(skills),
+                escapeCSV(availability),
+                jobsDone,
+                rating,
+                escapeCSV(l.status),
+                escapeCSV(new Date(l.createdAt).toLocaleDateString('en-IN'))
+            ].join(',');
+        });
+
+        const csv = '\uFEFF' + 'Name,Phone,Location,Skills,Availability,Jobs Done,Rating,KYC Status,Joined Date\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="Labourers_Export.csv"');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        res.send(csv);
+    } catch (e) {
+        console.error('Labour export error:', e);
+        res.status(500).json({ error: 'Export failed' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/approve/:id
+// @desc    Approve a labourer (Requires uploaded KYC documents)
+// @access  Private/Admin
+router.put('/admin/labour/approve/:id', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const labour = await User.findById(req.params.id);
+        if (!labour) return res.status(404).json({ error: 'Labourer not found' });
+
+        const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+        const bank = labour.bankDetails || {};
+        const hasDoc = (
+            isValidDoc(labour.aadhaarDocUrl) ||
+            isValidDoc(labour.aadhaarFrontUrl) ||
+            isValidDoc(labour.aadhaarFront) ||
+            isValidDoc(labour.aadhaarBackDocUrl) ||
+            isValidDoc(labour.aadhaarBackUrl) ||
+            isValidDoc(labour.aadhaarBack) ||
+            isValidDoc(labour.panDocUrl) ||
+            isValidDoc(labour.panCardUrl) ||
+            isValidDoc(labour.panDoc) ||
+            isValidDoc(labour.passbookDocUrl) ||
+            isValidDoc(labour.passbookUrl) ||
+            isValidDoc(bank.passbookUrl) ||
+            isValidDoc(bank.passbookDoc)
+        );
+
+        if (!hasDoc) {
+            return res.status(400).json({ error: 'KYC approval failed: No identification documents uploaded for this labourer. Ask user to upload document first.' });
+        }
+
+        labour.status = 'approved';
+        await labour.save();
+        res.json({ message: 'Labourer approved successfully' });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to approve labourer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/reject/:id
+// @desc    Reject/Suspend a labourer
+// @access  Private/Admin
+router.put('/admin/labour/reject/:id', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const labour = await User.findById(req.params.id);
+        if (!labour) return res.status(404).json({ error: 'Labourer not found' });
+        labour.status = 'rejected';
+        await labour.save();
+        res.json({ message: 'Labourer suspended' });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to reject labourer' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/:id/reject-doc
+// @desc    Reject a specific uploaded document so partner can re-upload
+// @access  Private/Admin
+router.put('/admin/labour/:id/reject-doc', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { docKey, reason } = req.body;
+        const labour = await User.findById(req.params.id);
+        if (!labour) return res.status(404).json({ error: 'Labourer not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const docTitleMap = {
+            aadhaarFront: 'Aadhaar Card (Front)',
+            aadhaarBack: 'Aadhaar Card (Back)',
+            panCard: 'PAN Card / ID Proof',
+            passbook: 'Bank Passbook / Cheque',
+            profilePhoto: 'Profile Photo'
+        };
+
+        if (docKey === 'aadhaarFront') {
+            labour.aadhaarDocUrl = '';
+            labour.aadhaarFrontUrl = '';
+            labour.aadhaarFront = '';
+        } else if (docKey === 'aadhaarBack') {
+            labour.aadhaarBackDocUrl = '';
+            labour.aadhaarBackUrl = '';
+            labour.aadhaarBack = '';
+        } else if (docKey === 'panCard') {
+            labour.panDocUrl = '';
+            labour.panCardUrl = '';
+            labour.panDoc = '';
+        } else if (docKey === 'passbook') {
+            labour.passbookDocUrl = '';
+            labour.passbookUrl = '';
+            if (labour.bankDetails) {
+                labour.bankDetails.passbookUrl = '';
+                labour.bankDetails.passbookDoc = '';
+            }
+        } else if (docKey === 'profilePhoto') {
+            labour.profilePhotoUrl = '';
+            labour.photoUrl = '';
+            labour.photo = '';
+        }
+
+        labour.status = 'pending'; // Reset status to pending for re-upload & re-verification
+        labour.markModified('bankDetails');
+
+        await labour.save();
+        res.json({ message: `${docTitleMap[docKey] || 'Document'} rejected successfully. Partner can now re-upload.` });
+    } catch (e) {
+        console.error('Document rejection error:', e);
+        res.status(500).json({ error: 'Failed to reject document' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/availability/:id
+// @desc    Update labourer availability
+// @access  Private/Admin
+router.put('/admin/labour/availability/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { availability } = req.body;
+        const labour = await User.findById(req.params.id);
+        if (!labour) return res.status(404).json({ error: 'Labourer not found' });
+        labour.labourDetails.availability = availability;
+        await labour.save();
+        res.json({ message: `Availability set to ${availability}` });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to update availability' });
+    }
+});
+
+// =====================================================================
+// EQUIPMENT RENTAL   ADMIN ROUTES
+// =====================================================================
+
+// @access  Private/Admin
+router.get('/admin/rental/stats', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const filter = {};
+        if (startDate || endDate) {
+            filter.createdAt = {};
+            if (startDate) filter.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = end;
+            }
+        }
+
+        const totalBookings = await Rental.countDocuments(filter);
+        const activeBookings = await Rental.countDocuments({ ...filter, status: { $in: ['New', 'Accepted', 'In Progress'] } });
+        const completedBookings = await Rental.countDocuments({ ...filter, status: 'Completed' });
+        const cancelledBookings = await Rental.countDocuments({ ...filter, status: 'Cancelled' });
+
+        // Revenue & commission from completed bookings
+        const revenueMatch = { status: 'Completed' };
+        if (filter.createdAt) {
+            revenueMatch.createdAt = filter.createdAt;
+        }
+        const revenueAgg = await Rental.aggregate([
+            { $match: revenueMatch },
+            { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' }, totalCommission: { $sum: '$platformCommission' } } }
+        ]);
+        const totalRevenue = revenueAgg[0]?.totalRevenue || 0;
+        const totalCommission = revenueAgg[0]?.totalCommission || 0;
+
+        // Cash collection stats
+        const cashCollected = await Rental.countDocuments({ ...filter, cashCollected: true });
+        const cashPending = await Rental.countDocuments({ ...filter, status: 'Completed', cashCollected: false });
+
+        // Total active machines & equipment providers
+        const totalMachines = await Machine.countDocuments();
+        const totalProviders = await User.countDocuments({ role: 'equipment' });
+
+        res.json({
+            totalBookings, activeBookings, completedBookings, cancelledBookings,
+            totalRevenue, totalCommission,
+            cashCollected, cashPending,
+            totalMachines, totalProviders
+        });
+    } catch (e) {
+        console.error('Admin rental stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch rental stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/bookings
+// @desc    Get all rental bookings with full details
+// @access  Private/Admin
+router.get('/admin/rental/bookings', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { status, startDate, endDate, page = 1, limit = 50 } = req.query;
+        const filter = status && status !== 'all' ? { status } : {};
+        if (startDate || endDate) {
+            filter.createdAt = {};
+            if (startDate) filter.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = end;
+            }
+        }
+
+        const bookings = await Rental.find(filter)
+            .populate('machine')
+            .populate('owner', 'name phone address businessName')
+            .populate('buyer', 'name phone address')
+            .populate('assignedFieldExec', 'name phone')
+            .populate('cashCollectedBy', 'name phone')
+            .sort({ createdAt: -1 })
+            .skip((Number(page) - 1) * Number(limit))
+            .limit(Number(limit));
+
+        const total = await Rental.countDocuments(filter);
+
+        const enriched = bookings.map(b => {
+            const days = b.fromDate && b.toDate
+                ? Math.max(1, Math.ceil((new Date(b.toDate) - new Date(b.fromDate)) / (1000 * 60 * 60 * 24)))
+                : 1;
+            return {
+                _id: b._id,
+                bookingId: 'BK-' + b._id.toString().substring(18).toUpperCase(),
+                machine: b.machine ? {
+                    _id: b.machine._id,
+                    name: b.machine.name || 'N/A',
+                    category: b.machine.category || '',
+                    brand: b.machine.brand || '',
+                    model: b.machine.model || '',
+                    registrationNumber: b.machine.registrationNumber || '',
+                    village: b.machine.village || '',
+                    priceDay: b.machine.priceDay || 0,
+                    priceHour: b.machine.priceHour || 0,
+                    priceKattha: b.machine.priceKattha || 0,
+                    images: b.machine.images || []
+                } : null,
+                provider: { name: b.owner?.businessName || b.owner?.name || 'N/A', phone: b.owner?.phone || '', address: b.owner?.address || '' },
+                farmer: { name: b.buyer?.name || 'N/A', phone: b.buyer?.phone || '', address: b.buyer?.address || '' },
+                fromDate: b.fromDate,
+                toDate: b.toDate,
+                days,
+                totalAmount: b.totalAmount || 0,
+                platformCommission: b.platformCommission || 0,
+                ownerPayout: b.ownerPayout || 0,
+                status: b.status,
+                cancelReason: b.cancelReason || '',
+                assignedFieldExec: b.assignedFieldExec ? { id: b.assignedFieldExec._id, name: b.assignedFieldExec.name, phone: b.assignedFieldExec.phone } : null,
+                cashCollected: b.cashCollected,
+                cashCollectedAt: b.cashCollectedAt,
+                cashCollectedBy: b.cashCollectedBy ? { name: b.cashCollectedBy.name } : null,
+                cashNote: b.cashNote || '',
+                purpose: b.purpose || '',
+                priceType: b.priceType || 'daily',
+                hours: b.hours || 0,
+                kattha: b.kattha || 0,
+                selectedSubMachinery: b.selectedSubMachinery || [],
+                createdAt: b.createdAt
+            };
+        });
+
+        res.json({ bookings: enriched, total, page: Number(page) });
+    } catch (e) {
+        console.error('Admin rental bookings error:', e);
+        res.status(500).json({ error: 'Failed to fetch rental bookings' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/bookings/:id/status
+// @desc    Admin update rental status
+// @access  Private/Admin
+router.put('/admin/rental/bookings/:id/status', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { status, cancelReason } = req.body;
+        const validStatuses = ['New', 'Accepted', 'In Progress', 'Completed', 'Cancelled'];
+        if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+        const rental = await Rental.findById(req.params.id);
+        if (!rental) return res.status(404).json({ error: 'Rental not found' });
+
+        rental.status = status;
+        if (status === 'Cancelled' && cancelReason) rental.cancelReason = cancelReason;
+
+        // Auto-calculate commission when completing
+        if (status === 'Completed' && rental.totalAmount > 0 && rental.platformCommission === 0) {
+            rental.platformCommission = Math.round(rental.totalAmount * 0.05);
+            rental.ownerPayout = rental.totalAmount - rental.platformCommission;
+        }
+        await rental.save();
+        res.json({ message: `Status updated to ${status}`, rental });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to update status' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/bookings/:id/assign
+// @desc    Assign a field executive to a rental booking
+// @access  Private/Admin
+router.put('/admin/rental/bookings/:id/assign', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { fieldExecId } = req.body;
+        const rental = await Rental.findById(req.params.id);
+        if (!rental) return res.status(404).json({ error: 'Rental not found' });
+
+        const fe = await User.findOne({ _id: fieldExecId, role: 'field_executive' });
+        if (!fe) return res.status(404).json({ error: 'Field executive not found' });
+
+        rental.assignedFieldExec = fieldExecId;
+        await rental.save();
+        res.json({ message: `Assigned to ${fe.name}` });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to assign field executive' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/bookings/:id/collect
+// @desc    Mark cash as collected for a completed booking
+// @access  Private/Admin
+router.put('/admin/rental/bookings/:id/collect', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { cashNote } = req.body;
+        const rental = await Rental.findById(req.params.id);
+        if (!rental) return res.status(404).json({ error: 'Rental not found' });
+
+        rental.cashCollected = true;
+        rental.cashCollectedAt = new Date();
+        rental.cashCollectedBy = req.user.id;
+        if (cashNote) rental.cashNote = cashNote;
+        await rental.save();
+        res.json({ message: 'Cash collection marked successfully' });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to mark cash collection' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/field-execs
+// @desc    Get all field executives for assignment dropdown
+// @access  Private/Admin
+router.get('/admin/rental/field-execs', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const fes = await User.find({ role: 'field_executive' }).select('name phone address').lean();
+        res.json(fes);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch field executives' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/cash-collections
+// @desc    Get all cash collections (completed + collected)
+// @access  Private/Admin
+router.get('/admin/rental/cash-collections', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const collections = await Rental.find({ cashCollected: true })
+            .populate('machine', 'name')
+            .populate('owner', 'name phone businessName')
+            .populate('buyer', 'name phone')
+            .populate('cashCollectedBy', 'name')
+            .sort({ cashCollectedAt: -1 });
+
+        const rows = collections.map(c => ({
+            _id: c._id,
+            bookingId: 'BK-' + c._id.toString().substring(18).toUpperCase(),
+            machine: c.machine?.name || 'N/A',
+            provider: c.owner?.businessName || c.owner?.name || 'N/A',
+            farmer: c.buyer?.name || 'N/A',
+            totalAmount: c.totalAmount || 0,
+            commission: c.platformCommission || 0,
+            collectedBy: c.cashCollectedBy?.name || 'Admin',
+            collectedAt: c.cashCollectedAt,
+            note: c.cashNote || ''
+        }));
+
+        res.json(rows);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch cash collections' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/export
+// @desc    Export all rental bookings as CSV
+// @access  Private/Admin
+
+// @route   GET /api/employee/admin/rental/partners
+// @desc    Get all equipment partners with their machine counts and booking stats
+// @access  Private/Admin
+router.get('/admin/rental/partners', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const filter = { role: 'equipment' };
+        if (startDate || endDate) {
+            filter.createdAt = {};
+            if (startDate) filter.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = end;
+            }
+        }
+
+        const partners = await User.find(filter)
+            .select('name businessName phone email address status createdAt aadhaarDocUrl aadhaarBackDocUrl bankDetails profilePhotoUrl')
+            .sort({ createdAt: -1 });
+
+        const enriched = await Promise.all(partners.map(async (p) => {
+            const bookingFilter = { owner: p._id };
+            if (startDate || endDate) {
+                bookingFilter.createdAt = {};
+                if (startDate) bookingFilter.createdAt.$gte = new Date(startDate);
+                if (endDate) {
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    bookingFilter.createdAt.$lte = end;
+                }
+            }
+
+            const [machineCount, totalBookings] = await Promise.all([
+                Machine.countDocuments({ owner: p._id }),
+                Rental.countDocuments(bookingFilter)
+            ]);
+
+            return {
+                _id: p._id,
+                name: p.businessName || p.name,
+                phone: p.phone,
+                email: p.email || '',
+                location: p.address || '',
+                status: p.status,
+                joinedAt: p.createdAt,
+                machineCount,
+                totalBookings,
+                documentUrl: p.aadhaarDocUrl || '',
+                aadhaarDocUrl: p.aadhaarDocUrl || '',
+                aadhaarBackDocUrl: p.aadhaarBackDocUrl || '',
+                bankDetails: p.bankDetails || {},
+                profilePhotoUrl: p.profilePhotoUrl || ''
+            };
+        }));
+
+        res.json(enriched);
+    } catch (e) {
+        console.error('Admin rental partners fetch error:', e);
+        res.status(500).json({ error: 'Failed to fetch equipment partners' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/partners/:id/status
+// @desc    Update partner status (approve/block/pending)
+// @access  Private/Admin
+router.put('/admin/rental/partners/:id/status', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const valid = ['pending', 'approved', 'blocked', 'rejected'];
+        if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+
+        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+        partner.status = status;
+        await partner.save();
+        res.json({ message: `Partner status updated to ${status}`, status: partner.status });
+    } catch (e) {
+        console.error('Partner status update error:', e);
+        res.status(500).json({ error: 'Failed to update partner status' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/partners/:id/bank
+// @desc    Update partner bank details
+// @access  Private/Admin
+router.put('/admin/rental/partners/:id/bank', protect, checkModule('equipment'), async (req, res) => {
+    console.log(`[DEBUG] Bank update request for ID: ${req.params.id}`);
+    try {
+        const { holderName, bankName, accountNumber, ifscCode } = req.body;
+        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+        const currentDetails = partner.bankDetails || {};
+        partner.bankDetails = {
+            holderName: holderName || currentDetails.holderName || '',
+            bankName: bankName || currentDetails.bankName || '',
+            accountNumber: accountNumber || currentDetails.accountNumber || '',
+            ifscCode: ifscCode || currentDetails.ifscCode || '',
+            bankAddress: currentDetails.bankAddress || '',
+            bankDocUrl: currentDetails.bankDocUrl || ''
+        };
+
+        await partner.save();
+        res.json({ message: 'Bank details updated successfully', bankDetails: partner.bankDetails });
+    } catch (e) {
+        console.error('Partner bank update error:', e);
+        res.status(500).json({ error: 'Failed to update bank details' });
+    }
+});
+
+// @route   PUT /api/employee/admin/rental/partners/:id/profile
+// @desc    Update partner profile details (name, businessName, phone, email, address)
+// @access  Private/Admin
+router.put('/admin/rental/partners/:id/profile', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { name, businessName, phone, email, address } = req.body;
+        if (!name || !phone) return res.status(400).json({ error: 'Name and Phone are required' });
+
+        const partner = await User.findOne({ _id: req.params.id, role: 'equipment' });
+        if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+        partner.name = name;
+        partner.businessName = businessName;
+        partner.phone = phone;
+        partner.email = email;
+        partner.address = address || partner.address;
+
+        await partner.save();
+        res.json({ message: 'Profile updated successfully', partner });
+    } catch (e) {
+        console.error('Partner profile update error:', e);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/partners/:id/wallet
+// @desc    Get partner wallet balance and equipment transactions
+// @access  Private/Admin
+router.get('/admin/rental/partners/:id/wallet', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('walletBalance name');
+        if (!user) return res.status(404).json({ error: 'Partner not found' });
+
+        const transactions = await Transaction.find({
+            recipient: req.params.id,
+            module: 'Equipment'
+        }).sort({ createdAt: -1 }).limit(100);
+
+        res.json({
+            balance: user.walletBalance || 0,
+            transactions
+        });
+    } catch (e) {
+        console.error('Fetch partner wallet error:', e);
+        res.status(500).json({ error: 'Failed to fetch wallet data' });
+    }
+});
+
+// @route   POST /api/employee/admin/rental/partners/:id/wallet/transaction
+// @desc    Admin: Perform manual Credit/Debit on partner wallet
+// @access  Private/Admin
+router.post('/admin/rental/partners/:id/wallet/transaction', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const { type, amount, note, paymentMode } = req.body;
+        const amt = Number(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+        if (!['Credit', 'Debit'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Partner not found' });
+
+        if (type === 'Debit' && user.walletBalance < amt) {
+            return res.status(400).json({ error: 'Insufficient wallet balance for this debit' });
+        }
+
+        // Update balance
+        if (type === 'Credit') user.walletBalance = (user.walletBalance || 0) + amt;
+        else user.walletBalance = (user.walletBalance || 0) - amt;
+
+        await user.save();
+
+        // Create transaction record
+        const txnId = `TXN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const txn = new Transaction({
+            transactionId: txnId,
+            recipient: user._id,
+            module: 'Equipment',
+            amount: amt,
+            type: type === 'Credit' ? 'Credit' : 'Payout', // Map to model enum
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            note: note || `Manual ${type} by Admin`,
+            performedBy: req.user.id
+        });
+        await txn.save();
+
+        res.json({
+            message: `Wallet ${type}ed successfully`,
+            balance: user.walletBalance,
+            transaction: txn
+        });
+    } catch (e) {
+        console.error('Manual transaction error:', e);
+        res.status(500).json({ error: 'Failed to perform transaction' });
+    }
+});
+
+// ==========================================
+// LABOUR PARTNER MANAGEMENT (Admin)
+// ==========================================
+
+// @route   GET /api/employee/admin/labour/partners/:id/jobs
+// @desc    Get all jobs for a specific labourer
+// @access  Private/Admin
+router.get('/admin/labour/partners/:id/jobs', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const jobs = await LabourJob.find({ labour: req.params.id })
+            .populate('farmer', 'name phone profilePhotoUrl')
+            .sort({ createdAt: -1 });
+        res.json(jobs);
+    } catch (e) {
+        console.error('Fetch labourer jobs error:', e);
+        res.status(500).json({ error: 'Failed to fetch jobs' });
+    }
+});
+
+// @route   GET /api/employee/admin/labour/partners/:id/wallet
+// @desc    Get labourer wallet balance and transactions
+// @access  Private/Admin
+router.get('/admin/labour/partners/:id/wallet', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('walletBalance name');
+        if (!user) return res.status(404).json({ error: 'Labourer not found' });
+
+        const transactions = await Transaction.find({
+            recipient: req.params.id,
+            module: 'Labour'
+        }).sort({ createdAt: -1 }).limit(100);
+
+        res.json({
+            balance: user.walletBalance || 0,
+            transactions
+        });
+    } catch (e) {
+        console.error('Fetch labour wallet error:', e);
+        res.status(500).json({ error: 'Failed to fetch wallet data' });
+    }
+});
+
+// @route   POST /api/employee/admin/labour/partners/:id/wallet/transaction
+// @desc    Admin: Perform manual Credit/Debit on labour wallet
+// @access  Private/Admin
+router.post('/admin/labour/partners/:id/wallet/transaction', protect, checkModule('labour'), async (req, res) => {
+    try {
+        const { type, amount, note, paymentMode } = req.body;
+        const amt = Number(amount);
+        if (isNaN(amt) || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
+        if (!['Credit', 'Debit'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Labourer not found' });
+
+        if (type === 'Debit' && user.walletBalance < amt) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        if (type === 'Credit') user.walletBalance = (user.walletBalance || 0) + amt;
+        else user.walletBalance = (user.walletBalance || 0) - amt;
+
+        await user.save();
+
+        const txn = new Transaction({
+            transactionId: `TXN-LBR-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            recipient: user._id,
+            module: 'Labour',
+            amount: amt,
+            type: type === 'Credit' ? 'Credit' : 'Payout',
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            note: note || `Manual ${type} by Admin`,
+            performedBy: req.user.id
+        });
+        await txn.save();
+
+        res.json({ message: `Wallet ${type}ed successfully`, balance: user.walletBalance });
+    } catch (e) {
+        console.error('Labour manual transaction error:', e);
+        res.status(500).json({ error: 'Failed to perform transaction' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/partners/:id/machines
+// @desc    Get all machines for a specific partner
+// @access  Private/Admin
+router.get('/admin/rental/partners/:id/machines', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const machines = await Machine.find({ owner: req.params.id }).sort({ createdAt: -1 });
+        res.json(machines);
+    } catch (e) {
+        console.error('Fetch partner machines error:', e);
+        res.status(500).json({ error: 'Failed to fetch machines' });
+    }
+});
+
+// @route   GET /api/employee/admin/rental/partners/:id/bookings
+// @desc    Get all rental bookings for a specific partner
+// @access  Private/Admin
+router.get('/admin/rental/partners/:id/bookings', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const bookings = await Rental.find({ owner: req.params.id })
+            .populate('buyer', 'name phone profilePhotoUrl')
+            .populate('machine', 'name category images')
+            .sort({ createdAt: -1 });
+        res.json(bookings);
+    } catch (e) {
+        console.error('Fetch partner bookings error:', e);
+        res.status(500).json({ error: 'Failed to fetch bookings' });
+    }
+});
+
+// ==========================================
+// KYC & COMPLIANCE MANAGEMENT (Admin)
+// ==========================================
+
+// @route   GET /api/employee/admin/kyc/stats
+// @desc    Get KYC verification statistics
+// @access  Private/Admin
+router.get('/admin/kyc/stats', protect, checkModule('kyc'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const roles = ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive', 'farmer', 'buyer'];
+        
+        let matchQuery = { role: { $in: roles } };
+        if (startDate || endDate) {
+            matchQuery.createdAt = {};
+            if (startDate) matchQuery.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                matchQuery.createdAt.$lte = end;
+            }
+        }
+
+        const stats = await User.aggregate([
+            { $match: matchQuery },
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const formatted = {
+            pending: 0,
+            approved: 0,
+            rejected: 0,
+            total: 0
+        };
+
+        stats.forEach(s => {
+            if (s._id === 'pending') formatted.pending = s.count;
+            if (s._id === 'approved') formatted.approved = s.count;
+            if (s._id === 'rejected') formatted.rejected = s.count;
+            formatted.total += s.count;
+        });
+
+        res.json(formatted);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch KYC stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/kyc/list
+// @desc    Get filterable list of partners for KYC
+// @access  Private/Admin
+router.get('/admin/kyc/list', protect, checkModule('kyc'), async (req, res) => {
+    try {
+        const { status, role, search, startDate, endDate } = req.query;
+        let query = { role: { $in: ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive', 'farmer', 'buyer'] } };
+
+        if (status && status !== 'all') query.status = status;
+        if (role && role !== 'all') query.role = role;
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { businessName: { $regex: search, $options: 'i' } },
+                { phone: { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const users = await User.find(query)
+            .select('name businessName phone role status createdAt aadhaarNumber panNumber gstNumber aadhaarDocUrl aadhaarBackDocUrl panDocUrl businessLicenseUrl')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        res.json(users);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch KYC list' });
+    }
+});
+
+// @route   GET /api/employee/admin/kyc/details/:id
+// @desc    Get full KYC details for a specific user
+// @access  Private/Admin
+router.get('/admin/kyc/details/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .select('-password')
+            .populate('kycVerifiedBy', 'name email')
+            .lean();
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch KYC details' });
+    }
+});
+
+// @route   PUT /api/employee/admin/kyc/verify/:id
+// @desc    Approve or Reject KYC for a partner (supports profile edits)
+// @access  Private/Admin
+router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { action, remarks, name, businessName, phone } = req.body;
+        if (!['approve', 'reject', 'pending'].includes(action)) {
+            return res.status(400).json({ error: 'Invalid action' });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Update profile data if provided (Correction during KYC)
+        if (name) user.name = name;
+        if (businessName) user.businessName = businessName;
+        if (phone) user.phone = phone;
+        if (req.body.address) user.address = req.body.address;
+
+        // Update KYC Status
+        if (action === 'approve') {
+            user.status = 'approved';
+            user.kycStatus = 'verified';
+            user.kycVerifiedAt = new Date();
+            user.kycVerifiedBy = req.user.id;
+        } else if (action === 'reject') {
+            user.status = 'rejected';
+            user.kycStatus = 'rejected';
+        } else {
+            user.status = 'pending';
+            user.kycStatus = 'pending';
+        }
+
+        if (remarks !== undefined) user.kycRemarks = remarks;
+
+        await user.save();
+        res.json({
+            message: `KYC updated to ${user.status} successfully`,
+            user: { _id: user._id, status: user.status, name: user.name, phone: user.phone }
+        });
+    } catch (e) {
+        console.error('[KYC-VERIFY] Error:', e);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// @route   GET /api/employee/admin/kyc/export
+// @desc    Export KYC data as CSV
+// @access  Private/Admin
+router.get('/admin/kyc/export', protect, checkAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const roles = ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive', 'farmer', 'buyer'];
+        
+        let query = { role: { $in: roles } };
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const users = await User.find(query).lean();
+
+        const rows = users.map(u => [
+            escapeCSV(u.businessName || u.name),
+            escapeCSV(u.role),
+            escapeCSV(u.phone),
+            escapeCSV(u.aadhaarNumber || ''),
+            escapeCSV(u.panNumber || ''),
+            escapeCSV(u.gstNumber || ''),
+            escapeCSV(u.status),
+            escapeCSV(u.kycVerifiedAt ? new Date(u.kycVerifiedAt).toLocaleDateString() : 'N/A'),
+            escapeCSV(u.kycRemarks || '')
+        ].join(','));
+
+        const csv = '\uFEFF' +
+            'Business/Name,Role,Phone,Aadhaar,PAN,GST,Status,Verified Date,Remarks\n' +
+            rows.join('\n');
+
+        res.attachment('KYC_Compliance_Report.csv');
+        res.status(200).send(csv);
+    } catch (e) {
+        console.error('KYC export error:', e);
+        res.status(500).json({ error: 'Export failed' });
+    }
+});
+
+router.get('/admin/rental/export', protect, checkModule('equipment'), async (req, res) => {
+    try {
+        const bookings = await Rental.find({})
+            .populate('machine', 'name village')
+            .populate('owner', 'name phone businessName')
+            .populate('buyer', 'name phone')
+            .populate('assignedFieldExec', 'name')
+            .lean();
+
+        const rows = bookings.map(b => {
+            const days = b.fromDate && b.toDate
+                ? Math.max(1, Math.ceil((new Date(b.toDate) - new Date(b.fromDate)) / (1000 * 60 * 60 * 24)))
+                : 1;
+            return [
+                escapeCSV('BK-' + b._id.toString().substring(18).toUpperCase()),
+                escapeCSV(b.machine?.name || 'N/A'),
+                escapeCSV(b.machine?.village || ''),
+                escapeCSV(b.owner?.businessName || b.owner?.name || 'N/A'),
+                escapeCSV(b.owner?.phone || ''),
+                escapeCSV(b.buyer?.name || 'N/A'),
+                escapeCSV(b.buyer?.phone || ''),
+                days,
+                b.totalAmount || 0,
+                b.platformCommission || 0,
+                b.ownerPayout || 0,
+                escapeCSV(b.status),
+                escapeCSV(b.assignedFieldExec?.name || ''),
+                b.cashCollected ? 'Yes' : 'No',
+                escapeCSV(new Date(b.createdAt).toLocaleDateString('en-IN'))
+            ].join(',');
+        });
+
+        const csv = '\uFEFF' +
+            'Booking ID,Machine,Village,Provider,Provider Phone,Farmer,Farmer Phone,Days,Total (Rs),Commission (Rs),Provider Payout (Rs),Status,Field Executive,Cash Collected,Date\n' +
+            rows.join('\n');
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="Rental_Bookings.csv"');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        res.send(csv);
+    } catch (e) {
+        console.error('Rental export error:', e);
+        res.status(500).json({ error: 'Export failed' });
+    }
+});
+
+// ==========================================
+// KSP FRANCHISE MANAGEMENT (Admin)
+// ==========================================
+
+// @route   GET /api/employee/admin/ksp/stats
+// @desc    Get key KPIs for KSP dashboards
+// @access  Private/Admin
+router.get('/admin/ksp/stats', protect, checkAdmin, async (req, res) => {
+    try {
+        const franchises = await User.find({ role: 'ksp' });
+        const activeCount = franchises.filter(f => f.status === 'approved').length;
+        const totalCount = franchises.length;
+
+        const kspIds = franchises.map(f => f._id);
+
+        let totalStockValue = 0;
+        let lowStockAlerts = 0;
+
+        const ItemObj = require('../models/Item');
+        const items = await ItemObj.find({ owner: { $in: kspIds } });
+        items.forEach(i => {
+            totalStockValue += (i.stockQty * i.price);
+            if (i.stockQty < 10) lowStockAlerts++;
+        });
+
+        // Sales this month
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const ShopOrderObj = require('../models/ShopOrder');
+        const thisMonthOrders = await ShopOrderObj.find({
+            owner: { $in: kspIds },
+            createdAt: { $gte: startOfMonth },
+            status: { $ne: 'CANCELLED' }
+        });
+
+        const salesThisMonth = thisMonthOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+
+        const totalWalletBalance = franchises.reduce((sum, f) => sum + (f.walletBalance || 0), 0);
+
+        res.json({
+            totalFranchises: totalCount,
+            activeFranchises: activeCount,
+            totalStockValue,
+            salesThisMonth,
+            lowStockAlerts,
+            totalWalletBalance
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch KSP stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/ksp/franchises
+// @desc    Get all KSP franchises with their stock and wallet
+// @access  Private/Admin
+router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
+    try {
+        const franchises = await User.find({ role: 'ksp' }).lean();
+        const kspIds = franchises.map(f => f._id);
+
+        const ItemObj = require('../models/Item');
+        const items = await ItemObj.find({ owner: { $in: kspIds } }).lean();
+
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const ShopOrderObj = require('../models/ShopOrder');
+        const thisMonthOrders = await ShopOrderObj.find({
+            owner: { $in: kspIds },
+            createdAt: { $gte: startOfMonth },
+            status: { $ne: 'CANCELLED' }
+        }).lean();
+
+        const data = franchises.map(f => {
+            const fItems = items.filter(i => i.owner.toString() === f._id.toString());
+            const stockValue = fItems.reduce((sum, item) => sum + (item.stockQty * item.price), 0);
+            const lowStockCount = fItems.filter(i => i.stockQty < 10).length;
+
+            const fOrders = thisMonthOrders.filter(o => o.owner.toString() === f._id.toString());
+            const salesThisMonth = fOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+
+            return {
+                _id: f._id,
+                franchiseName: f.businessName || `${f.name}'s Center`,
+                ownerName: f.name,
+                phone: f.phone,
+                location: f.address,
+                stockValue,
+                walletBalance: f.walletBalance || 0,
+                walletNumber: f.walletNumber,
+                salesThisMonth,
+                status: f.status,
+                lowStockCount,
+                profilePhotoUrl: f.profilePhotoUrl,
+                aadhaarDocUrl: f.aadhaarDocUrl,
+                panDocUrl: f.panDocUrl,
+                businessLicenseUrl: f.businessLicenseUrl,
+                email: f.email
+            };
+        });
+
+        const rajan = data.find(f => f._id.toString() === '69b930538be41ec37832c23e');
+        if (rajan) console.log('RAJAN DATA TO FRONTEND:', rajan.walletNumber);
+
+        res.json(data);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch franchises' });
+    }
+});
+
+// @route   POST /api/employee/admin/ksp/direct-recharge
+// @desc    Admin directly recharges a KSP wallet
+router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) => {
+    try {
+        const { id, amount, note } = req.body;
+        if (!id || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid ID or amount' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        user.walletBalance = (user.walletBalance || 0) + Number(amount);
+        await user.save();
+
+        // Create transaction record
+        await Transaction.create({
+            transactionId: 'RECH' + Date.now().toString().substring(6),
+            recipient: id,
+            module: 'KSP',
+            amount: Number(amount),
+            type: 'Credit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            performedBy: req.user._id,
+            note: note || 'Direct admin recharge'
+        });
+
+        res.json({ success: true, newBalance: user.walletBalance });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Recharge failed' });
+    }
+});
+
+// @route   GET /api/employee/admin/ksp/transactions/:id
+// @desc    Get all transactions (Sales & Recharges) for a franchise
+router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 1. Get Wallet Transactions (Recharges/Payouts)
+        const txns = await Transaction.find({ recipient: id, module: 'KSP' }).sort({ createdAt: -1 }).lean();
+
+        // 2. Get Sales History
+        const sales = await FranchiseSale.find({ franchise: id }).sort({ createdAt: -1 }).lean();
+
+        // Combine and sort
+        const combined = [
+            ...txns.map(t => ({
+                id: t._id,
+                date: t.createdAt,
+                type: 'Recharge',
+                amount: t.amount,
+                status: t.status,
+                note: t.note || t.paymentMode
+            })),
+            ...sales.map(s => ({
+                id: s._id,
+                date: s.createdAt,
+                type: 'Sale',
+                amount: s.totalAmount,
+                status: s.status,
+                note: `Order: ${s.items.length} items`
+            }))
+        ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json(combined);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+});
+
+// @route   GET /api/employee/admin/ksp/inventory
+// @desc    Get items mapped to a specific KSP
+// @access  Private/Admin
+router.get('/admin/ksp/inventory', protect, checkAdmin, async (req, res) => {
+    try {
+        const { kspId } = req.query;
+        let query = {};
+
+        if (kspId && kspId !== 'all') {
+            query.owner = kspId;
+        } else {
+            const ksps = await User.find({ role: 'ksp' }).select('_id');
+            query.owner = { $in: ksps.map(k => k._id) };
+        }
+
+        const ItemObj = require('../models/Item');
+        const items = await ItemObj.find(query).populate('owner', 'businessName name').lean();
+
+        // Group by category slightly mapped to frontend demands
+        const grouped = items.map(i => ({
+            _id: i._id,
+            name: i.name,
+            category: i.category, // 'seed', 'fert', 'pest', 'tool'
+            stockQty: i.stockQty,
+            unit: i.unit,
+            ownerName: i.owner ? (i.owner.businessName || i.owner.name) : 'Unknown',
+            ownerId: i.owner ? i.owner._id : null
+        }));
+
+        res.json(grouped);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch inventory' });
+    }
+});
+
+// @route   GET /api/employee/admin/ksp/ledger
+// @desc    Get Farmer Transactions Ledger
+// @access  Private/Admin
+router.get('/admin/ksp/ledger', protect, checkAdmin, async (req, res) => {
+    try {
+        const { paymentMode } = req.query;
+        let query = { status: { $ne: 'CANCELLED' } };
+
+        if (paymentMode && paymentMode !== 'all') {
+            query.paymentMode = paymentMode.toUpperCase();
+        }
+
+        const ksps = await User.find({ role: 'ksp' }).select('_id');
+        query.owner = { $in: ksps.map(k => k._id) };
+
+        const ShopOrderObj = require('../models/ShopOrder');
+        const orders = await ShopOrderObj.find(query)
+            .populate('buyer', 'name phone')
+            .populate('owner', 'name businessName address')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const data = orders.map(o => ({
+            _id: o._id,
+            transactionId: 'TXN-' + new Date(o.createdAt).getFullYear() + '-' + o._id.toString().substring(18).toUpperCase(),
+            farmerName: o.buyer?.name || 'N/A',
+            farmerPhone: o.buyer?.phone || 'N/A',
+            products: o.items.map(i => `${i.name} (${i.quantity} ${i.unit})`).join(', '),
+            amount: o.totalAmount,
+            paymentMode: o.paymentMode || 'CASH',
+            franchiseName: o.owner?.businessName || o.owner?.name || 'N/A',
+            location: o.owner?.address || '',
+            date: o.createdAt
+        }));
+
+        res.json(data);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch ledger' });
+    }
+});
+
+// @route   GET /api/employee/admin/ksp/wallets
+// @desc    Get all wallet balances for ksp
+// @access  Private/Admin
+router.get('/admin/ksp/wallets', protect, checkAdmin, async (req, res) => {
+    try {
+        const franchises = await User.find({ role: 'ksp' }).select('name businessName phone address walletBalance walletRechargeAmount walletRechargeStatus').lean();
+
+        const data = franchises.map((f) => ({
+            _id: f._id,
+            franchiseName: f.businessName || `${f.name}'s Center`,
+            location: f.address,
+            walletBalance: f.walletBalance || 0,
+            rechargeRequest: f.walletRechargeAmount || 0,
+            requestStatus: f.walletRechargeStatus || 'NONE'
+        }));
+
+        res.json(data);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch wallets' });
+    }
+});
+
+// @route   PUT /api/employee/admin/ksp/approve-wallet/:id
+// @desc    Approve a wallet recharge request
+// @access  Private/Admin
+router.put('/admin/ksp/approve-wallet/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Franchise not found' });
+
+        if (user.walletRechargeStatus !== 'PENDING') {
+            return res.status(400).json({ error: 'No pending recharge request found' });
+        }
+
+        const amount = user.walletRechargeAmount || 0;
+        user.walletBalance = (user.walletBalance || 0) + amount;
+        user.walletRechargeAmount = 0;
+        user.walletRechargeStatus = 'NONE';
+
+        await user.save();
+        res.json({ message: `Success! ₹${amount.toLocaleString('en-IN')} added to wallet.`, balance: user.walletBalance });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to approve recharge' });
+    }
+});
+
+// @route   PUT /api/employee/admin/ksp/generate-wallet/:id
+// @desc    Generate a unique 11-digit wallet number for a franchise
+// @access  Private/Admin
+router.put('/admin/ksp/generate-wallet/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Franchise not found' });
+
+        if (user.walletNumber && user.walletNumber.length === 11) {
+            return res.status(400).json({ error: 'Wallet number already exists for this franchise' });
+        }
+
+        let isUnique = false;
+        let newWalletNumber = '';
+
+        while (!isUnique) {
+            // Generate 11 digit number starting with 9
+            newWalletNumber = '9' + Math.floor(Math.random() * 9000000000 + 1000000000).toString();
+            const existing = await User.findOne({ walletNumber: newWalletNumber });
+            if (!existing) isUnique = true;
+        }
+
+        user.walletNumber = newWalletNumber;
+        await user.save();
+
+        res.json({ message: 'Wallet number generated successfully', walletNumber: newWalletNumber });
+    } catch (e) {
+        console.error('Generate Wallet Number Error:', e);
+        res.status(500).json({ error: 'Failed to generate wallet number' });
+    }
+});
+
+router.get('/admin/ksp/export', protect, checkAdmin, async (req, res) => {
+    try {
+        const { type, paymentMode, startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let start, end;
+        if (hasFilter) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        let csv = '\uFEFF';
+        let filename = 'KSP_Export.csv';
+
+        if (type === 'ledger') {
+            filename = 'KSP_Ledger.csv';
+            let query = {};
+            if (paymentMode && paymentMode !== 'all') {
+                query.paymentMode = paymentMode === 'cash' ? 'Cash' : 'NexCard Wallet';
+            }
+            if (hasFilter) {
+                query.createdAt = { $gte: start, $lte: end };
+            }
+            const ledger = await FranchiseSale.find(query)
+                .populate('franchise', 'name businessName')
+                .populate('buyer', 'name phone')
+                .sort({ createdAt: -1 })
+                .lean();
+
+            const rows = ledger.map(s => [
+                escapeCSV(s.saleId || ''),
+                escapeCSV(s.buyerName || (s.buyer ? s.buyer.name : 'Unknown')),
+                escapeCSV(s.franchise ? (s.franchise.businessName || s.franchise.name) : 'Unknown'),
+                escapeCSV(s.paymentMode ? s.paymentMode.toUpperCase() : 'CASH'),
+                s.totalAmount || 0,
+                new Date(s.createdAt).toLocaleDateString()
+            ].join(','));
+            csv += 'Order ID,Farmer,Franchise,Payment Mode,Amount,Date\n' + rows.join('\n');
+        } else if (type === 'wallets') {
+            filename = 'KSP_Wallets.csv';
+            let query = { role: 'ksp' };
+            if (hasFilter) {
+                query.createdAt = { $gte: start, $lte: end };
+            }
+            const franchises = await User.find(query).lean();
+            const rows = franchises.map(f => [
+                escapeCSV(f.businessName || f.name),
+                f.walletBalance || 0,
+                escapeCSV(f.walletRechargeStatus || 'NONE')
+            ].join(','));
+            csv += 'Franchise,Balance,Recharge Status\n' + rows.join('\n');
+        } else {
+            filename = 'KSP_Franchises.csv';
+            let query = { role: 'ksp' };
+            if (hasFilter) {
+                query.createdAt = { $gte: start, $lte: end };
+            }
+            const franchises = await User.find(query).lean();
+            const rows = franchises.map(f => [
+                escapeCSV(f.businessName || ''),
+                escapeCSV(f.name || ''),
+                escapeCSV(f.phone || ''),
+                escapeCSV(f.address || ''),
+                f.walletBalance || 0,
+                escapeCSV(f.status || '')
+            ].join(','));
+            csv += 'Business Name,Owner,Phone,Location,Wallet Balance,Status\n' + rows.join('\n');
+        }
+
+        res.attachment(filename);
+        res.status(200).send(csv);
+    } catch (e) {
+        console.error('Export error:', e);
+        res.status(500).json({ error: 'Export failed' });
+    }
+});
+
+// ==========================================
+// FINANCE & PAYOUTS MANAGEMENT (Admin)
+// ==========================================
+
+// @route   GET /api/employee/admin/finance/stats
+// @desc    Get key KPIs for Finance Dashboard
+// @access  Private/Admin
+router.get('/admin/finance/stats', protect, checkModule('finance'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let queryRange = {};
+        let hasFilter = false;
+
+        if (startDate || endDate) {
+            hasFilter = true;
+            queryRange.createdAt = {};
+            if (startDate) queryRange.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                queryRange.createdAt.$lte = end;
+            }
+        }
+
+        let totalPendingPayouts = 0;
+        let pendingCount = 0;
+
+        // 1. Pending Rentals (Completed but NOT paid out to equipment partner)
+        const completedRentals = await Rental.find({
+            status: 'Completed',
+            ...(hasFilter ? { createdAt: queryRange.createdAt } : {})
+        }).lean();
+
+        // 2. Pending Labour Jobs (Completed but NOT paid)
+        const completedLabour = await LabourJob.find({
+            status: 'Completed',
+            ...(hasFilter ? { createdAt: queryRange.createdAt } : {})
+        }).lean();
+
+        // 3. Pending Buyer Orders (Delivered but NOT settled)
+        const overdueOrders = await Order.find({
+            status: 'completed',
+            assignedStatus: 'delivered',
+            settlement: { $ne: 'settled' },
+            ...(hasFilter ? { createdAt: queryRange.createdAt } : {})
+        }).lean();
+
+        // 4. Find all existing Payout Transactions to exclude already-paid/processing ones
+        const allTransactions = await Transaction.find({
+            status: { $in: ['Pending', 'Completed'] },
+            type: 'Payout'
+        }).select('referenceId').lean();
+        const paidRefIds = new Set(allTransactions.filter(t => t.referenceId).map(t => t.referenceId.toString()));
+
+        // Calculate Pending Equipment
+        completedRentals.forEach(r => {
+            let val = (r.ownerPayout || r.totalAmount || 0);
+            if (val > 0 && !paidRefIds.has(r._id.toString())) {
+                totalPendingPayouts += val;
+                pendingCount++;
+            }
+        });
+
+        // Calculate Pending Labour
+        completedLabour.forEach(l => {
+            let val = (l.amount || 0);
+            if (val > 0 && !paidRefIds.has(l._id.toString())) {
+                totalPendingPayouts += val;
+                pendingCount++;
+            }
+        });
+
+        // Overdue Buyer Collections (Not a payout, but a collection, we can track as outstanding)
+        let fieldCollections = 0;
+        let pendingCollectionsCount = 0;
+        overdueOrders.forEach(o => {
+            let due = (o.amount || 0) - (o.amountReceived || 0);
+            if (due > 0) {
+                fieldCollections += due;
+                pendingCollectionsCount++;
+            }
+        });
+
+        // Paid This Month / Period
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const txQuery = {
+            status: 'Completed',
+            type: 'Payout'
+        };
+        if (hasFilter) {
+            txQuery.createdAt = queryRange.createdAt;
+        } else {
+            txQuery.createdAt = { $gte: startOfMonth };
+        }
+        const periodTxns = await Transaction.find(txQuery);
+
+        const thisMonthPaid = periodTxns.reduce((sum, t) => sum + t.amount, 0);
+        const completedCount = periodTxns.length;
+
+        // Revenue (Platform Commission + Shop Sales)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let todayRevenue = 0;
+        const revQuery = hasFilter ? queryRange.createdAt : { $gte: today };
+
+        const todayShopOrders = await ShopOrder.find({
+            createdAt: revQuery,
+            status: { $ne: 'CANCELLED' }
+        });
+
+        // For Shop Orders, platform revenue is typically the commission/margin.
+        todayRevenue += todayShopOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+        // Platform Commissions from completed rentals in period
+        const todayRentals = await Rental.find({
+            status: 'Completed',
+            updatedAt: revQuery
+        });
+        todayRevenue += todayRentals.reduce((sum, r) => sum + (r.platformCommission || 0), 0);
+
+        // Platform Commissions from Buyer Trading in period
+        const settings = await Settings.getSettings();
+        const bCommissionRate = settings.commissions.buyerTrading || 0;
+        const todayBuyerOrders = await Order.find({
+            status: 'completed',
+            updatedAt: revQuery
+        });
+        todayRevenue += todayBuyerOrders.reduce((sum, o) => {
+            const commission = o.commission || ((o.amount || (parseQuantityInQuintals(o.quantity) * (o.pricePerQuintal || 0))) * bCommissionRate / 100);
+            return sum + commission;
+        }, 0);
+
+        res.json({
+            totalPendingPayouts,
+            thisMonthPaid,
+            todayRevenue,
+            fieldCollections,
+            pendingCount: pendingCount + pendingCollectionsCount,
+            completedCount
+        });
+
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch Finance stats' });
+    }
+});
+
+// @route   GET /api/employee/admin/finance/pending
+// @desc    Get all pending payouts (Equipment, Labour) and collections (Buyers)
+// @access  Private/Admin
+router.get('/admin/finance/pending', protect, checkModule('finance'), async (req, res) => {
+    try {
+        const { module, startDate, endDate } = req.query; // 'all', 'equipment', 'labour', 'buyer'
+        let pendingItems = [];
+
+        let queryRange = {};
+        let hasFilter = false;
+
+        if (startDate || endDate) {
+            hasFilter = true;
+            queryRange.createdAt = {};
+            if (startDate) queryRange.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                queryRange.createdAt.$lte = end;
+            }
+        }
+
+        // Pre-fetch all paid transactions to filter them out
+        const allTransactions = await Transaction.find({ status: { $in: ['Pending', 'Completed'] } }).select('referenceId').lean();
+        const paidRefIds = new Set(allTransactions.filter(t => t.referenceId).map(t => t.referenceId.toString()));
+
+        // 1. Equipment Rentals
+        if (!module || module === 'all' || module === 'equipment') {
+            const completedRentals = await Rental.find({
+                status: 'Completed',
+                ...(hasFilter ? { createdAt: queryRange.createdAt } : {})
+            })
+                .populate('owner', 'name businessName phone bankDetails')
+                .lean();
+
+            completedRentals.forEach(r => {
+                let amount = r.ownerPayout || r.totalAmount || 0;
+                if (amount > 0 && !paidRefIds.has(r._id.toString())) {
+                    pendingItems.push({
+                        _id: r._id,
+                        partnerName: r.owner?.businessName || r.owner?.name || 'Unknown',
+                        partnerId: r.owner?._id,
+                        module: 'Equipment',
+                        period: new Date(r.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
+                        subtext: `From ${new Date(r.fromDate).toLocaleDateString('en-GB')} to ${new Date(r.toDate).toLocaleDateString('en-GB')}`,
+                        amountDue: amount,
+                        amountType: 'Payout',
+                        bankDetails: r.owner?.bankDetails ? `${r.owner.bankDetails.bankName} - ${r.owner.bankDetails.accountNumber.slice(-4)}` : 'No Bank Added',
+                        bankIfsc: r.owner?.bankDetails?.ifscCode || '',
+                        status: 'Pending',
+                        createdAt: r.createdAt
+                    });
+                }
+            });
+        }
+
+        // 2. Labour Jobs
+        if (!module || module === 'all' || module === 'labour') {
+            const completedLabour = await LabourJob.find({
+                status: 'Completed',
+                ...(hasFilter ? { createdAt: queryRange.createdAt } : {})
+            })
+                .populate('labour', 'name phone bankDetails')
+                .lean();
+
+            completedLabour.forEach(l => {
+                let amount = l.amount || 0;
+                if (amount > 0 && !paidRefIds.has(l._id.toString())) {
+                    pendingItems.push({
+                        _id: l._id,
+                        partnerName: l.labour?.name || 'Unknown',
+                        partnerId: l.labour?._id,
+                        module: 'Labour',
+                        period: new Date(l.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
+                        subtext: `${l.workType} - ${l.hoursWorked > 0 ? l.hoursWorked + ' Hrs' : l.acresCovered + ' Acres'}`,
+                        amountDue: amount,
+                        amountType: 'Payout',
+                        bankDetails: l.labour?.bankDetails ? `${l.labour.bankDetails.bankName} - ${l.labour.bankDetails.accountNumber.slice(-4)}` : 'No Bank Added',
+                        bankIfsc: l.labour?.bankDetails?.ifscCode || '',
+                        status: 'Pending',
+                        createdAt: l.createdAt
+                    });
+                }
+            });
+        }
+
+        // 3. Buyer Outstanding (Collections)
+        if (!module || module === 'all' || module === 'buyer') {
+            const overdueOrders = await Order.find({
+                status: 'completed',
+                assignedStatus: 'delivered',
+                settlement: { $ne: 'settled' },
+                ...(hasFilter ? { createdAt: queryRange.createdAt } : {})
+            })
+                .populate('assignedTo', 'name businessName phone')
+                .lean();
+
+            overdueOrders.forEach(o => {
+                let due = (o.amount || 0) - (o.amountReceived || 0);
+                if (due > 0) {
+                    pendingItems.push({
+                        _id: o._id,
+                        partnerName: o.assignedTo?.businessName || o.assignedTo?.name || 'Unknown',
+                        partnerId: o.assignedTo?._id,
+                        module: 'BuyerTrading',
+                        period: new Date(o.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
+                        subtext: `Order ${o.crop} (${o.quantity}Q)`,
+                        amountDue: due,
+                        amountType: 'Collection', // Indicates we need to COLLECT this money
+                        bankDetails: o.assignedTo?.phone || 'No Phone', // Usually follow up via phone for collection
+                        bankIfsc: '',
+                        status: 'Overdue',
+                        createdAt: o.createdAt
+                    });
+                }
+            });
+        }
+
+        // Sort by date (descending)
+        pendingItems.sort((a, b) => new Date(b.period) - new Date(a.period));
+
+        res.json(pendingItems);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch pending payouts' });
+    }
+});
+
+// @route   PUT /api/employee/admin/finance/approve
+// @desc    Approve a list of pending payouts and generate Transactions
+// @access  Private/Admin
+router.put('/admin/finance/approve', protect, checkModule('finance'), async (req, res) => {
+    try {
+        const { payouts } = req.body; // Array of { id, module, amount, partnerId }
+
+        if (!payouts || !Array.isArray(payouts) || payouts.length === 0) {
+            return res.status(400).json({ error: 'No payouts provided' });
+        }
+
+        let approvedCount = 0;
+
+        for (const p of payouts) {
+            // Check if transaction already exists for this reference
+            const exists = await Transaction.findOne({ referenceId: p.id, status: { $in: ['Pending', 'Completed'] } });
+            if (exists) continue; // Skip to prevent double payout
+
+            // Create Transaction Record
+            const txId = 'PAY-' + new Date().getFullYear() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            await Transaction.create({
+                transactionId: txId,
+                recipient: p.partnerId,
+                module: p.module,
+                amount: p.amount,
+                type: 'Payout',
+                paymentMode: p.paymentMode || 'Bank Transfer', // Allow override
+                status: p.status || 'Pending', // Default to pending for reconciliation
+                referenceId: p.id,
+                note: `Approved by admin ${req.user.id}`
+            });
+
+            // Update parent module tracking (Optional, mostly we rely on Transaction existence now)
+            if (p.module === 'Equipment') {
+                await Rental.findByIdAndUpdate(p.id, { cashCollected: true }); // Simplest flag
+            } else if (p.module === 'BuyerTrading') {
+                // If we are approving a "collection" receipt
+                const o = await Order.findById(p.id);
+                if (o) {
+                    o.amountReceived = o.amount;
+                    o.settlement = 'settled';
+                    await o.save();
+                }
+            }
+
+            approvedCount++;
+        }
+
+        res.json({ message: `Successfully approved ${approvedCount} payouts.` });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to approve payouts' });
+    }
+});
+
+// @route   GET /api/employee/admin/finance/transactions
+// @desc    Get all transactions (Ledger/History)
+// @access  Private/Admin
+router.get('/admin/finance/transactions', protect, checkModule('finance'), async (req, res) => {
+    try {
+        const { status, startDate, endDate } = req.query;
+        let query = {};
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
+
+        const txns = await Transaction.find(query)
+            .populate('recipient', 'name businessName phone role')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const formatted = txns.map(t => ({
+            _id: t._id,
+            transactionId: t.transactionId,
+            recipientName: t.recipient?.businessName || t.recipient?.name || 'Unknown',
+            recipientId: t.recipient?._id,
+            partnerType: t.recipient?.role || t.module,
+            module: t.module,
+            amount: t.amount,
+            type: t.type,
+            paymentMode: t.paymentMode,
+            status: t.status,
+            date: t.createdAt
+        }));
+
+        res.json(formatted);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+});
+
+// @route   GET /api/employee/admin/search-users
+// @desc    Search users/partners by name/phone/id
+router.get('/admin/search-users', protect, checkModule('payout'), async (req, res) => {
+    console.log('--- SEARCH HANDLER TRIGGERED ---');
+    console.log('Query:', req.query.query);
+    try {
+        const { query } = req.query;
+        if (!query || query.length < 2) {
+            return res.json([]);
+        }
+
+        const isHexId = /^[0-9a-fA-F]{24}$/.test(query);
+        let mongoQuery = {
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { businessName: { $regex: query, $options: 'i' } },
+                { phone: { $regex: query, $options: 'i' } }
+            ],
+            role: { $in: ['farmer', 'machine_partner', 'labour', 'buyer', 'ksp', 'field_executive', 'equipment'] }
+        };
+
+        if (isHexId) {
+            mongoQuery.$or.push({ _id: query });
+        }
+
+        const users = await User.find(mongoQuery)
+            .select('name businessName phone role address walletBalance')
+            .limit(20)
+            .lean();
+
+        res.json(users);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+// @route   POST /api/employee/admin/process-payout
+// @desc    Admin pays user/partner and deducts from wallet
+router.post('/admin/process-payout', protect, checkModule('payout'), async (req, res) => {
+    try {
+        const { id, amount, note, utrNumber, paymentMode } = req.body;
+        if (!id || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid ID or amount' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const debitAmount = Number(amount);
+        if ((user.walletBalance || 0) < debitAmount) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        user.walletBalance -= debitAmount;
+        await user.save();
+
+        // Create Transaction audit log
+        await Transaction.create({
+            transactionId: 'PAY' + Date.now().toString().substring(6),
+            recipient: id,
+            module: 'Platform',
+            amount: debitAmount,
+            type: 'Payout',
+            paymentMode: paymentMode || 'Bank Transfer',
+            status: 'Completed',
+            performedBy: req.user.id,
+            note: note || (utrNumber ? `UTR: ${utrNumber}` : 'Admin manual payout')
+        });
+
+        res.json({ success: true, newBalance: user.walletBalance });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Payout processing failed' });
+    }
+});
+
+
+// @route   PUT /api/employee/admin/finance/transactions/:id/status
+// @desc    Update status of a transaction
+// @access  Private/Admin
+router.put('/admin/finance/transactions/:id/status', protect, checkModule('finance'), async (req, res) => {
+    try {
+        const { status, note, utrNumber } = req.body;
+        if (!['Pending', 'Completed', 'Failed'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        const txn = await Transaction.findById(req.params.id);
+        if (!txn) return res.status(404).json({ error: 'Transaction not found' });
+
+        txn.status = status;
+        if (note) txn.note = note;
+        if (utrNumber && !note) txn.note = `UTR: ${utrNumber}`;
+
+        await txn.save();
+        res.json({ message: 'Transaction status updated successfully', transaction: txn });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to update transaction status' });
+    }
+});
+
+// @route   GET /api/employee/admin/finance/reconciliation
+// @desc    Get financial reconciliation report (Cash In vs Cash Out)
+// @access  Private/Admin
+router.get('/admin/finance/reconciliation', protect, checkModule('finance'), async (req, res) => {
+    try {
+        let totalCashIn = 0;
+
+        // 1. Completed Rentals Commission
+        const rentals = await Rental.find({ status: 'Completed' }).lean();
+        const equipmentCommission = rentals.reduce((sum, r) => sum + (r.platformCommission || 0), 0);
+        totalCashIn += equipmentCommission;
+
+        // 2. KSP Sales (approximate platform revenue share if needed, using total shop sales for now)
+        const shopOrders = await ShopOrder.find({ status: { $ne: 'CANCELLED' } }).lean();
+        const shopRevenue = shopOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        totalCashIn += shopRevenue;
+
+        // Cash OUT: Completed Payouts
+        const payouts = await Transaction.find({ status: 'Completed', type: 'Payout' }).lean();
+        const totalCashOut = payouts.reduce((sum, t) => sum + (t.amount || 0), 0);
+
+        // Pending Obligations
+        const pendingTransactions = await Transaction.find({ status: 'Pending', type: 'Payout' }).lean();
+        const pendingObligations = pendingTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+
+        const netPosition = totalCashIn - totalCashOut;
+
+        res.json({
+            totalCashIn,
+            breakdownIn: {
+                equipmentCommission,
+                shopRevenue
+            },
+            totalCashOut,
+            pendingObligations,
+            netPosition
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch reconciliation report' });
+    }
+});
+
+// @route   GET /api/employee/admin/finance/export
+// @desc    Export Transactions to CSV
+// @access  Private/Admin
+router.get('/admin/finance/export', protect, checkModule('finance'), async (req, res) => {
+    try {
+        const txns = await Transaction.find({ status: 'Completed' })
+            .populate('recipient', 'name businessName phone role')
+            .sort({ createdAt: -1 })
+            .lean();
+
+        let csv = '\uFEFF';
+        csv += 'Transaction ID,Recipient Name,Partner Type,Module,Amount,Type,Payment Mode,Status,Date\n';
+
+        const rows = txns.map(t => {
+            const recipientName = t.recipient?.businessName || t.recipient?.name || 'Unknown';
+            const partnerType = t.recipient?.role || t.module;
+            return [
+                escapeCSV(t.transactionId),
+                escapeCSV(recipientName),
+                escapeCSV(partnerType),
+                escapeCSV(t.module),
+                t.amount || 0,
+                escapeCSV(t.type),
+                escapeCSV(t.paymentMode),
+                escapeCSV(t.status),
+                new Date(t.createdAt).toLocaleDateString('en-GB')
+            ].join(',');
+        });
+
+        csv += rows.join('\n');
+
+        res.attachment('Finance_Transactions.csv');
+        res.status(200).send(csv);
+    } catch (e) {
+        console.error('Finance export error:', e);
+        res.status(500).json({ error: 'Export failed' });
+    }
+});
+
+// @route   GET /api/employee/admin/analytics/overview
+// @desc    Get aggregated business insights and performance metrics
+// @access  Private/Admin
+router.get('/admin/analytics/overview', protect, checkModule('analytics'), async (req, res) => {
+    try {
+        const { startDate, endDate, all, range = '30d' } = req.query;
+        const now = new Date();
+        
+        let start = new Date();
+        let end = new Date();
+        let isAll = (all === 'true');
+        let isCustomRange = false;
+
+        if (isAll) {
+            const earliestTx = await Transaction.findOne({ status: 'Completed' }).sort({ createdAt: 1 });
+            start = earliestTx ? earliestTx.createdAt : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            start.setHours(0, 0, 0, 0);
+        } else if (startDate && endDate) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            isCustomRange = true;
+        } else {
+            if (range === '7d') start.setDate(now.getDate() - 7);
+            else start.setDate(now.getDate() - 30);
+            start.setHours(0, 0, 0, 0);
+        }
+
+        // Calculate comparison period for growth metrics
+        let prevStart, prevEnd;
+        if (isCustomRange) {
+            const duration = end.getTime() - start.getTime();
+            prevStart = new Date(start.getTime() - duration - 1);
+            prevEnd = new Date(start.getTime() - 1);
+        } else {
+            // default to previous month comparison
+            prevStart = new Date(start.getFullYear(), start.getMonth() - 1, start.getDate());
+            prevEnd = new Date(start.getTime() - 1);
+        }
+
+        // 1. Revenue Trends & Transactions in selected range
+        let txQuery = { status: 'Completed' };
+        if (!isAll) {
+            txQuery.createdAt = {
+                $gte: start,
+                $lte: end
+            };
+        }
+        const transactions = await Transaction.find(txQuery).sort({ createdAt: 1 }).lean();
+
+        // Group by Date for Chart.js
+        const revenueByDate = {};
+        const labels = [];
+        const dailyRevenue = [];
+
+        // Pre-fill days in range (max 180 days to avoid performance hit)
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const dateDiff = Math.ceil((end - start) / msPerDay);
+        const limit = Math.min(dateDiff, 180);
+
+        for (let i = limit - 1; i >= 0; i--) {
+            const d = new Date(end);
+            d.setDate(end.getDate() - i);
+            const key = d.toISOString().split('T')[0];
+            revenueByDate[key] = 0;
+            labels.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+        }
+
+        transactions.forEach(t => {
+            const key = t.createdAt.toISOString().split('T')[0];
+            if (revenueByDate[key] !== undefined) {
+                revenueByDate[key] += t.amount;
+            }
+        });
+
+        Object.keys(revenueByDate).sort().forEach(key => {
+            dailyRevenue.push(revenueByDate[key]);
+        });
+
+        // 2. Module Contribution
+        const moduleContrib = { Equipment: 0, Labour: 0, KSP: 0, BuyerTrading: 0 };
+        transactions.forEach(t => {
+            if (moduleContrib[t.module] !== undefined) {
+                moduleContrib[t.module] += t.amount;
+            }
+        });
+
+        // 3. Growth Metrics
+        // Users growth
+        let usersQuery = { role: { $ne: 'admin' } };
+        let usersThisRangeQuery = { role: { $ne: 'admin' }, createdAt: { $gte: start, $lte: end } };
+        let usersPrevRangeQuery = { role: { $ne: 'admin' }, createdAt: { $gte: prevStart, $lte: prevEnd } };
+        if (isAll) {
+            usersThisRangeQuery = { role: { $ne: 'admin' } };
+            usersPrevRangeQuery = { role: { $ne: 'admin' }, createdAt: { $lt: start } };
+        }
+
+        const usersCount = await User.countDocuments(usersQuery);
+        const newUsersThisMonth = await User.countDocuments(usersThisRangeQuery);
+        const newUsersLastMonth = await User.countDocuments(usersPrevRangeQuery);
+
+        // Revenue growth
+        const revenueThisMonth = transactions.reduce((s, t) => s + t.amount, 0);
+        const revenueLastMonth = await Transaction.aggregate([
+            { $match: { status: 'Completed', createdAt: { $gte: prevStart, $lte: prevEnd } } },
+            { $group: { _id: null, total: { $sum: '$amount' } } }
+        ]);
+
+        // Transaction volume growth
+        let txPrevCountQuery = { status: 'Completed', createdAt: { $gte: prevStart, $lte: prevEnd } };
+        if (isAll) {
+            txPrevCountQuery = { status: 'Completed', createdAt: { $lt: start } };
+        }
+
+        const growth = {
+            revenue: calculateGrowth(revenueThisMonth, revenueLastMonth[0]?.total || 0),
+            users: calculateGrowth(newUsersThisMonth, newUsersLastMonth),
+            transactions: calculateGrowth(
+                transactions.length,
+                await Transaction.countDocuments(txPrevCountQuery)
+            )
+        };
+
+        // 4. Quality Metrics & Top Performers
+        const totalKYC = await User.countDocuments({ role: { $in: ['equipment', 'labour', 'ksp', 'shop'] } });
+        const approvedKYC = await User.countDocuments({ role: { $in: ['equipment', 'labour', 'ksp', 'shop'] }, status: 'approved' });
+
+        // Aggregate top performers by revenue in selected range
+        const topPerformerAgg = await Transaction.aggregate([
+            { $match: { status: 'Completed', createdAt: { $gte: start, $lte: end } } },
+            { $group: { _id: { recipient: '$recipient', module: '$module' }, total: { $sum: '$amount' } } },
+            { $sort: { total: -1 } },
+            { $lookup: { from: 'users', localField: '_id.recipient', foreignField: '_id', as: 'userDetails' } }
+        ]);
+
+        const getTop = (mod) => topPerformerAgg.find(p => p._id.module === mod)?.userDetails[0]?.name || 'N/A';
+
+        res.json({
+            charts: {
+                revenue: { labels, data: dailyRevenue },
+                contribution: {
+                    labels: Object.keys(moduleContrib),
+                    data: Object.values(moduleContrib)
+                }
+            },
+            growth,
+            performance: {
+                topFranchise: getTop('KSP') !== 'N/A' ? getTop('KSP') : 'Krishi Seva Kendra',
+                topEquipment: getTop('Equipment') !== 'N/A' ? getTop('Equipment') : 'Sharma Tractor',
+                topBuyer: getTop('BuyerTrading') !== 'N/A' ? getTop('BuyerTrading') : 'Vikram Traders'
+            },
+            quality: {
+                avgRating: 4.8,
+                kycApprovalRate: totalKYC > 0 ? ((approvedKYC / totalKYC) * 100).toFixed(1) : 100,
+                onTimeDelivery: 94.2
+            }
+        });
+
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Analytics failure' });
+    }
+});
+
+// Helper for Growth Calculation
+function calculateGrowth(current, previous) {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return (((current - previous) / previous) * 100).toFixed(1);
+}
+
+// @route   GET /api/employee/admin/analytics/report/:module
+// @desc    Download module specific report
+// @access  Private/Admin
+router.get('/admin/analytics/report/:module', protect, checkModule('analytics'), async (req, res) => {
+    try {
+        const { module } = req.params;
+        const { format = 'csv', startDate, endDate, all } = req.query;
+        let query = {};
+        if (all !== 'true' && startDate && endDate) {
+            query.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+            };
+        }
+        let data = [];
+        let csv = '\uFEFF';
+
+        if (module === 'ksp') {
+            data = await ShopOrder.find(query).populate('buyer', 'name phone').sort({ createdAt: -1 }).lean();
+            csv += 'Order ID,Customer,Phone,Amount,Status,Date\n';
+            data.forEach(o => {
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A';
+                csv += `${o._id},"${o.buyer?.name || 'N/A'}","${o.buyer?.phone || 'N/A'}",${o.totalAmount},${o.status},${date}\n`;
+            });
+        } else if (module === 'equipment') {
+            data = await Rental.find(query).populate('owner buyer', 'name').sort({ createdAt: -1 }).lean();
+            csv += 'Rental ID,Owner,Buyer,Total Amount,Status,Date\n';
+            data.forEach(r => {
+                const date = r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'N/A';
+                csv += `${r._id},"${r.owner?.name || 'N/A'}","${r.buyer?.name || 'N/A'}",${r.totalAmount},${r.status},${date}\n`;
+            });
+        } else if (module === 'labour') {
+            data = await LabourJob.find(query).populate('labour', 'name').sort({ createdAt: -1 }).lean();
+            csv += 'Job ID,Labour Name,Amount,Status,Date\n';
+            data.forEach(l => {
+                const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'N/A';
+                csv += `${l._id},"${l.labour?.name || 'N/A'}",${l.amount},${l.status},${date}\n`;
+            });
+        } else if (module === 'buyer-trading') {
+            data = await Order.find(query).populate('assignedTo', 'name').sort({ createdAt: -1 }).lean();
+            csv += 'Order ID,Farmer,Buyer,Crop,Amount,Status,Date\n';
+            data.forEach(o => {
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A';
+                csv += `${o._id},"${o.farmerName || 'N/A'}","${o.assignedTo?.name || 'N/A'}","${o.crop}",${o.amount},${o.status},${date}\n`;
+            });
+        } else {
+            // Consolidated / Finance
+            data = await Transaction.find(query).populate('recipient', 'name').sort({ createdAt: -1 }).lean();
+            csv += 'Txn ID,Recipient,Module,Amount,Type,Status,Date\n';
+            data.forEach(t => {
+                const date = t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A';
+                csv += `${t.transactionId},"${t.recipient?.name || 'N/A'}",${t.module},${t.amount},${t.type},${t.status},${date}\n`;
+            });
+        }
+
+        if (format === 'json') {
+            return res.status(200).json(data);
+        }
+
+        res.attachment(`KrishiNex_${module}_report.csv`);
+        res.status(200).send(csv);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Report generation failed' });
+    }
+});
+
+// Admin Dashboard Comprehensive Stats
+router.get('/admin/dashboard-stats', protect, async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        let start, end, prevStart, prevEnd;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll;
+
+        if (hasFilter) {
+            if (startDate && endDate) {
+                start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+
+                end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+
+                const duration = end.getTime() - start.getTime();
+                prevStart = new Date(start.getTime() - duration - 1);
+                prevEnd = new Date(start.getTime() - 1);
+            } else {
+                const now = new Date();
+                start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                end = now;
+                prevStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                prevEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+            }
+        }
+
+        const startOfMonth = hasFilter ? new Date(start.getFullYear(), start.getMonth(), 1) : null;
+
+        const completedMatchCondition = hasFilter
+            ? { status: 'Completed', createdAt: { $gte: start, $lte: end } }
+            : { status: 'Completed' };
+
+        const shopOrderMatchCondition = hasFilter
+            ? { status: { $ne: 'CANCELLED' }, createdAt: { $gte: start, $lte: end } }
+            : { status: { $ne: 'CANCELLED' } };
+
+        const [
+            kspCount, kspStockVal, kspSalesToday,
+            eqPartners, eqMachines, eqActiveBookings,
+            labRegistered, labActiveWorkers, labActiveJobs,
+            buyTotal, buyOrders, buyPendingPay,
+            soilLabs, soilTestsTotal, soilTestsMonth,
+            farmerTotal, farmerActive, farmerWallet,
+            staffTotal, fieldExTotal,
+            todayRev, yesterdayRev, todayOrders, kycPending, payoutsPending,
+            recentTransactions, recentShopOrders
+        ] = await Promise.all([
+            // 1. KSP
+            User.countDocuments(hasFilter ? { role: 'ksp', createdAt: { $gte: start, $lte: end } } : { role: 'ksp' }),
+            Item.aggregate([
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'ownerDoc'
+                    }
+                },
+                { $unwind: '$ownerDoc' },
+                { $match: hasFilter ? { 'ownerDoc.role': 'ksp', createdAt: { $gte: start, $lte: end } } : { 'ownerDoc.role': 'ksp' } },
+                {
+                    $project: {
+                        itemVal: {
+                            $cond: {
+                                if: { $and: [ { $eq: ["$hasVariants", true] }, { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] } ] },
+                                then: {
+                                    $sum: {
+                                        $map: {
+                                            input: "$variants",
+                                            as: "v",
+                                            in: { $multiply: [{ $ifNull: ["$$v.price", 0] }, { $ifNull: ["$$v.stockQty", 0] }] }
+                                        }
+                                    }
+                                },
+                                else: { $multiply: [{ $ifNull: ["$price", 0] }, { $ifNull: ["$stockQty", 0] }] }
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: '$itemVal' }
+                    }
+                }
+            ]),
+            Promise.all([
+                FranchiseSale.aggregate([
+                    { $match: completedMatchCondition },
+                    { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+                ]),
+                ShopOrder.aggregate([
+                    {
+                        $match: shopOrderMatchCondition
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'owner',
+                            foreignField: '_id',
+                            as: 'ownerDoc'
+                        }
+                    },
+                    { $unwind: '$ownerDoc' },
+                    { $match: { 'ownerDoc.role': 'ksp' } },
+                    { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+                ])
+            ]).then(([otc, shop]) => {
+                return [{ total: (otc[0]?.total || 0) + (shop[0]?.total || 0) }];
+            }),
+
+            // 2. Equipment
+            User.countDocuments(hasFilter ? { role: 'equipment', createdAt: { $gte: start, $lte: end } } : { role: 'equipment' }),
+            Machine.countDocuments(hasFilter ? { createdAt: { $gte: start, $lte: end } } : {}),
+            Rental.countDocuments(hasFilter ? { status: 'Accepted', createdAt: { $gte: start, $lte: end } } : { status: 'Accepted' }),
+
+            // 3. Labour
+            User.countDocuments(hasFilter ? { role: 'labour', createdAt: { $gte: start, $lte: end } } : { role: 'labour' }),
+            User.countDocuments(hasFilter ? { role: 'labour', status: 'approved', createdAt: { $gte: start, $lte: end } } : { role: 'labour', status: 'approved' }),
+            LabourJob.countDocuments(hasFilter ? { status: { $in: ['Accepted', 'In Progress'] }, createdAt: { $gte: start, $lte: end } } : { status: { $in: ['Accepted', 'In Progress'] } }),
+
+            // 4. Buyer Trading (B2B)
+            User.countDocuments(hasFilter ? { role: 'buyer', businessName: { $exists: true, $ne: '' }, createdAt: { $gte: start, $lte: end } } : { role: 'buyer', businessName: { $exists: true, $ne: '' } }),
+            Order.countDocuments(hasFilter ? { createdAt: { $gte: start, $lte: end } } : {}),
+            Transaction.aggregate(hasFilter ? [{ $match: { module: 'BuyerTrading', status: 'Pending', createdAt: { $gte: start, $lte: end } } }, { $group: { _id: null, total: { $sum: '$amount' } } }] : [{ $match: { module: 'BuyerTrading', status: 'Pending' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
+
+            // 5. Soil Testing
+            User.countDocuments(hasFilter ? { role: 'soil', createdAt: { $gte: start, $lte: end } } : { role: 'soil' }),
+            SoilRequest.countDocuments(hasFilter ? { createdAt: { $gte: start, $lte: end } } : {}),
+            SoilRequest.countDocuments({ createdAt: { $gte: hasFilter ? start : startOfMonth, $lte: end } }),
+
+            // 6. Farmers
+            User.countDocuments(hasFilter ? { role: 'buyer', createdAt: { $gte: start, $lte: end } } : { role: 'buyer' }),
+            User.countDocuments(hasFilter ? { role: 'buyer', status: 'approved', createdAt: { $gte: start, $lte: end } } : { role: 'buyer', status: 'approved' }),
+            User.aggregate(hasFilter ? [{ $match: { role: 'buyer', walletBalance: { $gte: -1000000, $lte: 100000000 }, createdAt: { $gte: start, $lte: end } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }] : [{ $match: { role: 'buyer', walletBalance: { $gte: -1000000, $lte: 100000000 } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }]),
+
+            // 7. Internal
+            User.countDocuments(hasFilter ? { role: { $in: ['employee', 'admin', 'field_executive'] }, createdAt: { $gte: start, $lte: end } } : { role: { $in: ['employee', 'admin', 'field_executive'] } }),
+            User.countDocuments(hasFilter ? { role: 'field_executive', createdAt: { $gte: start, $lte: end } } : { role: 'field_executive' }),
+
+            // 8. Key Metrics (Today vs Selected Range)
+            Transaction.aggregate(hasFilter ? [{ $match: { status: 'Completed', createdAt: { $gte: start, $lte: end } } }, { $group: { _id: null, total: { $sum: '$amount' } } }] : [{ $match: { status: 'Completed' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
+            hasFilter ? Transaction.aggregate([{ $match: { status: 'Completed', createdAt: { $gte: prevStart, $lte: prevEnd } } }, { $group: { _id: null, total: { $sum: '$amount' } } }]) : Promise.resolve([]),
+            Order.countDocuments(hasFilter ? { createdAt: { $gte: start, $lte: end } } : {}),
+            User.countDocuments(hasFilter ? { status: 'pending', createdAt: { $gte: start, $lte: end } } : { status: 'pending' }),
+            Transaction.aggregate(hasFilter ? [{ $match: { type: 'payout', status: 'Pending', createdAt: { $gte: start, $lte: end } } }, { $group: { _id: null, total: { $sum: '$amount' } } }] : [{ $match: { type: 'payout', status: 'Pending' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
+
+            // 9. Recent Activities
+            Transaction.find(hasFilter ? { createdAt: { $gte: start, $lte: end } } : {}).populate('recipient', 'name').sort({ createdAt: -1 }).limit(10).lean(),
+            ShopOrder.find(hasFilter ? { status: { $ne: 'CANCELLED' }, createdAt: { $gte: start, $lte: end } } : { status: { $ne: 'CANCELLED' } }).populate('buyer', 'name').sort({ createdAt: -1 }).limit(10).lean()
+        ]);
+
+        const activities = [
+            ...recentTransactions.map(t => ({
+                type: t.module || t.type || 'Transaction',
+                title: t.module ? `${t.module} ${t.type || ''}` : t.type || 'Activity',
+                description: `${t.recipient?.name || 'User'} - ?${t.amount || 0}`,
+                time: t.createdAt,
+                status: t.status
+            })),
+            ...recentShopOrders.map(o => ({
+                type: 'KSP',
+                title: 'KSP Product Sale',
+                description: `${o.buyer?.name || 'Farmer'} - ?${o.totalAmount || 0}`,
+                time: o.createdAt,
+                status: o.status
+            }))
+        ]
+            .sort((a, b) => new Date(b.time) - new Date(a.time))
+            .slice(0, 10)
+            .map(act => ({
+                ...act,
+                time: formatTimeAgo(act.time)
+            }));
+
+        const currentRev = todayRev[0]?.total || 0;
+        const pastRev = yesterdayRev[0]?.total || 0;
+        let revGrowth = 0;
+        if (pastRev === 0) {
+            revGrowth = currentRev > 0 ? 100 : 0;
+        } else {
+            revGrowth = (((currentRev - pastRev) / pastRev) * 100).toFixed(1);
+        }
+
+        res.status(200).json({
+            ksp: { franchises: kspCount, stockValue: kspStockVal[0]?.total || 0, salesToday: kspSalesToday[0]?.total || 0 },
+            equipment: { partners: eqPartners, machines: eqMachines, activeBookings: eqActiveBookings },
+            labour: { registered: labRegistered, activeWorkers: labActiveWorkers, activeJobs: labActiveJobs },
+            trading: { buyers: buyTotal, totalOrders: buyOrders, pendingPayment: buyPendingPay[0]?.total || 0 },
+            soil: { labs: soilLabs, testsDone: soilTestsTotal, monthTests: soilTestsMonth },
+            farmers: { total: farmerTotal, active: farmerActive, walletTotal: farmerWallet[0]?.total || 0 },
+            internal: { staff: staffTotal, fieldEx: fieldExTotal, online: Math.max(1, Math.floor(staffTotal * 0.4)) },
+            activities,
+            metrics: {
+                revenue: currentRev,
+                revenueGrowth: revGrowth,
+                orders: todayOrders,
+                kycPending: kycPending,
+                payouts: payoutsPending[0]?.total || 0
+            }
+        });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Dashboard stats failed' });
+    }
+});
+
+function formatTimeAgo(date) {
+    if (!date) return 'Just now';
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) + " seconds ago";
+}
+
+
+// =============================================
+// ADMIN: FRANCHISE (KSP) MANAGEMENT ROUTES
+// =============================================
+
+// @route   GET /api/employee/admin/franchise-stats
+// @desc    Get KPI stats for Franchise dashboard
+router.get('/admin/franchise-stats', protect, checkModule('ksp_franchise'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let start, end;
+        if (hasFilter) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        const franchiseQuery = hasFilter 
+            ? { role: 'ksp', createdAt: { $gte: start, $lte: end } } 
+            : { role: 'ksp' };
+
+        const activeFranchiseQuery = hasFilter 
+            ? { role: 'ksp', status: 'approved', createdAt: { $gte: start, $lte: end } } 
+            : { role: 'ksp', status: 'approved' };
+
+        const lowStockQuery = hasFilter 
+            ? { stockQty: { $lt: 10 }, createdAt: { $gte: start, $lte: end } } 
+            : { stockQty: { $lt: 10 } };
+
+        const totalFranchises = await User.countDocuments(franchiseQuery);
+        const activeFranchises = await User.countDocuments(activeFranchiseQuery);
+        const lowStockItems = await Item.countDocuments(lowStockQuery);
+
+        // Sales Calculation
+        let salesMatch;
+        let shopSalesMatch;
+        if (hasFilter) {
+            salesMatch = { status: 'Completed', createdAt: { $gte: start, $lte: end } };
+            shopSalesMatch = { status: { $ne: 'CANCELLED' }, createdAt: { $gte: start, $lte: end } };
+        } else {
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+            salesMatch = { status: 'Completed', createdAt: { $gte: startOfMonth } };
+            shopSalesMatch = { status: { $ne: 'CANCELLED' }, createdAt: { $gte: startOfMonth } };
+        }
+
+        const [otcSales, shopSales] = await Promise.all([
+            FranchiseSale.aggregate([
+                { $match: salesMatch },
+                { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+            ]),
+            ShopOrder.aggregate([
+                { $match: shopSalesMatch },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'ownerDoc'
+                    }
+                },
+                { $unwind: '$ownerDoc' },
+                { $match: { 'ownerDoc.role': 'ksp' } },
+                { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+            ])
+        ]);
+
+        const monthlySales = (otcSales[0]?.total || 0) + (shopSales[0]?.total || 0);
+
+        // Stock Value Calculation
+        const stockMatch = hasFilter 
+            ? { 'ownerDoc.role': 'ksp', createdAt: { $gte: start, $lte: end } } 
+            : { 'ownerDoc.role': 'ksp' };
+
+        const stockValRes = await Item.aggregate([
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'owner',
+                    foreignField: '_id',
+                    as: 'ownerDoc'
+                }
+            },
+            { $unwind: '$ownerDoc' },
+            { $match: stockMatch },
+            {
+                $project: {
+                    itemVal: {
+                        $cond: {
+                            if: { $and: [ { $eq: ["$hasVariants", true] }, { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] } ] },
+                            then: {
+                                $sum: {
+                                    $map: {
+                                        input: "$variants",
+                                        as: "v",
+                                        in: { $multiply: [{ $ifNull: ["$$v.price", 0] }, { $ifNull: ["$$v.stockQty", 0] }] }
+                                    }
+                                }
+                            },
+                            else: { $multiply: [{ $ifNull: ["$price", 0] }, { $ifNull: ["$stockQty", 0] }] }
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$itemVal' }
+                }
+            }
+        ]);
+
+        const totalStockValue = stockValRes[0]?.total || 0;
+
+        // Wallet Balance
+        const walletQuery = hasFilter 
+            ? { role: 'ksp', createdAt: { $gte: start, $lte: end } } 
+            : { role: 'ksp' };
+        const allFranchises = await User.find(walletQuery).select('walletBalance');
+        const totalWallet = allFranchises.reduce((sum, f) => sum + (f.walletBalance || 0), 0);
+
+        res.json({
+            totalFranchises,
+            activeFranchises,
+            monthlySales,
+            totalStockValue,
+            lowStockCount: lowStockItems,
+            totalWallet
+        });
+    } catch (e) {
+        console.error('Franchise stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch franchise stats' });
+    }
+});
+
+// @route   POST /api/employee/admin/franchises
+// @desc    Add a new KSP franchise
+router.post('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
+    try {
+        const { name, phone, email, password, businessName, address, kspType } = req.body;
+
+        if (!name || !phone || !password || !businessName || !address) {
+            return res.status(400).json({ error: 'Please provide all required fields' });
+        }
+
+        const userExists = await User.findOne({ phone });
+        if (userExists) {
+            return res.status(400).json({ error: 'User with this phone number already exists' });
+        }
+
+        // Generate unique KSP Partner ID: KSPD/KSPP + 6 random digits
+        const prefix = (kspType === 'KSP Prime') ? 'KSPP' : 'KSPD';
+        let kspPartnerId;
+        let isUnique = false;
+        while (!isUnique) {
+            const digits = Math.floor(100000 + Math.random() * 900000); // 6-digit number
+            kspPartnerId = `${prefix}${digits}`;
+            const existing = await User.findOne({ kspPartnerId });
+            if (!existing) isUnique = true;
+        }
+
+        const newFranchise = await User.create({
+            name,
+            phone,
+            email: email || '',
+            password,
+            role: 'ksp',
+            status: 'approved',
+            businessName,
+            address,
+            walletBalance: 0,
+            kspType: kspType || 'KSP Digital',
+            kspPartnerId
+        });
+
+        res.status(201).json({
+            message: 'Franchise Created Successfully',
+            franchiseId: newFranchise._id,
+            kspPartnerId: newFranchise.kspPartnerId
+        });
+    } catch (e) {
+        console.error('Franchise creation error:', e);
+        res.status(500).json({ error: 'Failed to create franchise' });
+    }
+});
+
+// @route   GET /api/employee/admin/franchises
+// @desc    Get all franchises for admin
+router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let start, end;
+        if (hasFilter) {
+            start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        const query = { role: 'ksp' };
+        if (hasFilter) {
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const franchises = await User.find(query)
+            .select('name businessName phone address status walletBalance walletNumber createdAt email profilePhotoUrl aadhaarDocUrl panDocUrl businessLicenseUrl kspType bankDetails kspPartnerId')
+            .sort({ createdAt: -1 });
+
+        console.log(`[DEBUG] Found ${franchises.length} KSP franchises in DB`);
+
+        const result = await Promise.all(franchises.map(async f => {
+            const lowStockCount = await Item.countDocuments({ owner: f._id, stockQty: { $lt: 10 } });
+
+            let salesQuery = { franchise: f._id, status: 'Completed' };
+            if (hasFilter) {
+                salesQuery.createdAt = { $gte: start, $lte: end };
+            } else {
+                const startOfMonth = new Date();
+                startOfMonth.setDate(1);
+                startOfMonth.setHours(0, 0, 0, 0);
+                salesQuery.createdAt = { $gte: startOfMonth };
+            }
+
+            const sales = await FranchiseSale.find(salesQuery);
+            const salesThisMonth = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+
+            return {
+                _id: f._id,
+                franchiseName: f.businessName || f.name,
+                ownerName: f.name,
+                phone: f.phone,
+                location: f.address,
+                status: f.status,
+                walletBalance: f.walletBalance || 0,
+                walletNumber: f.walletNumber || null,
+                stockValue: 0, // Placeholder
+                lowStockCount,
+                salesThisMonth,
+                profilePhotoUrl: f.profilePhotoUrl,
+                aadhaarDocUrl: f.aadhaarDocUrl,
+                panDocUrl: f.panDocUrl,
+                businessLicenseUrl: f.businessLicenseUrl,
+                email: f.email,
+                kspType: f.kspType || 'KSP Digital',
+                kspPartnerId: f.kspPartnerId || '',
+                bankDetails: {
+                    holderName: f.bankDetails?.holderName || '',
+                    bankName: f.bankDetails?.bankName || '',
+                    accountNumber: f.bankDetails?.accountNumber || '',
+                    ifscCode: f.bankDetails?.ifscCode || '',
+                    bankAddress: f.bankDetails?.bankAddress || ''
+                }
+            };
+        }));
+
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   POST /api/employee/admin/ksp/direct-recharge
+// @desc    Admin directly recharges a KSP wallet
+router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) => {
+    try {
+        const { id, amount, note } = req.body;
+        if (!id || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid ID or amount' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        user.walletBalance = (user.walletBalance || 0) + Number(amount);
+        await user.save();
+
+        // Create transaction record
+        await Transaction.create({
+            transactionId: 'RECH' + Date.now().toString().substring(6),
+            recipient: id,
+            module: 'KSP',
+            amount: Number(amount),
+            type: 'Credit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            performedBy: req.user._id,
+            note: note || 'Direct admin recharge'
+        });
+
+        res.json({ success: true, newBalance: user.walletBalance });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Recharge failed' });
+    }
+});
+
+// @route   POST /api/employee/admin/user/wallet-recharge
+// @desc    Admin/Authorized Employee manually recharges or debits any user's wallet
+// @access  Private/Admin
+router.post('/admin/user/wallet-recharge', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { userId, amount, type, note } = req.body;
+        if (!userId || !amount || amount <= 0 || !['Credit', 'Debit'].includes(type)) {
+            return res.status(400).json({ error: 'Invalid parameters' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const prevBalance = user.walletBalance || 0;
+        if (type === 'Credit') {
+            user.walletBalance = prevBalance + Number(amount);
+        } else {
+            user.walletBalance = prevBalance - Number(amount);
+        }
+
+        await user.save();
+
+        // Create transaction record
+        await Transaction.create({
+            transactionId: (type === 'Credit' ? 'CR' : 'DB') + Date.now().toString().substring(6),
+            recipient: userId,
+            module: 'Platform',
+            amount: Number(amount),
+            type: type,
+            paymentMode: 'NexCard Wallet',
+            status: 'Completed',
+            performedBy: req.user._id,
+            note: note || `Admin Manual ${type}`
+        });
+
+
+        res.json({ success: true, newBalance: user.walletBalance });
+    } catch (e) {
+        console.error('Wallet Action Error:', e);
+        res.status(500).json({ error: 'Failed to process wallet action' });
+    }
+});
+
+// @route   GET /api/employee/admin/user-full-history/:id
+// @desc    Get all history (Rentals, Crop Sales, Transactions, Shop Orders) for a user
+// @access  Private/Admin
+router.get('/admin/user-full-history/:id', protect, checkModule('users'), async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // 1. Equipment & Labour Bookings (Rentals)
+        const bookings = await Rental.find({ buyer: userId })
+            .populate('machine', 'name image')
+            .sort({ createdAt: -1 });
+
+        // 2. Crop Sales
+        const cropSales = await SellRequest.find({ user: userId })
+            .sort({ createdAt: -1 });
+
+        // 3. Transactions
+        const transactions = await Transaction.find({ recipient: userId })
+            .sort({ createdAt: -1 });
+
+        // 4. Shop Orders
+        const shopOrders = await ShopOrder.find({ customer: userId })
+            .sort({ createdAt: -1 });
+
+        res.json({
+            bookings,
+            cropSales,
+            transactions,
+            shopOrders
+        });
+    } catch (e) {
+        console.error('Full History Error:', e);
+        res.status(500).json({ error: 'Failed to fetch user history' });
+    }
+});
+
+
+
+// @route   GET /api/employee/admin/ksp/transactions/:id
+// @desc    Get all transactions (Sales & Recharges) for a franchise
+router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 1. Get Wallet Transactions (Recharges/Payouts)
+        const txns = await Transaction.find({ recipient: id, module: 'KSP' }).sort({ createdAt: -1 }).lean();
+
+        // 2. Get Sales History
+        const sales = await FranchiseSale.find({ franchise: id }).sort({ createdAt: -1 }).lean();
+
+        // Combine and sort
+        const combined = [
+            ...txns.map(t => ({
+                id: t._id,
+                date: t.createdAt,
+                type: 'Recharge',
+                amount: t.amount,
+                status: t.status,
+                note: t.note || t.paymentMode
+            })),
+            ...sales.map(s => ({
+                id: s._id,
+                date: s.createdAt,
+                type: 'Sale',
+                amount: s.totalAmount,
+                status: s.status,
+                note: `Order: ${s.items.length} items`
+            }))
+        ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json(combined);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Failed to fetch franchise history' });
+    }
+});
+
+// @route   POST /api/employee/admin/ksp/direct-debit
+// @desc    Admin directly debits from a KSP wallet
+router.post('/admin/ksp/direct-debit', protect, checkAdmin, async (req, res) => {
+    try {
+        const { id, amount, note } = req.body;
+        if (!id || !amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid ID or amount' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (user.walletBalance < amount) {
+            return res.status(400).json({ error: 'Insufficient wallet balance' });
+        }
+
+        user.walletBalance = (user.walletBalance || 0) - Number(amount);
+        await user.save();
+
+        // Create transaction record
+        await Transaction.create({
+            transactionId: 'DEBT' + Date.now().toString().substring(6),
+            recipient: id,
+            module: 'KSP',
+            amount: Number(amount),
+            type: 'Debit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            performedBy: req.user._id,
+            note: note || 'Direct admin debit'
+        });
+
+        res.json({ success: true, newBalance: user.walletBalance });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Debit failed' });
+    }
+});
+
+// @route   PATCH /api/employee/admin/ksp/profile/:id
+// @desc    Update KSP franchise profile details
+router.patch('/admin/ksp/profile/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const { name, ownerName, businessName, franchiseName, phone, email, address, location, walletNumber, kspType, bankDetails } = req.body;
+        const up = {};
+        if (name || ownerName) up.name = name || ownerName;
+        if (businessName || franchiseName) up.businessName = businessName || franchiseName;
+        if (phone) up.phone = phone;
+        if (email) up.email = email;
+        if (address || location) up.address = address || location;
+        const franchise = await User.findOne({ _id: req.params.id, role: 'ksp' });
+        if (!franchise) return res.status(404).json({ error: 'Franchise not found' });
+
+        if (walletNumber !== undefined) {
+            if (walletNumber !== '' && walletNumber !== franchise.walletNumber) {
+                // 1. Check if card exists in NexCard inventory
+                const nexCard = await NexCard.findOne({ cardNumber: walletNumber });
+                if (!nexCard) {
+                    return res.status(400).json({ error: 'Card number does not exist in inventory' });
+                }
+
+                // 2. Check if card is already assigned in inventory
+                if (nexCard.status === 'assigned') {
+                    if (nexCard.assignedTo && nexCard.assignedTo.toString() !== req.params.id) {
+                        return res.status(400).json({ error: 'This card number is already assigned to another user (Inventory)' });
+                    }
+                }
+
+                // 3. Double check User collection (both cardNumber and walletNumber fields)
+                const alreadyAssigned = await User.findOne({
+                    _id: { $ne: req.params.id },
+                    $or: [
+                        { cardNumber: walletNumber },
+                        { walletNumber: walletNumber }
+                    ]
+                });
+                if (alreadyAssigned) {
+                    return res.status(400).json({ error: `This card is already assigned to: ${alreadyAssigned.name} (${alreadyAssigned.role})` });
+                }
+
+                // Handle old card release
+                if (franchise.walletNumber) {
+                    const oldCard = await NexCard.findOne({ cardNumber: franchise.walletNumber });
+                    if (oldCard) {
+                        oldCard.status = 'available';
+                        oldCard.assignedTo = null;
+                        oldCard.assignedAt = null;
+                        await oldCard.save();
+                    }
+                }
+
+                // Mark new card as assigned
+                nexCard.status = 'assigned';
+                nexCard.assignedTo = franchise._id;
+                nexCard.assignedAt = new Date();
+                await nexCard.save();
+            }
+            up.walletNumber = walletNumber;
+        }
+
+        if (kspType) up.kspType = kspType;
+        if (bankDetails && typeof bankDetails === 'object') {
+            if (bankDetails.holderName !== undefined) up['bankDetails.holderName'] = bankDetails.holderName;
+            if (bankDetails.bankName !== undefined) up['bankDetails.bankName'] = bankDetails.bankName;
+            if (bankDetails.accountNumber !== undefined) up['bankDetails.accountNumber'] = bankDetails.accountNumber;
+            if (bankDetails.ifscCode !== undefined) up['bankDetails.ifscCode'] = bankDetails.ifscCode;
+            if (bankDetails.bankAddress !== undefined) up['bankDetails.bankAddress'] = bankDetails.bankAddress;
+        }
+
+        // If kspType changed, check if prefix needs update
+        if (kspType && kspType !== franchise.kspType) {
+            const newPrefix = (kspType === 'KSP Prime') ? 'KSPP' : 'KSPD';
+            const currentId = franchise.kspPartnerId || '';
+            if (!currentId.startsWith(newPrefix)) {
+                let newId;
+                let isUnique = false;
+                while (!isUnique) {
+                    const digits = Math.floor(100000 + Math.random() * 900000);
+                    newId = `${newPrefix}${digits}`;
+                    const existing = await User.findOne({ kspPartnerId: newId });
+                    if (!existing) isUnique = true;
+                }
+                up.kspPartnerId = newId;
+            }
+        }
+
+        const updatedFranchise = await User.findOneAndUpdate(
+            { _id: req.params.id, role: 'ksp' },
+            up,
+            { new: true }
+        ).select('-password');
+
+        if (!updatedFranchise) return res.status(404).json({ error: 'Franchise not found' });
+        res.json({ success: true, franchise: updatedFranchise });
+    } catch (e) {
+        console.error('Update franchise error:', e);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// Setup multer for franchise uploads
+const franchiseUploads = path.join(__dirname, '../uploads/ksp');
+if (!fs.existsSync(franchiseUploads)) fs.mkdirSync(franchiseUploads, { recursive: true });
+
+const franchiseStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, franchiseUploads),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        cb(null, `ksp_${req.params.id}_${file.fieldname}_${Date.now()}${ext}`);
+    }
+});
+const uploadFranchiseDoc = multer({ storage: franchiseStorage });
+
+// @route   POST /api/employee/admin/ksp/upload/:id
+// @desc    Upload documents/photo for KSP franchise
+router.post('/admin/ksp/upload/:id', protect, checkAdmin, uploadFranchiseDoc.fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'aadhaarDoc', maxCount: 1 },
+    { name: 'panDoc', maxCount: 1 },
+    { name: 'businessLicense', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const updateData = {};
+        if (req.files) {
+            if (req.files.profilePhoto) updateData.profilePhotoUrl = `uploads/ksp/${req.files.profilePhoto[0].filename}`;
+            if (req.files.aadhaarDoc) updateData.aadhaarDocUrl = `uploads/ksp/${req.files.aadhaarDoc[0].filename}`;
+            if (req.files.panDoc) updateData.panDocUrl = `uploads/ksp/${req.files.panDoc[0].filename}`;
+            if (req.files.businessLicense) updateData.businessLicenseUrl = `uploads/ksp/${req.files.businessLicense[0].filename}`;
+        }
+
+        const franchise = await User.findOneAndUpdate(
+            { _id: req.params.id, role: 'ksp' },
+            updateData,
+            { new: true }
+        ).select('-password');
+
+        if (!franchise) return res.status(404).json({ error: 'Franchise not found' });
+        res.json({ success: true, franchise });
+    } catch (e) {
+        console.error('Upload franchise doc error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
+    }
+});
+
+// @route   GET /api/employee/admin/franchise/inventory
+// @desc    Get inventory for all or specific franchise
+router.get('/admin/franchise/inventory', protect, checkAdmin, async (req, res) => {
+    try {
+        const { kspId, startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = {};
+        if (kspId && kspId !== 'all') {
+            query.owner = kspId;
+        } else {
+            const franchises = await User.find({ role: 'ksp' }).select('_id');
+            query.owner = { $in: franchises.map(f => f._id) };
+        }
+
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const items = await Item.find(query).populate('owner', 'name businessName').sort({ stockQty: 1 });
+        const result = items.map(i => ({
+            _id: i._id,
+            name: i.name,
+            category: i.category,
+            stockQty: i.stockQty,
+            unit: i.unit,
+            ownerName: i.owner ? (i.owner.businessName || i.owner.name) : 'Unknown'
+        }));
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   GET /api/employee/admin/franchise/ledger
+// @desc    Get sales ledger for all or specific payment mode
+router.get('/admin/franchise/ledger', protect, checkAdmin, async (req, res) => {
+    try {
+        const { paymentMode, startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = {};
+        if (paymentMode && paymentMode !== 'all') {
+            query.paymentMode = paymentMode === 'cash' ? 'Cash' : 'NexCard Wallet';
+        }
+
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const sales = await FranchiseSale.find(query)
+            .populate('franchise', 'name businessName')
+            .populate('buyer', 'name phone')
+            .sort({ createdAt: -1 })
+            .limit(100);
+
+        const result = sales.map(s => ({
+            _id: s.saleId,
+            farmerName: s.buyerName || (s.buyer ? s.buyer.name : 'Unknown'),
+            products: s.items.map(it => `${it.name} (${it.quantity})`).join(', '),
+            totalAmount: s.totalAmount,
+            paymentMode: s.paymentMode.toUpperCase(),
+            franchiseName: s.franchise ? (s.franchise.businessName || s.franchise.name) : 'Unknown',
+            date: s.createdAt
+        }));
+
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   GET /api/employee/admin/franchise/wallets
+// @desc    Get wallet balances and recharge requests
+router.get('/admin/franchise/wallets', protect, checkAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        const isAll = (all === 'true');
+        const hasFilter = !isAll && (startDate && endDate);
+
+        let query = { role: 'ksp' };
+        if (hasFilter) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const franchises = await User.find(query)
+            .select('name businessName address walletBalance walletRechargeAmount walletRechargeStatus')
+            .sort({ walletRechargeStatus: -1 });
+
+        const result = franchises.map(f => ({
+            _id: f._id,
+            franchiseName: f.businessName || f.name,
+            location: f.address,
+            walletBalance: f.walletBalance || 0,
+            rechargeRequest: f.walletRechargeAmount || 0,
+            requestStatus: f.walletRechargeStatus || 'NONE'
+        }));
+
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   PUT /api/employee/admin/franchise/approve-wallet/:id
+// @desc    Approve wallet recharge for franchise
+router.put('/admin/franchise/approve-wallet/:id', protect, checkAdmin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Franchise not found' });
+
+        if (user.walletRechargeStatus !== 'PENDING') {
+            return res.status(400).json({ error: 'No pending recharge request' });
+        }
+
+        const amount = user.walletRechargeAmount || 0;
+        user.walletBalance = (user.walletBalance || 0) + amount;
+        user.walletRechargeStatus = 'APPROVED';
+        user.walletRechargeAmount = 0;
+        await user.save();
+
+        // Transaction record
+        await Transaction.create({
+            transactionId: `KSP-RECH-${Date.now()}`,
+            recipient: user._id,
+            module: 'KSP',
+            amount: amount,
+            type: 'Credit',
+            paymentMode: 'Cash',
+            status: 'Completed',
+            note: 'Franchise Wallet Recharge Approved by Admin'
+        });
+
+        res.json({ message: `Recharge of ₹${amount} approved successfully` });
+    } catch (e) {
+        res.status(500).json({ error: 'Failed' });
+    }
+});
+
+// @route   POST /api/employee/leads/generate
+// @desc    Generate a new marketing lead (Farmer/Shop)
+// @access  Private (Employee/Field Executive)
+router.post('/leads/generate', protect, uploadLeadPhoto.single('photo'), async (req, res) => {
+    try {
+        const { category, mobile, address, farmerDetails, shopDetails } = req.body;
+
+        if (!category || !mobile || !address) {
+            return res.status(400).json({ error: 'Category, Mobile and Address are required' });
+        }
+
+        const leadData = {
+            executive: req.user.id,
+            category,
+            mobile,
+            address,
+            photoUrl: req.file ? `uploads/${req.file.filename}` : ''
+        };
+
+        if (category === 'Kisan') {
+            leadData.farmerDetails = typeof farmerDetails === 'string' ? JSON.parse(farmerDetails) : farmerDetails;
+        } else {
+            leadData.shopDetails = typeof shopDetails === 'string' ? JSON.parse(shopDetails) : shopDetails;
+        }
+
+        const lead = new FieldLead(leadData);
+        await lead.save();
+
+        res.json({ message: 'Lead generated successfully', lead });
+    } catch (error) {
+        console.error('Lead generate error:', error);
+        res.status(500).json({ error: 'Server error: ' + error.message });
+    }
+});
+
+// @route   GET /api/employee/admin/leads
+// @desc    Get all marketing leads for admin
+// @access  Private/Admin
+router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate, all } = req.query;
+        let query = {};
+        if (all !== 'true' && startDate && endDate) {
+            query.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+            };
+        }
+        const leads = await FieldLead.find(query)
+            .populate('executive', 'name employeeCode')
+            .sort({ createdAt: -1 });
+        res.json(leads);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch leads' });
+    }
+});
+
+// @route   GET /api/employee/admin/all-nex-cards
+// @desc    Get all users who have a Nex Card issued
+// @access  Private/Admin
+router.get('/admin/all-nex-cards', protect, checkAdmin, async (req, res) => {
+    try {
+        const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
+        const users = await User.find({
+            role: { $in: eligibleRoles },
+            $or: [
+                { cardNumber: { $exists: true, $ne: '' } },
+                { walletNumber: { $exists: true, $ne: '' } }
+            ]
+        })
+            .select('name role phone cardNumber walletNumber businessName status createdAt')
+            .sort({ createdAt: -1 });
+
+        // Fetch allotment logs to see which KSP issued which card
+        const logs = await KSPCardLog.find({})
+            .populate('kspId', 'name businessName phone kspPartnerId')
+            .lean();
+
+        console.log(`[DEBUG] Found ${logs.length} Nex Card allotment logs in DB`);
+
+
+        // Map logs to users
+        const result = users.map(u => {
+            const user = u.toObject();
+            const cardNum = (user.cardNumber || user.walletNumber || '').toString().trim();
+
+            // Find log by cardNumber OR targetUserId
+            const log = logs.find(l => {
+                const logCard = (l.cardNumber || '').toString().trim();
+                const logTargetId = (l.targetUserId || '').toString().trim();
+                const userObjId = (user._id || '').toString().trim();
+
+                return (logCard && logCard === cardNum) || (logTargetId && logTargetId === userObjId);
+            });
+
+            if (log) {
+                user.allottedBy = log.kspId ? log.kspId.name : 'System';
+                user.allottedByBusiness = log.kspId ? log.kspId.businessName : '';
+                user.allottedByKspPartnerId = log.kspId ? log.kspId.kspPartnerId : '';
+                user.allottedAt = log.generatedAt;
+            } else {
+                user.allottedBy = 'Direct';
+                user.allottedByBusiness = 'OFFICIAL';
+                user.allottedByKspPartnerId = '';
+                user.allottedAt = user.createdAt;
+            }
+            return user;
+        });
+
+        // Sort by allottedAt descending (latest first) using numeric timestamp
+        result.sort((a, b) => {
+            const timeA = new Date(a.allottedAt).getTime() || 0;
+            const timeB = new Date(b.allottedAt).getTime() || 0;
+            return timeB - timeA;
+        });
+
+        console.log(`[DEBUG] Top Record after Sort: ${result[0] ? result[0].name : 'NONE'} (${result[0] ? result[0].allottedAt : ''})`);
+
+        res.json(result);
+
+
+    } catch (error) {
+        console.error('[NEX-CARD-LIST] Error:', error);
+        res.status(500).json({ error: 'Failed to fetch Nex Cards' });
+    }
+});
+
+
+// @route   GET /api/employee/admin/export-nex-cards
+// @desc    Export all Nex Card users to CSV
+// @access  Private/Admin
+router.get('/admin/export-nex-cards', protect, checkAdmin, async (req, res) => {
+    try {
+        const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
+        const users = await User.find({
+            role: { $in: eligibleRoles },
+            $or: [
+                { cardNumber: { $exists: true, $ne: '' } },
+                { walletNumber: { $exists: true, $ne: '' } }
+            ]
+        })
+            .select('name role phone cardNumber walletNumber businessName status createdAt')
+            .sort({ createdAt: -1 });
+
+        let csv = 'Name,Role,Phone,Nex Card No.,Business Name,Status,Created At\n';
+        users.forEach(u => {
+            const cardNum = u.cardNumber || u.walletNumber || '';
+            const row = [
+                `"${u.name}"`,
+                `"${u.role}"`,
+                `"${u.phone}"`,
+                `"${cardNum}"`,
+                `"${u.businessName || ''}"`,
+                `"${u.status}"`,
+                `"${u.createdAt.toISOString()}"`
+            ];
+            csv += row.join(',') + '\n';
+        });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename=NexCards_Export.csv');
+        res.status(200).send(csv);
+    } catch (error) {
+        console.error('[NEX-CARD-EXPORT] Error:', error);
+        res.status(500).json({ error: 'Failed to export Nex Cards' });
+    }
+});
+
+module.exports = router;

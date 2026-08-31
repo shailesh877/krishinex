@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <title>KrishiNex Admin – Employee Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: {
+            emerald: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-slate-50 text-slate-900 overflow-x-hidden">
+  <div class="flex min-h-screen">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== SIDEBAR (REUSABLE) ========== -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+                                                                                    <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 shadow-sm">
+            <i class="fas fa-user-tie text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-6 min-w-0 overflow-x-hidden">
+      <header
+        class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm animate-fade-in flex-wrap">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <!-- Hamburger -->
+          <button id="hamburger"
+            class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-emerald-400 hover:bg-emerald-50 transition-all shadow-sm flex-shrink-0"
+            onclick="toggleSidebar()" aria-pressed="false">
+            <div class="space-y-[5px]">
+              <span
+                class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+              <span
+                class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+              <span
+                class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+            </div>
+          </button>
+          <div>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Employee Management</h1>
+            <p class="text-slate-500 text-sm font-medium">Create and manage your internal team and their access.</p>
+          </div>
+        </div>
+        <button onclick="openModal()"
+          class="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all flex items-center gap-2 w-full md:w-auto justify-center md:justify-start">
+          <i class="fas fa-plus"></i> Add New Employee
+        </button>
+      </header>
+
+      <!-- Employee Grid/Table -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in"
+        style="animation-delay: 0.1s;">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Code</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Modules Access
+                </th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody id="employeeTableBody" class="divide-y divide-slate-50">
+              <!-- Rows will be injected here -->
+            </tbody>
+          </table>
+        </div>
+        <div id="loader" class="p-12 flex flex-col items-center justify-center text-slate-400">
+          <i class="fas fa-circle-notch fa-spin text-3xl mb-4 text-emerald-500"></i>
+          <p class="text-sm font-bold">Loading employees...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Ultra-Premium Add/Edit Modal -->
+  <div id="modal" class="fixed inset-0 z-50 hidden overflow-y-auto p-4 md:p-6 bg-slate-950/75 backdrop-blur-md transition-all duration-300">
+    <div class="flex min-h-full items-center justify-center py-6">
+      <div class="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-slate-200/80 overflow-hidden animate-fade-in my-auto">
+        
+        <!-- Premium Gradient Header -->
+        <div class="px-8 py-6 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 border-b border-slate-800 flex justify-between items-center sticky top-0 z-30">
+          <div class="flex items-center gap-4">
+            <div class="h-12 w-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shadow-inner">
+              <i class="fas fa-user-shield text-xl"></i>
+            </div>
+            <div>
+              <h2 id="modalTitle" class="text-xl font-black text-white tracking-tight">Add New Account</h2>
+              <p class="text-xs text-emerald-400/80 font-medium">Configure credentials, portal role & module access permissions</p>
+            </div>
+          </div>
+          <button onclick="closeModal()" class="h-10 w-10 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+            <i class="fas fa-times text-base"></i>
+          </button>
+        </div>
+
+        <form id="employeeForm" class="p-8 space-y-8">
+          <input type="hidden" id="employeeId">
+
+          <!-- SECTION 1: ROLE SELECTION CARDS -->
+          <div>
+            <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-3 pl-1 flex items-center gap-1.5">
+              <i class="fas fa-shield-alt text-emerald-600"></i> Account Role & Access Level
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Employee Card -->
+              <label onclick="setRoleOption('employee')" id="roleCardEmployee" class="relative flex items-center p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/40 cursor-pointer transition-all hover:shadow-md">
+                <input type="radio" name="roleOption" value="employee" checked class="hidden">
+                <div class="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 text-lg mr-3">
+                  <i class="fas fa-user-gear"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-black text-slate-900">Sub-Admin / Employee</p>
+                  <p class="text-[11px] text-slate-500 font-semibold">Custom granular module permissions</p>
+                </div>
+                <div class="ml-auto text-emerald-600 font-bold text-xs" id="checkIconEmployee">
+                  <i class="fas fa-check-circle text-lg"></i>
+                </div>
+              </label>
+
+              <!-- Superadmin Card -->
+              <label onclick="setRoleOption('admin')" id="roleCardAdmin" class="relative flex items-center p-4 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:shadow-md hover:border-purple-300">
+                <input type="radio" name="roleOption" value="admin" class="hidden">
+                <div class="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 text-lg mr-3">
+                  <i class="fas fa-shield-halved"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-black text-slate-900">Superadmin</p>
+                  <p class="text-[11px] text-slate-500 font-semibold">Full 100% access to all system features</p>
+                </div>
+                <div class="ml-auto text-slate-300 font-bold text-xs" id="checkIconAdmin">
+                  <i class="far fa-circle text-lg"></i>
+                </div>
+              </label>
+            </div>
+            <select id="role" onchange="syncRoleFromDropdown()" class="hidden">
+              <option value="employee">employee</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+
+          <!-- SECTION 2: PERSONAL & LOGIN CREDENTIALS -->
+          <div class="space-y-4">
+            <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block pl-1 flex items-center gap-1.5">
+              <i class="fas fa-id-card text-emerald-600"></i> Credentials & Contact Info
+            </label>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Full Name <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="text" id="name" required placeholder="e.g. Rahul Sharma"
+                    class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
+                  <i class="fas fa-user absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Employee Code / ID <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="text" id="employeeCode" required placeholder="e.g. EMP-1092"
+                    class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
+                  <i class="fas fa-hashtag absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Email Address <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="email" id="email" required placeholder="e.g. rahul@krishinex.com"
+                    class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
+                  <i class="fas fa-envelope absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Phone Number</label>
+                <div class="relative">
+                  <input type="text" id="phone" placeholder="e.g. 9876543210"
+                    class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
+                  <i class="fas fa-phone absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Portal Password <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input type="password" id="password" required placeholder="••••••••"
+                    class="w-full px-4 py-3 pl-10 pr-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
+                  <i class="fas fa-lock absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                  <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-xs">
+                    <i class="fas fa-eye" id="pwdEyeIcon"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Office Location / Address</label>
+                <div class="relative">
+                  <input type="text" id="address" placeholder="e.g. Regional Office, Patna"
+                    class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
+                  <i class="fas fa-location-dot absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUPERADMIN FULL ACCESS INFO BANNER -->
+          <div id="superadminInfoNotice" class="hidden p-6 rounded-3xl bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 border-2 border-purple-200 text-purple-950 flex items-center gap-5 animate-fade-in shadow-sm">
+            <div class="h-14 w-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-2xl shrink-0 shadow-lg shadow-purple-600/30">
+              <i class="fas fa-shield-circle-check"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-black text-purple-950 flex items-center gap-2">
+                100% Full Unrestricted System Access
+                <span class="bg-purple-200 text-purple-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Superadmin Active</span>
+              </h4>
+              <p class="text-xs text-purple-800 font-semibold mt-1 leading-relaxed">As a Superadmin, this account automatically has full access to all features, reports, settings, and modules across the entire KrishiNex portal. Individual module selection is not required.</p>
+            </div>
+          </div>
+
+          <!-- SECTION 3: MODULE ACCESS CONTROL GRID -->
+          <div id="moduleAccessSection" class="space-y-4 pt-2">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1 flex items-center gap-1.5">
+                <i class="fas fa-cubes text-emerald-600"></i> Module Access Control
+              </label>
+              <div class="flex gap-2">
+                <button type="button" onclick="selectAllModules(true)" class="text-[10px] font-black text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1">
+                  <i class="fas fa-check-double text-xs"></i> Select All
+                </button>
+                <button type="button" onclick="selectAllModules(false)" class="text-[10px] font-black text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-3 py-1.5 rounded-xl transition-all flex items-center gap-1">
+                  <i class="fas fa-times text-xs"></i> Clear All
+                </button>
+              </div>
+            </div>
+            
+            <div class="max-h-[340px] overflow-y-auto pr-2 custom-scroll space-y-5 bg-slate-50/70 p-5 rounded-3xl border border-slate-200">
+              <!-- Core Modules -->
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Core Business Operations
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="ksp_franchise" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">KSP Franchise</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="mandi" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Mandi Rates</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="equipment" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Equipment Rentals</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="labour" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Labour Aggregation</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="buyer" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Buyer Trading (B2B)</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="shop" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Shop Management</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Services & Advisory -->
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-sky-500"></span> Services & Advisory
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-sky-300 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="soil" class="w-4 h-4 text-sky-600 rounded accent-sky-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-sky-700">Soil Testing</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-sky-300 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="loan" class="w-4 h-4 text-sky-600 rounded accent-sky-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-sky-700">Loan Apps</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-sky-300 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="doctor" class="w-4 h-4 text-sky-600 rounded accent-sky-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-sky-700">Doctor Consultation</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-sky-300 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="pathshala" class="w-4 h-4 text-sky-600 rounded accent-sky-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-sky-700">Kisan Pathshala</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-sky-300 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="contact" class="w-4 h-4 text-sky-600 rounded accent-sky-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-sky-700">Contact Inquiries</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-sky-300 cursor-pointer transition-all has-[:checked]:border-sky-500 has-[:checked]:bg-sky-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="ad_enquiry" class="w-4 h-4 text-sky-600 rounded accent-sky-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-sky-700">Ad Enquiries</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- User & HR Management -->
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-purple-500"></span> Users & HR Management
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="users" class="w-4 h-4 text-purple-600 rounded accent-purple-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Farmers & Users</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="employees" class="w-4 h-4 text-purple-600 rounded accent-purple-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Employee Management</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="field_executive" class="w-4 h-4 text-purple-600 rounded accent-purple-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Field Executives</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="nexcard" class="w-4 h-4 text-purple-600 rounded accent-purple-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Nex Card Mgmt</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- System & Financial Management -->
+              <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-amber-500"></span> System & Financial Management
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-amber-300 cursor-pointer transition-all has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="kyc" class="w-4 h-4 text-amber-600 rounded accent-amber-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-amber-700">KYC & Compliance</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-amber-300 cursor-pointer transition-all has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="finance" class="w-4 h-4 text-amber-600 rounded accent-amber-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-amber-700">Finance & Payouts</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-amber-300 cursor-pointer transition-all has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="analytics" class="w-4 h-4 text-amber-600 rounded accent-amber-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-amber-700">Analytics & Reports</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-amber-300 cursor-pointer transition-all has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="settings" class="w-4 h-4 text-amber-600 rounded accent-amber-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-amber-700">System Settings</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOTER ACTION BUTTONS -->
+          <div class="pt-4 border-t border-slate-200/80 flex items-center justify-end gap-3">
+            <button type="button" onclick="closeModal()" class="px-6 py-3.5 rounded-2xl border-2 border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-100 hover:text-slate-800 transition-all">
+              Cancel
+            </button>
+            <button type="submit"
+              class="px-8 py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-600/30 transition-all transform active:scale-95 flex items-center gap-2">
+              <i class="fas fa-save text-base"></i>
+              <span>Save Account & Security Permissions</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    
+    // Note: In production, get this from localStorage after admin login
+    const AUTH_TOKEN = localStorage.getItem('employeeToken');
+    let allEmployees = [];
+
+    function selectAllModules(select = true) {
+      const checkboxes = document.querySelectorAll('input[name="modules"]');
+      checkboxes.forEach(cb => cb.checked = select);
+    }
+
+    async function fetchEmployees() {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/all`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        const data = await res.json();
+        allEmployees = data;
+        renderEmployees(data);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('loader').innerHTML = '<p class="text-rose-500 font-bold">Failed to load employees. Check console.</p>';
+      }
+    }
+
+    function toggleRoleModules() {
+      const role = document.getElementById('role')?.value;
+      if (role === 'admin') {
+        selectAllModules(true);
+      }
+    }
+
+    function renderEmployees(employees) {
+      const body = document.getElementById('employeeTableBody');
+      const loader = document.getElementById('loader');
+      loader.classList.add('hidden');
+      body.innerHTML = '';
+
+      employees.forEach(emp => {
+        const isSuperadmin = (emp.role === 'admin' || emp.role === 'superadmin');
+
+        const roleBadge = isSuperadmin
+          ? `<span class="bg-purple-100 text-purple-800 text-[10px] font-black px-2.5 py-1 rounded-full border border-purple-200 uppercase tracking-tighter"><i class="fas fa-shield-alt mr-1"></i> Superadmin</span>`
+          : `<span class="bg-blue-50 text-blue-700 text-[10px] font-black px-2.5 py-1 rounded-full border border-blue-100 uppercase tracking-tighter"><i class="fas fa-user-gear mr-1"></i> Sub-Admin / Employee</span>`;
+
+        const modulesDisplay = isSuperadmin
+          ? `<span class="bg-purple-50 text-purple-700 text-[9px] font-black px-2.5 py-1 rounded-full border border-purple-100 uppercase tracking-tighter">ALL MODULES (SUPERADMIN)</span>`
+          : (emp.employeeModules || []).map(m => `
+              <span class="bg-blue-50 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-tighter">${m}</span>
+            `).join('');
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
+        tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full ${isSuperadmin ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-700'} flex items-center justify-center font-black text-xs uppercase">
+                                ${emp.name ? emp.name.substring(0, 2) : 'AD'}
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-slate-900 flex items-center gap-2">
+                                  ${emp.name}
+                                  ${isSuperadmin ? '<i class="fas fa-check-double text-purple-600 text-xs" title="Superadmin"></i>' : ''}
+                                </p>
+                                <p class="text-[10px] text-slate-500 font-medium">${emp.email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="bg-slate-100 px-3 py-1 rounded-lg text-xs font-black text-slate-600 border border-slate-200">${emp.employeeCode || 'N/A'}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-600">${emp.phone || 'N/A'}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1">
+                            ${modulesDisplay}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        ${roleBadge}
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="editEmployee('${emp._id}')" title="Edit Role & Permissions" class="text-slate-400 hover:text-emerald-600 p-2 transition-colors"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteEmployee('${emp._id}')" title="Delete Account" class="text-slate-400 hover:text-rose-600 p-2 transition-colors ml-2"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+        body.appendChild(tr);
+      });
+    }
+
+    function setRoleOption(role) {
+      const roleSelect = document.getElementById('role');
+      const prevRole = roleSelect ? roleSelect.value : 'employee';
+      if (roleSelect) roleSelect.value = role;
+
+      const cardEmp = document.getElementById('roleCardEmployee');
+      const cardAdmin = document.getElementById('roleCardAdmin');
+      const iconEmp = document.getElementById('checkIconEmployee');
+      const iconAdmin = document.getElementById('checkIconAdmin');
+      const moduleSection = document.getElementById('moduleAccessSection');
+      const superadminNotice = document.getElementById('superadminInfoNotice');
+
+      if (role === 'admin') {
+        if (cardAdmin) cardAdmin.className = "relative flex items-center p-4 rounded-2xl border-2 border-purple-500 bg-purple-50/50 cursor-pointer transition-all shadow-md";
+        if (iconAdmin) {
+          iconAdmin.className = "ml-auto text-purple-600 font-bold text-xs";
+          iconAdmin.innerHTML = '<i class="fas fa-check-circle text-lg"></i>';
+        }
+
+        if (cardEmp) cardEmp.className = "relative flex items-center p-4 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:shadow-md hover:border-emerald-300";
+        if (iconEmp) {
+          iconEmp.className = "ml-auto text-slate-300 font-bold text-xs";
+          iconEmp.innerHTML = '<i class="far fa-circle text-lg"></i>';
+        }
+
+        // Hide Module Access Checkboxes Grid & Show Superadmin Info Banner
+        if (moduleSection) moduleSection.classList.add('hidden');
+        if (superadminNotice) superadminNotice.classList.remove('hidden');
+
+        selectAllModules(true);
+      } else {
+        if (cardEmp) cardEmp.className = "relative flex items-center p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/50 cursor-pointer transition-all shadow-md";
+        if (iconEmp) {
+          iconEmp.className = "ml-auto text-emerald-600 font-bold text-xs";
+          iconEmp.innerHTML = '<i class="fas fa-check-circle text-lg"></i>';
+        }
+
+        if (cardAdmin) cardAdmin.className = "relative flex items-center p-4 rounded-2xl border-2 border-slate-200 bg-white cursor-pointer transition-all hover:shadow-md hover:border-purple-300";
+        if (iconAdmin) {
+          iconAdmin.className = "ml-auto text-slate-300 font-bold text-xs";
+          iconAdmin.innerHTML = '<i class="far fa-circle text-lg"></i>';
+        }
+
+        // Show Module Access Checkboxes Grid & Hide Superadmin Info Banner
+        if (moduleSection) moduleSection.classList.remove('hidden');
+        if (superadminNotice) superadminNotice.classList.add('hidden');
+
+        // If switched from admin -> employee, uncheck all checkboxes by default
+        if (prevRole === 'admin') {
+          selectAllModules(false);
+        }
+      }
+    }
+
+    function syncRoleFromDropdown() {
+      const role = document.getElementById('role')?.value || 'employee';
+      setRoleOption(role);
+    }
+
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('password');
+      const pwdEyeIcon = document.getElementById('pwdEyeIcon');
+      if (!pwdInput || !pwdEyeIcon) return;
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        pwdEyeIcon.className = 'fas fa-eye-slash text-emerald-600';
+      } else {
+        pwdInput.type = 'password';
+        pwdEyeIcon.className = 'fas fa-eye';
+      }
+    }
+
+    function editEmployee(id) {
+      const emp = allEmployees.find(e => e._id === id);
+      if (emp) openModal(emp);
+    }
+
+    function openModal(emp = null) {
+      document.getElementById('modal').classList.remove('hidden');
+      const form = document.getElementById('employeeForm');
+      form.reset();
+      document.getElementById('employeeId').value = emp ? emp._id : '';
+      document.getElementById('modalTitle').innerText = emp ? 'Edit Account & Permissions' : 'Add New Account';
+
+      // Security check: Hide Superadmin choice card for non-superadmin users
+      const currentUser = JSON.parse(localStorage.getItem('ksp_user') || '{}');
+      const isCurrentUserSuperadmin = (currentUser.role === 'admin' || currentUser.role === 'superadmin');
+      const cardAdmin = document.getElementById('roleCardAdmin');
+      if (cardAdmin) {
+        if (!isCurrentUserSuperadmin) {
+          cardAdmin.classList.add('hidden');
+        } else {
+          cardAdmin.classList.remove('hidden');
+        }
+      }
+
+      const targetRole = emp ? ((emp.role === 'admin' || emp.role === 'superadmin') ? 'admin' : 'employee') : 'employee';
+      setRoleOption(targetRole);
+
+      if (emp) {
+        document.getElementById('name').value = emp.name || '';
+        document.getElementById('email').value = emp.email || '';
+        document.getElementById('phone').value = emp.phone || '';
+        document.getElementById('address').value = emp.address || '';
+        document.getElementById('employeeCode').value = emp.employeeCode || '';
+        document.getElementById('password').required = false;
+
+        const checkboxes = form.querySelectorAll('input[name="modules"]');
+        checkboxes.forEach(cb => {
+          cb.checked = (targetRole === 'admin') || (emp.employeeModules || []).includes(cb.value);
+        });
+      } else {
+        document.getElementById('password').required = true;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    document.getElementById('employeeForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('employeeId').value;
+      const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        employeeCode: document.getElementById('employeeCode').value,
+        role: document.getElementById('role').value,
+        employeeModules: Array.from(document.querySelectorAll('input[name="modules"]:checked')).map(cb => cb.value)
+      };
+
+      const password = document.getElementById('password').value;
+      if (password) formData.password = password;
+
+      const url = id ? `${API_BASE}/employee/admin/${id}` : `${API_BASE}/employee/admin/create`;
+      const method = id ? 'PATCH' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${AUTH_TOKEN}`
+          },
+          body: JSON.stringify(formData)
+        });
+        if (res.ok) {
+          closeModal();
+          fetchEmployees();
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Operation failed');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error');
+      }
+    };
+
+    async function deleteEmployee(id) {
+      if (!confirm('Are you sure you want to delete this employee?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) fetchEmployees();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    window.onload = fetchEmployees;
+
+    // Make sidebar toggle work
+    function toggleSidebar(show = true) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      const hamburger = document.getElementById('hamburger');
+
+      if (show) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('opacity-100');
+        if (hamburger) hamburger.setAttribute('aria-pressed', 'true');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.remove('opacity-100');
+        setTimeout(() => backdrop.classList.add('hidden'), 300);
+        if (hamburger) hamburger.setAttribute('aria-pressed', 'false');
+      }
+    }
+  </script>
+  <script src="js/sidebar-guard.js"></script>
+</body>
+
+</html>

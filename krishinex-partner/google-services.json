@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "578383641488",
+    "project_id": "krishinexnotificationsystem",
+    "storage_bucket": "krishinexnotificationsystem.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:578383641488:android:5fa1fced65f570ecfbd115",
+        "android_client_info": {
+          "package_name": "com.pasiwaresocial.partner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIKMhc-_gBvhiDv2zBQGLSny-NM-9s-d0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

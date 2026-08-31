@@ -1,0 +1,2691 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>KrishiNex Admin � Buyer Trading (B2B)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Security Headers -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- Authentication Check -->
+    <script src="js/auth.js?v=1.0.1"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: { sans: ['Inter', 'sans-serif'] },
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#16A34A',
+                            blue: '#0EA5E9',
+                        },
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-blue-50 via-slate-50 to-sky-50 text-slate-900 overflow-x-hidden">
+    <div class="min-h-screen flex">
+        <!-- MOBILE OVERLAY -->
+        <!-- MOBILE OVERLAY -->
+        <div id="mobile-backdrop"
+            class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+            onclick="toggleSidebar(false)"></div>
+
+        <!-- ========== REUSABLE SIDEBAR ========== -->
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+            <!-- Brand -->
+            <div
+                class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+                <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+                    <img src="images/logo.png" alt="">
+                </div>
+                <div class="ml-3">
+                    <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+                    <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+                                    <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-blue-50 via-sky-50 to-blue-50 text-blue-700 border-2 border-blue-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-sky-100 shadow-sm">
+            <i class="fas fa-handshake text-blue-600"></i>
+          </span>
+          <span class="truncate font-black">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+            <!-- Sidebar Footer -->
+            <div
+                class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-crown text-white text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+                        <p class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+                    </div>
+                    <button onclick="logoutSession()"
+                        class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+                        title="Logout Session">
+                        <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN AREA ========== -->
+        <div class="flex-1 flex flex-col md:ml-64 min-w-0 overflow-x-hidden">
+            <!-- Sticky Header -->
+            <header class="sticky top-0 z-20 border-b-2 border-slate-200 bg-white/98 backdrop-blur-xl shadow-lg">
+                <div class="flex items-center justify-between px-4 md:px-6 h-16">
+                    <div class="flex items-center gap-3">
+                        <button id="hamburger"
+                            class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50 transition-all shadow-sm"
+                            onclick="toggleSidebar()" aria-pressed="false">
+                            <div class="space-y-[5px]">
+                                <span
+                                    class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:translate-y-[7.5px] group-[[aria-pressed=true]]:rotate-45"></span>
+                                <span
+                                    class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:opacity-0"></span>
+                                <span
+                                    class="block h-[2.5px] w-5 bg-slate-800 rounded-full transition-all duration-300 group-[[aria-pressed=true]]:-translate-y-[7.5px] group-[[aria-pressed=true]]:-rotate-45"></span>
+                            </div>
+                        </button>
+
+                        <div>
+                            <h1
+                                class="text-base md:text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                                <i class="fas fa-handshake text-blue-600"></i>
+                                Buyer Trading (B2B)
+                            </h1>
+                            <p class="hidden md:block text-[11px] text-slate-500 font-semibold mt-0.5">
+                                Crop purchases, payment reconciliation & buyer management
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Premium Date Filter Dropdown -->
+                        <div class="relative inline-block text-left" id="dateFilterContainer">
+                            <button onclick="toggleDateDropdown()" id="dateFilterBtn"
+                                class="inline-flex h-9 items-center rounded-xl border-2 border-slate-200 bg-white px-4 text-xs text-slate-700 font-bold hover:bg-slate-50 hover:border-emerald-300 transition-all shadow-sm hover:shadow-md">
+                                <i class="far fa-calendar mr-2 text-emerald-600"></i>
+                                <span id="dateFilterLabel">All Time</span>
+                                <i class="fas fa-chevron-down ml-2 text-[10px] text-slate-400"></i>
+                            </button>
+                            
+                            <!-- Dropdown Panel -->
+                            <div id="dateFilterDropdown" class="hidden absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white border border-slate-200 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50 transition-all duration-200">
+                                <div class="p-4 space-y-4">
+                                    <div>
+                                        <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-2">Quick Presets</span>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button onclick="setDatePreset('today')" id="preset-today" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Today</button>
+                                            <button onclick="setDatePreset('yesterday')" id="preset-yesterday" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Yesterday</button>
+                                            <button onclick="setDatePreset('7d')" id="preset-7d" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last 7 Days</button>
+                                            <button onclick="setDatePreset('30d')" id="preset-30d" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last 30 Days</button>
+                                            <button onclick="setDatePreset('all')" id="preset-all" class="preset-btn col-span-2 px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all">All Time</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="border-t border-slate-100"></div>
+                                    
+                                    <div class="space-y-3">
+                                        <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Custom Date Range</span>
+                                        <div class="space-y-2">
+                                            <div>
+                                                <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">From Date</label>
+                                                <input type="date" id="filterStartDate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
+                                            </div>
+                                            <div>
+                                                <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">To Date</label>
+                                                <input type="date" id="filterEndDate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
+                                            </div>
+                                            <button onclick="applyCustomDateFilter()" class="w-full mt-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:brightness-105 active:scale-[0.98] transition-all">
+                                                Apply Filter
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-slate-200 bg-white hover:border-slate-300 hover:shadow-md transition-all">
+                            <i class="far fa-bell text-slate-600"></i>
+                        </button>
+                        <button
+                            class="inline-flex h-9 items-center rounded-full border-2 border-slate-200 bg-white px-2 hover:border-emerald-300 hover:shadow-md transition-all">
+                            <div
+                                class="h-7 w-7 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-md">
+                                <i class="fas fa-user text-white text-xs"></i>
+                            </div>
+                            <span class="ml-2 mr-2 hidden sm:inline text-slate-900 font-black text-xs">SA</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ========== MAIN CONTENT ========== -->
+            <main
+                class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
+
+                <!-- KPI CARDS -->
+                <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+                    <div
+                        class="rounded-2xl border-2 border-blue-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <div
+                                class="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-users text-2xl text-blue-600"></i>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider text-blue-600 font-black">Total</span>
+                        </div>
+                        <p class="text-3xl font-black text-slate-900 mb-1" id="kpiTotalBuyers">—</p>
+                        <p class="text-sm text-blue-700 font-bold">Buyers</p>
+                        <div class="mt-3 pt-3 border-t-2 border-blue-100">
+                            <p class="text-[10px] text-slate-600 font-semibold" id="kpiPendingBuyers">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <div
+                                class="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-check-circle text-2xl text-emerald-600"></i>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider text-emerald-600 font-black">Active</span>
+                        </div>
+                        <p class="text-3xl font-black text-slate-900 mb-1" id="kpiActiveBuyers">—</p>
+                        <p class="text-sm text-emerald-700 font-bold">Active Buyers</p>
+                        <div class="mt-3 pt-3 border-t-2 border-emerald-100">
+                            <p class="text-[10px] text-slate-600 font-semibold" id="kpiActiveRate">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <div
+                                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-box text-2xl text-sky-600"></i>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">Orders</span>
+                        </div>
+                        <p class="text-3xl font-black text-slate-900 mb-1" id="kpiTotalOrders">—</p>
+                        <p class="text-sm text-sky-700 font-bold">Total Orders</p>
+                        <div class="mt-3 pt-3 border-t-2 border-sky-100">
+                            <p class="text-[10px] text-slate-600 font-semibold" id="kpiMonthlyOrders">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="rounded-2xl border-2 border-rose-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-center justify-between mb-3">
+                            <div
+                                class="h-12 w-12 rounded-xl bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center shadow-sm">
+                                <i class="fas fa-exclamation-circle text-2xl text-rose-600"></i>
+                            </div>
+                            <span class="text-[10px] uppercase tracking-wider text-rose-600 font-black">Pending</span>
+                        </div>
+                        <p class="text-3xl font-black text-slate-900 mb-1" id="kpiOutstanding">—</p>
+                        <p class="text-sm text-rose-700 font-bold">Outstanding</p>
+                        <div class="mt-3 pt-3 border-t-2 border-rose-100">
+                            <p class="text-[10px] text-slate-600 font-semibold" id="kpiOutstandingNote">Loading...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BUYER PURCHASE REQUESTS (BUYER WANTS TO BUY) -->
+                <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+                    <div
+                        class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-blue-50/20 to-sky-50/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-clipboard-list text-blue-600"></i>
+                                    Buyer Purchase Requests
+                                </h2>
+                                <p class="text-xs text-slate-600 font-semibold mt-1">
+                                    Buyers looking to buy - Match with farmers selling (location + crop based)
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="reqSearchInput" placeholder="Search buyer/crop..."
+                                    oninput="filterRequests()"
+                                    class="h-9 w-40 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all font-semibold" />
+                                <select id="reqCropFilter" onchange="filterRequests()"
+                                    class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                                    <option value="">All Crops</option>
+                                    <option>Wheat</option>
+                                    <option>Rice</option>
+                                    <option>Mustard</option>
+                                    <option>Maize</option>
+                                    <option>Soybean</option>
+                                </select>
+                                <button onclick="exportRequests()"
+                                    class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-blue-500 to-sky-500 px-4 text-xs text-white font-black hover:from-blue-600 hover:to-sky-600 shadow-md transition-all">
+                                    <i class="fas fa-download mr-2"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+                        <table class="min-w-full border-separate border-spacing-0">
+                            <thead class="sticky top-0 z-10 bg-slate-50">
+                                <tr class="text-xs text-slate-700">
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Buyer</th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location &
+                                        Range</th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Looking For
+                                    </th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Quantity Need
+                                    </th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Budget Rate
+                                    </th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTbody">
+                                <tr>
+                                    <td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400 font-semibold">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Loading requests...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- PAYMENT RECONCILIATION TABLE -->
+                <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+                    <div
+                        class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-rose-50/20 to-amber-50/20">
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2
+                                        class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                                        <i class="fas fa-money-check-dollar text-rose-600"></i>
+                                        Payment Reconciliation
+                                    </h2>
+                                    <p class="text-xs text-slate-600 font-semibold mt-1">
+                                        Track: Buyer payment vs Farmer virtual payout (NexCard)
+                                    </p>
+                                </div>
+                                <button onclick="exportReconciliation()"
+                                    class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 px-4 text-xs text-white font-black hover:from-rose-600 hover:to-rose-700 shadow-md transition-all">
+                                    <i class="fas fa-download mr-2"></i> Export CSV
+                                </button>
+                            </div>
+
+                            <!-- Filter Bar -->
+                            <div
+                                class="flex flex-wrap items-center gap-3 bg-white/60 p-3 rounded-xl border border-rose-100 shadow-inner">
+                                <div class="relative flex-1 min-w-[200px]">
+                                    <i
+                                        class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-rose-400 text-xs"></i>
+                                    <input type="text" id="reconSearchInput" onkeyup="filterReconciliationTable()"
+                                        placeholder="Search Order ID, Buyer Name..."
+                                        class="w-full pl-9 pr-4 py-2 bg-white border border-rose-100 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/20 transition-all">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="flex items-center gap-1.5 px-3 py-2 bg-white border border-rose-100 rounded-lg shadow-sm">
+                                        <span class="text-[10px] font-black text-rose-600 uppercase">From</span>
+                                        <input type="date" id="reconFromDate" onchange="filterReconciliationTable()"
+                                            class="text-xs font-bold text-slate-700 focus:outline-none bg-transparent">
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-1.5 px-3 py-2 bg-white border border-rose-100 rounded-lg shadow-sm">
+                                        <span class="text-[10px] font-black text-rose-600 uppercase">To</span>
+                                        <input type="date" id="reconToDate" onchange="filterReconciliationTable()"
+                                            class="text-xs font-bold text-slate-700 focus:outline-none bg-transparent">
+                                    </div>
+                                    <button onclick="clearReconFilters()"
+                                        class="h-9 px-3 rounded-lg text-slate-500 hover:bg-slate-100 transition-all"
+                                        title="Clear Filters">
+                                        <i class="fas fa-filter-circle-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-auto custom-scroll" style="max-height: 450px;">
+                        <table class="min-w-full border-separate border-spacing-0">
+                            <thead class="sticky top-0 z-10 bg-slate-50">
+                                <tr class="text-xs text-slate-700">
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Order ID</th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Buyer</th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Crop & Qty
+                                    </th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total
+                                        Payable</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Amount
+                                        Received</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Commission
+                                    </th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Pending</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Farmer
+                                        Payout<br />(NexCard)</th>
+                                    <th class="text-center font-black px-5 py-4 border-b-2 border-slate-200">Settlement
+                                    </th>
+                                    <th class="text-left font-black px-4 py-4 border-b-2 border-slate-200">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconciliationTbody">
+                                <tr>
+                                    <td colspan="9" class="px-5 py-8 text-center text-sm text-slate-400 font-semibold">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Loading reconciliation data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- BUYERS DATABASE TABLE -->
+                <section class="rounded-2xl bg-white border-2 border-slate-200 shadow-xl overflow-hidden">
+                    <div
+                        class="px-6 py-4 border-b-2 border-slate-100 bg-gradient-to-r from-white via-blue-50/20 to-sky-50/20">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-black tracking-tight text-slate-900 flex items-center gap-2">
+                                    <i class="fas fa-building text-blue-600"></i>
+                                    Buyers Database
+                                </h2>
+                                <p class="text-xs text-slate-600 font-semibold mt-1">
+                                    Buyer profiles, purchase history & payment status
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="buyerSearchInput" placeholder="🔍 Search buyers..."
+                                    oninput="filterBuyers()"
+                                    class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-semibold w-48 focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
+                                <select id="buyerStatusFilter" onchange="filterBuyers()"
+                                    class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                                    <option value="">All Status</option>
+                                    <option value="approved">Active</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                                <button onclick="exportBuyers()"
+                                    class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-blue-500 to-sky-500 px-4 text-xs text-white font-black hover:from-blue-600 hover:to-sky-600 shadow-md transition-all">
+                                    <i class="fas fa-download mr-2"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-auto custom-scroll" style="max-height: 400px;">
+                        <table class="min-w-full border-separate border-spacing-0">
+                            <thead class="sticky top-0 z-10 bg-slate-50">
+                                <tr class="text-xs text-slate-700">
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Buyer /
+                                        Company</th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total
+                                        Purchase</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Total Value
+                                    </th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Outstanding
+                                    </th>
+                                    <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                                    <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="buyersTbody">
+                                <tr>
+                                    <td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400 font-semibold">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i>Loading buyers...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- MATCH FARMERS MODAL (BUYER WANTS TO BUY, SHOW MATCHING FARMERS) -->
+    <div id="matchFarmersModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+        onclick="if(event.target === this) closeMatchModal()">
+        <div
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto custom-scroll border-2 border-slate-200 animate-[slideUp_0.3s_ease-out]">
+            <div class="sticky top-0 z-10 border-b-2 border-slate-200 px-6 py-5 bg-white/95 backdrop-blur-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+                            <i class="fas fa-link text-blue-600"></i>
+                            Match Farmers to Buyer
+                        </h2>
+                        <p class="text-xs text-slate-600 font-semibold mt-1">Show farmers selling same crop within
+                            buyer's range</p>
+                    </div>
+                    <button onclick="closeMatchModal()"
+                        class="h-10 w-10 rounded-xl border-2 border-slate-300 flex items-center justify-center hover:bg-slate-50 transition-all">
+                        <i class="fas fa-times text-slate-700"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-6 py-5 space-y-5">
+                <!-- Buyer Details -->
+                <div class="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white p-4">
+                    <p class="text-xs uppercase tracking-wide text-blue-700 font-black mb-3 flex items-center gap-2">
+                        <i class="fas fa-user-check"></i> Buyer Request
+                    </p>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div>
+                            <p class="text-[10px] text-slate-600 font-semibold mb-1">Buyer</p>
+                            <p class="text-sm font-black text-slate-900" id="matchBuyerName">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-600 font-semibold mb-1">Location</p>
+                            <p class="text-sm font-black text-slate-900" id="matchBuyerLocation">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-600 font-semibold mb-1">Looking For</p>
+                            <p class="text-sm font-black text-slate-900" id="matchCrop">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-600 font-semibold mb-1">Quantity Need</p>
+                            <p class="text-sm font-black text-blue-700"><span id="matchQuantity">-</span> Q</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-600 font-semibold mb-1">Budget Rate</p>
+                            <p class="text-sm font-black text-emerald-700">₹<span id="matchRate">-</span>/Q</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-600 font-semibold mb-1">Buying Range</p>
+                            <p class="text-sm font-black text-sky-700"><span id="matchRange">-</span> km</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Farmer Assignment Form -->
+                <div>
+                    <p class="text-xs uppercase tracking-wide text-slate-600 font-black mb-3 flex items-center gap-2">
+                        <i class="fas fa-seedling"></i> Assign Farmer to This Request
+                    </p>
+                    <form id="assignFarmerForm" class="space-y-3" onsubmit="return false;">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] text-slate-600 font-bold mb-1 block">Farmer Name <span
+                                        class="text-rose-500">*</span></label>
+                                <input id="farmerNameInput" type="text" placeholder="e.g. Rajesh Kumar" required
+                                    class="w-full h-9 rounded-xl border-2 border-slate-200 px-3 text-xs font-semibold focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-600 font-bold mb-1 block">Farmer Mobile</label>
+                                <input id="farmerMobileInput" type="text" placeholder="e.g. 9876543210"
+                                    class="w-full h-9 rounded-xl border-2 border-slate-200 px-3 text-xs font-semibold focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-600 font-bold mb-1 block">Village /
+                                    District</label>
+                                <input id="farmerVillageInput" type="text" placeholder="e.g. Karnal, Haryana"
+                                    class="w-full h-9 rounded-xl border-2 border-slate-200 px-3 text-xs font-semibold focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-600 font-bold mb-1 block">Price / Quintal
+                                    (?)</label>
+                                <input id="farmerPriceInput" type="number" placeholder="e.g. 2200"
+                                    class="w-full h-9 rounded-xl border-2 border-slate-200 px-3 text-xs font-semibold focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 transition-all" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-slate-600 font-bold mb-1 block">Total Amount (?) <span
+                                    class="text-slate-400 font-normal">� optional</span></label>
+                            <input id="farmerAmountInput" type="number" placeholder="e.g. 110000"
+                                class="w-full h-9 rounded-xl border-2 border-slate-200 px-3 text-xs font-semibold focus:border-sky-400 focus:outline-none focus:ring-4 focus:ring-sky-50 transition-all" />
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Confirmation Notice -->
+                <div id="selectedFarmerInfo" class="hidden rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-emerald-700 font-black mb-2">
+                                <i class="fas fa-check-circle"></i> Farm Assigned to Buyer
+                            </p>
+                            <p id="selectedFarmerName" class="text-base font-black text-slate-900">-</p>
+                        </div>
+                        <span class="h-10 w-10 rounded-full bg-emerald-200 flex items-center justify-center">
+                            <i class="fas fa-check text-emerald-700"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="sticky bottom-0 z-10 border-t-2 border-slate-200 px-6 py-4 bg-white flex gap-3 justify-end">
+                <button onclick="closeMatchModal()"
+                    class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white px-5 py-2.5 text-sm font-black text-slate-700 hover:bg-slate-50 transition-all">
+                    Cancel
+                </button>
+                <button id="matchBtn" onclick="assignFarmerToBuyer()" disabled
+                    class="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-5 py-2.5 text-sm font-black text-white hover:from-blue-600 hover:to-blue-700 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-link mr-2"></i> Match Farmer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-50 hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+        <p id="toastMessage" class="text-sm font-bold"></p>
+    </div>
+
+    <!-- ========== SIDEBAR SCRIPT (REUSABLE) ========== -->
+    <script>
+        function toggleSidebar(force) {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('mobile-backdrop');
+            const hamburger = document.getElementById('hamburger');
+
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+
+            if (force === false || (isOpen && force === undefined)) {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+                hamburger?.setAttribute('aria-pressed', 'false');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                hamburger?.setAttribute('aria-pressed', 'true');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('mobile-backdrop')?.addEventListener('click', () => toggleSidebar(false));
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') toggleSidebar(false);
+        });
+    </script>
+
+    <!-- ========== PAYMENT MODAL ========== -->
+    <div id="paymentModal"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl border-2 border-slate-100 w-full max-w-sm mx-4 p-6">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-lg font-black text-slate-900">Record Payment</h3>
+                    <p id="pmBuyerName" class="text-sm text-slate-500 font-semibold mt-0.5"></p>
+                </div>
+                <button onclick="closePaymentModal()"
+                    class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all">
+                    <i class="fas fa-times text-slate-600 text-sm"></i>
+                </button>
+            </div>
+            <div class="bg-blue-50 rounded-xl px-4 py-2 mb-4 flex items-center justify-between">
+                <span class="text-xs font-bold text-blue-700">Total Payable</span>
+                <span id="pmTotalPayable" class="text-sm font-black text-blue-900"></span>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">Amount Received (&#8377;)</label>
+                    <input id="pmAmountReceived" type="number" min="0" placeholder="0"
+                        class="w-full h-10 rounded-xl border-2 border-slate-200 px-3 text-sm font-bold focus:outline-none focus:border-emerald-400 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">Farmer Payout (&#8377;)</label>
+                    <input id="pmFarmerPayout" type="number" min="0" placeholder="0"
+                        class="w-full h-10 rounded-xl border-2 border-slate-200 px-3 text-sm font-bold focus:outline-none focus:border-blue-400 transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">Settlement Status</label>
+                    <select id="pmSettlement"
+                        class="w-full h-10 rounded-xl border-2 border-slate-200 px-3 text-sm font-bold focus:outline-none focus:border-blue-400 bg-white transition-all">
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="settled">Settled (marks order complete)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-5">
+                <button onclick="closePaymentModal()"
+                    class="flex-1 h-10 rounded-xl border-2 border-slate-200 text-sm font-black text-slate-700 hover:bg-slate-50 transition-all">Cancel</button>
+                <button onclick="savePayment()"
+                    class="flex-1 h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-black hover:from-emerald-600 hover:to-emerald-700 shadow-md transition-all"><i
+                        class="fas fa-save mr-2"></i>Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== BUYER TRADING PAGE SCRIPT ========== -->
+    <script>
+        let selectedStartDate = 'all';
+        let selectedEndDate = 'all';
+
+        function getQueryParamString() {
+            if (selectedStartDate && selectedEndDate) {
+                if (selectedStartDate === 'all' && selectedEndDate === 'all') {
+                    return 'all=true';
+                } else {
+                    return `startDate=${selectedStartDate}&endDate=${selectedEndDate}`;
+                }
+            }
+            return 'all=true';
+        }
+
+        function toggleDateDropdown() {
+            const dropdown = document.getElementById('dateFilterDropdown');
+            if (!dropdown) return;
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                dropdown.classList.add('block');
+            } else {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('block');
+            }
+        }
+
+        // Close dropdown on click outside
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('dateFilterContainer');
+            const dropdown = document.getElementById('dateFilterDropdown');
+            if (container && dropdown && !container.contains(e.target) && !dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('block');
+            }
+        });
+
+        function updatePresetActiveBadge(preset) {
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all';
+            });
+            const activeBtn = document.getElementById(`preset-${preset}`);
+            if (activeBtn) {
+                activeBtn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all';
+            }
+        }
+
+        function setDatePreset(preset) {
+            const today = new Date();
+            const formatDate = (d) => d.toISOString().split('T')[0];
+
+            if (preset === 'today') {
+                selectedStartDate = formatDate(today);
+                selectedEndDate = formatDate(today);
+                document.getElementById('dateFilterLabel').textContent = 'Today';
+                document.getElementById('filterStartDate').value = selectedStartDate;
+                document.getElementById('filterEndDate').value = selectedEndDate;
+            } else if (preset === 'yesterday') {
+                const yesterday = new Date();
+                yesterday.setDate(today.getDate() - 1);
+                selectedStartDate = formatDate(yesterday);
+                selectedEndDate = formatDate(yesterday);
+                document.getElementById('dateFilterLabel').textContent = 'Yesterday';
+                document.getElementById('filterStartDate').value = selectedStartDate;
+                document.getElementById('filterEndDate').value = selectedEndDate;
+            } else if (preset === '7d') {
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                selectedStartDate = formatDate(sevenDaysAgo);
+                selectedEndDate = formatDate(today);
+                document.getElementById('dateFilterLabel').textContent = 'Last 7 Days';
+                document.getElementById('filterStartDate').value = selectedStartDate;
+                document.getElementById('filterEndDate').value = selectedEndDate;
+            } else if (preset === '30d') {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(today.getDate() - 30);
+                selectedStartDate = formatDate(thirtyDaysAgo);
+                selectedEndDate = formatDate(today);
+                document.getElementById('dateFilterLabel').textContent = 'Last 30 Days';
+                document.getElementById('filterStartDate').value = selectedStartDate;
+                document.getElementById('filterEndDate').value = selectedEndDate;
+            } else if (preset === 'all') {
+                selectedStartDate = 'all';
+                selectedEndDate = 'all';
+                document.getElementById('dateFilterLabel').textContent = 'All Time';
+                document.getElementById('filterStartDate').value = '';
+                document.getElementById('filterEndDate').value = '';
+            }
+
+            updatePresetActiveBadge(preset);
+            const dropdown = document.getElementById('dateFilterDropdown');
+            if (dropdown) {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('block');
+            }
+            refreshAllData();
+        }
+
+        function applyCustomDateFilter() {
+            const start = document.getElementById('filterStartDate').value;
+            const end = document.getElementById('filterEndDate').value;
+            if (!start || !end) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            if (new Date(start) > new Date(end)) {
+                alert('Start date cannot be after end date');
+                return;
+            }
+
+            selectedStartDate = start;
+            selectedEndDate = end;
+
+            const opt = { day: '2-digit', month: 'short' };
+            const startStr = new Date(start).toLocaleDateString('en-US', opt);
+            const endStr = new Date(end).toLocaleDateString('en-US', opt);
+            document.getElementById('dateFilterLabel').textContent = `${startStr} - ${endStr}`;
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all';
+            });
+
+            const dropdown = document.getElementById('dateFilterDropdown');
+            if (dropdown) {
+                dropdown.classList.add('hidden');
+                dropdown.classList.remove('block');
+            }
+            refreshAllData();
+        }
+
+        function refreshAllData() {
+            fetchBuyerStats();
+            fetchBuyers();
+            fetchRequests();
+            fetchReconciliation();
+        }
+
+        const AUTH_TOKEN = localStorage.getItem('employeeToken');
+
+        function fixImageUrl(url) {
+            if (!url || url === 'undefined' || url === 'null') return '';
+            if (url.startsWith('http')) {
+                try {
+                    const host = window.IMAGE_BASE ? new URL(window.IMAGE_BASE).host : new URL(API_BASE).host;
+                    return url.replace(/^(https?:\/\/)[^\/]+/, `$1${host}`);
+                } catch (e) { return url; }
+            }
+            const root = window.IMAGE_BASE || API_BASE.replace('/api', '');
+            const cleanUrl = url.replace(/\\/g, '/').replace(/^\/+/, '');
+            return `${root}/${cleanUrl}`;
+        }
+
+        let allBuyers = [];
+        let allRequests = [];
+        let allReconciliation = [];
+        let currentOrderId = null;
+
+
+        // ---- KPI Stats ----
+        async function fetchBuyerStats() {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/stats?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('kpiTotalBuyers').textContent = data.totalBuyers.toLocaleString();
+                    document.getElementById('kpiActiveBuyers').textContent = data.activeBuyers.toLocaleString();
+                    document.getElementById('kpiTotalOrders').textContent = data.totalOrders.toLocaleString();
+                    document.getElementById('kpiOutstanding').textContent = formatCurrency(data.outstandingAmount);
+                    document.getElementById('kpiPendingBuyers').textContent = `${data.pendingBuyers} pending approval`;
+                    const rate = data.totalBuyers > 0 ? Math.round((data.activeBuyers / data.totalBuyers) * 100) : 0;
+                    document.getElementById('kpiActiveRate').textContent = `${rate}% active rate`;
+                    document.getElementById('kpiMonthlyOrders').textContent = `${data.monthlyOrders} this month`;
+                    document.getElementById('kpiOutstandingNote').textContent = `${data.totalOrders} total orders processed`;
+                }
+            } catch (err) { console.error('Stats error:', err); }
+        }
+
+        // ---- Buyers Database ----
+        async function fetchBuyers() {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyers?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.json();
+                if (res.ok) { allBuyers = data; renderBuyersTable(data); }
+                else document.getElementById('buyersTbody').innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-rose-500">${data.error || 'Failed to load'}</td></tr>`;
+            } catch (err) { document.getElementById('buyersTbody').innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-rose-500">Network error</td></tr>`; }
+        }
+
+        function createBuyerRow(b) {
+            const isActive = b.status === 'approved';
+            const isPending = b.status === 'pending';
+            const isRejected = b.status === 'rejected';
+
+            let actionBtns = '';
+            if (isPending) {
+                actionBtns = `<button onclick="approveBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-emerald-500 text-white px-2.5 py-1 text-[9px] font-black hover:bg-emerald-600 transition-all mr-1"><i class="fas fa-check mr-1"></i>Approve</button>
+                              <button onclick="rejectBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i>Reject</button>`;
+            } else if (isActive) {
+                actionBtns = `<button onclick="rejectBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-100 transition-all mr-1"><i class="fas fa-ban mr-1"></i>Suspend</button>`;
+            } else if (isRejected) {
+                actionBtns = `<button onclick="approveBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 text-[9px] font-black hover:bg-emerald-100 transition-all mr-1"><i class="fas fa-check-circle mr-1"></i>Re-activate</button>`;
+            }
+
+            const statusBadge = isActive
+                ? `<span class="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 border-emerald-200 px-3 py-1 text-[10px] font-black border"><i class="fas fa-check-circle mr-1"></i>Active</span>`
+                : isPending
+                    ? `<span class="inline-flex items-center rounded-full bg-amber-50 text-amber-700 border-amber-200 px-3 py-1 text-[10px] font-black border"><i class="fas fa-clock mr-1"></i>Pending</span>`
+                    : `<span class="inline-flex items-center rounded-full bg-rose-50 text-rose-700 border-rose-200 px-3 py-1 text-[10px] font-black border"><i class="fas fa-times-circle mr-1"></i>Suspended</span>`;
+
+            return `<tr class="hover:bg-blue-50/30 transition-colors border-b border-slate-100">
+                <td class="px-5 py-4"><div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-lg bg-gradient-to-br ${isActive ? 'from-blue-100 to-sky-100' : isRejected ? 'from-rose-100 to-red-100' : 'from-amber-100 to-orange-100'} flex items-center justify-center">
+                        <i class="fas fa-building ${isActive ? 'text-blue-600' : isRejected ? 'text-rose-600' : 'text-amber-600'}"></i></div>
+                    <div><div class="font-black text-slate-900">${b.businessName}</div><div class="text-[10px] text-slate-500">${b.phone}</div></div></div></td>
+                <td class="px-5 py-4"><div class="font-semibold text-sm text-slate-700">${b.address || '\u2014'}</div></td>
+                <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${b.totalPurchaseQty} Q</div></td>
+                <td class="px-5 py-4 text-right"><div class="font-black text-blue-700">${formatCurrency(b.totalValue)}</div></td>
+                <td class="px-5 py-4 text-right"><div class="font-black ${b.outstandingAmount > 0 ? 'text-rose-700' : 'text-emerald-700'}">${formatCurrency(b.outstandingAmount)}</div></td>
+                <td class="px-5 py-4">${statusBadge}</td>
+                <td class="px-5 py-4 text-right">${actionBtns}<button onclick="viewBuyerDetails('${b._id}')" class="inline-flex items-center rounded-lg border-2 border-slate-200 px-3 py-1.5 text-[10px] text-slate-700 font-bold hover:bg-blue-50 hover:border-blue-300 transition-all"><i class="fas fa-eye mr-1"></i>View</button></td>
+            </tr>`;
+        }
+
+        function renderBuyersTable(buyers) {
+            window.progressiveRenderTable('buyersTbody', buyers, createBuyerRow, {
+                chunkSize: 20,
+                emptyHtml: '<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-slate-400">No buyers found.</td></tr>'
+            });
+        }
+
+
+        function filterBuyers() {
+            const q = document.getElementById('buyerSearchInput').value.toLowerCase();
+            const status = document.getElementById('buyerStatusFilter').value;
+            renderBuyersTable(allBuyers.filter(b => {
+                return (b.businessName + b.name + b.phone + b.address).toLowerCase().includes(q) && (!status || b.status === status);
+            }));
+        }
+
+        async function exportBuyers() {
+            await fetchAndDownloadCSV(`${API_BASE}/employee/admin/buyer/export/buyers?${getQueryParamString()}`, 'Buyers_Export.csv');
+        }
+
+        // ---- Buyer Purchase Requests ----
+        function updateReqCropFilterDropdown(requests) {
+            const select = document.getElementById('reqCropFilter');
+            if (!select || !requests) return;
+            const currentVal = select.value;
+            const crops = Array.from(new Set(requests.map(r => r.crop).filter(Boolean))).sort();
+            if (crops.length > 0) {
+                select.innerHTML = '<option value="">All Crops</option>' + crops.map(c => `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`).join('');
+            }
+        }
+
+        async function fetchRequests() {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/requests?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.json();
+                if (res.ok) { 
+                    allRequests = data; 
+                    updateReqCropFilterDropdown(data);
+                    renderRequestsTable(data); 
+                }
+                else document.getElementById('requestsTbody').innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-sm text-rose-500">${data.error}</td></tr>`;
+            } catch (err) { document.getElementById('requestsTbody').innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-sm text-rose-500">Network error</td></tr>`; }
+        }
+
+        function renderRequestsTable(reqs) {
+            const tbody = document.getElementById('requestsTbody');
+            if (!reqs.length) { tbody.innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400">No pending requests.</td></tr>`; return; }
+            tbody.innerHTML = reqs.map(r => {
+                const assignBtn = `<button onclick="openAssignFarmer('${r._id}','${r.buyerName.replace(/'/g, "\\'")}','${r.crop}','${r.quantity}')" class="inline-flex items-center justify-center rounded-lg bg-blue-600 text-white h-8 px-3 text-[10px] font-black hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all"><i class="fas fa-user-plus mr-1.5"></i>Assign Farmer</button>`;
+                return `<tr class="hover:bg-amber-50/30 transition-colors border-b border-slate-100">
+                    <td class="px-5 py-4"><div class="font-black text-slate-900">${r.buyerName}</div><div class="text-[10px] text-slate-500">${new Date(r.createdAt).toLocaleDateString('en-IN')}</div></td>
+                    <td class="px-5 py-4"><div class="font-semibold text-slate-700 text-sm">${r.buyerLocation}</div></td>
+                    <td class="px-5 py-4"><div class="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-800"><i class="fas fa-leaf text-emerald-600 mr-1.5"></i>${r.crop}</div></td>
+                    <td class="px-5 py-4 text-right"><div class="font-black text-slate-900">${r.quantity} Q</div></td>
+                    <td class="px-5 py-4 text-right"><div class="font-black text-blue-700">${r.pricePerQuintal > 0 ? formatCurrency(r.pricePerQuintal) + '/Q' : '<span class="text-slate-400 text-[10px]">TBD</span>'}</div></td>
+                    <td class="px-5 py-4"><p class="text-[10px] text-slate-500 max-w-[150px] truncate" title="${r.note}">${r.note || '\u2014'}</p></td>
+                    <td class="px-5 py-4 text-right">${assignBtn}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterRequests() {
+            const q = document.getElementById('reqSearchInput').value.toLowerCase();
+            const crop = document.getElementById('reqCropFilter').value;
+            renderRequestsTable(allRequests.filter(r => (r.buyerName + r.buyerLocation + r.crop).toLowerCase().includes(q) && (!crop || r.crop.toLowerCase() === crop.toLowerCase())));
+        }
+
+        async function exportRequests() {
+            await fetchAndDownloadCSV(`${API_BASE}/employee/admin/buyer/export/requests?${getQueryParamString()}`, 'Purchase_Requests.csv');
+        }
+
+        async function exportReconciliation() {
+            if (!allReconciliation.length) { showToast('No reconciliation data to export', 'info'); return; }
+            await fetchAndDownloadCSV(`${API_BASE}/employee/admin/buyer/export/reconciliation?${getQueryParamString()}`, 'Payment_Reconciliation.csv');
+        }
+
+        async function fetchAndDownloadCSV(url, filename) {
+            try {
+                showToast('Preparing export...', 'info');
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                if (!res.ok) { const e = await res.json(); showToast(e.error || 'Export failed', 'warning'); return; }
+                const blob = await res.blob();
+                const objUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objUrl;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objUrl);
+                showToast(filename + ' downloaded!', 'success');
+            } catch (e) { showToast('Export failed: ' + e.message, 'warning'); }
+        }
+
+        // ---- Payment Reconciliation ----
+        async function fetchReconciliation() {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/reconciliation?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.json();
+                if (res.ok) { allReconciliation = data; renderReconciliationTable(data); }
+                else document.getElementById('reconciliationTbody').innerHTML = `<tr><td colspan="9" class="px-5 py-8 text-center text-sm text-rose-500">${data.error}</td></tr>`;
+            } catch (err) { document.getElementById('reconciliationTbody').innerHTML = `<tr><td colspan="9" class="px-5 py-8 text-center text-sm text-rose-500">Network error</td></tr>`; }
+        }
+
+        function renderReconciliationTable(orders) {
+            const tbody = document.getElementById('reconciliationTbody');
+            if (!orders.length) { tbody.innerHTML = `<tr><td colspan="9" class="px-5 py-8 text-center text-sm text-slate-400">No orders match the filters.</td></tr>`; return; }
+            tbody.innerHTML = orders.map(o => {
+                const badge = o.settlement === 'settled'
+                    ? `<span class="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-900 border border-emerald-300"><i class="fas fa-check-double mr-1"></i>Settled</span>`
+                    : o.settlement === 'in-progress'
+                        ? `<span class="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-black text-sky-900 border border-sky-300"><i class="fas fa-spinner mr-1"></i>In Progress</span>`
+                        : `<span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i>Pending</span>`;
+                const statusOptions = ['accepted', 'in-progress', 'completed', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('');
+                return `<tr class="hover:bg-slate-50/50 transition-colors border-b border-slate-100">
+                    <td class="px-4 py-3">
+                        <button onclick="openReconOrderDetailsModal('${o._id}')" class="font-black text-blue-600 hover:text-blue-800 hover:underline text-xs text-left block focus:outline-none cursor-pointer">
+                            ${o.orderId}
+                        </button>
+                        <div class="text-[10px] text-slate-500">${new Date(o.createdAt).toLocaleDateString('en-IN')}</div>
+                        ${o.farmerName ? `<div class="text-[9px] text-emerald-700 font-bold mt-0.5"><i class="fas fa-user-tie mr-1"></i>${o.farmerName}</div>` : ''}
+                    </td>
+                    <td class="px-4 py-3"><div class="font-bold text-slate-900 text-xs">${o.buyerName}</div><div class="text-[10px] text-slate-500">${o.buyerLocation}</div></td>
+                    <td class="px-4 py-3"><div class="font-semibold text-slate-900 text-xs">${o.crop}</div><div class="text-[10px] text-slate-600">${o.quantity} Q</div></td>
+                    <td class="px-4 py-3 text-right"><div class="font-black text-slate-900 text-xs">${formatCurrency(o.totalPayable)}</div></td>
+                    <td class="px-4 py-3 text-right"><div class="font-black text-emerald-700 text-xs">${formatCurrency(o.amountReceived)}</div></td>
+                    <td class="px-4 py-3 text-right"><div class="font-bold text-blue-600 text-[10px]">${formatCurrency(o.commission || 0)}</div></td>
+                    <td class="px-4 py-3 text-right"><div class="font-black ${o.pendingAmount > 0 ? 'text-rose-700' : 'text-emerald-700'} text-xs">${formatCurrency(o.pendingAmount)}</div></td>
+                    <td class="px-4 py-3 text-right"><div class="font-black text-blue-700 text-xs">${formatCurrency(o.farmerPayout)}</div></td>
+                    <td class="px-4 py-3">${badge}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-col gap-1 min-w-[110px]">
+                            <select onchange="updateOrderStatus('${o._id}', this.value)" class="h-7 rounded-lg border border-slate-200 px-2 text-[10px] font-bold text-slate-700 bg-white focus:outline-none focus:border-blue-400 cursor-pointer">${statusOptions}</select>
+                            <button onclick="openPaymentModal('${o._id}','${o.buyerName.replace(/'/g, "\\'")}',${o.totalPayable},${o.amountReceived},${o.farmerPayout})" class="inline-flex items-center justify-center rounded-lg bg-emerald-500 text-white h-7 px-2 text-[9px] font-black hover:bg-emerald-600 transition-all"><i class="fas fa-rupee-sign mr-1"></i>Payment</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterReconciliationTable() {
+            const q = document.getElementById('reconSearchInput').value.toLowerCase();
+            const from = document.getElementById('reconFromDate').value;
+            const to = document.getElementById('reconToDate').value;
+
+            const filtered = allReconciliation.filter(o => {
+                const searchStr = (o.orderId + o.buyerName + o.buyerPhone + o.crop).toLowerCase();
+                const matchSearch = searchStr.includes(q);
+
+                let matchDate = true;
+                if (from || to) {
+                    const orderDate = new Date(o.createdAt);
+                    orderDate.setHours(0, 0, 0, 0);
+
+                    if (from) {
+                        const fromD = new Date(from);
+                        fromD.setHours(0, 0, 0, 0);
+                        if (orderDate < fromD) matchDate = false;
+                    }
+                    if (to) {
+                        const toD = new Date(to);
+                        toD.setHours(0, 0, 0, 0);
+                        if (orderDate > toD) matchDate = false;
+                    }
+                }
+
+                return matchSearch && matchDate;
+            });
+
+            renderReconciliationTable(filtered);
+        }
+
+        function clearReconFilters() {
+            document.getElementById('reconSearchInput').value = '';
+            document.getElementById('reconFromDate').value = '';
+            document.getElementById('reconToDate').value = '';
+            renderReconciliationTable(allReconciliation);
+        }
+
+        // ---- Buyer Action Functions ----
+        async function approveBuyer(buyerId) {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/approve/${buyerId}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.json();
+                if (res.ok) { showToast(data.message, 'success'); fetchBuyers(); fetchBuyerStats(); }
+                else showToast(data.error || 'Failed', 'warning');
+            } catch (e) { showToast('Network error', 'warning'); }
+        }
+
+        async function rejectBuyer(buyerId) {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/reject/${buyerId}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.json();
+                if (res.ok) { showToast(data.message, 'success'); fetchBuyers(); fetchBuyerStats(); }
+                else showToast(data.error || 'Failed', 'warning');
+            } catch (e) { showToast('Network error', 'warning'); }
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/order-status/${orderId}`, {
+                    method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const data = await res.json();
+                if (res.ok) { showToast(`Status \u2192 ${status}`, 'success'); fetchReconciliation(); fetchBuyerStats(); }
+                else showToast(data.error || 'Failed', 'warning');
+            } catch (e) { showToast('Network error', 'warning'); }
+        }
+
+        let paymentOrderId = null;
+        function openPaymentModal(orderId, buyerName, totalPayable, amountReceived, farmerPayout) {
+            paymentOrderId = orderId;
+            document.getElementById('pmBuyerName').textContent = buyerName;
+            document.getElementById('pmTotalPayable').textContent = formatCurrency(totalPayable);
+            document.getElementById('pmAmountReceived').value = amountReceived || '';
+            document.getElementById('pmFarmerPayout').value = farmerPayout || '';
+            document.getElementById('pmSettlement').value = 'in-progress';
+            document.getElementById('paymentModal').classList.remove('hidden');
+        }
+        function closePaymentModal() { document.getElementById('paymentModal').classList.add('hidden'); paymentOrderId = null; }
+        async function savePayment() {
+            if (!paymentOrderId) return;
+            const body = {
+                amountReceived: +document.getElementById('pmAmountReceived').value || 0,
+                farmerAmount: +document.getElementById('pmFarmerPayout').value || 0,
+                settlement: document.getElementById('pmSettlement').value
+            };
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/payment/${paymentOrderId}`, {
+                    method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) { showToast('Payment updated!', 'success'); closePaymentModal(); fetchReconciliation(); fetchBuyerStats(); }
+                else showToast(data.error || 'Failed', 'warning');
+            } catch (e) { showToast('Network error', 'warning'); }
+        }
+
+        // ---- Order Details Modal (Payment Reconciliation) ----
+        function openReconOrderDetailsModal(orderId) {
+            const o = allReconciliation.find(x => x._id === orderId);
+            if (!o) return;
+
+            document.getElementById('rodOrderId').textContent = `Order Details (${o.orderId})`;
+            document.getElementById('rodDate').textContent = new Date(o.createdAt).toLocaleDateString('en-IN', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            // Order Status Badge
+            const statusBadge = document.getElementById('rodStatusBadge');
+            statusBadge.textContent = o.status || 'Pending';
+            let statusClass = 'bg-slate-100 text-slate-700 border border-slate-200';
+            if (o.status === 'completed') statusClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+            else if (o.status === 'in-progress') statusClass = 'bg-blue-100 text-blue-800 border border-blue-300';
+            else if (o.status === 'accepted') statusClass = 'bg-sky-100 text-sky-800 border border-sky-300';
+            else if (o.status === 'cancelled') statusClass = 'bg-rose-100 text-rose-800 border border-rose-300';
+            statusBadge.className = `px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${statusClass}`;
+
+            // Settlement Status Badge
+            const settlementBadge = document.getElementById('rodSettlementBadge');
+            let settlementText = 'Pending';
+            let settlementClass = 'bg-amber-50 text-amber-700 border border-amber-200';
+            if (o.settlement === 'settled') {
+                settlementText = 'Settled';
+                settlementClass = 'bg-emerald-100 text-emerald-900 border border-emerald-300';
+            } else if (o.settlement === 'in-progress') {
+                settlementText = 'In Progress';
+                settlementClass = 'bg-sky-100 text-sky-900 border border-sky-300';
+            }
+            settlementBadge.textContent = settlementText;
+            settlementBadge.className = `px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${settlementClass}`;
+
+            // Buyer Info
+            document.getElementById('rodBuyerName').textContent = o.buyerName || '—';
+            document.getElementById('rodBuyerPhone').textContent = o.buyerPhone || '—';
+            document.getElementById('rodBuyerLocation').textContent = o.buyerLocation || '—';
+
+            // Farmer Info
+            document.getElementById('rodFarmerName').textContent = o.farmerName || '—';
+            document.getElementById('rodFarmerMobile').textContent = o.farmerMobile || '—';
+
+            const addressParts = [];
+            if (o.village) addressParts.push(o.village);
+            if (o.district) addressParts.push(o.district);
+            if (o.state) addressParts.push(o.state);
+            document.getElementById('rodFarmerAddress').textContent = addressParts.join(', ') || '—';
+
+            // Crop Details
+            document.getElementById('rodCrop').textContent = o.crop || '—';
+            document.getElementById('rodVariety').textContent = o.variety || '—';
+            document.getElementById('rodQuantity').textContent = o.quantity ? `${o.quantity} Q` : '—';
+            document.getElementById('rodLocation').textContent = o.location || '—';
+            document.getElementById('rodNote').textContent = o.note || 'No description or internal notes.';
+
+            // Financial Summary
+            document.getElementById('rodPricePerQuintal').textContent = o.pricePerQuintal ? `₹${o.pricePerQuintal.toLocaleString('en-IN')}/Q` : '₹0/Q';
+            document.getElementById('rodTotalPayable').textContent = formatCurrency(o.totalPayable || 0);
+            document.getElementById('rodAmountReceived').textContent = formatCurrency(o.amountReceived || 0);
+
+            // Outstanding Card Handling
+            const pendingVal = o.pendingAmount || 0;
+            const pendingEl = document.getElementById('rodPendingAmount');
+            const pendingCard = document.getElementById('rodPendingCard');
+            pendingEl.textContent = formatCurrency(pendingVal);
+            if (pendingVal > 0) {
+                pendingCard.className = 'p-4 rounded-xl flex flex-col justify-between border border-rose-100 bg-rose-50/50 text-rose-900';
+                pendingEl.className = 'text-lg font-black text-rose-700 mt-2';
+            } else {
+                pendingCard.className = 'p-4 rounded-xl flex flex-col justify-between border border-emerald-100 bg-emerald-50/50 text-emerald-900';
+                pendingEl.className = 'text-lg font-black text-emerald-700 mt-2';
+            }
+
+            document.getElementById('rodCommission').textContent = formatCurrency(o.commission || 0);
+            document.getElementById('rodFarmerPayout').textContent = formatCurrency(o.farmerPayout || 0);
+
+            // Show Modal
+            document.getElementById('reconOrderDetailsModal').classList.remove('hidden');
+        }
+
+        function closeReconOrderDetailsModal() {
+            document.getElementById('reconOrderDetailsModal').classList.add('hidden');
+        }
+
+        // ---- Assign Farmer Modal ----
+        function openAssignFarmer(orderId, buyerName, crop, qty) {
+            currentOrderId = orderId;
+            document.getElementById('matchBuyerName').textContent = buyerName;
+            document.getElementById('matchCrop').textContent = crop;
+            document.getElementById('matchQuantity').textContent = qty;
+            document.getElementById('matchBuyerLocation').textContent = '—';
+            document.getElementById('matchRate').textContent = '—';
+            document.getElementById('matchRange').textContent = '—';
+            document.getElementById('selectedFarmerInfo').classList.add('hidden');
+            document.querySelectorAll('.farmer-option').forEach(el => el.classList.remove('border-emerald-300', 'bg-emerald-50'));
+            document.querySelectorAll('input[name="selectedFarmer"]').forEach(r => r.checked = false);
+            document.getElementById('matchBtn').disabled = false;
+            document.getElementById('matchFarmersModal').classList.remove('hidden');
+        }
+
+        function closeMatchModal() {
+            document.getElementById('matchFarmersModal').classList.add('hidden');
+            currentOrderId = null;
+        }
+
+        function selectFarmer(element) {
+            document.querySelectorAll('.farmer-option').forEach(el => el.classList.remove('border-emerald-300', 'bg-emerald-50'));
+            element.classList.add('border-emerald-300', 'bg-emerald-50');
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+            const name = element.querySelector('p.font-black')?.textContent || radio.value;
+            document.getElementById('selectedFarmerName').textContent = name;
+            document.getElementById('selectedFarmerInfo').classList.remove('hidden');
+        }
+
+        async function assignFarmerToBuyer() {
+            const farmerName = document.getElementById('farmerNameInput')?.value?.trim();
+            if (!farmerName) { showToast('Please enter farmer name', 'warning'); return; }
+            if (!currentOrderId) { showToast('No order selected', 'warning'); return; }
+            const body = {
+                farmerName,
+                farmerMobile: document.getElementById('farmerMobileInput')?.value?.trim() || '',
+                village: document.getElementById('farmerVillageInput')?.value?.trim() || '',
+                pricePerQuintal: +(document.getElementById('farmerPriceInput')?.value || 0),
+                amount: +(document.getElementById('farmerAmountInput')?.value || 0)
+            };
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/assign-farmer/${currentOrderId}`, {
+                    method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`Farmer "${farmerName}" assigned!`, 'success');
+                    closeMatchModal(); fetchRequests(); fetchReconciliation(); fetchBuyerStats();
+                } else showToast(data.error || 'Failed to assign', 'warning');
+            } catch (e) { showToast('Network error', 'warning'); }
+        }
+
+        // ---- 360° Buyer Modal Logic ----
+        let currentBuyerId = null;
+        let isEditMode = false;
+        let activeBuyerTab = 'overview';
+
+        async function viewBuyerDetails(id) {
+            const b = allBuyers.find(x => x._id === id);
+            if (!b) return;
+            currentBuyerId = id;
+            isEditMode = false;
+
+            // Reset Tabs
+            changeBuyerTab('overview');
+
+            // Header info
+            document.getElementById('modal_buyer_title').textContent = b.businessName || b.name || '—';
+            document.getElementById('modal_buyer_phone_sub').textContent = b.phone || '—';
+
+            const isActive = b.status === 'approved';
+            const isPending = b.status === 'pending';
+            const badge = document.getElementById('modalBuyerStatusBadge');
+            badge.textContent = isActive ? 'Active' : isPending ? 'Pending' : 'Suspended';
+            badge.className = `px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${isActive ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : isPending ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}`;
+
+            document.getElementById('modal_status_display').textContent = badge.textContent;
+            document.getElementById('modal_status_display').className = `px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/10 border border-white/20`;
+
+            // Overview Tab Data
+            document.getElementById('view_businessName').textContent = b.businessName || '—';
+            document.getElementById('view_name').textContent = b.name || '—';
+            document.getElementById('view_phone').textContent = b.phone || '—';
+            document.getElementById('view_email').textContent = b.email || 'N/A';
+            document.getElementById('view_address').textContent = b.address || 'N/A';
+
+            const bank = b.bankDetails || {};
+            document.getElementById('view_bankHolder').textContent = bank.holderName || '—';
+            document.getElementById('view_bankName').textContent = bank.bankName || '—';
+            document.getElementById('view_accountNumber').textContent = bank.accountNumber || '—';
+            document.getElementById('view_ifscCode').textContent = bank.ifscCode || '—';
+
+            // Edit Inputs
+            document.getElementById('edit_businessName').value = b.businessName || '';
+            document.getElementById('edit_name').value = b.name || '';
+            document.getElementById('edit_phone').value = b.phone || '';
+            document.getElementById('edit_email').value = b.email || '';
+            document.getElementById('edit_address').value = b.address || '';
+            document.getElementById('edit_bankHolder').value = bank.holderName || '';
+            document.getElementById('edit_bankName').value = bank.bankName || '';
+            document.getElementById('edit_accountNumber').value = bank.accountNumber || '';
+            document.getElementById('edit_ifscCode').value = bank.ifscCode || '';
+
+            // Profile Photo & Docs
+            document.getElementById('modal_profile_photo').src = fixImageUrl(b.profilePhotoUrl) || 'https://ui-avatars.com/api/?name=Buyer&background=random?text=Buyer';
+
+            // Aadhaar handling
+            const aNum = b.aadhaarNumber || 'XXXX-XXXX-XXXX';
+            const aEl = document.getElementById('modal_aadhaar_number_display');
+            if (aEl) aEl.textContent = aNum;
+            if (document.getElementById('view_aadhaarNumber')) document.getElementById('view_aadhaarNumber').textContent = aNum;
+            if (document.getElementById('edit_aadhaarNumber')) document.getElementById('edit_aadhaarNumber').value = b.aadhaarNumber || '';
+
+            const aUrl = fixImageUrl(b.aadhaarDocUrl);
+            const aLink = document.getElementById('modal_aadhaar_link');
+            if (aLink) {
+                if (aUrl) { aLink.href = aUrl; aLink.classList.remove('hidden'); }
+                else { aLink.href = '#'; aLink.classList.add('hidden'); }
+            }
+
+            const aBackUrl = fixImageUrl(b.aadhaarBackDocUrl);
+            const aBackLink = document.getElementById('modal_aadhaar_back_link');
+            const aBackStatus = document.getElementById('modal_aadhaar_back_status');
+            if (aBackLink) {
+                if (aBackUrl) {
+                    aBackLink.href = aBackUrl;
+                    aBackLink.classList.remove('hidden');
+                    if (aBackStatus) { aBackStatus.textContent = 'Document Uploaded'; aBackStatus.className = 'text-[8px] font-bold text-emerald-600'; }
+                } else {
+                    aBackLink.href = '#';
+                    aBackLink.classList.add('hidden');
+                    if (aBackStatus) { aBackStatus.textContent = 'Not Uploaded'; aBackStatus.className = 'text-[8px] font-bold text-rose-500'; }
+                }
+            }
+
+            const bUrl = fixImageUrl(bank.bankDocUrl);
+            const bLink = document.getElementById('modal_bank_doc_link');
+            const bStatus = document.getElementById('modal_bank_doc_status');
+            if (bLink) {
+                if (bUrl) {
+                    bLink.href = bUrl;
+                    bLink.classList.remove('hidden');
+                    if (bStatus) { bStatus.textContent = 'Document Uploaded'; bStatus.className = 'text-[8px] font-bold text-emerald-600'; }
+                } else {
+                    bLink.href = '#';
+                    bLink.classList.add('hidden');
+                    if (bStatus) { bStatus.textContent = 'Not Uploaded'; bStatus.className = 'text-[8px] font-bold text-rose-500'; }
+                }
+            }
+
+            // Render Buyer KYC Documents Grid
+            renderBuyerKycDocs(b);
+
+            // Sidebar stats for quick reference in Wallet tab
+            document.getElementById('modal_wallet_total_qty').textContent = (b.totalPurchaseQty || 0) + ' Q';
+            document.getElementById('modal_wallet_total_val').textContent = formatCurrency(b.totalValue || 0);
+
+            // Fetch Additional Data (Orders & Wallet)
+            fetchBuyerOrders(id);
+            fetchBuyerWallet(id);
+
+            // Show Modal
+            document.getElementById('buyerProfileModal').classList.remove('hidden');
+            resetEditUI();
+        }
+
+        function fixImageUrl(url) {
+            if (!url || url === 'undefined' || url === 'null' || url === 'none') return null;
+            const imgHost = window.IMAGE_BASE || 'https://demo.ranx24.com';
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                try {
+                    const targetHost = new URL(imgHost).host;
+                    return url.replace(/^(https?:\/\/)[^\/]+/, `$1${targetHost}`);
+                } catch (e) {
+                    return url;
+                }
+            }
+            const cleanPath = url.startsWith('/') ? url : '/' + url;
+            return `${imgHost.replace(/\/+$/, '')}${cleanPath.replace(/\\/g, '/')}`;
+        }
+
+        function renderBuyerKycDocs(b) {
+            const container = document.getElementById('buyerKycDocsGrid');
+            if (!container) return;
+
+            const aadhaarFront = fixImageUrl(b.aadhaarDocUrl || b.documentUrl);
+            const aadhaarBack = fixImageUrl(b.aadhaarBackDocUrl);
+            const bankDoc = fixImageUrl(b.bankDetails?.bankDocUrl);
+
+            const docs = [
+                {
+                    key: 'aadhaarFront',
+                    title: 'Aadhaar Card (Front)',
+                    icon: 'fas fa-id-card text-blue-600',
+                    number: b.aadhaarNumber ? `Aadhaar: ${b.aadhaarNumber}` : 'Not Provided',
+                    url: aadhaarFront
+                },
+                {
+                    key: 'aadhaarBack',
+                    title: 'Aadhaar Card (Back)',
+                    icon: 'fas fa-id-card text-blue-600',
+                    number: b.aadhaarNumber ? `Aadhaar: ${b.aadhaarNumber}` : 'Not Provided',
+                    url: aadhaarBack
+                },
+                {
+                    key: 'bankDocUrl',
+                    title: 'Bank Passbook / Cheque',
+                    icon: 'fas fa-file-invoice-dollar text-emerald-600',
+                    number: b.bankDetails?.accountNumber ? `A/C: ${b.bankDetails.accountNumber}` : 'Not Provided',
+                    url: bankDoc
+                }
+            ];
+
+            container.innerHTML = docs.map(d => {
+                const hasUrl = !!d.url;
+                return `
+                    <div class="bg-white rounded-2xl border-2 border-slate-200 p-4 flex flex-col justify-between shadow-sm hover:border-blue-400 transition-all">
+                        <div>
+                            <div class="flex justify-between items-start gap-2 mb-3">
+                                <div class="flex items-center gap-2 min-w-0 flex-1">
+                                    <div class="h-8 w-8 rounded-xl bg-blue-50 flex items-center justify-center text-sm shrink-0">
+                                        <i class="${d.icon}"></i>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="text-xs font-black text-slate-900 truncate">${d.title}</h4>
+                                        <p class="text-[10px] text-slate-500 font-semibold truncate">${d.number}</p>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase shrink-0 ${hasUrl ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+                                    ${hasUrl ? '<i class="fas fa-check-circle mr-1"></i> Uploaded' : '<i class="fas fa-times-circle mr-1"></i> Missing'}
+                                </span>
+                            </div>
+
+                            ${hasUrl ? `
+                                <div class="h-32 w-full rounded-xl bg-slate-900 overflow-hidden border border-slate-200 relative group mb-3 cursor-pointer shadow-inner" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')">
+                                    <img src="${d.url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'h-full w-full bg-slate-900 flex flex-col items-center justify-center text-slate-300 p-2 text-center\\'><i class=\\'fas fa-file-excel text-2xl mb-1 text-blue-400\\'></i><span class=\\'text-[10px] font-bold text-slate-200\\'>File Unavailable</span></div>';">
+                                    <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1.5 backdrop-blur-[2px]">
+                                        <i class="fas fa-search-plus text-lg text-blue-400"></i>
+                                        <span>View Full Screen</span>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="h-32 w-full rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3">
+                                    <i class="fas fa-file-circle-xmark text-2xl mb-1 text-slate-300"></i>
+                                    <span class="text-[10px] font-bold text-slate-500">Not Uploaded</span>
+                                </div>
+                            `}
+                        </div>
+
+                        <div class="flex gap-2 pt-2 border-t border-slate-100">
+                            ${hasUrl ? `
+                                <button type="button" onclick="openDocViewer('${d.title}', '${d.url}', '${d.key}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black py-2 rounded-xl flex items-center justify-center gap-1 shadow-sm transition-all cursor-pointer">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button type="button" onclick="rejectBuyerDocument('${b._id}', '${d.key}', '${d.title}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[10px] font-black rounded-xl border border-rose-200 flex items-center justify-center transition-all cursor-pointer" title="Reject Document for Re-upload">
+                                    <i class="fas fa-trash-alt mr-1"></i> Reject
+                                </button>
+                            ` : `
+                                <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
+                                    No Document Attached
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let currentDocKeyForViewer = null;
+
+        function openDocViewer(title, url, docKey) {
+            if (!url) return showToast('Document URL not available', 'warning');
+            currentDocKeyForViewer = docKey || null;
+            document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
+            document.getElementById('docViewerDownloadBtn').href = url;
+
+            const img = document.getElementById('docViewerImage');
+            const errState = document.getElementById('docViewerErrorState');
+
+            if (img && errState) {
+                img.classList.remove('hidden');
+                errState.classList.add('hidden');
+                img.src = url;
+            }
+
+            const rejectBtn = document.getElementById('docViewerRejectBtn');
+            if (rejectBtn) {
+                if (docKey && currentBuyerId) {
+                    rejectBtn.onclick = () => rejectBuyerDocument(currentBuyerId, docKey, title);
+                    rejectBtn.classList.remove('hidden');
+                } else {
+                    rejectBtn.classList.add('hidden');
+                }
+            }
+
+            const modal = document.getElementById('docViewerModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function handleDocViewerImageError(img) {
+            if (!img) return;
+            img.classList.add('hidden');
+            const errState = document.getElementById('docViewerErrorState');
+            if (errState) {
+                errState.classList.remove('hidden');
+            }
+        }
+
+        function closeDocViewer() {
+            const modal = document.getElementById('docViewerModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        async function rejectBuyerDocument(userId, docKey, docTitle) {
+            if (!confirm(`Are you sure you want to REJECT "${docTitle}"?\n\nThis will clear the document and allow the buyer to re-upload it.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/user/${userId}/reject-doc`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+                    body: JSON.stringify({ docKey })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || 'Document rejected successfully', 'success');
+                    closeDocViewer();
+                    viewBuyerDetails(userId);
+                    fetchBuyers();
+                } else {
+                    showToast(data.error || 'Failed to reject document', 'warning');
+                }
+            } catch (e) {
+                showToast('Network error: ' + e.message, 'warning');
+            }
+        }
+
+        function changeBuyerTab(tabId) {
+            activeBuyerTab = tabId;
+            // Update Buttons
+            document.querySelectorAll('.buyer-tab').forEach(btn => {
+                btn.classList.remove('active-buyer-tab', 'text-blue-600');
+                btn.classList.add('text-slate-500');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active-buyer-tab', 'text-blue-600');
+            document.getElementById(`tab-${tabId}`).classList.remove('text-slate-500');
+
+            // Update Content
+            document.querySelectorAll('.buyer-content').forEach(content => content.classList.add('hidden'));
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+        }
+
+        async function fetchBuyerOrders(id) {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/${id}/orders`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const orders = await res.ok ? await res.json() : [];
+                renderBuyerOrders(orders);
+            } catch (e) { console.error('Fetch modal orders error:', e); }
+        }
+
+        function renderBuyerOrders(orders) {
+            const tbody = document.getElementById('buyer_orders_tbody');
+            if (!orders.length) { tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400">No orders found for this buyer.</td></tr>`; return; }
+            tbody.innerHTML = orders.map(o => `
+                <tr class="hover:bg-slate-50/50 border-b border-slate-100">
+                    <td class="px-6 py-4">
+                        <div class="font-black text-slate-900">${o.orderId}</div>
+                        <div class="text-[9px] text-slate-500">${new Date(o.createdAt).toLocaleDateString('en-IN')}</div>
+                        <div class="text-[10px] font-bold text-slate-600 mt-1">${o.crop} (${o.quantity} Q)</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-xs font-black text-slate-800">${o.farmerName || 'N/A'}</div>
+                        <div class="text-[9px] text-slate-500">${o.farmerMobile || ''}</div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="font-black text-slate-900">${formatCurrency(o.totalPayable)}</div>
+                        <div class="text-[9px] text-emerald-700 font-bold">Paid: ${formatCurrency(o.amountReceived || 0)}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-slate-100 border border-slate-200">${o.status}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchBuyerWallet(id) {
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/${id}/wallet`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const data = await res.ok ? await res.json() : { balance: 0, transactions: [] };
+
+                document.getElementById('modal_wallet_balance').textContent = formatCurrency(data.balance);
+                renderBuyerTransactions(data.transactions);
+
+                if (data.transactions.length > 0) {
+                    const last = data.transactions[0];
+                    document.getElementById('modal_wallet_last_txn').textContent = `${last.type}: ${formatCurrency(last.amount)} (${new Date(last.createdAt).toLocaleDateString()})`;
+                } else {
+                    document.getElementById('modal_wallet_last_txn').textContent = 'No transactions yet';
+                }
+            } catch (e) { console.error('Fetch wallet error:', e); }
+        }
+
+        function renderBuyerTransactions(txns) {
+            const tbody = document.getElementById('buyer_transactions_tbody');
+            if (!txns.length) { tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400 font-bold">No transactions found.</td></tr>`; return; }
+            tbody.innerHTML = txns.map(t => `
+                <tr class="hover:bg-slate-50/50 border-b border-slate-100">
+                    <td class="px-6 py-3">
+                        <div class="font-black text-slate-900">${new Date(t.createdAt).toLocaleDateString('en-IN')}</div>
+                        <div class="text-[8px] text-slate-400">${new Date(t.createdAt).toLocaleTimeString()}</div>
+                    </td>
+                    <td class="px-6 py-3">
+                        <div class="text-blue-700 font-black">${t.paymentMode || 'N/A'}</div>
+                        <div class="text-[9px] text-slate-500 truncate max-w-[120px]">${t.transactionId}</div>
+                    </td>
+                    <td class="px-6 py-3">
+                        <div class="font-black ${t.type === 'Credit' ? 'text-emerald-700' : 'text-rose-700'}">${t.type === 'Credit' ? '+' : '-'}${formatCurrency(t.amount)}</div>
+                        <div class="text-[8px] text-slate-400 font-bold italic">${t.note || ''}</div>
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">${t.status}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ---- Wallet Actions ----
+        let currentWalletAction = 'Credit';
+        function openWalletActionModal(type) {
+            currentWalletAction = type;
+            document.getElementById('walletActionTitle').innerHTML = `<i class="fas fa-${type === 'Credit' ? 'plus-circle text-blue-600' : 'minus-circle text-rose-600'}"></i> ${type} Money`;
+            document.getElementById('walletTxnSubmitBtn').className = `flex-1 h-12 rounded-xl text-white text-xs font-black transition-all ${type === 'Credit' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-rose-600 hover:bg-rose-700'}`;
+            document.getElementById('walletTxnAmount').value = '';
+            document.getElementById('walletTxnNote').value = '';
+            document.getElementById('walletActionModal').classList.remove('hidden');
+        }
+
+        function closeWalletActionModal() {
+            document.getElementById('walletActionModal').classList.add('hidden');
+        }
+
+        async function submitWalletTransaction() {
+            const amount = document.getElementById('walletTxnAmount').value;
+            const note = document.getElementById('walletTxnNote').value;
+            const method = document.getElementById('walletTxnMethod').value;
+
+            if (!amount || amount <= 0) { showToast('Please enter a valid amount', 'warning'); return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/${currentBuyerId}/wallet/transaction`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: currentWalletAction, amount, note, paymentMode: method })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`Wallet ${currentWalletAction}ed successfully!`, 'success');
+                    closeWalletActionModal();
+                    fetchBuyerWallet(currentBuyerId);
+                    fetchBuyers(); // Refresh main list balance
+                } else {
+                    showToast(data.error || 'Transaction failed', 'warning');
+                }
+            } catch (e) { showToast('Network error', 'warning'); }
+        }
+
+        // ---- Edit Logic ----
+        function toggleBuyerEdit() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('toggleEditBtn');
+            const footer = document.getElementById('modalFooter');
+            const viewEls = document.querySelectorAll('[id^="view_"]');
+            const editEls = document.querySelectorAll('[id^="edit_"]');
+
+            if (isEditMode) {
+                changeBuyerTab('overview'); // Force overview tab when editing
+                btn.innerHTML = '<i class="fas fa-times mr-2"></i>Cancel';
+                footer.classList.remove('hidden');
+                viewEls.forEach(el => el.classList.add('hidden'));
+                editEls.forEach(el => el.classList.remove('hidden'));
+            } else {
+                resetEditUI();
+            }
+        }
+
+        function resetEditUI() {
+            isEditMode = false;
+            document.getElementById('toggleEditBtn').innerHTML = '<i class="fas fa-user-pen mr-2"></i>Edit Profile';
+            document.getElementById('modalFooter').classList.add('hidden');
+            document.querySelectorAll('[id^="view_"]').forEach(el => el.classList.remove('hidden'));
+            document.querySelectorAll('[id^="edit_"]').forEach(el => el.classList.add('hidden'));
+        }
+
+        async function updateBuyerProfile() {
+            const body = {
+                businessName: document.getElementById('edit_businessName').value,
+                name: document.getElementById('edit_name').value,
+                phone: document.getElementById('edit_phone').value,
+                email: document.getElementById('edit_email').value,
+                address: document.getElementById('edit_address').value,
+                aadhaarNumber: document.getElementById('edit_aadhaarNumber').value,
+                bankDetails: {
+                    holderName: document.getElementById('edit_bankHolder').value,
+                    bankName: document.getElementById('edit_bankName').value,
+                    accountNumber: document.getElementById('edit_accountNumber').value,
+                    ifscCode: document.getElementById('edit_ifscCode').value
+                }
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/update/${currentBuyerId}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast('Profile updated successfully!', 'success');
+                    await fetchBuyers();
+
+                    // Update header title and phone
+                    if (document.getElementById('modal_buyer_title')) document.getElementById('modal_buyer_title').textContent = body.businessName || body.name;
+                    if (document.getElementById('modal_buyer_phone_sub')) document.getElementById('modal_buyer_phone_sub').textContent = body.phone;
+
+                    // Update view spans explicitly to match modal IDs
+                    const updateEl = (id, val) => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = val || '—';
+                    };
+
+                    updateEl('view_businessName', body.businessName);
+                    updateEl('view_name', body.name);
+                    updateEl('view_phone', body.phone);
+                    updateEl('view_email', body.email);
+                    updateEl('view_address', body.address);
+                    updateEl('view_aadhaarNumber', body.aadhaarNumber);
+
+                    if (body.bankDetails) {
+                        updateEl('view_bankHolder', body.bankDetails.holderName);
+                        updateEl('view_bankName', body.bankDetails.bankName);
+                        updateEl('view_accountNumber', body.bankDetails.accountNumber);
+                        updateEl('view_ifscCode', body.bankDetails.ifscCode);
+                    }
+
+                    resetEditUI();
+                } else {
+                    showToast(data.error || 'Update failed', 'warning');
+                }
+            } catch (e) {
+                console.error('Update Profile Error:', e);
+                showToast('Network error', 'warning');
+            }
+        }
+
+        function closeBuyerProfile() {
+            document.getElementById('buyerProfileModal').classList.add('hidden');
+            resetEditUI();
+        }
+
+        // ---- Helpers ----
+        function formatCurrency(amount) {
+            if (!amount) return '₹0';
+            return '₹' + Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast'), msg = document.getElementById('toastMessage');
+            const cfg = { success: ['from-emerald-50 to-emerald-100', 'border-emerald-300', 'text-emerald-900'], warning: ['from-amber-50 to-amber-100', 'border-amber-300', 'text-amber-900'], info: ['from-sky-50 to-sky-100', 'border-sky-300', 'text-sky-900'] }[type] || ['bg-white', 'border-slate-300', 'text-slate-900'];
+            toast.className = `fixed bottom-6 right-6 z-50 rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out] bg-gradient-to-r ${cfg[0]} ${cfg[1]}`;
+            msg.className = `text-sm font-bold ${cfg[2]}`; msg.textContent = message;
+            toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+
+        // ---- Page Load ----
+        window.addEventListener('DOMContentLoaded', function () {
+            console.log('🤝 Buyer Trading (B2B) Page Loaded');
+            setDatePreset('all');
+        });
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeMatchModal(); closeBuyerProfile(); closeReconOrderDetailsModal(); closePaymentModal(); } });
+    </script>
+
+    <!-- BUYER PROFILE 360° MODAL -->
+    <div id="buyerProfileModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+        onclick="if(event.target===this)closeBuyerProfile()">
+        <div
+            class="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl border-2 border-slate-200 animate-[slideUp_0.3s_ease-out] overflow-hidden flex flex-col max-h-[90vh]">
+
+            <!-- Modal Header -->
+            <div class="px-8 py-6 border-b-2 border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-200">
+                        <i class="fas fa-building text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 id="modal_buyer_title" class="text-xl font-black text-slate-900 tracking-tight">—</h2>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span id="modalBuyerStatusBadge"
+                                class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">—</span>
+                            <span class="text-[10px] font-bold text-slate-400">•</span>
+                            <span id="modal_buyer_phone_sub" class="text-[10px] font-bold text-slate-500">—</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="toggleEditBtn" onclick="toggleBuyerEdit()"
+                        class="h-10 px-5 rounded-xl border-2 border-blue-100 bg-white text-xs font-black text-blue-700 hover:bg-blue-50 hover:border-blue-200 shadow-sm transition-all flex items-center gap-2">
+                        <i class="fas fa-user-pen"></i> Edit Profile
+                    </button>
+                    <button onclick="closeBuyerProfile()"
+                        class="h-10 w-10 rounded-xl border-2 border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-all">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="px-8 bg-slate-50/50 border-b-2 border-slate-100">
+                <div class="flex items-center gap-8">
+                    <button onclick="changeBuyerTab('overview')" id="tab-overview"
+                        class="buyer-tab active-buyer-tab relative py-4 text-xs font-black uppercase tracking-widest text-blue-600">
+                        Overview
+                    </button>
+                    <button onclick="changeBuyerTab('orders')" id="tab-orders"
+                        class="buyer-tab relative py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-700">
+                        Order History
+                    </button>
+                    <button onclick="changeBuyerTab('wallet')" id="tab-wallet"
+                        class="buyer-tab relative py-4 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-700">
+                        Wallet & Payments
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-8 bg-white">
+
+                <!-- Tab: Overview -->
+                <div id="content-overview" class="buyer-content space-y-8 text-slate-700">
+                    <div class="grid grid-cols-3 gap-8">
+                        <div class="col-span-2 space-y-6">
+                            <!-- Basic details -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Business
+                                        Name</label>
+                                    <span id="view_businessName"
+                                        class="text-sm font-black text-slate-800 block">—</span>
+                                    <input id="edit_businessName" type="text"
+                                        class="hidden w-full text-sm font-black text-slate-800 bg-transparent border-b-2 border-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Full
+                                        Name</label>
+                                    <span id="view_name" class="text-sm font-black text-slate-800 block">—</span>
+                                    <input id="edit_name" type="text"
+                                        class="hidden w-full text-sm font-black text-slate-800 bg-transparent border-b-2 border-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Mobile
+                                        Number</label>
+                                    <span id="view_phone" class="text-sm font-black text-slate-800 block">—</span>
+                                    <input id="edit_phone" type="text"
+                                        class="hidden w-full text-sm font-black text-slate-800 bg-transparent border-b-2 border-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Email
+                                        Address</label>
+                                    <span id="view_email" class="text-sm font-black text-slate-800 block">—</span>
+                                    <input id="edit_email" type="text"
+                                        class="hidden w-full text-sm font-black text-slate-800 bg-transparent border-b-2 border-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Aadhaar
+                                        Number</label>
+                                    <span id="view_aadhaarNumber"
+                                        class="text-sm font-black text-slate-800 block">—</span>
+                                    <input id="edit_aadhaarNumber" type="text"
+                                        class="hidden w-full text-sm font-black text-slate-800 bg-transparent border-b-2 border-blue-400 focus:outline-none" />
+                                </div>
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 col-span-2">
+                                    <label
+                                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Address</label>
+                                    <span id="view_address" class="text-sm font-black text-slate-800 block">—</span>
+                                    <input id="edit_address" type="text"
+                                        class="hidden w-full text-sm font-black text-slate-800 bg-transparent border-b-2 border-blue-400 focus:outline-none" />
+                                </div>
+                            </div>
+
+                            <!-- Bank details -->
+                            <div class="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                                <div class="bg-slate-50 px-5 py-3 border-b-2 border-slate-100">
+                                    <h4
+                                        class="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                        <i class="fas fa-university text-blue-600"></i> Bank Account Information
+                                    </h4>
+                                </div>
+                                <div class="p-5 grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">A/C
+                                            Holder</label>
+                                        <span id="view_bankHolder"
+                                            class="text-xs font-black text-slate-800 block">—</span>
+                                        <input id="edit_bankHolder" type="text"
+                                            class="hidden w-full text-xs font-black text-slate-800 bg-transparent border-b border-blue-300 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Bank
+                                            Name</label>
+                                        <span id="view_bankName"
+                                            class="text-xs font-black text-slate-800 block">—</span>
+                                        <input id="edit_bankName" type="text"
+                                            class="hidden w-full text-xs font-black text-slate-800 bg-transparent border-b border-blue-300 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Account
+                                            Number</label>
+                                        <span id="view_accountNumber"
+                                            class="text-xs font-black text-slate-800 block">—</span>
+                                        <input id="edit_accountNumber" type="text"
+                                            class="hidden w-full text-xs font-black text-slate-800 bg-transparent border-b border-blue-300 focus:outline-none" />
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">IFSC
+                                            Code</label>
+                                        <span id="view_ifscCode"
+                                            class="text-xs font-black text-slate-800 block">—</span>
+                                        <input id="edit_ifscCode" type="text"
+                                            class="hidden w-full text-xs font-black text-slate-800 bg-transparent border-b border-blue-300 focus:outline-none" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Info -->
+                        <div class="space-y-6">
+                            <!-- Profile Photo -->
+                            <div
+                                class="p-6 rounded-[2rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl relative overflow-hidden group">
+                                <div
+                                    class="absolute -right-4 -top-4 h-24 w-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all">
+                                </div>
+                                <div class="relative z-10 flex flex-col items-center">
+                                    <div
+                                        class="h-24 w-24 rounded-full border-4 border-white/20 overflow-hidden mb-4 shadow-2xl">
+                                        <img id="modal_profile_photo"
+                                            src="https://ui-avatars.com/api/?name=Buyer&background=random"
+                                            class="h-full w-full object-cover text-xs" />
+                                    </div>
+                                    <span class="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Buyer
+                                        Status</span>
+                                    <div id="modal_status_display"
+                                        class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/10 border border-white/20">
+                                        —</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KYC Documents Section -->
+                    <div class="pt-6 border-t-2 border-slate-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                <i class="fas fa-file-shield text-blue-600"></i> Buyer KYC & Identity Documents
+                            </h4>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-50 text-blue-700 border border-blue-200">KYC Verification</span>
+                        </div>
+                        <div id="buyerKycDocsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Loaded via renderBuyerKycDocs -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Orders -->
+                <div id="content-orders" class="buyer-content hidden animate-[slideIn_0.3s_ease-out]">
+                    <div class="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                        <table class="min-w-full border-separate border-spacing-0">
+                            <thead class="bg-slate-50 text-slate-700">
+                                <tr class="text-[10px] font-black uppercase tracking-wider">
+                                    <th class="text-left px-6 py-4 border-b border-slate-100">Order Details</th>
+                                    <th class="text-left px-6 py-4 border-b border-slate-100">Farmer Info</th>
+                                    <th class="text-right px-6 py-4 border-b border-slate-100">Amount</th>
+                                    <th class="text-center px-6 py-4 border-b border-slate-100">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="buyer_orders_tbody" class="text-xs text-slate-700">
+                                <!-- Loaded via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab: Wallet -->
+                <div id="content-wallet" class="buyer-content hidden animate-[slideIn_0.3s_ease-out] space-y-8">
+                    <!-- Wallet Dashboard -->
+                    <div class="grid grid-cols-2 gap-6">
+                        <div
+                            class="p-8 rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-blue-700 text-white shadow-2xl shadow-blue-200 relative overflow-hidden group">
+                            <i
+                                class="fas fa-wallet absolute -right-6 -bottom-6 text-9xl text-white/10 group-hover:scale-110 transition-transform"></i>
+                            <p class="text-xs font-black uppercase tracking-widest text-blue-200 mb-2">Available Balance
+                            </p>
+                            <h3 id="modal_wallet_balance" class="text-4xl font-black mb-6">₹0.00</h3>
+                            <div class="flex gap-3 relative z-10">
+                                <button onclick="openWalletActionModal('Credit')"
+                                    class="h-10 px-6 rounded-xl bg-white text-blue-700 text-xs font-black hover:bg-blue-50 shadow-lg shadow-black/10 transition-all flex items-center gap-2">
+                                    <i class="fas fa-plus-circle"></i> Credit Money
+                                </button>
+                                <button onclick="openWalletActionModal('Debit')"
+                                    class="h-10 px-6 rounded-xl bg-blue-500/30 text-white border border-white/20 text-xs font-black hover:bg-blue-500/40 transition-all flex items-center gap-2">
+                                    <i class="fas fa-minus-circle"></i> Debit Money
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div
+                                class="p-6 rounded-3xl border-2 border-slate-100 bg-slate-50/50 flex flex-col justify-center">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total
+                                    Purchased</p>
+                                <h4 id="modal_wallet_total_qty" class="text-2xl font-black text-slate-800">0 Q</h4>
+                            </div>
+                            <div
+                                class="p-6 rounded-3xl border-2 border-slate-100 bg-slate-50/50 flex flex-col justify-center">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total
+                                    Value</p>
+                                <h4 id="modal_wallet_total_val" class="text-2xl font-black text-slate-800">₹0</h4>
+                            </div>
+                            <div
+                                class="p-6 rounded-3xl border-2 border-slate-100 bg-slate-50/50 flex flex-col justify-center col-span-2 text-slate-700">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Last
+                                    Transaction</p>
+                                <h4 id="modal_wallet_last_txn" class="text-lg font-black text-slate-800">None</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction History -->
+                    <div class="space-y-4">
+                        <h4
+                            class="text-[10px] font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fas fa-history text-indigo-600"></i> Recent Transactions
+                        </h4>
+                        <div class="rounded-3xl border-2 border-slate-100 overflow-hidden shadow-sm">
+                            <table class="min-w-full border-separate border-spacing-0">
+                                <thead class="bg-slate-50 text-slate-700">
+                                    <tr class="text-[9px] font-black uppercase tracking-wider">
+                                        <th class="text-left px-6 py-4 border-b border-slate-100">TXN Date</th>
+                                        <th class="text-left px-6 py-4 border-b border-slate-100">Method & ID</th>
+                                        <th class="text-left px-6 py-4 border-b border-slate-100">Amount</th>
+                                        <th class="text-center px-6 py-4 border-b border-slate-100">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="buyer_transactions_tbody" class="text-[11px] text-slate-700">
+                                    <!-- Loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer (for Save Changes only in Edit mode) -->
+            <div id="modalFooter"
+                class="hidden px-8 py-4 border-t-2 border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
+                <button onclick="toggleBuyerEdit()"
+                    class="px-6 py-2 rounded-xl text-xs font-black text-slate-500 hover:text-slate-700 transition-all">Cancel</button>
+                <button onclick="updateBuyerProfile()"
+                    class="px-8 py-2 rounded-xl bg-blue-600 text-white text-xs font-black hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all">Save
+                    Changes</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- WALLET ACTION MODAL (Mini) -->
+    <div id="walletActionModal"
+        class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+        onclick="if(event.target===this)closeWalletActionModal()">
+        <div
+            class="bg-white rounded-3xl shadow-2xl w-full max-w-sm border-2 border-slate-200 animate-[scaleUp_0.2s_ease-out] overflow-hidden text-slate-700">
+            <div class="px-6 py-4 border-b-2 border-slate-50 bg-slate-50/50">
+                <h3 id="walletActionTitle"
+                    class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                    <i id="walletActionIcon" class="fas fa-plus-circle text-blue-600"></i> Credit Money
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Amount
+                        (₹)</label>
+                    <input type="number" id="walletTxnAmount" placeholder="Enter amount..."
+                        class="w-full h-12 px-4 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-blue-400 focus:outline-none font-black text-slate-800">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Payment
+                        Method</label>
+                    <select id="walletTxnMethod"
+                        class="w-full h-12 px-4 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-blue-400 focus:outline-none font-bold text-slate-800 appearance-none">
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Adjustment">Adjustment</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Internal
+                        Note</label>
+                    <textarea id="walletTxnNote" rows="2" placeholder="Reference ID or reason..."
+                        class="w-full p-4 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-blue-400 focus:outline-none font-semibold text-xs text-slate-700"></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeWalletActionModal()"
+                        class="flex-1 h-12 rounded-xl text-xs font-black text-slate-500 hover:text-slate-700 transition-all">Cancel</button>
+                    <button id="walletTxnSubmitBtn" onclick="submitWalletTransaction()"
+                        class="flex-1 h-12 rounded-xl bg-blue-600 text-white text-xs font-black hover:bg-blue-700 transition-all">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORDER DETAILS MODAL (PAYMENT RECONCILIATION) -->
+    <div id="reconOrderDetailsModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-lg"
+        onclick="if(event.target===this)closeReconOrderDetailsModal()">
+        <div
+            class="bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl border-2 border-slate-200 animate-[slideUp_0.3s_ease-out] overflow-hidden flex flex-col max-h-[90vh]">
+
+            <!-- Header -->
+            <div class="px-8 py-6 border-b-2 border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="h-12 w-12 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-200">
+                        <i class="fas fa-file-invoice-dollar text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 id="rodOrderId" class="text-lg font-black text-slate-900 tracking-tight">Order Details</h2>
+                        <div class="flex flex-wrap items-center gap-2 mt-1">
+                            <span id="rodDate" class="text-[10px] font-bold text-slate-500">—</span>
+                            <span class="text-[10px] font-bold text-slate-400">•</span>
+                            <span id="rodStatusBadge"
+                                class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">—</span>
+                            <span id="rodSettlementBadge"
+                                class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">—</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="closeReconOrderDetailsModal()"
+                    class="h-10 w-10 rounded-xl border-2 border-slate-200 bg-white flex items-center justify-center hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-all cursor-pointer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto custom-scroll p-8 bg-white space-y-6">
+                <!-- Participants Info (Buyer vs Farmer) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Buyer Card -->
+                    <div class="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
+                        <h3
+                            class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2">
+                            <i class="fas fa-building text-blue-600"></i> Buyer Information
+                        </h3>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Business /
+                                Name</label>
+                            <p id="rodBuyerName" class="text-sm font-black text-slate-800">—</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Mobile
+                                Number</label>
+                            <p id="rodBuyerPhone" class="text-xs font-black text-slate-700">—</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Billing
+                                Location</label>
+                            <p id="rodBuyerLocation" class="text-xs font-bold text-slate-600 leading-relaxed">—</p>
+                        </div>
+                    </div>
+
+                    <!-- Farmer Card -->
+                    <div class="p-5 rounded-2xl border border-emerald-100 bg-emerald-50/20 space-y-3">
+                        <h3
+                            class="text-xs font-black text-emerald-900 uppercase tracking-widest flex items-center gap-2 border-b border-emerald-100 pb-2">
+                            <i class="fas fa-user-tie text-emerald-600"></i> Farmer Information
+                        </h3>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Farmer
+                                Name</label>
+                            <p id="rodFarmerName" class="text-sm font-black text-slate-800">—</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Mobile
+                                Number</label>
+                            <p id="rodFarmerMobile" class="text-xs font-black text-slate-700">—</p>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Farmer
+                                Location</label>
+                            <p id="rodFarmerAddress" class="text-xs font-bold text-slate-600 leading-relaxed">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crop Details & Variety -->
+                <div class="p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
+                    <h3
+                        class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2 border-b border-slate-100 pb-2 mb-3">
+                        <i class="fas fa-seedling text-amber-600"></i> Crop & Order Details
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Crop Name</label>
+                            <span id="rodCrop" class="text-xs font-black text-slate-800 block">—</span>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Variety</label>
+                            <span id="rodVariety" class="text-xs font-black text-slate-800 block">—</span>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Quantity
+                                Traded</label>
+                            <span id="rodQuantity" class="text-xs font-black text-slate-800 block">—</span>
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">Mandi /
+                                Location</label>
+                            <span id="rodLocation" class="text-xs font-bold text-slate-700 block">—</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-100">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase block mb-1">Internal Notes /
+                            Notes</label>
+                        <p id="rodNote"
+                            class="text-xs text-slate-600 leading-relaxed font-semibold bg-white p-3 rounded-xl border border-slate-100">
+                            —</p>
+                    </div>
+                </div>
+
+                <!-- Financial Breakdown -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-wallet text-rose-600"></i> Financial Breakdown
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Rate Per Quintal -->
+                        <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 flex flex-col justify-between">
+                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">Rate /
+                                Price</span>
+                            <span id="rodPricePerQuintal" class="text-lg font-black text-slate-800 mt-2">—</span>
+                        </div>
+                        <!-- Total Payable -->
+                        <div class="p-4 rounded-xl border border-blue-100 bg-blue-50/50 flex flex-col justify-between">
+                            <span class="text-[9px] font-bold text-blue-700 uppercase tracking-wide">Total Payable
+                                (Buyer)</span>
+                            <span id="rodTotalPayable" class="text-lg font-black text-blue-900 mt-2">—</span>
+                        </div>
+                        <!-- Amount Received -->
+                        <div
+                            class="p-4 rounded-xl border border-emerald-100 bg-emerald-50/50 flex flex-col justify-between">
+                            <span class="text-[9px] font-bold text-emerald-700 uppercase tracking-wide">Amount
+                                Received</span>
+                            <span id="rodAmountReceived" class="text-lg font-black text-emerald-950 mt-2">—</span>
+                        </div>
+                        <!-- Outstanding Balance -->
+                        <div id="rodPendingCard" class="p-4 rounded-xl flex flex-col justify-between border">
+                            <span class="text-[9px] font-bold uppercase tracking-wide text-slate-500">Outstanding
+                                Balance</span>
+                            <span id="rodPendingAmount" class="text-lg font-black mt-2">—</span>
+                        </div>
+                        <!-- Commission -->
+                        <div
+                            class="p-4 rounded-xl border border-purple-100 bg-purple-50/50 flex flex-col justify-between">
+                            <span class="text-[9px] font-bold text-purple-700 uppercase tracking-wide">Commission
+                                (Platform)</span>
+                            <span id="rodCommission" class="text-lg font-black text-purple-900 mt-2">—</span>
+                        </div>
+                        <!-- Farmer Payout -->
+                        <div
+                            class="p-4 rounded-xl border border-indigo-100 bg-indigo-50/50 flex flex-col justify-between">
+                            <span class="text-[9px] font-bold text-indigo-700 uppercase tracking-wide">Farmer Payout
+                                (NexCard)</span>
+                            <span id="rodFarmerPayout" class="text-lg font-black text-indigo-900 mt-2">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-8 py-4 border-t-2 border-slate-100 bg-slate-50/50 flex items-center justify-end">
+                <button onclick="closeReconOrderDetailsModal()"
+                    class="h-10 px-6 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-black shadow-md transition-all cursor-pointer">
+                    Close Details
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
+    <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                        <i class="fas fa-file-image text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
+                        <p class="text-[10px] text-blue-300 font-medium">Official Identification & Verification Document</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+                        <i class="fas fa-trash-alt"></i> Reject Document
+                    </button>
+                    <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
+                        <i class="fas fa-download"></i> Download / Open
+                    </a>
+                    <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
+        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
+          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
+          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+        </div>
+      </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

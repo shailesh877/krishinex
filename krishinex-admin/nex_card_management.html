@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>KrishiNex Admin – Nex Card Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Authentication Check -->
+  <script src="js/auth.js?v=1.0.1"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: {
+            brand: {
+              green: '#16A34A',
+              blue: '#0EA5E9',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-gradient-to-br from-emerald-50 via-slate-50 to-sky-50 text-slate-900 overflow-x-hidden">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300" onclick="toggleSidebar(false)"></div>
+
+    <!-- SIDEBAR (Simplified for direct include or copy-paste from other pages) -->
+    <!-- Note: In a real app we'd use a component or include. For now, we'll keep the structure consistent. -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10">
+        <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+          <img src="images/logo.png" alt="">
+        </div>
+        <div class="ml-3">
+          <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="">
+          <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+                  <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-sky-50 to-emerald-50 text-emerald-700 border-2 border-emerald-200 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-sky-100 shadow-sm">
+            <i class="fas fa-id-card text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- MAIN AREA -->
+    <div class="flex-1 flex flex-col md:ml-64 relative min-w-0 overflow-x-hidden">
+      <!-- Premium Background Elements -->
+      <div class="absolute top-0 right-0 -z-10 w-[500px] h-[500px] bg-emerald-100/30 rounded-full blur-[100px]"></div>
+      <div class="absolute bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-sky-100/30 rounded-full blur-[100px]"></div>
+
+      <header class="sticky top-0 z-30 bg-white/70 backdrop-blur-md border-b border-white/20">
+        <div class="flex items-center justify-between px-6 h-20">
+          <div class="flex flex-col">
+            <h1 class="text-xl font-black tracking-tight text-slate-800 flex items-center gap-3">
+              <span class="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200/50">
+                <i class="fas fa-id-card text-lg"></i>
+              </span>
+              Nex Card Hub
+            </h1>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-14 -mt-1">Inventory & Management</p>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <div class="hidden lg:flex gap-2 mr-4 border-r pr-4 border-slate-200">
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-400 font-black uppercase">Live Stock</p>
+                    <p id="totalStockHeader" class="text-sm font-black text-emerald-600">--</p>
+                </div>
+            </div>
+            <button onclick="openAddModal()" class="group relative flex items-center h-10 px-5 rounded-xl bg-slate-900 text-white text-[11px] font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-sky-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
+                <i class="fas fa-plus mr-2 text-emerald-400"></i> Single Card
+            </button>
+            <button onclick="openBulkModal()" class="flex items-center h-10 px-5 rounded-xl bg-white border-2 border-slate-100 text-slate-700 text-[11px] font-black hover:border-emerald-200 hover:text-emerald-600 transition-all shadow-sm">
+                <i class="fas fa-file-excel mr-2 text-sky-500"></i> Bulk Upload
+            </button>
+            <button onclick="exportCards()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border-2 border-slate-100 text-slate-400 hover:text-slate-900 transition-all shadow-sm">
+                <i class="fas fa-download text-xs"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-6 py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-12 overflow-y-auto custom-scroll">
+        
+        <!-- TOP ACTIONS BAR -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+            <!-- TABS (Glassmorphic) -->
+            <div class="lg:col-span-4">
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">View Mode</p>
+                <div class="flex p-1 bg-white/50 backdrop-blur-xl rounded-2xl border-2 border-white shadow-sm w-fit">
+                    <button onclick="switchTab('assigned')" id="tab-assigned" class="px-6 py-2.5 rounded-xl text-[11px] font-black transition-all bg-white shadow-md text-emerald-700">
+                        <i class="fas fa-user-check mr-2"></i> Assigned
+                    </button>
+                    <button onclick="switchTab('inventory')" id="tab-inventory" class="px-6 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-800">
+                        <i class="fas fa-boxes-stacked mr-2"></i> Inventory
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEARCH & FILTERS -->
+            <div class="lg:col-span-8 flex flex-wrap gap-3 items-center justify-end">
+                <div class="relative group w-full sm:w-80">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500 transition-colors"></i>
+                    <input id="searchInput" type="text" placeholder="Search card number..." oninput="filterData()"
+                        class="w-full h-12 pl-11 pr-4 rounded-2xl border-2 border-white bg-white/60 backdrop-blur-md text-[13px] font-bold shadow-sm focus:bg-white focus:border-emerald-200 focus:ring-4 focus:ring-emerald-500/5 transition-all outline-none" />
+                </div>
+
+                <div id="roleFilterContainer">
+                    <select id="roleFilter" onchange="filterData()" 
+                        class="h-12 px-5 rounded-2xl border-2 border-white bg-white/60 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-slate-600 focus:bg-white focus:border-emerald-200 outline-none transition-all shadow-sm">
+                        <option value="all">All Roles</option>
+                        <option value="farmer">Farmer</option>
+                        <option value="ksp">KSP Partner</option>
+                        <option value="shop">Shop Partner</option>
+                        <option value="equipment">Rentals</option>
+                        <option value="soil">Soil Lab</option>
+                    </select>
+                </div>
+
+                <div id="statusFilterContainer" class="hidden">
+                    <select id="statusFilter" onchange="filterData()" 
+                        class="h-12 px-5 rounded-2xl border-2 border-white bg-white/60 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-slate-600 focus:bg-white focus:border-emerald-200 outline-none transition-all shadow-sm">
+                        <option value="all">Any Status</option>
+                        <option value="available">Available</option>
+                        <option value="assigned">Assigned</option>
+                    </select>
+                </div>
+
+                <div class="h-12 px-6 flex items-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-200">
+                    <p class="text-[10px] font-black uppercase tracking-widest opacity-60 mr-3">Count</p>
+                    <span id="dataCount" class="text-sm font-black text-emerald-400">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLE SECTION (PREMIUM) -->
+        <section class="group relative rounded-[32px] bg-white/40 backdrop-blur-2xl border border-white shadow-2xl shadow-slate-200/50 overflow-hidden transition-all hover:bg-white/60">
+          <div class="overflow-auto custom-scroll" style="max-height: calc(100vh - 220px);">
+            <table class="min-w-full border-separate border-spacing-0">
+              <thead class="sticky top-0 z-20">
+                <tr id="tableHeader" class="bg-slate-50/80 backdrop-blur-xl border-b border-slate-100">
+                    <!-- Headers change based on tab -->
+                </tr>
+              </thead>
+              <tbody id="dataTbody" class="divide-y divide-slate-100/50">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Empty State -->
+          <div id="emptyState" class="hidden flex flex-col items-center justify-center py-24 text-center">
+              <div class="h-24 w-24 rounded-full bg-slate-50 flex items-center justify-center mb-6 relative">
+                  <i class="fas fa-id-card text-4xl text-slate-200"></i>
+                  <div class="absolute inset-0 rounded-full border-2 border-dashed border-slate-200 animate-[spin_10s_linear_infinite]"></div>
+              </div>
+              <h3 class="text-lg font-black text-slate-800">No Cards Found</h3>
+              <p class="text-xs font-bold text-slate-400 mt-2 max-w-[250px]">Try adjusting your search or filters to find what you're looking for.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- MODALS (Redesigned) -->
+  <div id="addModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onclick="closeAddModal()"></div>
+    <div class="relative bg-white rounded-[40px] w-full max-w-md shadow-2xl border border-white overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="addModalContent">
+        <div class="p-8 pb-4 flex justify-between items-start">
+            <div>
+                <h3 class="text-2xl font-black text-slate-800">New Card</h3>
+                <p class="text-xs font-bold text-slate-400">Add a single Nex Card to inventory</p>
+            </div>
+            <button onclick="closeAddModal()" class="h-10 w-10 rounded-2xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-8 pt-6 space-y-6">
+            <div class="relative group">
+                <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Card Serial Number</label>
+                <div class="relative">
+                    <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-emerald-500"></i>
+                    <input type="text" id="newCardNumber" placeholder="e.g. NEX-2026-XXXX" 
+                        class="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-50 bg-slate-50 font-black text-slate-800 placeholder:text-slate-300 focus:bg-white focus:border-emerald-200 focus:ring-8 focus:ring-emerald-500/5 outline-none transition-all" />
+                </div>
+            </div>
+            <button onclick="saveSingleCard()" class="w-full h-14 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-sm hover:shadow-xl hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+                Create Card <i class="fas fa-arrow-right text-[10px]"></i>
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <div id="bulkModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onclick="closeBulkModal()"></div>
+    <div class="relative bg-white rounded-[40px] w-full max-w-lg shadow-2xl border border-white overflow-hidden transform transition-all scale-95 opacity-0 duration-300" id="bulkModalContent">
+        <div class="p-8 pb-4 flex justify-between items-start">
+            <div>
+                <h3 class="text-2xl font-black text-slate-800">Bulk Import</h3>
+                <p class="text-xs font-bold text-slate-400">Import hundreds of cards instantly</p>
+            </div>
+            <button onclick="closeBulkModal()" class="h-10 w-10 rounded-2xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-all flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-8 pt-6 space-y-6">
+            <div id="dropZone" 
+                 class="group border-4 border-dashed border-slate-50 rounded-[32px] p-12 text-center hover:border-emerald-200 hover:bg-emerald-50/30 transition-all cursor-pointer relative overflow-hidden"
+                 onclick="document.getElementById('excelInput').click()"
+                 ondragover="event.preventDefault(); this.classList.add('border-emerald-300', 'bg-emerald-50/50')"
+                 ondragleave="this.classList.remove('border-emerald-300', 'bg-emerald-50/50')"
+                 ondrop="handleDrop(event)">
+                
+                <div class="h-20 w-20 bg-white rounded-3xl shadow-xl shadow-slate-100 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-cloud-arrow-up text-3xl text-emerald-500"></i>
+                </div>
+                <h4 class="text-base font-black text-slate-800">Drop your Excel here</h4>
+                <p class="text-[11px] text-slate-400 font-bold mt-2">Maximum file size: 10MB (.xlsx, .csv)</p>
+                
+                <input type="file" id="excelInput" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleFileSelect(this)" />
+            </div>
+
+            <div id="uploadStatus" class="hidden p-5 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-4 animate-bounce">
+                <div class="h-10 w-10 rounded-full bg-white flex items-center justify-center shadow-sm text-emerald-500">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-[10px] text-emerald-400 font-black uppercase">Selected File</p>
+                    <p id="statusText" class="text-xs font-black text-emerald-800 truncate"></p>
+                </div>
+            </div>
+
+            <button id="uploadBtn" onclick="uploadBulkFile()" class="w-full h-14 rounded-2xl bg-slate-900 text-white font-black text-sm hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all hidden">
+                Start Importing <i class="fas fa-bolt ml-2 text-yellow-400"></i>
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'assigned';
+    let assignedCards = [];
+    let inventoryCards = [];
+    let selectedFile = null;
+
+    async function fetchData() {
+        if (currentTab === 'assigned') {
+            await fetchAssignedCards();
+        } else {
+            await fetchInventory();
+        }
+    }
+
+    async function fetchAssignedCards() {
+        const tbody = document.getElementById('dataTbody');
+        tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-20 text-center"><div class="animate-pulse flex flex-col items-center"><div class="h-12 w-12 bg-slate-100 rounded-full mb-4"></div><div class="h-2 w-32 bg-slate-100 rounded"></div></div></td></tr>`;
+        renderHeaders();
+
+        function updateRoleFilterDropdown(cards) {
+            const select = document.getElementById('roleFilter');
+            if (!select || !cards) return;
+            const currentVal = select.value;
+            const roles = Array.from(new Set(cards.map(c => c.role).filter(Boolean))).sort();
+            if (roles.length > 0) {
+                select.innerHTML = '<option value="all">All Roles</option>' + roles.map(r => `<option value="${r.toLowerCase()}" ${r.toLowerCase() === currentVal ? 'selected' : ''}>${r}</option>`).join('');
+            }
+        }
+
+        try {
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/employee/admin/all-nex-cards`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Failed to fetch');
+            assignedCards = await response.json();
+            updateRoleFilterDropdown(assignedCards);
+            renderAssigned(assignedCards);
+        } catch (error) {
+            tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-10 text-center text-red-500 font-bold">Error: ${error.message}</td></tr>`;
+        }
+    }
+
+    async function fetchInventory() {
+        const tbody = document.getElementById('dataTbody');
+        tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-20 text-center"><div class="animate-pulse flex flex-col items-center"><div class="h-12 w-12 bg-slate-100 rounded-full mb-4"></div><div class="h-2 w-32 bg-slate-100 rounded"></div></div></td></tr>`;
+        renderHeaders();
+
+        try {
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/nex-cards/inventory`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Failed to fetch');
+            inventoryCards = await response.json();
+            renderInventory(inventoryCards);
+            
+            const totalStock = inventoryCards.filter(c => c.status === 'available').length;
+            document.getElementById('totalStockHeader').textContent = totalStock;
+        } catch (error) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-10 text-center text-red-500 font-bold">Error: ${error.message}</td></tr>`;
+        }
+    }
+
+    function exportCards() {
+        const dataToExport = currentTab === 'assigned' ? assignedCards : inventoryCards;
+        if (!dataToExport || dataToExport.length === 0) {
+            alert('No card data available to export.');
+            return;
+        }
+        let csvContent = "data:text/csv;charset=utf-8,";
+        if (currentTab === 'assigned') {
+            csvContent += "Name,Phone,Role,CardNumber,AllottedBy,JoinedAt\n";
+            dataToExport.forEach(c => {
+                csvContent += `"${c.name || ''}","${c.phone || ''}","${c.role || ''}","${c.cardNumber || c.walletNumber || ''}","${c.allottedBy || ''}","${c.joinedAt || ''}"\n`;
+            });
+        } else {
+            csvContent += "CardNumber,Status,AssignedTo,CreatedAt\n";
+            dataToExport.forEach(c => {
+                csvContent += `"${c.cardNumber || ''}","${c.status || ''}","${c.assignedTo || ''}","${c.createdAt || ''}"\n`;
+            });
+        }
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `nex_cards_${currentTab}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function renderHeaders() {
+        const header = document.getElementById('tableHeader');
+        if (currentTab === 'assigned') {
+            header.innerHTML = `
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">User Identity</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Designation</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Card Serial</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Issued By (KSP)</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Status</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest text-right pr-10">Allotted At</th>
+            `;
+            document.getElementById('roleFilterContainer').classList.remove('hidden');
+            document.getElementById('statusFilterContainer').classList.add('hidden');
+        } else {
+            header.innerHTML = `
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Serial Number</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Availability</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Assigned Mapping</th>
+                <th class="text-left font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest">Added Date</th>
+                <th class="text-right font-black px-6 py-5 text-[10px] text-slate-400 uppercase tracking-widest pr-10">Operations</th>
+            `;
+            document.getElementById('roleFilterContainer').classList.add('hidden');
+            document.getElementById('statusFilterContainer').classList.remove('hidden');
+        }
+    }
+
+    function renderAssigned(cards) {
+        const tbody = document.getElementById('dataTbody');
+        const emptyState = document.getElementById('emptyState');
+        document.getElementById('dataCount').textContent = cards.length;
+        
+        if (cards.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        emptyState.classList.add('hidden');
+
+        tbody.innerHTML = cards.map(u => `
+            <tr class="hover:bg-emerald-50/30 transition-all duration-300">
+                <td class="px-6 py-5">
+                    <div class="flex items-center gap-4">
+                        <div class="h-11 w-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-emerald-100">
+                            ${(u.name || '??').substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                            <p class="text-[13px] font-black text-slate-800">${u.name}</p>
+                            <p class="text-[11px] text-slate-400 font-bold">${u.phone}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-5">
+                    <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${getRoleColor(u.role)} shadow-sm">
+                        ${u.role}
+                    </span>
+                </td>
+                <td class="px-6 py-5 font-mono text-xs font-black text-emerald-700 bg-emerald-50/50 rounded-2xl w-fit inline-block my-5 mx-6">
+                    ${u.cardNumber || u.walletNumber}
+                </td>
+                <td class="px-6 py-5">
+                    <p class="text-[11px] font-black text-slate-600">
+                        ${u.allottedBy || 'Direct'} ${u.allottedByKspPartnerId ? `(${u.allottedByKspPartnerId})` : ''}
+                    </p>
+                    <p class="text-[9px] text-emerald-500 font-bold uppercase tracking-tighter">${u.allottedByBusiness || 'OFFICIAL'}</p>
+                </td>
+                <td class="px-6 py-5">
+                    <div class="flex items-center gap-2">
+                        <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></div>
+                        <span class="text-[10px] font-black uppercase text-emerald-600 tracking-wider">Active</span>
+                    </div>
+                </td>
+                <td class="px-6 py-5 text-[11px] font-black text-slate-400 text-right pr-10">
+                    <div class="flex flex-col items-end">
+                        <span class="text-slate-800">${new Date(u.allottedAt || u.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                        <span class="text-[9px] text-slate-400 mt-0.5">${new Date(u.allottedAt || u.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderInventory(cards) {
+        const tbody = document.getElementById('dataTbody');
+        const emptyState = document.getElementById('emptyState');
+        document.getElementById('dataCount').textContent = cards.length;
+        
+        if (cards.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        emptyState.classList.add('hidden');
+
+        tbody.innerHTML = cards.map(c => `
+            <tr class="hover:bg-sky-50/30 transition-all duration-300">
+                <td class="px-6 py-5 font-mono text-sm font-black text-slate-700">${c.cardNumber}</td>
+                <td class="px-6 py-5">
+                    <span class="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${c.status === 'available' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'} shadow-sm">
+                        ${c.status}
+                    </span>
+                </td>
+                <td class="px-6 py-5">
+                    ${c.assignedTo ? `
+                        <div class="flex items-center gap-3">
+                            <div class="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-600">
+                                ${(c.assignedTo.name || '').substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-black text-slate-800">${c.assignedTo.name}</p>
+                                <p class="text-[9px] text-slate-400 font-bold">${c.assignedTo.phone}</p>
+                            </div>
+                        </div>
+                    ` : '<span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Not Assigned</span>'}
+                </td>
+                <td class="px-6 py-5 text-[11px] font-black text-slate-400">
+                    ${new Date(c.createdAt).toLocaleDateString()}
+                </td>
+                <td class="px-6 py-5 text-right pr-10">
+                    ${c.status === 'available' ? `
+                        <button onclick="deleteCard('${c._id}')" class="h-10 w-10 rounded-xl bg-white border border-slate-100 text-slate-300 hover:text-red-500 hover:border-red-100 hover:shadow-lg hover:shadow-red-50 transition-all">
+                            <i class="fas fa-trash-can text-xs"></i>
+                        </button>
+                    ` : `
+                        <button disabled class="h-10 w-10 rounded-xl bg-slate-50 text-slate-200 cursor-not-allowed">
+                            <i class="fas fa-lock text-xs"></i>
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function getRoleColor(role) {
+        switch(role) {
+            case 'farmer': return 'bg-green-100 text-green-700';
+            case 'ksp': return 'bg-blue-100 text-blue-700';
+            case 'shop': return 'bg-teal-100 text-teal-700';
+            case 'equipment': return 'bg-orange-100 text-orange-700';
+            case 'soil': return 'bg-indigo-100 text-indigo-700';
+            default: return 'bg-slate-100 text-slate-700';
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        const btnAssigned = document.getElementById('tab-assigned');
+        const btnInventory = document.getElementById('tab-inventory');
+        
+        if (tab === 'assigned') {
+            btnAssigned.className = 'px-6 py-2.5 rounded-xl text-[11px] font-black transition-all bg-white shadow-md text-emerald-700';
+            btnInventory.className = 'px-6 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-800';
+        } else {
+            btnInventory.className = 'px-6 py-2.5 rounded-xl text-[11px] font-black transition-all bg-white shadow-md text-emerald-700';
+            btnAssigned.className = 'px-6 py-2.5 rounded-xl text-[11px] font-black transition-all text-slate-500 hover:text-slate-800';
+        }
+        fetchData();
+    }
+
+    function filterData() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        if (currentTab === 'assigned') {
+            const role = document.getElementById('roleFilter').value;
+            const filtered = assignedCards.filter(u => {
+                const matchesSearch = u.name.toLowerCase().includes(query) || u.phone.includes(query) || (u.cardNumber || '').includes(query) || (u.allottedByKspPartnerId || '').toLowerCase().includes(query);
+                const matchesRole = role === 'all' || u.role === role;
+                return matchesSearch && matchesRole;
+            });
+            renderAssigned(filtered);
+        } else {
+            const status = document.getElementById('statusFilter').value;
+            const filtered = inventoryCards.filter(c => {
+                const matchesSearch = c.cardNumber.toLowerCase().includes(query);
+                const matchesStatus = status === 'all' || c.status === status;
+                return matchesSearch && matchesStatus;
+            });
+            renderInventory(filtered);
+        }
+    }
+
+    // MODAL LOGIC
+    function openAddModal() {
+        const modal = document.getElementById('addModal');
+        const content = document.getElementById('addModalContent');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+    function closeAddModal() {
+        const modal = document.getElementById('addModal');
+        const content = document.getElementById('addModalContent');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+    function openBulkModal() {
+        const modal = document.getElementById('bulkModal');
+        const content = document.getElementById('bulkModalContent');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+    function closeBulkModal() {
+        const modal = document.getElementById('bulkModal');
+        const content = document.getElementById('bulkModalContent');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            resetBulkModal();
+        }, 300);
+    }
+
+    async function saveSingleCard() {
+        const cardNumber = document.getElementById('newCardNumber').value.trim();
+        if (!cardNumber) return alert('Please enter a valid card serial number.');
+
+        try {
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/nex-cards/add`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ cardNumber })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'System error');
+            
+            // Show Success Notification (simple alert for now)
+            alert('Success! New Nex Card has been registered in the system.');
+            closeAddModal();
+            document.getElementById('newCardNumber').value = '';
+            if (currentTab === 'inventory') fetchInventory();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            selectedFile = input.files[0];
+            document.getElementById('statusText').textContent = selectedFile.name;
+            document.getElementById('uploadStatus').classList.remove('hidden');
+            document.getElementById('uploadBtn').classList.remove('hidden');
+        }
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        const dropZone = document.getElementById('dropZone');
+        dropZone.classList.remove('border-emerald-300', 'bg-emerald-50/50');
+        
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            selectedFile = e.dataTransfer.files[0];
+            document.getElementById('statusText').textContent = selectedFile.name;
+            document.getElementById('uploadStatus').classList.remove('hidden');
+            document.getElementById('uploadBtn').classList.remove('hidden');
+        }
+    }
+
+    async function uploadBulkFile() {
+        if (!selectedFile) return;
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        const btn = document.getElementById('uploadBtn');
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin mr-2"></i> Processing...';
+            
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/nex-cards/bulk-upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Upload failed');
+            
+            alert(`Import Completed!\n→ Added: ${data.addedCount}\n→ Skipped: ${data.skippedCount}`);
+            closeBulkModal();
+            if (currentTab === 'inventory') fetchInventory();
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Start Importing <i class="fas fa-bolt ml-2 text-yellow-400"></i>';
+        }
+    }
+
+    function resetBulkModal() {
+        selectedFile = null;
+        document.getElementById('uploadStatus').classList.add('hidden');
+        document.getElementById('uploadBtn').classList.add('hidden');
+        document.getElementById('excelInput').value = '';
+    }
+
+    async function deleteCard(id) {
+        if (!confirm('Warning: This card will be removed from inventory. Continue?')) return;
+        try {
+            const token = localStorage.getItem('employeeToken');
+            const response = await fetch(`${window.API_BASE}/nex-cards/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Deletion failed');
+            fetchInventory();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    function toggleSidebar(show) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (show === undefined) show = sidebar.classList.contains('-translate-x-full');
+      if (show) { sidebar.classList.remove('-translate-x-full'); backdrop.classList.remove('hidden'); }
+      else { sidebar.classList.add('-translate-x-full'); backdrop.classList.add('hidden'); }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchData);
+  </script>
+</body>
+</html>
