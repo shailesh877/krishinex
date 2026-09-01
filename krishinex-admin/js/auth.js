@@ -3,7 +3,10 @@
  * This script ensures the user is authenticated and handles global API settings.
  */
 
-window.API_BASE = 'https://demo.ranx24.com/api';
+var isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
+var host = window.location.hostname || 'localhost';
+
+window.API_BASE = isLocal ? `http://${host}:5500/api` : 'https://demo.ranx24.com/api';
 window.IMAGE_BASE = 'https://demo.ranx24.com';
 
 /**
@@ -56,17 +59,18 @@ window.filterTestAccounts = function (items) {
 };
 
 /**
- * Progressive Chunked Table Renderer for instant UI feel.
- * Immediately renders initial chunk (e.g. 20 items), then streams remaining items
- * in background animation frames without blocking the main thread or causing lag.
+ * Scroll-Triggered Progressive Table Renderer for ultra-fast load times.
+ * Immediately renders initial batch (25 items), then loads next 25 items
+ * dynamically as the user scrolls near the bottom of the container.
  */
 window.progressiveRenderTable = function (tbodyEl, items, rowTemplateFn, options = {}) {
     const tbody = typeof tbodyEl === 'string' ? document.getElementById(tbodyEl) : tbodyEl;
     if (!tbody) return;
 
-    if (tbody._progressiveTimer) {
-        cancelAnimationFrame(tbody._progressiveTimer);
-        tbody._progressiveTimer = null;
+    if (tbody._scrollListenerTarget && tbody._scrollHandler) {
+        tbody._scrollListenerTarget.removeEventListener('scroll', tbody._scrollHandler);
+        tbody._scrollListenerTarget = null;
+        tbody._scrollHandler = null;
     }
 
     const list = (typeof window.filterTestAccounts === 'function') ? window.filterTestAccounts(items) : items;
@@ -76,46 +80,69 @@ window.progressiveRenderTable = function (tbodyEl, items, rowTemplateFn, options
         return;
     }
 
-    const chunkSize = options.chunkSize || 20;
-    const initialItems = list.slice(0, chunkSize);
-    const remainingItems = list.slice(chunkSize);
+    const chunkSize = options.chunkSize || 25;
+    let loadedCount = 0;
 
-    // 1. Render first 20 items INSTANTLY
-    tbody.innerHTML = initialItems.map((item, idx) => rowTemplateFn(item, idx)).join('');
+    function renderNextBatch() {
+        if (loadedCount >= list.length) return;
+        const batch = list.slice(loadedCount, loadedCount + chunkSize);
+        const fragment = document.createDocumentFragment();
 
-    // 2. Stream remaining items in non-blocking animation frame chunks
-    if (remainingItems.length > 0) {
-        let currentIndex = 0;
-
-        function renderNextChunk() {
-            if (currentIndex >= remainingItems.length) return;
-
-            const nextChunk = remainingItems.slice(currentIndex, currentIndex + chunkSize);
-            const fragment = document.createDocumentFragment();
-
-            nextChunk.forEach((item, idx) => {
-                const globalIdx = chunkSize + currentIndex + idx;
-                const htmlStr = rowTemplateFn(item, globalIdx);
-                if (typeof htmlStr === 'string') {
-                    const temp = document.createElement('tbody');
-                    temp.innerHTML = htmlStr.trim();
-                    while (temp.firstChild) {
-                        fragment.appendChild(temp.firstChild);
-                    }
-                } else if (htmlStr instanceof HTMLElement) {
-                    fragment.appendChild(htmlStr);
+        batch.forEach((item, idx) => {
+            const globalIdx = loadedCount + idx;
+            const htmlStr = rowTemplateFn(item, globalIdx);
+            if (typeof htmlStr === 'string') {
+                const temp = document.createElement('tbody');
+                temp.innerHTML = htmlStr.trim();
+                while (temp.firstChild) {
+                    fragment.appendChild(temp.firstChild);
                 }
-            });
-
-            tbody.appendChild(fragment);
-            currentIndex += chunkSize;
-
-            if (currentIndex < remainingItems.length) {
-                tbody._progressiveTimer = requestAnimationFrame(renderNextChunk);
+            } else if (htmlStr instanceof HTMLElement) {
+                fragment.appendChild(htmlStr);
             }
-        }
+        });
 
-        tbody._progressiveTimer = requestAnimationFrame(renderNextChunk);
+        if (loadedCount === 0) {
+            tbody.innerHTML = '';
+        }
+        tbody.appendChild(fragment);
+        loadedCount += batch.length;
+    }
+
+    // 1. Render initial batch of 25 items immediately
+    renderNextBatch();
+
+    // 2. Attach scroll listener for on-demand loading of remaining items
+    if (loadedCount < list.length) {
+        let scrollTarget = tbody.closest('.overflow-auto, .overflow-y-auto, .overflow-x-auto, div[style*="max-height"]');
+        if (!scrollTarget) scrollTarget = window;
+
+        let isThrottled = false;
+        const handleScroll = function () {
+            if (loadedCount >= list.length) {
+                scrollTarget.removeEventListener('scroll', handleScroll);
+                return;
+            }
+            if (isThrottled) return;
+            isThrottled = true;
+
+            setTimeout(() => {
+                isThrottled = false;
+                let nearBottom = false;
+                if (scrollTarget === window) {
+                    nearBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 300);
+                } else {
+                    nearBottom = (scrollTarget.scrollTop + scrollTarget.clientHeight) >= (scrollTarget.scrollHeight - 200);
+                }
+                if (nearBottom) {
+                    renderNextBatch();
+                }
+            }, 100);
+        };
+
+        scrollTarget.addEventListener('scroll', handleScroll, { passive: true });
+        tbody._scrollListenerTarget = scrollTarget;
+        tbody._scrollHandler = handleScroll;
     }
 };
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -617,7 +617,7 @@ CASH COLLECTIONS TABLE
                   status</p>
               </div>
               <div class="flex gap-2">
-                <input id="searchPartner" oninput="filterPartnerTable()" placeholder="Search partner name/phone…"
+                <input id="searchPartner" onkeydown="if(event.key === 'Enter') { document.getElementById('partnerTableBody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchPartners(1, false); }" placeholder="Search partner name/phone…"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-semibold w-44 focus:border-orange-400 outline-none transition-all" />
               </div>
             </div>
@@ -821,27 +821,112 @@ CASH COLLECTIONS TABLE
     }
 
     // ── KPI Stats ──────────────────────────────────────────────────────────
-    // ── Partners Table ─────────────────────────────────────────────────────
-    async function fetchPartners() {
+    let partnersPage = 1;
+    let partnersHasMore = true;
+    let partnersLoading = false;
+
+    function appendPartnerRows(newItems) {
+      const tbody = document.getElementById('partnerTableBody');
+      if (!tbody || !newItems || newItems.length === 0) return;
+      const fragment = document.createDocumentFragment();
+      newItems.forEach((p) => {
+        const joinedDate = p.joinedAt ? new Date(p.joinedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+        const statusColors = {
+          'pending': 'bg-slate-100 border-slate-300 text-slate-700',
+          'approved': 'bg-emerald-100 border-emerald-300 text-emerald-900',
+          'rejected': 'bg-rose-100 border-rose-300 text-rose-800',
+          'blocked': 'bg-slate-900 border-slate-700 text-white'
+        };
+        const sc = statusColors[p.status] || 'bg-slate-100 text-slate-700 border-slate-300';
+        let actionBtns = `<button onclick="openPartnerModal('${p._id}')" class="inline-flex items-center rounded-lg bg-orange-100 px-2.5 py-1.5 text-[10px] text-orange-700 font-bold hover:bg-orange-200 transition-all mr-1"><i class="fas fa-eye mr-1"></i> View</button>`;
+        if (p.status !== 'approved') {
+          actionBtns += `<button onclick="updatePartnerStatus('${p._id}', 'approved')" class="inline-flex items-center rounded-lg bg-emerald-500 px-2.5 py-1.5 text-[10px] text-white font-bold hover:bg-emerald-600 transition-all mr-1">Approve</button>`;
+        }
+        if (p.status !== 'blocked') {
+          actionBtns += `<button onclick="updatePartnerStatus('${p._id}', 'blocked')" class="inline-flex items-center rounded-lg bg-rose-500 px-2.5 py-1.5 text-[10px] text-white font-bold hover:bg-rose-600 transition-all mr-1">Block</button>`;
+        } else {
+          actionBtns += `<button onclick="updatePartnerStatus('${p._id}', 'pending')" class="inline-flex items-center rounded-lg bg-slate-500 px-2.5 py-1.5 text-[10px] text-white font-bold hover:bg-slate-600 transition-all mr-1">Unblock</button>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-orange-50/20 transition-colors border-b border-slate-100 partner-row';
+        tr.dataset.search = `${p.name} ${p.phone} ${p.location}`.toLowerCase();
+        tr.innerHTML = `
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                ${p.profilePhotoUrl ? `<img src="${p.profilePhotoUrl}" class="h-full w-full object-cover">` : `<i class="fas fa-user text-slate-400"></i>`}
+              </div>
+              <div>
+                <div class="font-black text-slate-900 text-xs">${p.name}</div>
+                <div class="text-[10px] text-slate-500">${p.phone} · ${p.location}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4"><span class="font-bold text-slate-700 text-xs">${p.machinesCount || p.machineCount || 0} Machines</span></td>
+          <td class="px-5 py-4"><span class="font-bold text-slate-700 text-xs">${p.totalBookings || 0} Bookings</span></td>
+          <td class="px-5 py-4 text-xs font-semibold text-slate-600">${joinedDate}</td>
+          <td class="px-5 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black border-2 ${sc}">${(p.status || 'pending').toUpperCase()}</span>
+          </td>
+          <td class="px-5 py-4 text-right">${actionBtns}</td>
+        `;
+        fragment.appendChild(tr);
+      });
+      tbody.appendChild(fragment);
+    }
+
+    async function fetchPartners(page = 1, isAppend = false) {
+      if (partnersLoading) return;
+      partnersLoading = true;
+
+      if (!isAppend) {
+        partnersPage = 1;
+        partnersHasMore = true;
+      }
+
       const tbody = document.getElementById('partnerTableBody');
       const from = document.getElementById('globalStartDate')?.value || '';
       const to = document.getElementById('globalEndDate')?.value || '';
-      
-      let url = `${API}/admin/rental/partners`;
-      const params = [];
-      if (from) params.push(`startDate=${from}`);
-      if (to) params.push(`endDate=${to}`);
-      if (params.length) url += `?${params.join('&')}`;
+      const search = document.getElementById('searchPartner')?.value || '';
 
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading partners…</td></tr>`;
+      let url = `${API}/admin/rental/partners?page=${page}&limit=25`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (from) url += `&startDate=${from}`;
+      if (to) url += `&endDate=${to}`;
+
+      if (!isAppend) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading partners…</td></tr>`;
+      }
+
       try {
         const r = await fetch(url, { headers: H });
         const data = await r.json();
-        if (!r.ok) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500 font-bold">Failed to load partners</td></tr>`; return; }
-        allPartners = data;
-        renderPartnerTable(allPartners);
+        if (!r.ok) {
+          if (!isAppend) tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500 font-bold">Failed to load partners</td></tr>`;
+          return;
+        }
+
+        let list = [];
+        if (data && Array.isArray(data.data)) {
+          list = data.data;
+          partnersHasMore = data.hasMore;
+        } else if (Array.isArray(data)) {
+          list = data;
+          partnersHasMore = false;
+        }
+
+        if (isAppend) {
+          allPartners = [...allPartners, ...list];
+          appendPartnerRows(list);
+        } else {
+          allPartners = list;
+          renderPartnerTable(allPartners);
+        }
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500 font-bold">Network error</td></tr>`;
+        if (!isAppend) tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-rose-500 font-bold">Network error</td></tr>`;
+      } finally {
+        partnersLoading = false;
       }
     }
 
@@ -1453,10 +1538,7 @@ CASH COLLECTIONS TABLE
     }
 
     function filterPartnerTable() {
-      const q = document.getElementById('searchPartner').value.toLowerCase();
-      document.querySelectorAll('.partner-row').forEach(tr => {
-        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
-      });
+      fetchPartners(1, false);
     }
 
     // ── Global Date Filters ────────────────────────────────────────────────
@@ -1538,9 +1620,11 @@ CASH COLLECTIONS TABLE
       const status = document.getElementById('statusFilter').value;
       const from = document.getElementById('globalStartDate').value;
       const to = document.getElementById('globalEndDate').value;
+      const search = document.getElementById('searchBooking')?.value || '';
       
       let url = `${API}/admin/rental/bookings`;
       const params = [];
+      if (search) params.push(`search=${encodeURIComponent(search)}`);
       if (status !== 'all') params.push(`status=${encodeURIComponent(status)}`);
       if (from) params.push(`startDate=${from}`);
       if (to) params.push(`endDate=${to}`);
@@ -1619,10 +1703,7 @@ CASH COLLECTIONS TABLE
     }
 
     function filterBookingTable() {
-      const q = document.getElementById('searchBooking').value.toLowerCase();
-      document.querySelectorAll('.booking-row').forEach(tr => {
-        tr.style.display = tr.dataset.search.includes(q) ? '' : 'none';
-      });
+      fetchBookings();
     }
 
     // ── Cash Collections ───────────────────────────────────────────────────
@@ -1967,6 +2048,21 @@ CASH COLLECTIONS TABLE
         toast('Network error: ' + e.message, 'error');
       }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const partnerTbody = document.getElementById('partnerTableBody');
+      const partnerContainer = partnerTbody ? partnerTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+      if (partnerContainer) {
+        partnerContainer.addEventListener('scroll', () => {
+          if (partnersHasMore && !partnersLoading) {
+            if (partnerContainer.scrollTop + partnerContainer.clientHeight >= partnerContainer.scrollHeight - 150) {
+              partnersPage++;
+              fetchPartners(partnersPage, true);
+            }
+          }
+        }, { passive: true });
+      }
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       setGlobalDatePreset('all');

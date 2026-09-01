@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -622,7 +622,7 @@
               </div>
               <div class="flex flex-wrap items-center gap-2">
                 <input id="cropSearchInput" type="text" placeholder="🔍 Search farmer / crop / location"
-                  oninput="filterCropRequests()"
+                  onkeydown="if(event.key === 'Enter') { document.getElementById('cropRequestsTbody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchCropRequests(1, false); }"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-full sm:w-64 hover:border-slate-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all outline-none" />
                 <select id="cropFilter" onchange="filterCropRequests()"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold hover:border-slate-300 transition-all">
@@ -693,12 +693,12 @@
                 <select id="userStatusFilter" onchange="filterUsers()"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
                   <option value="all">All Status</option>
-                  <option value="approved">Active / Approved</option>
+                  <option value="approved">Approved</option>
                   <option value="pending">Pending</option>
-                  <option value="rejected">Blocked</option>
+                  <option value="blocked">Blocked</option>
                 </select>
                 <input id="userSearchInput" type="text" placeholder="🔍 Search name / phone / location"
-                  oninput="filterUsers()"
+                  onkeydown="if(event.key === 'Enter') { document.getElementById('usersTableBody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchFarmers(1, false); }"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-full sm:w-64 hover:border-slate-300 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all outline-none" />
                 <button onclick="exportFarmers()"
                   class="inline-flex items-center h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
@@ -1916,55 +1916,12 @@
       setTimeout(() => toast.classList.add('hidden'), 3500);
     }
 
-    // Page Load & Initialization
-
-    // ======= Filter & Export Functions =======
-
     function filterCropRequests() {
-      const cropVal = document.getElementById('cropFilter')?.value || 'all';
-      const statusVal = document.getElementById('cropStatusFilter')?.value || 'all';
-      const searchTerm = (document.getElementById('cropSearchInput')?.value || '').toLowerCase();
-
-      // Filter for KPI cards (Matches Crop and Search, but IGNORES Status filter so cards don't turn to 0)
-      const kpiFiltered = allCropRequests.filter(req => {
-        const matchCrop = cropVal === 'all' || req.crop === cropVal;
-
-        const farmerName = (req.farmerName || '').toLowerCase();
-        const location = (req.location || '').toLowerCase();
-        const crop = (req.crop || '').toLowerCase();
-        const reqId = (req._id || '').toLowerCase();
-
-        const matchesSearch = !searchTerm ||
-          farmerName.includes(searchTerm) ||
-          location.includes(searchTerm) ||
-          crop.includes(searchTerm) ||
-          reqId.includes(searchTerm);
-
-        return matchCrop && matchesSearch;
-      });
-
-      // Update KPI Cards using crop & search filtered list
-      updateCropKpiCards(kpiFiltered);
-
-      // Filter for Table rendering (Matches Crop, Search, AND Status filter)
-      const tableFiltered = kpiFiltered.filter(req => statusVal === 'all' || req.status === statusVal);
-
-      renderCropRequests(tableFiltered, false);
+      fetchCropRequests(1, false);
     }
 
     function filterUsers() {
-      const searchTerm = (document.getElementById('userSearchInput')?.value || '').toLowerCase();
-      const statusFilter = document.getElementById('userStatusFilter')?.value || 'all';
-      const rows = document.querySelectorAll('#usersTableBody tr.user-row');
-      rows.forEach(row => {
-        const name = (row.dataset.name || '').toLowerCase();
-        const phone = (row.dataset.phone || '').toLowerCase();
-        const location = (row.dataset.location || '').toLowerCase();
-        const status = row.dataset.status || '';
-        const matchesSearch = !searchTerm || name.includes(searchTerm) || phone.includes(searchTerm) || location.includes(searchTerm);
-        const matchesStatus = statusFilter === 'all' || status === statusFilter;
-        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-      });
+      fetchFarmers(1, false);
     }
 
     function exportCropRequests() {
@@ -2012,54 +1969,78 @@
 
 
 
-    async function fetchFarmers(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+    let farmersPage = 1;
+    let farmersHasMore = true;
+    let farmersLoading = false;
+
+    function appendFarmersRows(newItems) {
+      const tbody = document.getElementById('usersTableBody');
+      if (!tbody || !newItems || newItems.length === 0) return;
+      const fragment = document.createDocumentFragment();
+      newItems.forEach((farmer) => {
+        const htmlStr = createFarmerRow(farmer);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = htmlStr.trim();
+        while (temp.firstChild) {
+          fragment.appendChild(temp.firstChild);
+        }
+      });
+      tbody.appendChild(fragment);
+    }
+
+    async function fetchFarmers(page = 1, isAppend = false) {
+      if (farmersLoading) return;
+      farmersLoading = true;
+
+      if (!isAppend) {
+        farmersPage = 1;
+        farmersHasMore = true;
+        const tbody = document.getElementById('usersTableBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-circle-notch fa-spin mr-2"></i>Loading farmers...</td></tr>`;
+        }
+      }
+
+      const startDate = document.getElementById('globalStartDate')?.value || '';
+      const endDate = document.getElementById('globalEndDate')?.value || '';
+      const search = document.getElementById('userSearchInput')?.value || '';
+      const status = document.getElementById('userStatusFilter')?.value || 'all';
+
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/farmers?startDate=${startDate}&endDate=${endDate}`, {
+        const res = await fetch(`${API_BASE}/employee/admin/farmers?startDate=${startDate}&endDate=${endDate}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&page=${page}&limit=25`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
         if (res.ok) {
-          allFarmers = data;
-          // Update KPI stats
-          const total = data.length;
-          const approved = data.filter(f => f.status === 'approved').length;
-          const pending = data.filter(f => f.status !== 'approved').length;
-          const kycVerified = data.filter(f => f.kycStatus === 'verified').length;
-
-          let approvedWalletSum = 0;
-          let pendingWalletSum = 0;
-          data.forEach(f => {
-            if (f.status === 'approved') {
-              approvedWalletSum += (f.walletBalance || 0);
-            } else {
-              pendingWalletSum += (f.walletBalance || 0);
-            }
-            if (f.walletRechargeStatus === 'PENDING') {
-              pendingWalletSum += (f.walletRechargeAmount || 0);
-            }
-          });
-
-          document.getElementById('stat-totalFarmers').textContent = total.toLocaleString();
-          document.getElementById('stat-walletActive').textContent = approved.toLocaleString();
-          document.getElementById('stat-walletInactive').textContent = pending.toLocaleString();
-          if (document.getElementById('stat-approvedWalletAmt')) {
-            document.getElementById('stat-approvedWalletAmt').textContent = '₹' + Math.round(approvedWalletSum).toLocaleString('en-IN');
+          let list = [];
+          if (data && Array.isArray(data.data)) {
+            list = data.data;
+            farmersHasMore = data.hasMore;
+          } else if (Array.isArray(data)) {
+            list = data;
+            farmersHasMore = false;
           }
-          if (document.getElementById('stat-pendingWalletAmt')) {
-            document.getElementById('stat-pendingWalletAmt').textContent = '₹' + Math.round(pendingWalletSum).toLocaleString('en-IN');
+
+          if (isAppend) {
+            allFarmers = [...allFarmers, ...list];
+            appendFarmersRows(list);
+          } else {
+            allFarmers = list;
+            renderFarmersTable(allFarmers);
           }
-          renderFarmersTable(data);
         } else {
           console.error('Failed to load farmers:', data.error);
         }
       } catch (err) {
-        console.error('Error loading farmers, using demo data:', err);
+        console.error('Error loading farmers:', err);
+      } finally {
+        farmersLoading = false;
       }
     }
 
     function createFarmerRow(farmer) {
       const statusBadge = farmer.status === 'approved'
-        ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-circle-check mr-1 text-[8px]"></i> Active</span>`
+        ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 border border-emerald-200"><i class="fas fa-thumbs-up mr-1 text-[8px]"></i> Approved</span>`
         : farmer.status === 'blocked'
           ? `<span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-700 border border-rose-200"><i class="fas fa-ban mr-1 text-[8px]"></i> Blocked</span>`
           : `<span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1 text-[8px]"></i> Pending</span>`;
@@ -2121,9 +2102,15 @@
     }
 
     function renderFarmersTable(farmers) {
+      const statusFilter = document.getElementById('userStatusFilter')?.value || 'all';
+      let emptyMsg = 'No farmers registered yet.';
+      if (statusFilter === 'blocked') emptyMsg = 'No farmers Blocked yet.';
+      else if (statusFilter === 'pending') emptyMsg = 'No farmers Pending yet.';
+      else if (statusFilter === 'approved') emptyMsg = 'No farmers Approved yet.';
+
       window.progressiveRenderTable('usersTableBody', farmers, createFarmerRow, {
         chunkSize: 20,
-        emptyHtml: '<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold">No farmers registered yet.</td></tr>'
+        emptyHtml: `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold">${emptyMsg}</td></tr>`
       });
     }
 
@@ -2259,19 +2246,18 @@
       } catch (e) { console.warn('Stats fetch failed, using fallback counts from farmers list'); }
     }
 
-    function updateCropKpiCards(list) {
-      const data = list || allCropRequests || [];
-      const newCount = data.filter(r => r.status === 'pending').length;
-      const assignedCount = data.filter(r => r.status === 'accepted' || r.status === 'in-progress').length;
-      const completedCount = data.filter(r => r.status === 'completed').length;
-
-      const elNew = document.getElementById('stat-newRequests');
-      const elAssigned = document.getElementById('stat-assigned');
-      const elCompleted = document.getElementById('stat-completed');
-
-      if (elNew) elNew.textContent = newCount;
-      if (elAssigned) elAssigned.textContent = assignedCount;
-      if (elCompleted) elCompleted.textContent = completedCount;
+    async function fetchCropStats(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+      try {
+        const res = await fetch(`${API_BASE}/employee/admin/crop-requests/stats?startDate=${startDate}&endDate=${endDate}`, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (res.ok) {
+          const s = await res.json();
+          document.getElementById('stat-newRequests').textContent = s.newCount;
+          document.getElementById('stat-assigned').textContent = s.assignedCount;
+          document.getElementById('stat-completed').textContent = s.completedCount;
+        }
+      } catch (e) { console.warn('Crop Stats fetch failed', e); }
     }
 
     function updateCropFilterDropdown(requests) {
@@ -2284,84 +2270,131 @@
       }
     }
 
-    async function fetchCropRequests(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+    let cropRequestsPage = 1;
+    let cropRequestsHasMore = true;
+    let cropRequestsLoading = false;
+
+    function appendCropRequestRows(newItems) {
+      const tbody = document.getElementById('cropRequestsTbody');
+      if (!tbody || !newItems || newItems.length === 0) return;
+      const fragment = document.createDocumentFragment();
+      newItems.forEach((req) => {
+        const htmlStr = createCropRequestRow(req);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = htmlStr.trim();
+        while (temp.firstChild) {
+          fragment.appendChild(temp.firstChild);
+        }
+      });
+      tbody.appendChild(fragment);
+    }
+
+    async function fetchCropRequests(page = 1, isAppend = false) {
+      if (cropRequestsLoading) return;
+      cropRequestsLoading = true;
+
+      if (!isAppend) {
+        cropRequestsPage = 1;
+        cropRequestsHasMore = true;
+        const tbody = document.getElementById('cropRequestsTbody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-20"><div class="animate-pulse flex flex-col items-center"><div class="h-12 w-12 bg-slate-100 rounded-full mb-4"></div><div class="h-2 w-32 bg-slate-100 rounded"></div></div></td></tr>`;
+        }
+      }
+
+      const startDate = document.getElementById('globalStartDate')?.value || '';
+      const endDate = document.getElementById('globalEndDate')?.value || '';
+      const search = document.getElementById('cropSearchInput')?.value || '';
+      const status = document.getElementById('cropStatusFilter')?.value || 'all';
+      const crop = document.getElementById('cropFilter')?.value || 'all';
+
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/crop-requests?startDate=${startDate}&endDate=${endDate}`, {
+        const res = await fetch(`${API_BASE}/employee/admin/crop-requests?startDate=${startDate}&endDate=${endDate}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&crop=${encodeURIComponent(crop)}&page=${page}&limit=25`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         if (res.ok) {
-          allCropRequests = await res.json();
+          const data = await res.json();
+          let list = [];
+          if (data && Array.isArray(data.data)) {
+            list = data.data;
+            cropRequestsHasMore = data.hasMore;
+          } else if (Array.isArray(data)) {
+            list = data;
+            cropRequestsHasMore = false;
+          }
+
+          allCropRequests = isAppend ? [...allCropRequests, ...list] : list;
           updateCropFilterDropdown(allCropRequests);
-          filterCropRequests();
+          if (isAppend) {
+            appendCropRequestRows(list);
+          } else {
+            renderCropRequests(allCropRequests, true);
+          }
         }
-      } catch (e) { console.error('Crop requests fetch error:', e); }
+      } catch (e) {
+        console.error('Crop requests fetch error:', e);
+      } finally {
+        cropRequestsLoading = false;
+      }
+    }
+
+    function createCropRequestRow(req) {
+      const statusBadge = req.status === 'pending'
+        ? `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> New</span>`
+        : req.status === 'accepted' || req.status === 'in-progress'
+          ? `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span>${req.assignedBuyer ? `<div class="text-[10px] text-slate-500 mt-1 font-semibold italic">Buyer: ${req.assignedBuyer.name}</div>` : ''}</div>`
+          : req.status === 'completed'
+            ? `<span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black text-sky-700 border-2 border-sky-200"><i class="fas fa-check-double mr-1 text-[8px]"></i> Completed</span>`
+            : req.status === 'cancelled'
+              ? `<div><span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1.5 text-[10px] font-black text-rose-700 border-2 border-rose-200"><i class="fas fa-times-circle mr-1 text-[8px]"></i> Cancelled</span>${req.cancelReason ? `<div class="text-[9px] text-rose-500 mt-1 font-bold italic max-w-[140px]">Reason: ${req.cancelReason}</div>` : ''}</div>`
+              : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
+
+      const actionBtn = req.status === 'pending'
+        ? `<button onclick="openAssignModal('${req._id}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 px-4 py-2 text-[11px] font-black transition-all"><i class="fas fa-link mr-1.5"></i> Assign</button>`
+        : `<button onclick="openCropDetailsModal('${req._id}')" class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 px-4 py-2 text-[11px] font-black transition-all"><i class="fas fa-eye mr-1.5"></i> View</button>`;
+      const images = (req.images && req.images.length > 0) ? req.images : (req.imageUrl ? [req.imageUrl] : []);
+      const photoBtn = images.length > 0
+        ? `<div class="flex gap-1 flex-wrap max-w-[100px]">` +
+        images.map((img, idx) => {
+          const fixed = fixImageUrl(img);
+          const galleryJson = JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;');
+          return `<button onclick="viewPhoto('${fixed}', ${galleryJson}, ${idx})" class="relative h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all overflow-hidden">
+                <img src="${fixed}" class="h-full w-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden')">
+                <i class="fas fa-image text-slate-400 text-[10px] hidden"></i>
+              </button>`;
+        }).join('') +
+        `</div>`
+        : `<span class="text-slate-400 text-xs italic">—</span>`;
+
+      const shortId = req._id ? req._id.toString().substring(req._id.length - 6).toUpperCase() : 'N/A';
+      return `<tr class="hover:bg-emerald-50/20 transition-colors border-b border-slate-100">
+          <td class="px-5 py-4">
+            <button onclick="openCropDetailsModal('${req._id}')" class="font-black text-emerald-600 hover:text-emerald-700 text-[10px] tracking-widest bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded transition-all cursor-pointer">#${shortId}</button>
+          </td>
+          <td class="px-5 py-4">
+            <div onclick="event.stopPropagation(); viewUserProfileV360('${req.farmerId}')" class="font-bold text-slate-900 cursor-pointer hover:text-emerald-600 hover:underline flex items-center gap-1.5 group/fn">
+              ${req.farmerName}
+              <i class="fas fa-id-badge text-[10px] text-emerald-500 opacity-0 group-hover/fn:opacity-100 transition-opacity"></i>
+            </div>
+            <div class="text-[10px] text-slate-500">${req.farmerPhone}</div>
+          </td>
+          <td class="px-5 py-4"><div class="font-semibold text-slate-900">${req.location}</div></td>
+          <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity}</div></td>
+          <td class="px-5 py-4"><div class="font-black text-emerald-700">${req.pricePerQuintal > 0 ? '₹' + req.pricePerQuintal + '/Q' : '—'}</div></td>
+          <td class="px-5 py-4"><div class="text-[10px] text-slate-700 max-w-[180px] truncate">${req.note || req.variety || '—'}</div></td>
+          <td class="px-5 py-4">${photoBtn}</td>
+          <td class="px-5 py-4">${statusBadge}</td>
+          <td class="px-5 py-4 text-right">${actionBtn}</td>
+        </tr>`;
     }
 
     function renderCropRequests(requests, shouldUpdateCards = true) {
-      if (typeof window.filterTestAccounts === 'function') {
-        requests = window.filterTestAccounts(requests);
+      if (shouldUpdateCards && Array.isArray(requests)) {
+        fetchCropStats();
       }
-      if (shouldUpdateCards) {
-        updateCropKpiCards(requests);
-      }
-      const tbody = document.getElementById('cropRequestsTbody');
-      tbody.innerHTML = '';
-      if (!requests || requests.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>`;
-        return;
-      }
-
-      requests.forEach(req => {
-        const statusBadge = req.status === 'pending'
-          ? `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> New</span>`
-          : req.status === 'accepted' || req.status === 'in-progress'
-            ? `<div><span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700 border-2 border-emerald-200"><i class="fas fa-check-circle mr-1 text-[8px]"></i> Assigned</span>${req.assignedBuyer ? `<div class="text-[10px] text-slate-500 mt-1 font-semibold italic">Buyer: ${req.assignedBuyer.name}</div>` : ''}</div>`
-            : req.status === 'completed'
-              ? `<span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black text-sky-700 border-2 border-sky-200"><i class="fas fa-check-double mr-1 text-[8px]"></i> Completed</span>`
-              : req.status === 'cancelled'
-                ? `<div><span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1.5 text-[10px] font-black text-rose-700 border-2 border-rose-200"><i class="fas fa-times-circle mr-1 text-[8px]"></i> Cancelled</span>${req.cancelReason ? `<div class="text-[9px] text-rose-500 mt-1 font-bold italic max-w-[140px]">Reason: ${req.cancelReason}</div>` : ''}</div>`
-                : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
-
-        const actionBtn = req.status === 'pending'
-          ? `<button onclick="openAssignModal('${req._id}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 px-4 py-2 text-[11px] font-black transition-all"><i class="fas fa-link mr-1.5"></i> Assign</button>`
-          : `<button onclick="openCropDetailsModal('${req._id}')" class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 px-4 py-2 text-[11px] font-black transition-all"><i class="fas fa-eye mr-1.5"></i> View</button>`;
-        const images = (req.images && req.images.length > 0) ? req.images : (req.imageUrl ? [req.imageUrl] : []);
-        const photoBtn = images.length > 0
-          ? `<div class="flex gap-1 flex-wrap max-w-[100px]">` +
-          images.map((img, idx) => {
-            const fixed = fixImageUrl(img);
-            const galleryJson = JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;');
-            return `<button onclick="viewPhoto('${fixed}', ${galleryJson}, ${idx})" class="relative h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all overflow-hidden">
-                  <img src="${fixed}" class="h-full w-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden')">
-                  <i class="fas fa-image text-slate-400 text-[10px] hidden"></i>
-                </button>`;
-          }).join('') +
-          `</div>`
-          : `<span class="text-slate-400 text-xs italic">—</span>`;
-
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-emerald-50/20 transition-colors border-b border-slate-100';
-        const shortId = req._id ? req._id.toString().substring(req._id.length - 6).toUpperCase() : 'N/A';
-        tr.innerHTML = `
-            <td class="px-5 py-4">
-              <button onclick="openCropDetailsModal('${req._id}')" class="font-black text-emerald-600 hover:text-emerald-700 text-[10px] tracking-widest bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded transition-all cursor-pointer">#${shortId}</button>
-            </td>
-            <td class="px-5 py-4">
-              <div onclick="event.stopPropagation(); viewUserProfileV360('${req.farmerId}')" class="font-bold text-slate-900 cursor-pointer hover:text-emerald-600 hover:underline flex items-center gap-1.5 group/fn">
-                ${req.farmerName}
-                <i class="fas fa-id-badge text-[10px] text-emerald-500 opacity-0 group-hover/fn:opacity-100 transition-opacity"></i>
-              </div>
-              <div class="text-[10px] text-slate-500">${req.farmerPhone}</div>
-            </td>
-            <td class="px-5 py-4"><div class="font-semibold text-slate-900">${req.location}</div></td>
-            <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity}</div></td>
-            <td class="px-5 py-4"><div class="font-black text-emerald-700">${req.pricePerQuintal > 0 ? '₹' + req.pricePerQuintal + '/Q' : '—'}</div></td>
-            <td class="px-5 py-4"><div class="text-[10px] text-slate-700 max-w-[180px] truncate">${req.note || req.variety || '—'}</div></td>
-            <td class="px-5 py-4">${photoBtn}</td>
-            <td class="px-5 py-4">${statusBadge}</td>
-            <td class="px-5 py-4 text-right">${actionBtn}</td>
-          `;
-        tbody.appendChild(tr);
+      window.progressiveRenderTable('cropRequestsTbody', requests, createCropRequestRow, {
+        chunkSize: 25,
+        emptyHtml: '<tr><td colspan="9" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>'
       });
     }
 
@@ -2551,6 +2584,7 @@
 
     function applyGlobalFilter(startDate, endDate, label) {
       fetchStats(startDate, endDate);
+      fetchCropStats(startDate, endDate);
       fetchFarmers(startDate, endDate);
       fetchCropRequests(startDate, endDate);
     }
@@ -2953,6 +2987,37 @@
         showToast('Network error: ' + e.message, 'warning');
       }
     }
+
+    // Backend Pagination Infinite Scroll Handler
+    window.addEventListener('DOMContentLoaded', () => {
+      // Attach Scroll Listener for Farmers Table
+      const usersTbody = document.getElementById('usersTableBody');
+      const farmersContainer = usersTbody ? usersTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+      if (farmersContainer) {
+        farmersContainer.addEventListener('scroll', () => {
+          if (farmersHasMore && !farmersLoading) {
+            if (farmersContainer.scrollTop + farmersContainer.clientHeight >= farmersContainer.scrollHeight - 150) {
+              farmersPage++;
+              fetchFarmers(farmersPage, true);
+            }
+          }
+        }, { passive: true });
+      }
+
+      // Attach Scroll Listener for Crop Requests Table
+      const cropTbody = document.getElementById('cropRequestsTbody');
+      const cropContainer = cropTbody ? cropTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+      if (cropContainer) {
+        cropContainer.addEventListener('scroll', () => {
+          if (cropRequestsHasMore && !cropRequestsLoading) {
+            if (cropContainer.scrollTop + cropContainer.clientHeight >= cropContainer.scrollHeight - 150) {
+              cropRequestsPage++;
+              fetchCropRequests(cropRequestsPage, true);
+            }
+          }
+        }, { passive: true });
+      }
+    });
   </script>
 
   <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->

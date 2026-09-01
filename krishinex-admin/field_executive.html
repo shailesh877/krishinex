@@ -1760,7 +1760,9 @@
     async function fetchTasks() {
       try {
         const qStr = getQueryParamString();
-        const res = await fetch(`${API_BASE}/field/tasks?${qStr}`, {
+        const query = document.getElementById('taskSearch')?.value || '';
+        const status = document.getElementById('taskStatusFilter')?.value || '';
+        const res = await fetch(`${API_BASE}/field/tasks?${qStr}&search=${encodeURIComponent(query)}&status=${encodeURIComponent(status)}`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const tasks = await res.json();
@@ -1775,35 +1777,11 @@
 
     // --- SEARCH & FILTER ---
     function filterTasks() {
-      const query = document.getElementById('taskSearch').value.toLowerCase();
-      const status = document.getElementById('taskStatusFilter').value;
-      
-      const filtered = allTasks.filter(t => {
-        const matchesSearch = 
-           t.taskId.toLowerCase().includes(query) || 
-           t.partnerName.toLowerCase().includes(query) || 
-           (t.executive && t.executive.name.toLowerCase().includes(query));
-        
-        const matchesStatus = status === 'All' || t.status === status;
-        
-        return matchesSearch && matchesStatus;
-      });
-      
-      renderTasksTable(filtered);
+      fetchTasks();
     }
 
     function filterLeads() {
-      const query = document.getElementById('leadSearch').value.toLowerCase();
-      
-      const filtered = allLeads.filter(l => {
-        const name = (l.farmerDetails?.name || l.shopDetails?.ownerName || '').toLowerCase();
-        const phone = (l.mobile || '').toLowerCase();
-        const shop = (l.shopDetails?.shopName || '').toLowerCase();
-        
-        return name.includes(query) || phone.includes(query) || shop.includes(query);
-      });
-      
-      renderLeads(filtered);
+      fetchLeads();
     }
 
     // Render Tasks Table
@@ -2374,7 +2352,8 @@
     async function fetchLeads() {
       try {
         const qStr = getQueryParamString();
-        const res = await fetch(`${API_BASE}/employee/admin/leads?${qStr}`, {
+        const query = document.getElementById('leadSearch')?.value || '';
+        const res = await fetch(`${API_BASE}/employee/admin/leads?${qStr}&search=${encodeURIComponent(query)}`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();

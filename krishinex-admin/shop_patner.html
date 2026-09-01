@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -605,7 +605,7 @@
                 </p>
               </div>
               <div class="flex gap-2">
-                <input type="text" id="shopSearchInput" placeholder="Search Shop/ID..." oninput="filterShops()"
+                <input type="text" id="shopSearchInput" placeholder="Search Shop/ID..." onkeydown="if(event.key === 'Enter') { document.getElementById('shopTableBody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchShops(1, false); }"
                   class="h-9 w-48 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs placeholder:text-slate-400 focus:border-teal-400 focus:outline-none focus:ring-4 focus:ring-teal-50 transition-all font-semibold" />
                 <select id="shopStatusFilter" onchange="filterShops()"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
@@ -1288,22 +1288,80 @@
       } catch (err) { console.error('Stats Error:', err); }
     }
 
-    async function fetchShops(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+    let shopsPage = 1;
+    let shopsHasMore = true;
+    let shopsLoading = false;
+
+    function appendShopRows(newItems) {
+      const tbody = document.getElementById('shopsTbody');
+      if (!tbody || !newItems || newItems.length === 0) return;
+      const fragment = document.createDocumentFragment();
+      newItems.forEach((s) => {
+        const htmlStr = createShopRow(s);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = htmlStr.trim();
+        while (temp.firstChild) {
+          fragment.appendChild(temp.firstChild);
+        }
+      });
+      tbody.appendChild(fragment);
+    }
+
+    async function fetchShops(page = 1, isAppend = false) {
+      if (shopsLoading) return;
+      shopsLoading = true;
+
+      if (!isAppend) {
+        shopsPage = 1;
+        shopsHasMore = true;
+        const tbody = document.getElementById('shopTableBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-20"><div class="animate-pulse flex flex-col items-center"><div class="h-12 w-12 bg-slate-100 rounded-full mb-4"></div><div class="h-2 w-32 bg-slate-100 rounded"></div></div></td></tr>`;
+        }
+      }
+
+      const startDate = document.getElementById('globalStartDate')?.value || '';
+      const endDate = document.getElementById('globalEndDate')?.value || '';
+      const search = document.getElementById('shopSearchInput')?.value || '';
+
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/shops?startDate=${startDate}&endDate=${endDate}`, {
+        const res = await fetch(`${API_BASE}/employee/admin/shops?startDate=${startDate}&endDate=${endDate}&search=${encodeURIComponent(search)}&page=${page}&limit=25`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
         if (res.ok) {
-          allShops = data;
-          renderShopsTable(data);
+          let list = [];
+          if (data && Array.isArray(data.data)) {
+            list = data.data;
+            shopsHasMore = data.hasMore;
+          } else if (Array.isArray(data)) {
+            list = data;
+            shopsHasMore = false;
+          }
+
+          if (isAppend) {
+            allShops = [...allShops, ...list];
+            appendShopRows(list);
+          } else {
+            allShops = list;
+            renderShopsTable(allShops);
+          }
         }
-      } catch (err) { console.error('Shops Error:', err); }
+      } catch (err) {
+        console.error('Shops Error:', err);
+      } finally {
+        shopsLoading = false;
+      }
     }
 
-    async function fetchShopOrders(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
+    async function fetchShopOrders() {
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/shop/orders?startDate=${startDate}&endDate=${endDate}`, {
+        const search = document.getElementById('orderSearchInput')?.value || '';
+        const status = document.getElementById('orderStatusFilter')?.value || '';
+        const start = document.getElementById('orderStartDate')?.value || '';
+        const end = document.getElementById('orderEndDate')?.value || '';
+        
+        const res = await fetch(`${API_BASE}/employee/admin/shop/orders?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
@@ -1868,59 +1926,11 @@
     }
 
     function filterShops() {
-      const q = document.getElementById('shopSearchInput').value.toLowerCase();
-      const st = document.getElementById('shopStatusFilter').value;
-      const start = document.getElementById('shopStartDate').value;
-      const end = document.getElementById('shopEndDate').value;
-
-      const f = allShops.filter(s => {
-        const match = Object.values(s).join(' ').toLowerCase().includes(q);
-        const isApp = s.status === 'approved' || s.status === 'Active';
-        let matchSt = true;
-        if (st === 'Active') matchSt = isApp;
-        if (st === 'Pending') matchSt = s.status === 'pending';
-
-        let matchDate = true;
-        if (start || end) {
-          const joinedDate = s.joinedAt ? new Date(s.joinedAt).toISOString().split('T')[0] : null;
-          if (!joinedDate) {
-            matchDate = false;
-          } else {
-            if (start && joinedDate < start) matchDate = false;
-            if (end && joinedDate > end) matchDate = false;
-          }
-        }
-
-        return match && matchSt && matchDate;
-      });
-      renderShopsTable(f);
+      fetchShops(1, false);
     }
 
     function filterOrders() {
-      const q = document.getElementById('orderSearchInput').value.toLowerCase();
-      const st = document.getElementById('orderStatusFilter').value;
-      const start = document.getElementById('orderStartDate').value;
-      const end = document.getElementById('orderEndDate').value;
-
-      const f = allOrders.filter(o => {
-        const text = `${o._id} ${o.shopName} ${o.buyerName} ${o.itemsSummary}`.toLowerCase();
-        const matchesQ = text.includes(q);
-        const matchesSt = st === 'All' || o.status === st;
-
-        let matchDate = true;
-        if (start || end) {
-          const orderDate = o.createdAt ? new Date(o.createdAt).toISOString().split('T')[0] : null;
-          if (!orderDate) {
-            matchDate = false;
-          } else {
-            if (start && orderDate < start) matchDate = false;
-            if (end && orderDate > end) matchDate = false;
-          }
-        }
-
-        return matchesQ && matchesSt && matchDate;
-      });
-      renderOrdersTable(f);
+      fetchShopOrders();
     }
 
     // Global Date Filter Handlers
@@ -2217,6 +2227,19 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       setGlobalDatePreset('all');
+
+      const shopsTbody = document.getElementById('shopsTbody');
+      const shopsContainer = shopsTbody ? shopsTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+      if (shopsContainer) {
+        shopsContainer.addEventListener('scroll', () => {
+          if (shopsHasMore && !shopsLoading) {
+            if (shopsContainer.scrollTop + shopsContainer.clientHeight >= shopsContainer.scrollHeight - 150) {
+              shopsPage++;
+              fetchShops(document.getElementById('globalStartDate')?.value || '', document.getElementById('globalEndDate')?.value || '', shopsPage, true);
+            }
+          }
+        }, { passive: true });
+      }
     });
   </script>
 

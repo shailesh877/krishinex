@@ -599,8 +599,8 @@ router.post('/admin/create', protect, checkModule('employees'), async (req, res)
     try {
         const { name, email, phone, address, employeeCode, password, employeeModules, role } = req.body;
 
-        if (!name || !email || !password || !employeeCode) {
-            return res.status(400).json({ error: 'Name, Email, Password and Employee Code are required' });
+        if (!name || !email || !password || !employeeCode || !address) {
+            return res.status(400).json({ error: 'Name, Email, Password, Employee Code, and Address are required' });
         }
 
         const isSuperadmin = req.user && (req.user.role === 'admin' || req.user.role === 'superadmin');
@@ -961,23 +961,65 @@ router.patch('/admin/field-executive/:id/reset-collection', protect, checkModule
 // @access  Private/Admin
 router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
-        let query = { role: { $in: ['farmer', 'buyer', 'user', 'customer'] } };
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [{ role: 'farmer' }];
         const cleanStart = startDate && startDate.trim() !== '' ? startDate.trim() : null;
         const cleanEnd = endDate && endDate.trim() !== '' ? endDate.trim() : null;
 
         if (cleanStart || cleanEnd) {
-            query.createdAt = {};
-            if (cleanStart) query.createdAt.$gte = new Date(cleanStart);
-            if (cleanEnd) {
+            let dFilter = {};
+            if (cleanStart && cleanStart !== 'all') dFilter.$gte = new Date(cleanStart);
+            if (cleanEnd && cleanEnd !== 'all') {
                 const end = new Date(cleanEnd);
                 end.setHours(23, 59, 59, 999);
-                query.createdAt.$lte = end;
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
             }
         }
-        const farmers = await User.find(query)
+        
+        if (status && status !== 'all' && status !== '') {
+            if (status === 'approved') {
+                andConditions.push({ status: { $in: ['approved', 'Active', 'active'] } });
+            } else if (status === 'pending') {
+                andConditions.push({ status: { $nin: ['approved', 'Active', 'active'] } });
+            } else {
+                andConditions.push({ status });
+            }
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { email: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+        
+        let query = { $and: andConditions };
+
+        const total = await User.countDocuments(query);
+
+        // Server-Side Pagination
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(query)
             .select('name phone email address status aadhaarNumber aadhaarDocUrl aadhaarBackDocUrl panNumber panDocUrl bankDetails walletBalance walletNumber cardNumber profilePhotoUrl creditLimit creditUsed createdAt')
             .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const farmers = await findQuery.lean();
 
         // Get stats per farmer concurrently
         const result = await Promise.all(farmers.map(async f => {
@@ -1012,6 +1054,16 @@ router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => 
                 joinedAt: f.createdAt
             };
         }));
+
+        if (isPaginated) {
+            return res.json({
+                data: result,
+                total,
+                page,
+                limit,
+                hasMore: (skip + farmers.length) < total
+            });
+        }
 
         res.json(result);
     } catch (e) {
@@ -1108,7 +1160,7 @@ router.post('/admin/generate-card/:userId', protect, async (req, res, next) => {
 router.get('/admin/farmers/stats', protect, checkModule('users'), async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
-        let userQuery = { role: { $in: ['farmer', 'buyer'] } };
+        let userQuery = { role: 'farmer' };
         let orderQuery = {};
         let sellQuery = {};
 
@@ -1262,9 +1314,19 @@ router.get('/admin/soil-labs/stats', protect, checkModule('soil'), async (req, r
 // @access  Private/Admin
 router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate, search, status } = req.query;
         let labQuery = { role: 'soil' };
         let testQuery = { status: 'Completed' };
+        
+        if (status && status !== 'all' && status !== '') {
+            if (status === 'approved') {
+                labQuery.status = { $in: ['approved', 'Active'] };
+            } else if (status === 'pending') {
+                labQuery.status = 'pending';
+            } else {
+                labQuery.status = status;
+            }
+        }
         if (startDate || endDate) {
             labQuery.createdAt = {};
             testQuery.createdAt = {};
@@ -1281,9 +1343,32 @@ router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) =>
             }
         }
 
-        const labs = await User.find(labQuery)
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            labQuery.$or = [
+                { name: { $regex: s, $options: 'i' } },
+                { phone: { $regex: s, $options: 'i' } },
+                { businessName: { $regex: s, $options: 'i' } },
+                { address: { $regex: s, $options: 'i' } }
+            ];
+        }
+
+        const total = await User.countDocuments(labQuery);
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(labQuery)
             .select('name businessName phone email address status employeeCode soilDetails createdAt aadhaarDocUrl aadhaarBackDocUrl businessLicenseUrl bankDetails')
             .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const labs = await findQuery;
 
         const result = await Promise.all(labs.map(async lab => {
             const completedTests = await SoilRequest.countDocuments({ lab: lab._id, ...testQuery });
@@ -1307,9 +1392,19 @@ router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) =>
             };
         }));
 
+        if (isPaginated) {
+            return res.json({
+                data: result,
+                total,
+                page,
+                limit,
+                hasMore: (skip + labs.length) < total
+            });
+        }
+
         res.json(result);
     } catch (e) {
-        console.error('Admin soil labs error:', e);
+        console.error('Soil labs fetch error:', e);
         res.status(500).json({ error: 'Failed to fetch soil labs' });
     }
 });
@@ -1387,17 +1482,51 @@ router.put('/admin/users/:id/soil-details', protect, checkModule('soil'), async 
 // @access  Private/Admin
 router.get('/admin/soil-requests', protect, checkModule('soil'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
-        let query = {};
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [];
         if (startDate || endDate) {
-            query.createdAt = {};
-            if (startDate) query.createdAt.$gte = new Date(startDate);
+            let dFilter = {};
+            if (startDate) dFilter.$gte = new Date(startDate);
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                query.createdAt.$lte = end;
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
             }
         }
+
+        if (status && status !== 'all' && status !== '') {
+            andConditions.push({ status });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const mongoose = require('mongoose');
+            let reqIdMatch = null;
+            if (mongoose.isValidObjectId(s)) {
+                reqIdMatch = { _id: s };
+            }
+
+            const matchingUsers = await User.find({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+
+            let searchOr = [
+                { farmer: { $in: userIds } },
+                { lab: { $in: userIds } }
+            ];
+            if (reqIdMatch) searchOr.push(reqIdMatch);
+
+            andConditions.push({ $or: searchOr });
+        }
+
+        let query = andConditions.length > 0 ? { $and: andConditions } : {};
 
         const requests = await SoilRequest.find(query)
             .populate('farmer', 'name phone address')
@@ -1490,35 +1619,118 @@ router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), asyn
 });
 
 // =============================================
+// =============================================
 // ADMIN: CROP SELL REQUESTS MANAGEMENT ROUTES
 // =============================================
+
+// @route   GET /api/employee/admin/crop-requests/stats
+// @desc    Get KPI stats for crop requests
+// @access  Private/Admin
+router.get('/admin/crop-requests/stats', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let dFilter = {};
+        if (startDate || endDate) {
+            if (startDate && startDate !== 'all') dFilter.$gte = new Date(startDate);
+            if (endDate && endDate !== 'all') {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dFilter.$lte = end;
+            }
+        }
+        
+        let orderQuery = {};
+        let sellQuery = {};
+        if (Object.keys(dFilter).length > 0) {
+            orderQuery.createdAt = dFilter;
+            sellQuery.createdAt = dFilter;
+        }
+
+        const [orders, sellRequests] = await Promise.all([
+            Order.find(orderQuery).select('status'),
+            SellRequest.find(sellQuery).select('status')
+        ]);
+        
+        const combined = [...orders, ...sellRequests];
+        
+        const stats = {
+            total: combined.length,
+            newCount: combined.filter(r => r.status === 'pending').length,
+            assignedCount: combined.filter(r => r.status === 'accepted' || r.status === 'in-progress').length,
+            completedCount: combined.filter(r => r.status === 'completed' || r.status === 'Fulfilled').length,
+            cancelledCount: combined.filter(r => r.status === 'cancelled' || r.status === 'Cancelled').length
+        };
+        
+        res.json(stats);
+    } catch (e) {
+        console.error('Crop requests stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch crop stats' });
+    }
+});
 
 // @route   GET /api/employee/admin/crop-requests
 // @desc    Get all crop sell requests (orders) for admin
 // @access  Private/Admin
-router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, res) => {
+router.get('/admin/crop-requests', protect, checkModule('users'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate, search, status, crop } = req.query;
         let orderQuery = {};
         let sellQuery = {};
 
+        if (status && status !== 'all' && status !== '') {
+            orderQuery.status = status;
+            sellQuery.status = status;
+        }
+
+        if (crop && crop !== 'all' && crop !== '') {
+            orderQuery.cropName = crop;
+            sellQuery.cropName = crop;
+        }
+
         if (startDate || endDate) {
-            orderQuery.createdAt = {};
-            sellQuery.createdAt = {};
-            if (startDate) {
+            if (startDate && startDate !== 'all') {
                 const start = new Date(startDate);
-                orderQuery.createdAt.$gte = start;
-                sellQuery.createdAt.$gte = start;
+                orderQuery.createdAt = { ...orderQuery.createdAt, $gte: start };
+                sellQuery.createdAt = { ...sellQuery.createdAt, $gte: start };
             }
-            if (endDate) {
+            if (endDate && endDate !== 'all') {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                orderQuery.createdAt.$lte = end;
-                sellQuery.createdAt.$lte = end;
+                orderQuery.createdAt = { ...orderQuery.createdAt, $lte: end };
+                sellQuery.createdAt = { ...sellQuery.createdAt, $lte: end };
             }
         }
 
-        const [orders, sellRequests] = await Promise.all([
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const matchingUsers = await User.find({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+            
+            orderQuery.$or = [
+                { cropName: { $regex: s, $options: 'i' } },
+                { orderId: { $regex: s, $options: 'i' } },
+                { buyer: { $in: userIds } }
+            ];
+            
+            sellQuery.$or = [
+                { cropName: { $regex: s, $options: 'i' } },
+                { reqId: { $regex: s, $options: 'i' } },
+                { farmer: { $in: userIds } }
+            ];
+        }
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        const [orders, sellRequests, totalOrdersCount, totalSellCount] = await Promise.all([
             Order.find(orderQuery)
                 .populate('buyer', 'name phone address')
                 .populate('assignedTo', 'name phone businessName')
@@ -1533,7 +1745,9 @@ router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, r
                 .populate('mandi', 'name')
                 .populate('assignedTo', 'name phone businessName')
                 .sort({ createdAt: -1 })
-                .lean()
+                .lean(),
+            Order.countDocuments(orderQuery),
+            SellRequest.countDocuments(sellQuery)
         ]);
 
         const orderResult = orders.map(o => ({
@@ -1554,7 +1768,6 @@ router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, r
             farmerId: (o.buyer && o.buyer._id) ? o.buyer._id : null,
             createdAt: o.createdAt,
             source: 'order',
-            // Enriched fields for details modal
             expectedPrice: o.sellRequestId?.expectedPrice || (o.pricePerQuintal ? `₹${o.pricePerQuintal}/Q` : '—'),
             moisture: o.sellRequestId?.moisture || '',
             bagCount: o.sellRequestId?.bagCount || '',
@@ -1576,7 +1789,7 @@ router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, r
             crop: s.cropName,
             quantity: s.quantity,
             variety: s.variety || '',
-            pricePerQuintal: 0, // Not sold yet
+            pricePerQuintal: 0,
             status: s.status,
             imageUrl: (s.images && s.images.length > 0) ? s.images[0] : '',
             images: s.images || [],
@@ -1586,7 +1799,6 @@ router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, r
             farmerId: s.farmer ? s.farmer._id : null,
             createdAt: s.createdAt,
             source: 'sell-request',
-            // Enriched fields for details modal
             expectedPrice: s.expectedPrice || '—',
             moisture: s.moisture || '',
             bagCount: s.bagCount || '',
@@ -1602,6 +1814,18 @@ router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, r
 
         // Combine and sort by date
         const combined = [...orderResult, ...sellResult].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const total = totalOrdersCount + totalSellCount;
+
+        if (isPaginated) {
+            const pageData = combined.slice(skip, skip + limit);
+            return res.json({
+                data: pageData,
+                total,
+                page,
+                limit,
+                hasMore: (skip + pageData.length) < total
+            });
+        }
 
         res.json(combined);
     } catch (e) {
@@ -1613,7 +1837,7 @@ router.get('/admin/crop-requests', protect, checkModule('doctor'), async (req, r
 // @route   GET /api/employee/admin/buyer-partners
 // @desc    Get all buyer partners (role: 'buyer') for assignment dropdown
 // @access  Private/Admin  
-router.get('/admin/buyer-partners', protect, checkModule('doctor'), async (req, res) => {
+router.get('/admin/buyer-partners', protect, checkModule('users'), async (req, res) => {
     try {
         // Note: In this system, buyer partners have role 'buyer' and are approved
         // They are different from farmer-buyers; we use them to match crop sell requests
@@ -1635,7 +1859,7 @@ router.get('/admin/buyer-partners', protect, checkModule('doctor'), async (req, 
 // @route   PUT /api/employee/admin/crop-requests/:id/assign
 // @desc    Assign a crop request to a buyer partner
 // @access  Private/Admin
-router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), async (req, res) => {
+router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), async (req, res) => {
     try {
         const { buyerId } = req.body;
         if (!buyerId) return res.status(400).json({ error: 'buyerId is required' });
@@ -1763,7 +1987,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('doctor'), as
 // @route   PUT /api/employee/admin/crop-requests/:id/update-price
 // @desc    Update only the price of a crop request or order
 // @access  Private/Admin
-router.put('/admin/crop-requests/:id/update-price', protect, checkModule('doctor'), async (req, res) => {
+router.put('/admin/crop-requests/:id/update-price', protect, checkModule('users'), async (req, res) => {
     try {
         const { newPrice } = req.body;
         if (newPrice === undefined || newPrice === null) {
@@ -1955,7 +2179,27 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
         const isAll = (all === 'true');
         const hasFilter = !isAll && (startDate && endDate);
 
-        let userQuery = { role: { $in: ['buyer', 'crop-buyer'] } };
+        let andConditions = [{ role: { $in: ['buyer', 'crop-buyer'] } }];
+        
+        const { search, status } = req.query;
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { email: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+
+        if (status && status.trim() !== '' && status !== 'all') {
+            andConditions.push({ status: status.trim() });
+        }
+        
+        let userQuery = { $and: andConditions };
+
         let orderQuery = {};
         if (hasFilter) {
             const start = new Date(startDate);
@@ -1965,7 +2209,19 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
             orderQuery.createdAt = { $gte: start, $lte: end };
         }
 
-        const buyers = await User.find(userQuery).sort({ createdAt: -1 });
+        const total = await User.countDocuments(userQuery);
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(userQuery).sort({ createdAt: -1 });
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const buyers = await findQuery;
 
         const settings = await Settings.getSettings();
         const globalCommissionRate = settings.commissions.buyerTrading || 0;
@@ -2020,6 +2276,16 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
                 }
             };
         }));
+
+        if (isPaginated) {
+            return res.json({
+                data: enriched,
+                total,
+                page,
+                limit,
+                hasMore: (skip + buyers.length) < total
+            });
+        }
 
         res.json(enriched);
     } catch (e) {
@@ -2134,15 +2400,42 @@ router.get('/admin/buyer/requests', protect, checkModule('buyer'), async (req, r
         const hasFilter = !isAll && (startDate && endDate);
 
         let query = { status: 'pending' };
+        let andConditions = [query];
+
         if (hasFilter) {
             const start = new Date(startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
-            query.createdAt = { $gte: start, $lte: end };
+            andConditions.push({ createdAt: { $gte: start, $lte: end } });
         }
 
-        const requests = await Order.find(query)
+        const { search, crop } = req.query;
+        if (crop && crop.trim() !== '' && crop !== 'all') {
+            andConditions.push({ crop: { $regex: crop.trim(), $options: 'i' } });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const matchingBuyers = await User.find({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const buyerIds = matchingBuyers.map(b => b._id);
+            andConditions.push({
+                $or: [
+                    { crop: { $regex: s, $options: 'i' } },
+                    { buyer: { $in: buyerIds } }
+                ]
+            });
+        }
+
+        let finalQuery = { $and: andConditions };
+
+        const requests = await Order.find(finalQuery)
             .populate('buyer', 'name phone businessName address')
             .sort({ createdAt: -1 })
             .limit(50);
@@ -2180,16 +2473,60 @@ router.get('/admin/buyer/reconciliation', protect, checkModule('buyer'), async (
         const isAll = (all === 'true');
         const hasFilter = !isAll && (startDate && endDate);
 
-        let query = { status: { $in: ['accepted', 'in-progress', 'completed'] } };
+        let andConditions = [{ status: { $in: ['accepted', 'in-progress', 'completed'] } }];
         if (hasFilter) {
             const start = new Date(startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
-            query.createdAt = { $gte: start, $lte: end };
+            andConditions.push({ createdAt: { $gte: start, $lte: end } });
         }
 
-        const orders = await Order.find(query)
+        const { search, reconFrom, reconTo } = req.query;
+        if (reconFrom || reconTo) {
+            let reconDateQuery = {};
+            if (reconFrom) {
+                const fd = new Date(reconFrom);
+                fd.setHours(0,0,0,0);
+                reconDateQuery.$gte = fd;
+            }
+            if (reconTo) {
+                const td = new Date(reconTo);
+                td.setHours(23,59,59,999);
+                reconDateQuery.$lte = td;
+            }
+            andConditions.push({ createdAt: reconDateQuery });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const matchingBuyers = await User.find({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const buyerIds = matchingBuyers.map(b => b._id);
+            
+            // Check if search is a valid ObjectId for orderId search
+            const mongoose = require('mongoose');
+            let orderIdMatch = null;
+            if (mongoose.isValidObjectId(s)) {
+                orderIdMatch = { _id: s };
+            }
+
+            let searchOr = [
+                { crop: { $regex: s, $options: 'i' } },
+                { buyer: { $in: buyerIds } }
+            ];
+            if (orderIdMatch) searchOr.push(orderIdMatch);
+
+            andConditions.push({ $or: searchOr });
+        }
+
+        const finalQuery = { $and: andConditions };
+
+        const orders = await Order.find(finalQuery)
             .populate('buyer', 'name phone businessName address')
             .sort({ createdAt: -1 })
             .limit(100);
@@ -2574,19 +2911,58 @@ router.get('/admin/shop/stats', protect, checkModule('shops'), async (req, res) 
 router.get('/admin/shops', protect, checkModule('shops'), async (req, res) => {
     try {
         console.log('Fetching all shops for admin...');
-        const { startDate, endDate } = req.query;
-        let query = { role: 'shop' };
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [{ role: 'shop' }];
+        
         if (startDate || endDate) {
-            query.createdAt = {};
-            if (startDate) query.createdAt.$gte = new Date(startDate);
-            if (endDate) {
+            let dFilter = {};
+            if (startDate && startDate !== 'all') dFilter.$gte = new Date(startDate);
+            if (endDate && endDate !== 'all') {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                query.createdAt.$lte = end;
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
+            }
+        }
+        
+        if (status && status !== 'All' && status !== '') {
+            if (status === 'Active') {
+                andConditions.push({ status: { $in: ['approved', 'Active'] } });
+            } else if (status === 'Pending') {
+                andConditions.push({ status: 'pending' });
+            } else {
+                andConditions.push({ status });
             }
         }
 
-        const shops = await User.find(query).sort({ createdAt: -1 }).lean();
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+        let query = { $and: andConditions };
+
+        const total = await User.countDocuments(query);
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(query).sort({ createdAt: -1 });
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const shops = await findQuery.lean();
 
         const enriched = await Promise.all(shops.map(async (s) => {
             const [items, totalOrdersDocs] = await Promise.all([
@@ -2622,6 +2998,16 @@ router.get('/admin/shops', protect, checkModule('shops'), async (req, res) => {
             };
         }));
 
+        if (isPaginated) {
+            return res.json({
+                data: enriched,
+                total,
+                page,
+                limit,
+                hasMore: (skip + shops.length) < total
+            });
+        }
+
         res.json(enriched);
     } catch (e) {
         console.error('Shops fetch error:', e);
@@ -2633,17 +3019,52 @@ router.get('/admin/shops', protect, checkModule('shops'), async (req, res) => {
 // @access  Private/Admin
 router.get('/admin/shop/orders', protect, checkModule('shops'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
-        let query = {};
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [];
+        
         if (startDate || endDate) {
-            query.createdAt = {};
-            if (startDate) query.createdAt.$gte = new Date(startDate);
+            let dFilter = {};
+            if (startDate) dFilter.$gte = new Date(startDate);
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                query.createdAt.$lte = end;
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
             }
         }
+        
+        if (status && status !== 'All' && status !== '') {
+            andConditions.push({ status });
+        }
+        
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const mongoose = require('mongoose');
+            let orderIdMatch = null;
+            if (mongoose.isValidObjectId(s)) {
+                orderIdMatch = { _id: s };
+            }
+            
+            const matchingUsers = await User.find({
+                $or: [
+                    { businessName: { $regex: s, $options: 'i' } },
+                    { name: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+            
+            let searchOr = [
+                { owner: { $in: userIds } },
+                { buyer: { $in: userIds } }
+            ];
+            if (orderIdMatch) searchOr.push(orderIdMatch);
+            
+            andConditions.push({ $or: searchOr });
+        }
+        
+        let query = andConditions.length > 0 ? { $and: andConditions } : {};
 
         const orders = await ShopOrder.find(query)
             .populate('owner', 'businessName name phone address')
@@ -2915,7 +3336,7 @@ router.get('/admin/labour/stats', protect, checkModule('labour'), async (req, re
             end.setHours(23, 59, 59, 999);
         }
 
-        const labourRoleQuery = { $or: [{ role: 'labour' }, { role: 'labourer' }, { labourDetails: { $exists: true } }] };
+        const labourRoleQuery = { role: { $in: ['labour', 'labourer'] } };
 
         const labourQuery = hasFilter ? { ...labourRoleQuery, createdAt: { $gte: start, $lte: end } } : labourRoleQuery;
         const activeLabourQuery = hasFilter ? { ...labourRoleQuery, 'labourDetails.availability': 'active', createdAt: { $gte: start, $lte: end } } : { ...labourRoleQuery, 'labourDetails.availability': 'active' };
@@ -2965,19 +3386,65 @@ router.get('/admin/labours', protect, checkModule('labour'), async (req, res) =>
         const isAll = (all === 'true');
         const hasFilter = !isAll && (startDate && endDate);
 
-        let query = { $or: [{ role: 'labour' }, { role: 'labourer' }, { labourDetails: { $exists: true } }] };
+        let andConditions = [{ role: { $in: ['labour', 'labourer'] } }];
         if (hasFilter) {
             const start = new Date(startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
-            query.createdAt = { $gte: start, $lte: end };
+            andConditions.push({ createdAt: { $gte: start, $lte: end } });
         }
 
-        const labours = await User.find(query)
+        const { search, skill, availability } = req.query;
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+
+        if (skill && skill.toLowerCase() !== 'all' && skill.trim() !== '') {
+            andConditions.push({
+                $or: [
+                    { skills: { $regex: skill.trim(), $options: 'i' } },
+                    { 'labourDetails.skills': { $regex: skill.trim(), $options: 'i' } }
+                ]
+            });
+        }
+
+        if (availability && availability.toLowerCase() !== 'all' && availability.trim() !== '') {
+            const a = availability.trim().toLowerCase();
+            andConditions.push({
+                $or: [
+                    { availability: a },
+                    { 'labourDetails.availability': a }
+                ]
+            });
+        }
+
+        let query = { $and: andConditions };
+
+        const total = await User.countDocuments(query);
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(query)
             .select('name businessName phone email address status employeeCode createdAt aadhaarNumber aadhaarDocUrl aadhaarBackDocUrl labourDetails bankDetails walletBalance ratePerDay ratePerHour jobNotificationOn whatsappOn maxDistanceKm')
-            .sort({ createdAt: -1 })
-            .lean();
+            .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const labours = await findQuery.lean();
 
         const enriched = labours.map(labour => {
             return {
@@ -3008,6 +3475,16 @@ router.get('/admin/labours', protect, checkModule('labour'), async (req, res) =>
                 createdAt: labour.createdAt
             };
         });
+
+        if (isPaginated) {
+            return res.json({
+                data: enriched,
+                total,
+                page,
+                limit,
+                hasMore: (skip + labours.length) < total
+            });
+        }
 
         res.json(enriched);
     } catch (e) {
@@ -3076,14 +3553,49 @@ router.get('/admin/labour/jobs', protect, checkModule('labour'), async (req, res
         const isAll = (all === 'true');
         const hasFilter = !isAll && (startDate && endDate);
 
-        let query = {};
+        let andConditions = [];
         if (hasFilter) {
             const start = new Date(startDate);
             start.setHours(0, 0, 0, 0);
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
-            query.createdAt = { $gte: start, $lte: end };
+            andConditions.push({ createdAt: { $gte: start, $lte: end } });
         }
+
+        const { search, jobFrom, jobTo } = req.query;
+
+        if (jobFrom || jobTo) {
+            let jobDateQuery = {};
+            if (jobFrom) {
+                const fd = new Date(jobFrom);
+                jobDateQuery.$gte = fd;
+            }
+            if (jobTo) {
+                const td = new Date(jobTo);
+                td.setHours(23,59,59,999);
+                jobDateQuery.$lte = td;
+            }
+            andConditions.push({ fromDate: jobDateQuery });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const mongoose = require('mongoose');
+            let orderIdMatch = null;
+            if (mongoose.isValidObjectId(s)) {
+                orderIdMatch = { _id: s };
+            }
+            
+            let searchOr = [
+                { labourName: { $regex: s, $options: 'i' } },
+                { farmerName: { $regex: s, $options: 'i' } }
+            ];
+            if (orderIdMatch) searchOr.push(orderIdMatch);
+            
+            andConditions.push({ $or: searchOr });
+        }
+
+        let query = andConditions.length > 0 ? { $and: andConditions } : {};
 
         const jobs = await LabourJob.find(query)
             .populate('labour', 'name businessName address')
@@ -3390,17 +3902,55 @@ router.get('/admin/rental/stats', protect, checkModule('equipment'), async (req,
 // @access  Private/Admin
 router.get('/admin/rental/bookings', protect, checkModule('equipment'), async (req, res) => {
     try {
-        const { status, startDate, endDate, page = 1, limit = 50 } = req.query;
-        const filter = status && status !== 'all' ? { status } : {};
+        const { status, startDate, endDate, search, page = 1, limit = 50 } = req.query;
+        let andConditions = [];
+        if (status && status !== 'all') {
+            andConditions.push({ status });
+        }
         if (startDate || endDate) {
-            filter.createdAt = {};
-            if (startDate) filter.createdAt.$gte = new Date(startDate);
+            let dFilter = {};
+            if (startDate) dFilter.$gte = new Date(startDate);
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                filter.createdAt.$lte = end;
+                dFilter.$lte = end;
             }
+            andConditions.push({ createdAt: dFilter });
         }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const mongoose = require('mongoose');
+            let orderIdMatch = null;
+            if (mongoose.isValidObjectId(s)) {
+                orderIdMatch = { _id: s };
+            }
+
+            const matchingUsers = await User.find({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+
+            const Machine = require('../models/Machine');
+            const matchingMachines = await Machine.find({
+                name: { $regex: s, $options: 'i' }
+            }).select('_id');
+            const machineIds = matchingMachines.map(m => m._id);
+
+            let searchOr = [
+                { owner: { $in: userIds } },
+                { buyer: { $in: userIds } },
+                { machine: { $in: machineIds } }
+            ];
+            if (orderIdMatch) searchOr.push(orderIdMatch);
+
+            andConditions.push({ $or: searchOr });
+        }
+
+        const filter = andConditions.length > 0 ? { $and: andConditions } : {};
 
         const bookings = await Rental.find(filter)
             .populate('machine')
@@ -3584,21 +4134,44 @@ router.get('/admin/rental/cash-collections', protect, checkModule('equipment'), 
 // @access  Private/Admin
 router.get('/admin/rental/partners', protect, checkModule('equipment'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate, search } = req.query;
         const filter = { role: 'equipment' };
         if (startDate || endDate) {
             filter.createdAt = {};
-            if (startDate) filter.createdAt.$gte = new Date(startDate);
-            if (endDate) {
+            if (startDate && startDate !== 'all') filter.createdAt.$gte = new Date(startDate);
+            if (endDate && endDate !== 'all') {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
                 filter.createdAt.$lte = end;
             }
         }
 
-        const partners = await User.find(filter)
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            filter.$or = [
+                { name: { $regex: s, $options: 'i' } },
+                { phone: { $regex: s, $options: 'i' } },
+                { businessName: { $regex: s, $options: 'i' } },
+                { address: { $regex: s, $options: 'i' } }
+            ];
+        }
+
+        const total = await User.countDocuments(filter);
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(filter)
             .select('name businessName phone email address status createdAt aadhaarDocUrl aadhaarBackDocUrl bankDetails profilePhotoUrl')
             .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const partners = await findQuery;
 
         const enriched = await Promise.all(partners.map(async (p) => {
             const bookingFilter = { owner: p._id };
@@ -3634,6 +4207,16 @@ router.get('/admin/rental/partners', protect, checkModule('equipment'), async (r
                 profilePhotoUrl: p.profilePhotoUrl || ''
             };
         }));
+
+        if (isPaginated) {
+            return res.json({
+                data: enriched,
+                total,
+                page,
+                limit,
+                hasMore: (skip + partners.length) < total
+            });
+        }
 
         res.json(enriched);
     } catch (e) {
@@ -4240,7 +4823,31 @@ router.get('/admin/ksp/stats', protect, checkAdmin, async (req, res) => {
 // @access  Private/Admin
 router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
     try {
-        const franchises = await User.find({ role: 'ksp' }).lean();
+        const { search } = req.query;
+        let query = { role: 'ksp' };
+        
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            query.$or = [
+                { name: { $regex: s, $options: 'i' } },
+                { phone: { $regex: s, $options: 'i' } },
+                { businessName: { $regex: s, $options: 'i' } },
+                { kspPartnerId: { $regex: s, $options: 'i' } }
+            ];
+        }
+
+        const total = await User.countDocuments(query);
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(query).sort({ createdAt: -1 });
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const franchises = await findQuery.lean();
         const kspIds = franchises.map(f => f._id);
 
         const ItemObj = require('../models/Item');
@@ -4282,8 +4889,15 @@ router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
             };
         });
 
-        const rajan = data.find(f => f._id.toString() === '69b930538be41ec37832c23e');
-        if (rajan) console.log('RAJAN DATA TO FRONTEND:', rajan.walletNumber);
+        if (isPaginated) {
+            return res.json({
+                data,
+                total,
+                page,
+                limit,
+                hasMore: (skip + franchises.length) < total
+            });
+        }
 
         res.json(data);
     } catch (e) {
@@ -5837,10 +6451,29 @@ router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (re
             end.setHours(23, 59, 59, 999);
         }
 
-        const query = { role: 'ksp' };
+        let andConditions = [{ role: 'ksp' }];
         if (hasFilter) {
-            query.createdAt = { $gte: start, $lte: end };
+            andConditions.push({ createdAt: { $gte: start, $lte: end } });
         }
+
+        const { search, state } = req.query;
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+
+        if (state && state.trim() !== '' && state !== 'all') {
+            andConditions.push({ address: { $regex: state.trim(), $options: 'i' } });
+        }
+
+        const query = { $and: andConditions };
 
         const franchises = await User.find(query)
             .select('name businessName phone address status walletBalance walletNumber createdAt email profilePhotoUrl aadhaarDocUrl panDocUrl businessLicenseUrl kspType bankDetails kspPartnerId')
@@ -6431,14 +7064,31 @@ router.post('/leads/generate', protect, uploadLeadPhoto.single('photo'), async (
 // @access  Private/Admin
 router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
     try {
-        const { startDate, endDate, all } = req.query;
-        let query = {};
+        const { startDate, endDate, all, search } = req.query;
+        let andConditions = [];
+
         if (all !== 'true' && startDate && endDate) {
-            query.createdAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
-            };
+            andConditions.push({
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+                }
+            });
         }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { 'farmerDetails.name': { $regex: s, $options: 'i' } },
+                    { 'shopDetails.ownerName': { $regex: s, $options: 'i' } },
+                    { 'shopDetails.shopName': { $regex: s, $options: 'i' } },
+                    { mobile: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+
+        let query = andConditions.length > 0 ? { $and: andConditions } : {};
         const leads = await FieldLead.find(query)
             .populate('executive', 'name employeeCode')
             .sort({ createdAt: -1 });
@@ -6454,23 +7104,58 @@ router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
 router.get('/admin/all-nex-cards', protect, checkAdmin, async (req, res) => {
     try {
         const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
-        const users = await User.find({
-            role: { $in: eligibleRoles },
-            $or: [
-                { cardNumber: { $exists: true, $ne: '' } },
-                { walletNumber: { $exists: true, $ne: '' } }
-            ]
-        })
+        const { search, role } = req.query;
+        let andConditions = [
+            {
+                $or: [
+                    { cardNumber: { $exists: true, $ne: '' } },
+                    { walletNumber: { $exists: true, $ne: '' } }
+                ]
+            }
+        ];
+
+        if (role && role !== 'all') {
+            andConditions.push({ role });
+        } else {
+            andConditions.push({ role: { $in: eligibleRoles } });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const searchOr = [
+                { name: { $regex: s, $options: 'i' } },
+                { phone: { $regex: s, $options: 'i' } },
+                { cardNumber: { $regex: s, $options: 'i' } },
+                { walletNumber: { $regex: s, $options: 'i' } },
+                { role: { $regex: s, $options: 'i' } },
+                { allottedByKspPartnerId: { $regex: s, $options: 'i' } }
+            ];
+            andConditions.push({ $or: searchOr });
+        }
+
+        let userQuery = { $and: andConditions };
+
+        const total = await User.countDocuments(userQuery);
+
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = User.find(userQuery)
             .select('name role phone cardNumber walletNumber businessName status createdAt')
             .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const users = await findQuery;
 
         // Fetch allotment logs to see which KSP issued which card
         const logs = await KSPCardLog.find({})
             .populate('kspId', 'name businessName phone kspPartnerId')
             .lean();
-
-        console.log(`[DEBUG] Found ${logs.length} Nex Card allotment logs in DB`);
-
 
         // Map logs to users
         const result = users.map(u => {

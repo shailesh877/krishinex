@@ -102,7 +102,18 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
 // 3. Get All Cards (Inventory)
 router.get('/inventory', async (req, res) => {
     try {
-        const cards = await NexCard.find().populate('assignedTo', 'name phone businessName role').sort({ createdAt: -1 });
+        const { search, status } = req.query;
+        let query = {};
+        
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        if (search && search.trim() !== '') {
+            query.cardNumber = { $regex: search.trim(), $options: 'i' };
+        }
+
+        const cards = await NexCard.find(query).populate('assignedTo', 'name phone businessName role').sort({ createdAt: -1 });
         res.json(cards);
     } catch (error) {
         res.status(500).json({ error: error.message });

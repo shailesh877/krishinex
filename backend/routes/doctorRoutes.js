@@ -80,17 +80,42 @@ router.get('/my-consultations', protect, async (req, res) => {
 router.get('/admin/all', protect, async (req, res) => {
     try {
         console.log('[DOCTOR] Fetching all consultations for admin...');
-        const { startDate, endDate, all } = req.query;
+        const { startDate, endDate, all, search, status } = req.query;
+        let andConditions = [];
 
-        let dateFilter = {};
         if (all !== 'true' && startDate && endDate) {
-            dateFilter.createdAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
-            };
+            andConditions.push({
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+                }
+            });
         }
 
-        const consultations = await DoctorConsultation.find(dateFilter)
+        if (status && status !== 'All' && status !== '') {
+            andConditions.push({ status: status });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const matchingFarmers = await User.find({
+                 $or: [ { address: { $regex: s, $options: 'i' } } ]
+            }).select('_id');
+            const farmerIds = matchingFarmers.map(f => f._id);
+            
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { cropName: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { farmer: { $in: farmerIds } }
+                ]
+            });
+        }
+
+        let query = andConditions.length > 0 ? { $and: andConditions } : {};
+
+        const consultations = await DoctorConsultation.find(query)
             .populate('farmer', 'name phone address')
             .populate('assignedTo', 'name phone')
             .sort({ createdAt: -1 });

@@ -165,14 +165,40 @@ router.post('/executives/create', protect, checkAdmin, async (req, res) => {
 // @access  Private/Admin
 router.get('/tasks', protect, checkAdmin, async (req, res) => {
     try {
-        const { startDate, endDate, all } = req.query;
-        let query = {};
+        const { startDate, endDate, all, search, status } = req.query;
+        let andConditions = [];
+
         if (all !== 'true' && startDate && endDate) {
-            query.createdAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
-            };
+            andConditions.push({
+                createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
+                }
+            });
         }
+
+        if (status && status !== 'All' && status !== '') {
+            andConditions.push({ status: status });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const matchingExecs = await User.find({
+                role: 'employee',
+                name: { $regex: s, $options: 'i' }
+            }).select('_id');
+            const execIds = matchingExecs.map(e => e._id);
+            
+            andConditions.push({
+                $or: [
+                    { taskId: { $regex: s, $options: 'i' } },
+                    { partnerName: { $regex: s, $options: 'i' } },
+                    { executive: { $in: execIds } }
+                ]
+            });
+        }
+
+        let query = andConditions.length > 0 ? { $and: andConditions } : {};
         const tasks = await FieldTask.find(query)
             .populate('executive', 'name employeeCode phone')
             .sort({ createdAt: -1 });

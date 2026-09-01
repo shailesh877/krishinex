@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -717,7 +717,8 @@
 
     async function fetchConsultations() {
       const qs = getQueryParamString();
-      const url = `${API_BASE}/doctor/admin/all?${qs}`;
+      const query = document.getElementById('searchInput')?.value || '';
+      const url = `${API_BASE}/doctor/admin/all?${qs}&search=${encodeURIComponent(query)}&status=${encodeURIComponent(currentStatusFilter)}`;
       console.log('Fetching consultations from:', url);
       document.getElementById('loadingState').classList.remove('hidden');
       try {
@@ -923,19 +924,7 @@
     }
 
     function filterRequests() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        
-        const filtered = allConsultations.filter(item => {
-            const name = (item.name || '').toLowerCase();
-            const crop = (item.cropName || '').toLowerCase();
-            const phone = (item.phone || '').toLowerCase();
-            const address = (item.farmer && item.farmer.address || '').toLowerCase();
-            const matchesQuery = !query || name.includes(query) || crop.includes(query) || phone.includes(query) || address.includes(query);
-            const matchesStatus = currentStatusFilter === 'All' || item.status === currentStatusFilter;
-            
-            return matchesQuery && matchesStatus;
-        });
-        renderTable(filtered);
+        fetchConsultations();
     }
 
     let detailModalOpen = false;

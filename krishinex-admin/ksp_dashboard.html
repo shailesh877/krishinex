@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -873,9 +873,10 @@
             return response;
         };
 
-        async function loadStats() {
+        async function loadStats(txnSearch = '') {
             try {
-                const res = await fetch(`${API_BASE}/ksp/stats?v=${Date.now()}`, {
+                const searchParams = txnSearch ? `&searchTxn=${encodeURIComponent(txnSearch)}` : '';
+                const res = await fetch(`${API_BASE}/ksp/stats?v=${Date.now()}${searchParams}`, {
                     headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
                 });
                 const data = await res.json();
@@ -1057,19 +1058,10 @@
 
         function filterTransactions(query) {
             const q = query.trim().toLowerCase();
-            if (!q) {
-                renderTxnList(allTransactions, document.getElementById('tx-container'));
-                return;
-            }
-            const filtered = allTransactions.filter(t => {
-                return (
-                    (t.transactionId && t.transactionId.toLowerCase().includes(q)) ||
-                    (t.type && t.type.toLowerCase().includes(q)) ||
-                    (t.amount && String(t.amount).includes(q)) ||
-                    (t.note && t.note.toLowerCase().includes(q))
-                );
-            });
-            renderTxnList(filtered, document.getElementById('tx-container'));
+            clearTimeout(window.txnSearchTimeout);
+            window.txnSearchTimeout = setTimeout(() => {
+                loadStats(q);
+            }, 300);
         }
 
         function renderTxnList(txns, container) {

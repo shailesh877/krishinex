@@ -92,11 +92,18 @@
             const href = link.getAttribute('href');
             if (!href) return;
 
-            const moduleKey = Object.keys(moduleMap).find(key => moduleMap[key] === href);
+            const baseHref = href.split('?')[0]; // Strip query parameters for matching
+            const moduleKey = Object.keys(moduleMap).find(key => moduleMap[key] === baseHref);
             if (moduleKey && moduleKey !== 'dashboard') {
                 if (!allowedModules.includes(moduleKey)) {
                     link.style.display = 'none';
                     link.classList.add('hidden-by-guard');
+                    
+                    // Hide parent dropdown container if the link is inside one
+                    const dropdownContainer = link.closest('.group.relative.space-y-1');
+                    if (dropdownContainer) {
+                        dropdownContainer.style.display = 'none';
+                    }
                 }
             }
         });

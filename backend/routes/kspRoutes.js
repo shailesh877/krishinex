@@ -186,9 +186,23 @@ router.get('/stats', protect, async (req, res) => {
       user.kspPartnerId = newId;
       await user.save();
     }
-    const transactions = await Transaction.find({
-      recipient: req.user.id
-    }).sort({ createdAt: -1 }).limit(10);
+    const { searchTxn } = req.query;
+    let txnQuery = { recipient: req.user.id };
+    
+    if (searchTxn && searchTxn.trim() !== '') {
+        const s = searchTxn.trim();
+        let searchOr = [
+            { transactionId: { $regex: s, $options: 'i' } },
+            { type: { $regex: s, $options: 'i' } },
+            { note: { $regex: s, $options: 'i' } }
+        ];
+        if (!isNaN(s)) {
+            searchOr.push({ amount: Number(s) });
+        }
+        txnQuery.$or = searchOr;
+    }
+
+    const transactions = await Transaction.find(txnQuery).sort({ createdAt: -1 }).limit(searchTxn ? 100 : 10);
 
     const response = {
       balance: user.walletBalance || 0,

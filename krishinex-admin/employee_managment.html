@@ -454,7 +454,7 @@
           <input type="hidden" id="employeeId">
 
           <!-- SECTION 1: ROLE SELECTION CARDS -->
-          <div>
+          <div id="roleSelectionBlock">
             <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-3 pl-1 flex items-center gap-1.5">
               <i class="fas fa-shield-alt text-emerald-600"></i> Account Role & Access Level
             </label>
@@ -530,9 +530,9 @@
               </div>
 
               <div class="space-y-1">
-                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Phone Number</label>
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Phone Number <span class="text-rose-500">*</span></label>
                 <div class="relative">
-                  <input type="text" id="phone" placeholder="e.g. 9876543210"
+                  <input type="text" id="phone" required placeholder="e.g. 9876543210"
                     class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
                   <i class="fas fa-phone absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
                 </div>
@@ -551,9 +551,9 @@
               </div>
 
               <div class="space-y-1">
-                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Office Location / Address</label>
+                <label class="text-[11px] font-black text-slate-600 uppercase ml-1">Office Location / Address <span class="text-rose-500">*</span></label>
                 <div class="relative">
-                  <input type="text" id="address" placeholder="e.g. Regional Office, Patna"
+                  <input type="text" id="address" required placeholder="e.g. Regional Office, Patna"
                     class="w-full px-4 py-3 pl-10 rounded-2xl bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none text-sm font-bold text-slate-800 transition-all">
                   <i class="fas fa-location-dot absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
                 </div>
@@ -676,7 +676,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
                   <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
                     <input type="checkbox" name="modules" value="users" class="w-4 h-4 text-purple-600 rounded accent-purple-600">
-                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Farmers & Users</span>
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Farmers & Crops</span>
                   </label>
 
                   <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
@@ -787,10 +787,35 @@
           ? `<span class="bg-purple-100 text-purple-800 text-[10px] font-black px-2.5 py-1 rounded-full border border-purple-200 uppercase tracking-tighter"><i class="fas fa-shield-alt mr-1"></i> Superadmin</span>`
           : `<span class="bg-blue-50 text-blue-700 text-[10px] font-black px-2.5 py-1 rounded-full border border-blue-100 uppercase tracking-tighter"><i class="fas fa-user-gear mr-1"></i> Sub-Admin / Employee</span>`;
 
+        const friendlyModules = {
+          users: 'Farmers & Crops',
+          employees: 'Employees',
+          field_executive: 'Field Exec',
+          buyer: 'Buyers',
+          equipment: 'Machine',
+          shop: 'Shop',
+          banners: 'Banners',
+          ksp_franchise: 'KSP Franchise',
+          soil: 'Soil',
+          mandi: 'Mandi',
+          doctor: 'Doctor',
+          loan: 'Loan',
+          ksp_app: 'KSP App',
+          pathshala: 'Pathshala',
+          advisory: 'Advisory',
+          finance: 'Finance',
+          payout: 'Payout',
+          kyc: 'KYC',
+          ad_enquiry: 'Ads',
+          contact: 'Contact',
+          nex_card: 'Nex Card',
+          settings: 'Settings'
+        };
+
         const modulesDisplay = isSuperadmin
           ? `<span class="bg-purple-50 text-purple-700 text-[9px] font-black px-2.5 py-1 rounded-full border border-purple-100 uppercase tracking-tighter">ALL MODULES (SUPERADMIN)</span>`
           : (emp.employeeModules || []).map(m => `
-              <span class="bg-blue-50 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-tighter">${m}</span>
+              <span class="bg-blue-50 text-blue-700 text-[9px] font-black px-2 py-0.5 rounded-full border border-blue-100 uppercase tracking-tighter">${friendlyModules[m] || m.replace(/_/g, ' ')}</span>
             `).join('');
 
         const tr = document.createElement('tr');
@@ -908,22 +933,60 @@
       if (emp) openModal(emp);
     }
 
+    function showToast(message, type = 'info') {
+      let toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'fixed bottom-4 right-4 z-[9999] flex flex-col gap-2';
+        document.body.appendChild(toastContainer);
+      }
+
+      const toast = document.createElement('div');
+      const colors = type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-800' :
+        type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+          'bg-sky-50 border-sky-200 text-sky-800';
+      const icon = type === 'error' ? 'fa-circle-exclamation text-rose-500' :
+        type === 'success' ? 'fa-circle-check text-emerald-500' :
+          'fa-circle-info text-sky-500';
+
+      toast.className = `flex items-center gap-3 px-4 py-3 rounded-2xl border-2 shadow-lg shadow-slate-200/50 transform transition-all duration-300 translate-y-10 opacity-0 ${colors}`;
+      toast.innerHTML = `<i class="fas ${icon} text-lg"></i><p class="text-sm font-bold">${message}</p>`;
+
+      toastContainer.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
     function openModal(emp = null) {
+      const currentUser = (typeof window.getCurrentUser === 'function') ? window.getCurrentUser() : JSON.parse(localStorage.getItem('employeeUser') || localStorage.getItem('kspUser') || '{}');
+
+      if (emp && currentUser && (emp._id === currentUser._id || emp._id === currentUser.id)) {
+         showToast("Cannot edit your own account here.", "error");
+         return;
+      }
+
       document.getElementById('modal').classList.remove('hidden');
       const form = document.getElementById('employeeForm');
       form.reset();
       document.getElementById('employeeId').value = emp ? emp._id : '';
       document.getElementById('modalTitle').innerText = emp ? 'Edit Account & Permissions' : 'Add New Account';
 
-      // Security check: Hide Superadmin choice card for non-superadmin users
-      const currentUser = JSON.parse(localStorage.getItem('ksp_user') || '{}');
+      // Security check: Hide entire Role block for non-superadmin users
       const isCurrentUserSuperadmin = (currentUser.role === 'admin' || currentUser.role === 'superadmin');
-      const cardAdmin = document.getElementById('roleCardAdmin');
-      if (cardAdmin) {
+      const roleBlock = document.getElementById('roleSelectionBlock');
+      if (roleBlock) {
         if (!isCurrentUserSuperadmin) {
-          cardAdmin.classList.add('hidden');
+          roleBlock.style.display = 'none';
         } else {
-          cardAdmin.classList.remove('hidden');
+          roleBlock.style.display = 'block';
         }
       }
 
@@ -982,26 +1045,40 @@
         if (res.ok) {
           closeModal();
           fetchEmployees();
+          if(typeof showToast === 'function') showToast(id ? 'Employee updated successfully!' : 'Employee created successfully!', 'success');
         } else {
           const err = await res.json();
-          alert(err.error || 'Operation failed');
+          if(typeof showToast === 'function') showToast(err.error || 'Operation failed', 'error');
         }
       } catch (err) {
-        console.error(err);
-        alert('Network error');
+        if(typeof showToast === 'function') showToast('Network error', 'error');
       }
     };
 
     async function deleteEmployee(id) {
+      const currentUser = (typeof window.getCurrentUser === 'function') ? window.getCurrentUser() : JSON.parse(localStorage.getItem('employeeUser') || localStorage.getItem('kspUser') || '{}');
+      if (currentUser && (id === currentUser._id || id === currentUser.id)) {
+        if(typeof showToast === 'function') showToast("Cannot delete your own account.", "error");
+        else alert("Cannot delete your own account.");
+        return;
+      }
+
       if (!confirm('Are you sure you want to delete this employee?')) return;
       try {
         const res = await fetch(`${API_BASE}/employee/admin/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
-        if (res.ok) fetchEmployees();
+        if (res.ok) {
+          fetchEmployees();
+          if(typeof showToast === 'function') showToast('Employee deleted successfully!', 'success');
+        } else {
+          const err = await res.json();
+          if(typeof showToast === 'function') showToast(err.error || 'Failed to delete employee', 'error');
+        }
       } catch (err) {
         console.error(err);
+        if(typeof showToast === 'function') showToast('Network error while deleting', 'error');
       }
     }
 

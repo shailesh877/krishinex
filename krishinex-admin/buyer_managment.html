@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -727,7 +727,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <input type="text" id="buyerSearchInput" placeholder="🔍 Search buyers..."
-                                    oninput="filterBuyers()"
+                                    onkeydown="if(event.key === 'Enter') { document.getElementById('buyersTbody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchBuyers(1, false); }"
                                     class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-semibold w-48 focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
                                 <select id="buyerStatusFilter" onchange="filterBuyers()"
                                     class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
@@ -1122,6 +1122,21 @@
             fetchReconciliation();
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const buyersTbody = document.getElementById('buyersTbody');
+            const buyersContainer = buyersTbody ? buyersTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+            if (buyersContainer) {
+                buyersContainer.addEventListener('scroll', () => {
+                    if (buyersHasMore && !buyersLoading) {
+                        if (buyersContainer.scrollTop + buyersContainer.clientHeight >= buyersContainer.scrollHeight - 150) {
+                            buyersPage++;
+                            fetchBuyers(buyersPage, true);
+                        }
+                    }
+                }, { passive: true });
+            }
+        });
+
         const AUTH_TOKEN = localStorage.getItem('employeeToken');
 
         function fixImageUrl(url) {
@@ -1162,14 +1177,67 @@
             } catch (err) { console.error('Stats error:', err); }
         }
 
-        // ---- Buyers Database ----
-        async function fetchBuyers() {
+        let buyersPage = 1;
+        let buyersHasMore = true;
+        let buyersLoading = false;
+
+        function appendBuyersRows(newItems) {
+            const tbody = document.getElementById('buyersTbody');
+            if (!tbody || !newItems || newItems.length === 0) return;
+            const fragment = document.createDocumentFragment();
+            newItems.forEach((b) => {
+                const htmlStr = createBuyerRow(b);
+                const temp = document.createElement('tbody');
+                temp.innerHTML = htmlStr.trim();
+                while (temp.firstChild) {
+                    fragment.appendChild(temp.firstChild);
+                }
+            });
+            tbody.appendChild(fragment);
+        }
+
+        async function fetchBuyers(page = 1, isAppend = false) {
+            if (buyersLoading) return;
+            buyersLoading = true;
+            if (!isAppend) {
+                buyersPage = 1;
+                buyersHasMore = true;
+                const tbody = document.getElementById('buyersTbody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-20"><div class="animate-pulse flex flex-col items-center"><div class="h-12 w-12 bg-slate-100 rounded-full mb-4"></div><div class="h-2 w-32 bg-slate-100 rounded"></div></div></td></tr>`;
+                }
+            }
+
             try {
-                const res = await fetch(`${API_BASE}/employee/admin/buyers?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const search = document.getElementById('buyerSearchInput')?.value || '';
+                const status = document.getElementById('buyerStatusFilter')?.value || '';
+                const res = await fetch(`${API_BASE}/employee/admin/buyers?${getQueryParamString()}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}&page=${page}&limit=25`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
                 const data = await res.json();
-                if (res.ok) { allBuyers = data; renderBuyersTable(data); }
-                else document.getElementById('buyersTbody').innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-rose-500">${data.error || 'Failed to load'}</td></tr>`;
-            } catch (err) { document.getElementById('buyersTbody').innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-rose-500">Network error</td></tr>`; }
+                if (res.ok) {
+                    let list = [];
+                    if (data && Array.isArray(data.data)) {
+                        list = data.data;
+                        buyersHasMore = data.hasMore;
+                    } else if (Array.isArray(data)) {
+                        list = data;
+                        buyersHasMore = false;
+                    }
+
+                    if (isAppend) {
+                        allBuyers = [...allBuyers, ...list];
+                        appendBuyersRows(list);
+                    } else {
+                        allBuyers = list;
+                        renderBuyersTable(allBuyers);
+                    }
+                } else {
+                    document.getElementById('buyersTbody').innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-rose-500">${data.error || 'Failed to load'}</td></tr>`;
+                }
+            } catch (err) {
+                document.getElementById('buyersTbody').innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-rose-500">Network error</td></tr>`;
+            } finally {
+                buyersLoading = false;
+            }
         }
 
         function createBuyerRow(b) {
@@ -1216,11 +1284,7 @@
 
 
         function filterBuyers() {
-            const q = document.getElementById('buyerSearchInput').value.toLowerCase();
-            const status = document.getElementById('buyerStatusFilter').value;
-            renderBuyersTable(allBuyers.filter(b => {
-                return (b.businessName + b.name + b.phone + b.address).toLowerCase().includes(q) && (!status || b.status === status);
-            }));
+            fetchBuyers(1, false);
         }
 
         async function exportBuyers() {
@@ -1230,17 +1294,26 @@
         // ---- Buyer Purchase Requests ----
         function updateReqCropFilterDropdown(requests) {
             const select = document.getElementById('reqCropFilter');
-            if (!select || !requests) return;
+            if (!select) return;
             const currentVal = select.value;
-            const crops = Array.from(new Set(requests.map(r => r.crop).filter(Boolean))).sort();
+            const cropsSet = new Set();
+            
+            Array.from(select.options).forEach(opt => {
+                if (opt.value && opt.value !== 'all') cropsSet.add(opt.value);
+            });
+
+            requests.forEach(r => { if (r.crop) cropsSet.add(r.crop.trim()); });
+            const crops = Array.from(cropsSet).sort();
             if (crops.length > 0) {
-                select.innerHTML = '<option value="">All Crops</option>' + crops.map(c => `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`).join('');
+                select.innerHTML = '<option value="all">All Crops</option>' + crops.map(c => `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`).join('');
             }
         }
 
         async function fetchRequests() {
             try {
-                const res = await fetch(`${API_BASE}/employee/admin/buyer/requests?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const search = document.getElementById('reqSearchInput')?.value || '';
+                const crop = document.getElementById('reqCropFilter')?.value || '';
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/requests?${getQueryParamString()}&search=${encodeURIComponent(search)}&crop=${crop === 'all' ? '' : encodeURIComponent(crop)}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
                 const data = await res.json();
                 if (res.ok) { 
                     allRequests = data; 
@@ -1269,9 +1342,7 @@
         }
 
         function filterRequests() {
-            const q = document.getElementById('reqSearchInput').value.toLowerCase();
-            const crop = document.getElementById('reqCropFilter').value;
-            renderRequestsTable(allRequests.filter(r => (r.buyerName + r.buyerLocation + r.crop).toLowerCase().includes(q) && (!crop || r.crop.toLowerCase() === crop.toLowerCase())));
+            fetchRequests();
         }
 
         async function exportRequests() {
@@ -1305,7 +1376,10 @@
         // ---- Payment Reconciliation ----
         async function fetchReconciliation() {
             try {
-                const res = await fetch(`${API_BASE}/employee/admin/buyer/reconciliation?${getQueryParamString()}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
+                const search = document.getElementById('reconSearchInput')?.value || '';
+                const from = document.getElementById('reconFromDate')?.value || '';
+                const to = document.getElementById('reconToDate')?.value || '';
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/reconciliation?${getQueryParamString()}&search=${encodeURIComponent(search)}&reconFrom=${encodeURIComponent(from)}&reconTo=${encodeURIComponent(to)}`, { headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
                 const data = await res.json();
                 if (res.ok) { allReconciliation = data; renderReconciliationTable(data); }
                 else document.getElementById('reconciliationTbody').innerHTML = `<tr><td colspan="9" class="px-5 py-8 text-center text-sm text-rose-500">${data.error}</td></tr>`;
@@ -1349,35 +1423,7 @@
         }
 
         function filterReconciliationTable() {
-            const q = document.getElementById('reconSearchInput').value.toLowerCase();
-            const from = document.getElementById('reconFromDate').value;
-            const to = document.getElementById('reconToDate').value;
-
-            const filtered = allReconciliation.filter(o => {
-                const searchStr = (o.orderId + o.buyerName + o.buyerPhone + o.crop).toLowerCase();
-                const matchSearch = searchStr.includes(q);
-
-                let matchDate = true;
-                if (from || to) {
-                    const orderDate = new Date(o.createdAt);
-                    orderDate.setHours(0, 0, 0, 0);
-
-                    if (from) {
-                        const fromD = new Date(from);
-                        fromD.setHours(0, 0, 0, 0);
-                        if (orderDate < fromD) matchDate = false;
-                    }
-                    if (to) {
-                        const toD = new Date(to);
-                        toD.setHours(0, 0, 0, 0);
-                        if (orderDate > toD) matchDate = false;
-                    }
-                }
-
-                return matchSearch && matchDate;
-            });
-
-            renderReconciliationTable(filtered);
+            fetchReconciliation();
         }
 
         function clearReconFilters() {

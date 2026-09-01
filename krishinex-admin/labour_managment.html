@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -110,7 +110,7 @@
       </div>
 
       <!-- Navigation -->
-                              <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
 
         <a href="index.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -282,22 +282,26 @@
           <button onclick="toggleUsersSubmenu(event)"
             class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
             <div class="flex items-center gap-3">
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
                 <i class="fas fa-seedling text-emerald-600"></i>
               </span>
               <span class="truncate">Farmers & Crop</span>
             </div>
-            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+            <i id="usersSubmenuChevron"
+              class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
           </button>
 
           <!-- Submenu options -->
           <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
-            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb"
+              onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('farmersDb'); }"
               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
               <i class="fas fa-users text-[11px] text-emerald-600"></i>
               <span>Farmer</span>
             </a>
-            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell" onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell"
+              onclick="if(window.switchSectionTab){ event.preventDefault(); switchSectionTab('cropSell'); }"
               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
               <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
               <span>Crop Sell Requests</span>
@@ -430,35 +434,49 @@
                 <span id="dateFilterLabel">All Time</span>
                 <i class="fas fa-chevron-down ml-2 text-[10px] text-slate-400"></i>
               </button>
-              
+
               <!-- Dropdown Panel -->
-              <div id="dateFilterDropdown" class="hidden absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white border border-slate-200 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50 transition-all duration-200">
+              <div id="dateFilterDropdown"
+                class="hidden absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white border border-slate-200 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50 transition-all duration-200">
                 <div class="p-4 space-y-4">
                   <div>
-                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-2">Quick Presets</span>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-2">Quick
+                      Presets</span>
                     <div class="grid grid-cols-2 gap-2">
-                      <button onclick="setDatePreset('today')" id="preset-today" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Today</button>
-                      <button onclick="setDatePreset('yesterday')" id="preset-yesterday" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Yesterday</button>
-                      <button onclick="setDatePreset('7d')" id="preset-7d" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last 7 Days</button>
-                      <button onclick="setDatePreset('30d')" id="preset-30d" class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last 30 Days</button>
-                      <button onclick="setDatePreset('all')" id="preset-all" class="preset-btn col-span-2 px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all">All Time</button>
+                      <button onclick="setDatePreset('today')" id="preset-today"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Today</button>
+                      <button onclick="setDatePreset('yesterday')" id="preset-yesterday"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Yesterday</button>
+                      <button onclick="setDatePreset('7d')" id="preset-7d"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last
+                        7 Days</button>
+                      <button onclick="setDatePreset('30d')" id="preset-30d"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Last
+                        30 Days</button>
+                      <button onclick="setDatePreset('all')" id="preset-all"
+                        class="preset-btn col-span-2 px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all">All
+                        Time</button>
                     </div>
                   </div>
-                  
+
                   <div class="border-t border-slate-100"></div>
-                  
+
                   <div class="space-y-3">
-                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Custom Date Range</span>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Custom Date
+                      Range</span>
                     <div class="space-y-2">
                       <div>
                         <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">From Date</label>
-                        <input type="date" id="filterStartDate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
+                        <input type="date" id="filterStartDate"
+                          class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
                       </div>
                       <div>
                         <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">To Date</label>
-                        <input type="date" id="filterEndDate" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
+                        <input type="date" id="filterEndDate"
+                          class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-bold text-slate-700">
                       </div>
-                      <button onclick="applyCustomDateFilter()" class="w-full mt-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:brightness-105 active:scale-[0.98] transition-all">
+                      <button onclick="applyCustomDateFilter()"
+                        class="w-full mt-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-lg shadow-emerald-500/10 hover:brightness-105 active:scale-[0.98] transition-all">
                         Apply Filter
                       </button>
                     </div>
@@ -595,7 +613,7 @@
                   <option value="inactive">Inactive</option>
                 </select>
                 <input id="labourSearchInput" type="text" placeholder="🔍 Search name / location"
-                  oninput="filterLabourers()"
+                  onkeydown="if(event.key === 'Enter') { document.getElementById('labourTableBody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchLabourers(1, false); }"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-56" />
                 <button onclick="exportLabourers()"
                   class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-purple-500 to-violet-500 px-4 text-xs text-white font-black hover:from-purple-600 hover:to-violet-600 shadow-md transition-all">
@@ -745,8 +763,11 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
               <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center justify-between">
-                <span class="flex items-center gap-2"><i class="fas fa-address-card text-purple-500"></i> Contact & Identification</span>
-                <button onclick="switchLabourTab('docs')" class="text-[9px] text-purple-600 font-bold hover:underline"><i class="fas fa-folder-open mr-1"></i> All Docs</button>
+                <span class="flex items-center gap-2"><i class="fas fa-address-card text-purple-500"></i> Contact &
+                  Identification</span>
+                <button onclick="switchLabourTab('docs')"
+                  class="text-[9px] text-purple-600 font-bold hover:underline"><i class="fas fa-folder-open mr-1"></i>
+                  All Docs</button>
               </h3>
               <div class="space-y-2">
                 <div class="flex justify-between items-center">
@@ -789,8 +810,11 @@
           <!-- BANK DETAILS SECTION -->
           <div class="rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm">
             <h3 class="text-xs font-black text-slate-400 uppercase mb-3 flex items-center justify-between">
-              <span class="flex items-center gap-2"><i class="fas fa-university text-blue-500"></i> Bank Account Information</span>
-              <button id="labourProfilePassbookDoc" type="button" class="hidden text-[9px] bg-blue-50 text-blue-700 px-2 py-1 rounded-lg border border-blue-200 hover:bg-blue-100 transition-all font-black"><i class="fas fa-file-invoice mr-1"></i> Passbook Doc</button>
+              <span class="flex items-center gap-2"><i class="fas fa-university text-blue-500"></i> Bank Account
+                Information</span>
+              <button id="labourProfilePassbookDoc" type="button"
+                class="hidden text-[9px] bg-blue-50 text-blue-700 px-2 py-1 rounded-lg border border-blue-200 hover:bg-blue-100 transition-all font-black"><i
+                  class="fas fa-file-invoice mr-1"></i> Passbook Doc</button>
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-y-3 gap-x-6">
               <div class="flex justify-between items-center">
@@ -1032,7 +1056,8 @@
   </div>
 
   <!-- Toast -->
-  <div id="toast" class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
+  <div id="toast"
+    class="fixed bottom-6 right-6 z-[99999] hidden rounded-2xl border-2 px-6 py-4 shadow-2xl animate-[slideInRight_0.3s_ease-out]">
     <p id="toastMessage" class="text-sm font-bold"></p>
   </div>
 
@@ -1268,32 +1293,91 @@
 
     function updateSkillFilterDropdown(labourers) {
       const select = document.getElementById('skillFilter');
-      if (!select || !labourers) return;
+      if (!select) return;
       const currentVal = select.value;
       const skillsSet = new Set();
+      
+      Array.from(select.options).forEach(opt => {
+         if (opt.value && opt.value !== 'all') skillsSet.add(opt.value);
+      });
+
       labourers.forEach(l => {
         const list = Array.isArray(l.skills) ? l.skills : (l.skills ? [l.skills] : []);
         list.forEach(s => { if (s && typeof s === 'string') skillsSet.add(s.trim()); });
       });
       const skills = Array.from(skillsSet).sort();
       if (skills.length > 0) {
-        select.innerHTML = '<option value="">All Skills</option>' + skills.map(s => `<option value="${s}" ${s === currentVal ? 'selected' : ''}>${s}</option>`).join('');
+        select.innerHTML = '<option value="all">All Skills</option>' + skills.map(s => `<option value="${s}" ${s === currentVal ? 'selected' : ''}>${s}</option>`).join('');
       }
     }
 
-    async function fetchLabourers() {
+    let labourPage = 1;
+    let labourHasMore = true;
+    let labourLoading = false;
+
+    function appendLabourRows(newItems) {
+      const tbody = document.getElementById('labourTableBody');
+      if (!tbody || !newItems || newItems.length === 0) return;
+      const fragment = document.createDocumentFragment();
+      newItems.forEach((labour) => {
+        const htmlStr = createLabourRow(labour);
+        const temp = document.createElement('tbody');
+        temp.innerHTML = htmlStr.trim();
+        while (temp.firstChild) {
+          fragment.appendChild(temp.firstChild);
+        }
+      });
+      tbody.appendChild(fragment);
+    }
+
+    async function fetchLabourers(page = 1, isAppend = false) {
+      if (labourLoading) return;
+      labourLoading = true;
+
+      if (!isAppend) {
+        labourPage = 1;
+        labourHasMore = true;
+        const tbody = document.getElementById('labourTableBody');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-20"><div class="animate-pulse flex flex-col items-center"><div class="h-12 w-12 bg-slate-100 rounded-full mb-4"></div><div class="h-2 w-32 bg-slate-100 rounded"></div></div></td></tr>`;
+        }
+      }
+
       try {
         const qStr = getQueryParamString();
-        const res = await fetch(`${API_BASE}/employee/admin/labours?${qStr}`, {
+        const search = document.getElementById('labourSearchInput')?.value || '';
+        const skill = document.getElementById('skillFilter')?.value || '';
+        const availability = document.getElementById('availabilityFilter')?.value || '';
+        const timestamp = new Date().getTime();
+        const res = await fetch(`${API_BASE}/employee/admin/labours?${qStr}&search=${encodeURIComponent(search)}&skill=${encodeURIComponent(skill)}&availability=${encodeURIComponent(availability)}&page=${page}&limit=25&_t=${timestamp}`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
         if (res.ok) {
-          allLabourers = data;
+          let list = [];
+          if (data && Array.isArray(data.data)) {
+            list = data.data;
+            labourHasMore = data.hasMore;
+          } else if (Array.isArray(data)) {
+            list = data;
+            labourHasMore = false;
+          }
+
+          if (isAppend) {
+            allLabourers = [...allLabourers, ...list];
+            appendLabourRows(list);
+          } else {
+            allLabourers = list;
+            renderLabourTable(allLabourers);
+          }
+
           updateSkillFilterDropdown(allLabourers);
-          renderLabourTable(allLabourers);
         }
-      } catch (e) { console.error('Error fetching labourers:', e); }
+      } catch (e) {
+        console.error('Error fetching labourers:', e);
+      } finally {
+        labourLoading = false;
+      }
     }
 
     function createLabourRow(labour) {
@@ -1367,7 +1451,10 @@
     async function fetchLabourJobs() {
       try {
         const qStr = getQueryParamString();
-        const res = await fetch(`${API_BASE}/employee/admin/labour/jobs?${qStr}`, {
+        const search = document.getElementById('jobSearchInput')?.value || '';
+        const jobFrom = document.getElementById('jobStartDate')?.value || '';
+        const jobTo = document.getElementById('jobEndDate')?.value || '';
+        const res = await fetch(`${API_BASE}/employee/admin/labour/jobs?${qStr}&search=${encodeURIComponent(search)}&jobFrom=${encodeURIComponent(jobFrom)}&jobTo=${encodeURIComponent(jobTo)}`, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
@@ -1422,31 +1509,7 @@
     }
 
     function filterJobsTable() {
-      const search = document.getElementById('jobSearchInput').value.toLowerCase();
-      const start = document.getElementById('jobStartDate').value;
-      const end = document.getElementById('jobEndDate').value;
-
-      document.querySelectorAll('.job-history-row').forEach(row => {
-        const matchSearch = row.dataset.search.includes(search);
-
-        let jobDate = null;
-        if (row.dataset.date) {
-          try {
-            // Handle different potential date formats
-            const d = new Date(row.dataset.date);
-            if (!isNaN(d.getTime())) {
-              jobDate = d.toISOString().split('T')[0];
-            }
-          } catch (e) { }
-        }
-
-        let matchDate = true;
-        if (start && jobDate && jobDate < start) matchDate = false;
-        if (end && jobDate && jobDate > end) matchDate = false;
-        if ((start || end) && !jobDate) matchDate = false;
-
-        row.style.display = (matchSearch && matchDate) ? '' : 'none';
-      });
+      fetchLabourJobs();
     }
 
     function switchLabourTab(tabName) {
@@ -1634,8 +1697,8 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             ${docs.map(d => {
-              const hasUrl = !!d.url;
-              return `
+        const hasUrl = !!d.url;
+        return `
                 <div class="bg-white rounded-2xl border-2 border-slate-200 p-4 flex flex-col justify-between shadow-sm hover:border-purple-400 transition-all">
                   <div>
                     <div class="flex justify-between items-start mb-3">
@@ -1689,7 +1752,7 @@
                   </div>
                 </div>
               `;
-            }).join('')}
+      }).join('')}
           </div>
         </div>
       `;
@@ -2039,15 +2102,7 @@
     }
 
     function filterLabourers() {
-      const searchTerm = document.getElementById('labourSearchInput').value.toLowerCase();
-      const skillFilter = document.getElementById('skillFilter').value;
-      const availabilityFilter = document.getElementById('availabilityFilter').value;
-      document.querySelectorAll('.labour-row').forEach(row => {
-        const matchesSearch = row.dataset.name.includes(searchTerm) || row.dataset.location.includes(searchTerm);
-        const matchesSkill = skillFilter === 'all' || row.dataset.skill.includes(skillFilter.toLowerCase());
-        const matchesAvailability = availabilityFilter === 'all' || row.dataset.availability === availabilityFilter;
-        row.style.display = (matchesSearch && matchesSkill && matchesAvailability) ? '' : 'none';
-      });
+      fetchLabourers(1, false);
     }
 
     function showToast(message, type = 'info') {
@@ -2116,17 +2171,36 @@
       }
     }
 
+    document.addEventListener('DOMContentLoaded', () => {
+      const labourTbody = document.getElementById('labourTableBody');
+      const labourContainer = labourTbody ? labourTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+      if (labourContainer) {
+        labourContainer.addEventListener('scroll', () => {
+          if (labourHasMore && !labourLoading) {
+            if (labourContainer.scrollTop + labourContainer.clientHeight >= labourContainer.scrollHeight - 150) {
+              labourPage++;
+              fetchLabourers(labourPage, true);
+            }
+          }
+        }, { passive: true });
+      }
+    });
+
     function logoutSession() {
       localStorage.removeItem('employeeToken');
       window.location.href = 'login.html';
     }
   </script>
   <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
-  <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
+  <div id="docViewerModal"
+    class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]"
+    onclick="if(event.target === this) closeDocViewer()">
+    <div
+      class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
       <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
         <div class="flex items-center gap-3">
-          <div class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
+          <div
+            class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
             <i class="fas fa-file-image text-lg"></i>
           </div>
           <div>
@@ -2135,20 +2209,26 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+          <button id="docViewerRejectBtn" type="button"
+            class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
             <i class="fas fa-trash-alt"></i> Reject Document
           </button>
-          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
+          <a id="docViewerDownloadBtn" href="#" download target="_blank"
+            class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
             <i class="fas fa-download"></i> Download / Open
           </a>
-          <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
+          <button onclick="closeDocViewer()"
+            class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
             <i class="fas fa-times"></i>
           </button>
         </div>
       </div>
 
-      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
-        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+      <div id="docViewerContainer"
+        class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
+        <img id="docViewerImage" src=""
+          class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800"
+          alt="Document Preview" onerror="handleDocViewerImageError(this)">
         <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
           <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
           <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
