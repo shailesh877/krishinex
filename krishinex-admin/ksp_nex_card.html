@@ -603,7 +603,7 @@
                     <div class="hidden sm:flex flex-col text-right">
                         <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none">KSP
                             Wallet</p>
-                        <p id="kspBalanceHeader" class="text-sm font-black text-slate-900 mt-1">â‚¹0.00</p>
+                        <p id="kspBalanceHeader" class="text-sm font-black text-slate-900 mt-1">₹0.00</p>
                     </div>
                     <div class="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-lg">
                         <i class="fas fa-id-card"></i>
@@ -699,7 +699,7 @@
                 const data = await res.json();
                 if (res.ok) {
                     document.getElementById('kspPartnerName').textContent = data.name || 'Partner';
-                    document.getElementById('kspBalanceHeader').textContent = `â‚¹${(data.balance || 0).toLocaleString()}`;
+                    document.getElementById('kspBalanceHeader').textContent = `₹${(data.balance || 0).toLocaleString()}`;
 
                     const badge = document.getElementById('kspStatusBadge');
                     if (badge && data && data.status) {

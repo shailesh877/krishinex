@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
                     latitude: lat,
                     longitude: lon,
                     current_weather: true,
-                    hourly: 'relative_humidity_2m',
+                    hourly: 'relative_humidity_2m,precipitation_probability,apparent_temperature',
                     timezone: 'GMT'
                 },
                 headers: {
@@ -51,6 +51,20 @@ router.get('/', async (req, res) => {
 
     try {
         const data = await fetchWeatherData();
+        
+        // Inject current hour data into current_weather
+        if (data && data.current_weather && data.hourly && data.hourly.time) {
+            // Open-Meteo current_weather.time can be '2026-09-02T10:45' while hourly is '2026-09-02T10:00'
+            const currentTime = data.current_weather.time.substring(0, 14) + "00";
+            const index = data.hourly.time.indexOf(currentTime);
+            
+            if (index !== -1) {
+                data.current_weather.relative_humidity_2m = data.hourly.relative_humidity_2m[index];
+                data.current_weather.precipitation_probability = data.hourly.precipitation_probability[index];
+                data.current_weather.apparent_temperature = data.hourly.apparent_temperature[index];
+            }
+        }
+        
         res.json(data);
     } catch (finalError) {
         // Fallback: Instead of 502, return dummy data as last resort

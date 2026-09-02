@@ -5,15 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://demo.ranx24.com/api';
 export const IMAGE_BASE_URL = process.env.EXPO_PUBLIC_IMAGE_URL || 'https://demo.ranx24.com';
 
-// Local Network Testing Configuration (Hotspot)
-// export const BASE_URL = 'http://10.16.181.27:5500/api';
-// export const IMAGE_BASE_URL = 'http://10.16.181.27:5500';
-
-// USB Wired Testing Configuration (ADB Reverse)
-// export const BASE_URL = 'http://127.0.0.1:5500/api';
-// export const IMAGE_BASE_URL = 'http://127.0.0.1:5500';
-
-
 const api = axios.create({
     baseURL: BASE_URL,
     timeout: 20000,
@@ -74,8 +65,8 @@ export const authApi = {
         }
         return { status: response.status, data: await response.json() };
     },
-    getItems: (category?: string, lat?: number, lng?: number) => api.get('/shop/items', { params: { category, lat, lng } }),
-    getProfile: () => api.get('/user/profile'),
+    getItems: (category?: string, lat?: number, lng?: number, page: number = 1, limit: number = 20, signal?: AbortSignal) => api.get('/shop/items', { params: { category, lat, lng, page, limit }, signal }),
+    getProfile: (signal?: AbortSignal) => api.get('/user/profile', { signal }),
 
     // Agri Doctor Chat APIs
     initDoctorChat: () => api.post('/user/doctor-chats/init'),
@@ -100,9 +91,9 @@ export const authApi = {
     },
 
     // Soil Testing APIs
-    getSoilLabs: () => api.get('/user/soil-labs'),
-    getStates: () => api.get('/locations/states'),
-    getDistricts: (state: string) => api.get(`/locations/districts/${state}`),
+    getSoilLabs: (config?: any) => api.get('/user/soil-labs', config),
+    getStates: (config?: any) => api.get('/locations/states', config),
+    getDistricts: (state: string, config?: any) => api.get(`/locations/districts/${state}`, config),
     createSoilRequest: (data: { 
         labId?: string; 
         state: string; 
@@ -117,11 +108,11 @@ export const authApi = {
     getMySoilRequests: () => api.get('/user/soil-requests'),
 
     // Mandi Bhav APIs
-    getMandis: () => api.get('/mandi'),
-    getMandiPrices: (mandiId: string, cropName: string) =>
-        api.get(`/mandi/prices?mandiId=${mandiId}&cropName=${cropName}`),
-    getCrops: async () => {
-        const res = await api.get('/mandi/crops');
+    getMandis: (config?: any) => api.get('/mandi', config),
+    getMandiPrices: (mandiId: string, cropName: string, config?: any) =>
+        api.get(`/mandi/prices?mandiId=${mandiId}&cropName=${cropName}`, config),
+    getCrops: async (config?: any) => {
+        const res = await api.get('/mandi/crops', config);
         if (res.data && Array.isArray(res.data)) {
             res.data = res.data.map((c: any) => {
                 if (c.name && c.name.toLowerCase() === 'makka') {
@@ -158,13 +149,15 @@ export const authApi = {
         api.patch(`/orders/${id}/assigned-status`, { assignedStatus: status, cancelReason: reason }),
 
     // Booking APIs
-    getMachines: (params?: { search?: string; maxDistance?: number; category?: string }) =>
-        api.get('/machines/public', { params }),
-    getLabours: (params?: { search?: string; maxDistance?: number; category?: string; userLat?: number; userLng?: number }) =>
-        api.get('/labour/public', { params }),
-    bookMachine: (data: { machineId: string; fromDate: string; toDate: string; priceType: string; amount: number; hours?: number; days?: number; purpose?: string; paymentMethod?: string }) =>
+    getMachines: (params?: { search?: string; maxDistance?: number; category?: string; page?: number; limit?: number; userLat?: number; userLng?: number }, signal?: AbortSignal) =>
+        api.get('/machines/public', { params, signal }),
+    getMachineById: (id: string) => api.get(`/machines/${id}`),
+    getLabours: (params?: { search?: string; maxDistance?: number; category?: string; userLat?: number; userLng?: number; page?: number; limit?: number }, signal?: AbortSignal) =>
+        api.get('/labour/public', { params, signal }),
+    getLabourById: (id: string) => api.get(`/labour/${id}`),
+    bookMachine: (data: { machineId: string; fromDate: string; toDate: string; priceType: string; amount: number; hours?: number; days?: number; kattha?: number; purpose?: string; paymentMethod?: string; paymentMode?: string; selectedSubMachinery?: any[] }) =>
         api.post('/rentals/book', data),
-    bookLabour: (data: { labourId: string; workType: string; amount: number; fromDate?: string; toDate?: string; priceType?: string; hours?: number; days?: number; purpose?: string; paymentMethod?: string }) =>
+    bookLabour: (data: { labourId: string; workType: string; amount: number; fromDate?: string; toDate?: string; priceType?: string; hours?: number; days?: number; kattha?: number; purpose?: string; paymentMethod?: string }) =>
         api.post('/labour/book', data),
 
     getShopWalletConfig: () => api.get('/shop/wallet-config'),
@@ -216,7 +209,7 @@ export const authApi = {
     checkout: (data: any) => api.post('/shop/checkout', data),
     getMyShopOrders: () => api.get('/shop/my-orders'),
     getItemById: (id: string) => api.get(`/shop/items/${id}`),
-    getBanners: () => api.get('/shop/banners'),
+    getBanners: (signal?: AbortSignal) => api.get('/shop/banners', { signal }),
     getShopOrderById: (id: string) => api.get(`/shop/orders/${id}`),
     getLatestSuggestion: () => api.get('/suggestions/latest'),
     getAllSuggestions: () => api.get('/suggestions/all'),

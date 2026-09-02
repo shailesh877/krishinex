@@ -34,6 +34,9 @@ const KHETIFY_GREEN = '#98cd06ff';
 const KHETIFY_GREEN_DARK = '#467804ff';
 const KHETIFY_GREEN_LIGHT = '#a3d546ff';
 
+let RAM_CACHE_PROFILE: any = null;
+let RAM_CACHE_TIMESTAMP = 0;
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { language } = useI18n();
@@ -59,40 +62,65 @@ export default function ProfileScreen() {
     fetchProfile();
   }, []);
 
+  const applyProfileData = (user: any) => {
+    if (!user) return;
+    setName(user.name);
+    setPhone(user.phone);
+    setEmail(user.email || '');
+    setAddress(user.address || (hi ? 'पता नहीं' : 'N/A'));
+    if (user.profilePhotoUrl) {
+      const pfp = user.profilePhotoUrl.startsWith('http')
+        ? user.profilePhotoUrl
+        : `${IMAGE_BASE_URL}/${user.profilePhotoUrl.replace(/\\/g, '/')}`;
+      setAvatarUrl(pfp);
+    }
+    if (user.aadhaarDocUrl) setAadhaarPhotoUrl(user.aadhaarDocUrl);
+    if (user.aadhaarBackDocUrl) setAadhaarBackPhotoUrl(user.aadhaarBackDocUrl);
+
+    // Aadhaar & Bank
+    setAadhaarNumber(user.aadhaarNumber || '');
+    setAadhaarDocName(user.aadhaarDocUrl ? 'Aadhaar_Front.jpg' : null);
+    setAadhaarBackDocName(user.aadhaarBackDocUrl ? 'Aadhaar_Back.jpg' : null);
+
+    if (user.bankDetails) {
+      setBankHolder(user.bankDetails.holderName || '');
+      setBankName(user.bankDetails.bankName || '');
+      setAccountNumber(user.bankDetails.accountNumber || '');
+      setIfsc(user.bankDetails.ifscCode || '');
+      setBankAddress(user.bankDetails.bankAddress || '');
+    }
+    if (user.status) setStatus(user.status);
+  };
+
   const fetchProfile = async () => {
     try {
-      setLoading(true);
+      if (RAM_CACHE_PROFILE) {
+        applyProfileData(RAM_CACHE_PROFILE);
+        setLoading(false);
+        const age = Date.now() - RAM_CACHE_TIMESTAMP;
+        if (age < 5 * 60 * 1000) {
+          console.log('[DEBUG] Skipping Profile API call, RAM cache is fresh');
+          return;
+        }
+      } else {
+        const cached = await AsyncStorage.getItem('userData');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          applyProfileData(parsed);
+          RAM_CACHE_PROFILE = parsed;
+          RAM_CACHE_TIMESTAMP = Date.now();
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+      }
+
       const res = await authApi.getProfile();
       const user = res.data;
       if (user) {
-        setName(user.name);
-        setPhone(user.phone);
-        setEmail(user.email || '');
-        setAddress(user.address || (hi ? 'पता नहीं' : 'N/A'));
-        if (user.profilePhotoUrl) {
-          const pfp = user.profilePhotoUrl.startsWith('http')
-            ? user.profilePhotoUrl
-            : `${IMAGE_BASE_URL}/${user.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUrl(pfp);
-        }
-        if (user.aadhaarDocUrl) setAadhaarPhotoUrl(user.aadhaarDocUrl);
-        if (user.aadhaarBackDocUrl) setAadhaarBackPhotoUrl(user.aadhaarBackDocUrl);
-
-        // Aadhaar & Bank
-        setAadhaarNumber(user.aadhaarNumber || '');
-        setAadhaarDocName(user.aadhaarDocUrl ? 'Aadhaar_Front.jpg' : null);
-        setAadhaarBackDocName(user.aadhaarBackDocUrl ? 'Aadhaar_Back.jpg' : null);
-
-        if (user.bankDetails) {
-          setBankHolder(user.bankDetails.holderName || '');
-          setBankName(user.bankDetails.bankName || '');
-          setAccountNumber(user.bankDetails.accountNumber || '');
-          setIfsc(user.bankDetails.ifscCode || '');
-          setBankAddress(user.bankDetails.bankAddress || '');
-        }
-        if (user.status) setStatus(user.status);
-
-        // Keep local cache fresh
+        applyProfileData(user);
+        RAM_CACHE_PROFILE = user;
+        RAM_CACHE_TIMESTAMP = Date.now();
         await AsyncStorage.setItem('userData', JSON.stringify(user));
       }
     } catch (error) {

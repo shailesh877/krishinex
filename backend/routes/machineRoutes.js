@@ -307,19 +307,17 @@ router.get('/my', protect, async (req, res) => {
 router.get('/public', protect, async (req, res) => {
     try {
         console.log('\n--- [DEBUG] GET /api/machines/public ---');
-        console.log('Query Params:', req.query);
         const { category, search, maxDistance, userLat, userLng } = req.query;
         let q = {};
         if (search) q.name = { $regex: search, $options: 'i' };
         if (category && category !== 'all') q.category = { $regex: category, $options: 'i' };
 
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
         const radius = (maxDistance && maxDistance !== 'null') ? Number(maxDistance) : null;
         let results;
-
-        const logMsg = `[${new Date().toISOString()}] radius: ${radius}, userLat: ${userLat}, userLng: ${userLng}, query: ${JSON.stringify(q)}\n`;
-        require('fs').appendFileSync('debug_public_machines.log', logMsg);
-
-        console.log(`[DEBUG] parsed radius: ${radius}, userLat: ${userLat}, userLng: ${userLng}`);
 
         if (radius && !isNaN(radius) && userLat && userLng) {
             results = await Machine.aggregate([
@@ -336,19 +334,70 @@ router.get('/public', protect, async (req, res) => {
                         distanceMultiplier: 0.001, // Convert meters to km
                         key: 'location'
                     }
+                },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $project: {
+                        name: 1,
+                        priceDay: 1,
+                        priceHour: 1,
+                        desc: 1,
+                        distanceKm: 1,
+                        village: 1,
+                        category: 1,
+                        images: { $slice: ['$images', 1] }, // Only return the first image (thumbnail)
+                        'subMachinery.name': 1,
+                        'subMachinery.priceDay': 1,
+                        'subMachinery.priceKattha': 1,
+                        owner: 1
+                    }
                 }
             ]);
-            // Populate owner fields after aggregation
             results = await Machine.populate(results, { path: 'owner', select: 'name status businessName' });
         } else {
-            results = await Machine.find(q).populate('owner', 'name status businessName').sort({ createdAt: -1 });
+            results = await Machine.find(q)
+                .select('name priceDay priceHour desc distanceKm village category images subMachinery owner')
+                .populate('owner', 'name status businessName')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+            
+            // Map to only return first image for lightweight response
+            results = results.map(m => {
+                const doc = m.toObject();
+                if (doc.images && doc.images.length > 0) {
+                    doc.images = [doc.images[0]];
+                }
+                return doc;
+            });
         }
 
         const filtered = results.filter(m => m.owner && m.owner.status === 'approved');
-        res.json(filtered);
+        res.json({
+            data: filtered,
+            page,
+            limit,
+            hasMore: filtered.length === limit // Using length before filtering is an approximation
+        });
     } catch (e) {
         console.error('Fetch public machines error:', e);
         res.status(500).json({ error: 'Search failed' });
+    }
+});
+
+// @route   GET /api/machines/:id
+// @desc    Get detailed machine profile
+// @access  Private
+router.get('/:id', protect, async (req, res) => {
+    try {
+        const machine = await Machine.findById(req.params.id).populate('owner', 'name status businessName phone profilePhotoUrl');
+        if (!machine) {
+            return res.status(404).json({ error: 'Machine not found' });
+        }
+        res.json(machine);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch machine details' });
     }
 });
 

@@ -30,6 +30,9 @@ const KHETIFY_GREEN_DARK = '#467804ff';
 const KHETIFY_GREEN_LIGHT = '#a3d546ff';
 const SHADOW_COLOR = '#00000020';
 
+let RAM_CACHE_SELL: any = null;
+let RAM_CACHE_SELL_TIMESTAMP = 0;
+
 export default function SellScreen() {
   const { language } = useI18n();
   const hi = language === 'hi';
@@ -97,17 +100,39 @@ export default function SellScreen() {
 
   useEffect(() => {
     requestMediaLibraryPermission();
-    fetchMandis();
-    fetchCrops();
+    if (RAM_CACHE_SELL) {
+      setMandis(RAM_CACHE_SELL.mandis);
+      setCrops(RAM_CACHE_SELL.crops);
+      const age = Date.now() - RAM_CACHE_SELL_TIMESTAMP;
+      if (age >= 5 * 60 * 1000) {
+        fetchData();
+      } else {
+        console.log('[DEBUG] Skipping Sell API call, RAM cache is fresh');
+      }
+    } else {
+      fetchData();
+    }
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const [newMandis, newCrops] = await Promise.all([fetchMandis(), fetchCrops()]);
+      RAM_CACHE_SELL = { mandis: newMandis, crops: newCrops };
+      RAM_CACHE_SELL_TIMESTAMP = Date.now();
+    } catch (error) {
+      console.error('Error fetching sell data:', error);
+    }
+  };
 
   const fetchCrops = async () => {
     try {
       const res = await authApi.getCrops();
       const sortedCrops = (res.data || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       setCrops(sortedCrops);
+      return sortedCrops;
     } catch (e) {
       console.error('Error fetching crops:', e);
+      return [];
     }
   };
 
@@ -116,8 +141,10 @@ export default function SellScreen() {
       const res = await authApi.getMandis();
       const sortedMandis = (res.data || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       setMandis(sortedMandis);
+      return sortedMandis;
     } catch (e) {
       console.error('Error fetching mandis:', e);
+      return [];
     }
   };
 

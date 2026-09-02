@@ -138,7 +138,7 @@ router.get('/items', async (req, res) => {
         let query = {};
         if (category) query.category = category;
 
-        // 10km Geo-filtering logic (Bhai, location ke hisab se filter kar rahe hain)
+        // 10km Geo-filtering logic
         if (lat && lng) {
             const nearbyShops = await User.find({
                 role: 'shop',
@@ -156,33 +156,27 @@ router.get('/items', async (req, res) => {
                 return res.json([]); // No shops found within range
             }
             query.owner = { $in: shopIds };
+        } else {
+            // Optimization: Pre-fetch approved shop IDs to avoid heavy $lookup aggregation
+            const approvedShops = await User.find({ role: 'shop', status: 'approved' }).select('_id').lean();
+            query.owner = { $in: approvedShops.map(s => s._id) };
         }
 
-        // Use aggregate to filter by owner status and positive stock
-        const items = await Item.aggregate([
-            { $match: { ...query, stockQty: { $gt: 0 } } },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'owner',
-                    foreignField: '_id',
-                    as: 'owner'
-                }
-            },
-            { $unwind: '$owner' },
-            {
-                $match: {
-                    'owner.status': 'approved'
-                }
-            },
-            {
-                $project: {
-                    'owner.password': 0,
-                    'owner.fcmToken': 0
-                }
-            },
-            { $sort: { createdAt: -1 } }
-        ]);
+        // Only show items that are in stock
+        query.stockQty = { $gt: 0 };
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        // HIGHLY OPTIMIZED QUERY: Native find, populate, sort, skip, limit
+        const items = await Item.find(query)
+            .select('-__v') // exclude unnecessary fields if any, though lean is fast enough
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('owner', '-password -fcmToken -location')
+            .lean();
 
         // Filter variants with 0 stock for user display
         const filteredItems = items.map(item => {

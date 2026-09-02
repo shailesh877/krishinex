@@ -24,6 +24,9 @@ const GREEN_DARK = '#467804ff';
 const GREEN_LIGHT = '#a3d546ff';
 const SHADOW_COLOR = '#00000020';
 
+let RAM_CACHE_ORDERS: any = null;
+let RAM_CACHE_ORDERS_TIMESTAMP = 0;
+
 type Category = 'shop' | 'booking';
 
 export default function UnifiedOrdersScreen() {
@@ -42,10 +45,28 @@ export default function UnifiedOrdersScreen() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (forceRefresh = false) => {
     try {
-      setLoading(true);
-      await Promise.all([fetchShopOrders(), fetchBookings()]);
+      if (!forceRefresh && RAM_CACHE_ORDERS) {
+        setShopOrders(RAM_CACHE_ORDERS.shopOrders);
+        setBookings(RAM_CACHE_ORDERS.bookings);
+        setLoading(false);
+        const age = Date.now() - RAM_CACHE_ORDERS_TIMESTAMP;
+        if (age < 5 * 60 * 1000) {
+          console.log('[DEBUG] Skipping Orders API call, RAM cache is fresh');
+          return;
+        }
+      } else if (!forceRefresh) {
+        setLoading(true);
+      }
+
+      const [newShopOrders, newBookings] = await Promise.all([fetchShopOrders(), fetchBookings()]);
+      
+      RAM_CACHE_ORDERS = {
+        shopOrders: newShopOrders,
+        bookings: newBookings
+      };
+      RAM_CACHE_ORDERS_TIMESTAMP = Date.now();
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -56,8 +77,10 @@ export default function UnifiedOrdersScreen() {
     try {
       const res = await authApi.getMyShopOrders();
       setShopOrders(res.data);
+      return res.data;
     } catch (e) {
       console.error('Fetch shop orders error', e);
+      return [];
     }
   };
 
@@ -125,14 +148,16 @@ export default function UnifiedOrdersScreen() {
 
       const combined = [...machines, ...labours].sort((a, b) => b.date.getTime() - a.date.getTime());
       setBookings(combined);
+      return combined;
     } catch (e) {
       console.error('Fetch bookings error', e);
+      return [];
     }
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchData();
+    fetchData(true);
   };
 
   const getShopStatusConfig = (status: string) => {

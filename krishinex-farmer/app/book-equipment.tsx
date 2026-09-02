@@ -13,6 +13,7 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
+  FlatList,
   Alert,
   Animated,
   Easing,
@@ -28,10 +29,36 @@ import { useI18n } from '@/context/I18nContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { authApi, IMAGE_BASE_URL } from '../services/api';
 import * as Location from 'expo-location';
+import { getStoredLocation } from '@/utils/locationManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Calendar } from 'react-native-calendars';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Platform } from 'react-native';
 import { showAlert } from '@/components/CustomAlert';
+
+const LazyImage = ({ source, style }: any) => {
+  const [loading, setLoading] = useState(true);
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  return (
+    <View style={[style, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#E5E7EB', overflow: 'hidden' }]}>
+      {loading && <ActivityIndicator size="small" color="#16A34A" style={{ position: 'absolute', zIndex: 1 }} />}
+      <Animated.Image
+        source={source}
+        style={[style, { position: 'absolute', opacity, zIndex: 2, width: '100%', height: '100%' }]}
+        onLoadEnd={() => {
+          setLoading(false);
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        }}
+        onError={() => setLoading(false)}
+      />
+    </View>
+  );
+};
 
 const SHADOW_COLOR = '#00000020';
 const GREEN = '#98cd06ff';
@@ -293,6 +320,8 @@ const DAYS = [
   { key: 'day4', hi: '+3 दिन', en: '+3 Days' },
 ];
 
+const RAM_CACHE: Record<string, { timestamp: number; data: any[] }> = {};
+
 type BookingData = {
   equipment: Equipment;
   priceType: 'hourly' | 'daily';
@@ -309,8 +338,12 @@ export default function BookEquipmentScreen() {
 
   const [mode, setMode] = useState<'tractor' | 'labour'>('tractor');
 
-  const [equipmentList, setEquipmentList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [equipmentList, setEquipmentList] = useState<any[]>(() => {
+    return RAM_CACHE['equipments_tractor_1__10']?.data || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    return RAM_CACHE['equipments_tractor_1__10'] ? false : true;
+  });
   const [selectedCategory, setSelectedCategory] = useState<number | null>(1);
   const [showDateModal, setShowDateModal] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<any | null>(null);
@@ -347,24 +380,23 @@ export default function BookEquipmentScreen() {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   useEffect(() => {
-    fetchData();
+    const controller = new AbortController();
+    setPage(1);
+    setHasMore(true);
+    fetchData(1, controller.signal);
+    return () => {
+      controller.abort();
+    };
   }, [mode, searchText, maxDistance, selectedCategory]);
 
-  const fetchData = async () => {
+  const fetchData = async (pageNum = 1, signal?: AbortSignal) => {
     try {
-      setLoading(true);
-      
-      // Fetch user status for verification
-      try {
-        const profileRes = await authApi.getProfile();
-        if (profileRes.data && profileRes.data.status) {
-          setUserStatus(profileRes.data.status);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch profile status for booking:', err);
-      }
-
       const categoryMap: { [key: number]: string } = mode === 'tractor' ? {
         1: 'all',
         2: 'tractor',
@@ -382,55 +414,74 @@ export default function BookEquipmentScreen() {
         search: searchText,
         maxDistance: maxDistance || undefined,
         category: categoryMap[selectedCategory || 1],
+        page: pageNum,
+        limit: 20
       };
 
-      try {
-        console.log('[DEBUG] Checking location permissions...');
-        let { status } = await Location.getForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          const permissionRes = await Location.requestForegroundPermissionsAsync();
-          status = permissionRes.status;
+      const cacheKey = `equipments_${mode}_${selectedCategory || 1}_${searchText}_${maxDistance || ''}`;
+
+      if (pageNum === 1) {
+        if (RAM_CACHE[cacheKey]) {
+          const age = Date.now() - RAM_CACHE[cacheKey].timestamp;
+          if (age < 5 * 60 * 1000) {
+            setEquipmentList(RAM_CACHE[cacheKey].data);
+            setLoading(false);
+            console.log('[DEBUG] Skipping API call, RAM cache is fresh');
+            return;
+          }
         }
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
+      // Fetch user status for verification
+      try {
+        const profileRes = await authApi.getProfile();
+        if (profileRes.data && profileRes.data.status) {
+          setUserStatus(profileRes.data.status);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch profile status for booking:', err);
+      }
 
-        if (status === 'granted') {
-          console.log('[DEBUG] Location granted, checking if enabled...');
-          const enabled = await Location.hasServicesEnabledAsync();
-          if (!enabled) {
-            showAlert('Location Off', 'Please turn on your GPS/Location to find nearby services.');
-          }
+      if (pageNum === 1) {
+        try {
+          const cached = await AsyncStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            let cachedList = null;
+            let isFresh = false;
 
-          console.log('[DEBUG] Fetching position...');
-          // Try last known first for speed
-          const lastLoc = await Location.getLastKnownPositionAsync({});
-          if (lastLoc) {
-            params.userLat = lastLoc.coords.latitude;
-            params.userLng = lastLoc.coords.longitude;
-            console.log('[DEBUG] Used last known position:', params.userLat, params.userLng);
-          }
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.data) {
+              cachedList = parsed.data;
+              const age = Date.now() - (parsed.timestamp || 0);
+              if (age < 5 * 60 * 1000) isFresh = true; // 5 min TTL
+            } else if (Array.isArray(parsed)) {
+              cachedList = parsed;
+            }
 
-          // Still try to get fresh position with a longer timeout (10s)
-          const locPromise = Location.getCurrentPositionAsync({ 
-            accuracy: Location.Accuracy.Balanced,
-          });
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Location timeout')), 10000));
-          
-          try {
-            const loc: any = await Promise.race([locPromise, timeoutPromise]);
-            params.userLat = loc.coords.latitude;
-            params.userLng = loc.coords.longitude;
-            console.log('[DEBUG] Fresh location fetched:', params.userLat, params.userLng);
-          } catch (tErr) {
-            if (!params.userLat || !params.userLng) {
-               console.warn('[DEBUG] Fresh location timeout and no last known position available.');
-            } else {
-               console.log('[DEBUG] Fresh location timeout, using previous last known position.');
+            if (cachedList && cachedList.length > 0) {
+              setEquipmentList(cachedList);
+              setLoading(false); // Disable full screen loader for instant UI
+              if (isFresh) {
+                RAM_CACHE[cacheKey] = { timestamp: parsed.timestamp || Date.now(), data: cachedList };
+                console.log('[DEBUG] Skipping API call, cache is fresh');
+                return;
+              }
             }
           }
-        } else {
-          console.log('[DEBUG] Location denied');
-          if (maxDistance) {
-            showAlert('Permission Denied', 'Distance filter requires location access.');
-          }
+        } catch (e) {}
+      }
+
+      try {
+        const loc = await getStoredLocation();
+        
+        if (loc) {
+          params.userLat = loc.latitude;
+          params.userLng = loc.longitude;
+        } else if (maxDistance) {
+          showAlert('Permission Denied', 'Distance filter requires location access.');
         }
       } catch (locErr: any) {
         console.warn('[DEBUG] User location fetch failed:', locErr);
@@ -443,26 +494,31 @@ export default function BookEquipmentScreen() {
       let res;
       try {
         if (mode === 'tractor') {
-          res = await authApi.getMachines(params);
+          res = await authApi.getMachines(params, signal);
         } else {
-          res = await authApi.getLabours(params);
+          res = await authApi.getLabours(params, signal);
         }
       } catch (apiErr: any) {
         console.error('API Fetch failed:', apiErr);
         throw apiErr;
       }
       
-      if (!res.data || !Array.isArray(res.data)) {
-        setEquipmentList([]);
+      let dataList = [];
+      if (res.data && Array.isArray(res.data.data)) {
+        dataList = res.data.data;
+        setHasMore(res.data.hasMore);
+      } else {
+        setHasMore(false);
+      }
+
+      if (dataList.length === 0) {
+        console.log('Zero items returned for params:', params);
+        if (pageNum === 1) setEquipmentList([]);
         return;
       }
 
-      if (res.data.length === 0) {
-        console.log('Zero items returned for params:', params);
-      }
-
       // Map backend data to frontend Equipment type if needed
-      const mapped = res.data.map((item: any) => {
+      const mapped = dataList.map((item: any) => {
         try {
           let displayImg = 'https://i.ibb.co/9rQk7Xy/tractor.png';
           let allImages: string[] = [];
@@ -524,7 +580,7 @@ export default function BookEquipmentScreen() {
             mappedItem.dailyPrice = validDaily.length > 0 ? Math.min(...validDaily) : 0;
 
             // Find minimum Kattha Price for Equipment
-            const katthaPrices = mappedItem.subMachinery.map((s: any) => s.priceKattha).filter(p => p > 0);
+            const katthaPrices = mappedItem.subMachinery.map((s: any) => s.priceKattha).filter((p: number) => p > 0);
             mappedItem.katthaPrice = katthaPrices.length > 0 ? Math.min(...katthaPrices) : 0;
             
             // For tractor, we hide hourly as per request (replace with kattha)
@@ -541,11 +597,25 @@ export default function BookEquipmentScreen() {
         }
       }).filter((i: any) => i !== null);
 
-      setEquipmentList(mapped);
-    } catch (e) {
-      console.error('Fetch booking data error', e);
+      if (pageNum === 1) {
+        setEquipmentList(mapped);
+        try {
+          const cacheData = { timestamp: Date.now(), data: mapped };
+          RAM_CACHE[cacheKey] = cacheData;
+          await AsyncStorage.setItem(cacheKey, JSON.stringify(cacheData));
+        } catch(e) {}
+      } else {
+        setEquipmentList(prev => [...prev, ...mapped]);
+      }
+    } catch (e: any) {
+      if (e?.name === 'CanceledError' || e?.message?.includes('canceled')) {
+        console.log('[DEBUG] Fetch aborted due to navigation or param change');
+      } else {
+        console.error('Fetch booking data error', e);
+      }
     } finally {
-      setLoading(false);
+      if (pageNum === 1) setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -767,11 +837,28 @@ export default function BookEquipmentScreen() {
     setShowDateModal(true);
   };
 
-  const handleViewDetails = (equipment: any) => {
+  const handleViewDetails = async (equipment: any) => {
     setSelectedEquipmentForDetails(equipment);
     setSelectedAttachments([]);
     setCurrentImageIndex(0);
     setShowDetailModal(true);
+
+    try {
+      const res = mode === 'tractor' ? await authApi.getMachineById(equipment.id) : await authApi.getLabourById(equipment.id);
+      if (res.data) {
+        setSelectedEquipmentForDetails((prev: any) => ({
+          ...prev,
+          ...res.data,
+          owner: prev?.owner || res.data.owner?.name || res.data.businessName || 'N/A',
+          allImages: res.data.images ? res.data.images.map((img: string) => {
+            const imgPath = img.replace(/\\/g, '/');
+            return imgPath.startsWith('http') ? imgPath : `${IMAGE_BASE_URL}/${imgPath.startsWith('/') ? imgPath.slice(1) : imgPath}`;
+          }) : prev?.allImages
+        }));
+      }
+    } catch (e) {
+      console.warn('Failed to fetch detailed profile:', e);
+    }
   };
 
   const confirmBooking = async () => {
@@ -1111,9 +1198,21 @@ export default function BookEquipmentScreen() {
             <ActivityIndicator size="large" color={GREEN_DARK} />
           </View>
         ) : (
-          <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-            <View style={styles.gridContainer}>
-              {rows.map((row, rowIndex) => (
+          <FlatList
+            style={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            data={rows}
+            keyExtractor={(item, index) => index.toString()}
+            onEndReached={() => {
+              if (hasMore && !loadingMore) {
+                const nextPage = page + 1;
+                setPage(nextPage);
+                fetchData(nextPage);
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={() => loadingMore ? <ActivityIndicator size="small" color={GREEN_DARK} style={{ marginVertical: 10 }} /> : null}
+            renderItem={({ item: row, index: rowIndex }) => (
                 <View key={rowIndex} style={styles.gridRow}>
                   {row.map((equipment) => (
                     <TouchableOpacity
@@ -1125,7 +1224,7 @@ export default function BookEquipmentScreen() {
                       <View style={styles.equipmentCard}>
                         {/* IMAGE & AVAILABILITY */}
                         <View style={styles.imageWrapper}>
-                          <Image
+                          <LazyImage
                             source={{ uri: equipment.img }}
                             style={styles.cardImage}
                           />
@@ -1264,9 +1363,8 @@ export default function BookEquipmentScreen() {
                     </View>
                   )}
                 </View>
-              ))}
-            </View>
-          </ScrollView>
+            )}
+          />
         )}
       </LinearGradient>
 
@@ -1292,7 +1390,7 @@ export default function BookEquipmentScreen() {
               <Text style={styles.sectionLabel}>{t.date}</Text>
               <Calendar
                 current={selectedDate}
-                onDayPress={(day) => setSelectedDate(day.dateString)}
+                onDayPress={(day: any) => setSelectedDate(day.dateString)}
                 markedDates={{
                   [selectedDate]: { selected: true, selectedColor: GREEN_DARK }
                 }}

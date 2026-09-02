@@ -2675,7 +2675,7 @@ router.put('/admin/buyer/update/:buyerId', protect, checkModule('users'), async 
 // @route   PUT /api/employee/admin/buyer/reject/:buyerId
 // @desc    Reject/suspend a buyer
 // @access  Private/Admin
-router.put('/admin/buyer/reject/:buyerId', protect, checkAdmin, async (req, res) => {
+router.put('/admin/buyer/reject/:buyerId', protect, checkModule("buyer"), async (req, res) => {
     try {
         const buyer = await User.findOneAndUpdate(
             { _id: req.params.buyerId, role: 'buyer' },
@@ -2692,7 +2692,7 @@ router.put('/admin/buyer/reject/:buyerId', protect, checkAdmin, async (req, res)
 // @route   PUT /api/employee/admin/buyer/order-status/:orderId
 // @desc    Update order status (accepted ? in-progress ? completed / cancelled)
 // @access  Private/Admin
-router.put('/admin/buyer/order-status/:orderId', protect, checkAdmin, async (req, res) => {
+router.put('/admin/buyer/order-status/:orderId', protect, checkModule("buyer"), async (req, res) => {
     try {
         const { status } = req.body;
         const validStatuses = ['accepted', 'in-progress', 'completed', 'cancelled'];
@@ -2714,7 +2714,7 @@ router.put('/admin/buyer/order-status/:orderId', protect, checkAdmin, async (req
 // @route   PUT /api/employee/admin/buyer/payment/:orderId
 // @desc    Record payment received + farmer payout + mark settlement
 // @access  Private/Admin
-router.put('/admin/buyer/payment/:orderId', protect, checkAdmin, async (req, res) => {
+router.put('/admin/buyer/payment/:orderId', protect, checkModule("buyer"), async (req, res) => {
     try {
         const { amountReceived, farmerAmount, settlement } = req.body;
 
@@ -2747,7 +2747,7 @@ function escapeCSV(val) {
 
 // @route   GET /api/employee/admin/buyer/export/buyers
 // @access  Private/Admin
-router.get('/admin/buyer/export/buyers', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer/export/buyers', protect, checkModule("buyer"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -2781,7 +2781,7 @@ router.get('/admin/buyer/export/buyers', protect, checkAdmin, async (req, res) =
 
 // @route   GET /api/employee/admin/buyer/export/requests
 // @access  Private/Admin
-router.get('/admin/buyer/export/requests', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer/export/requests', protect, checkModule("buyer"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -2811,7 +2811,7 @@ router.get('/admin/buyer/export/requests', protect, checkAdmin, async (req, res)
 
 // @route   GET /api/employee/admin/buyer/export/reconciliation
 // @access  Private/Admin
-router.get('/admin/buyer/export/reconciliation', protect, checkAdmin, async (req, res) => {
+router.get('/admin/buyer/export/reconciliation', protect, checkModule("buyer"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -3828,7 +3828,7 @@ router.put('/admin/labour/:id/reject-doc', protect, checkModule('labour'), async
 // @route   PUT /api/employee/admin/labour/availability/:id
 // @desc    Update labourer availability
 // @access  Private/Admin
-router.put('/admin/labour/availability/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/labour/availability/:id', protect, checkModule("labour"), async (req, res) => {
     try {
         const { availability } = req.body;
         const labour = await User.findById(req.params.id);
@@ -4614,7 +4614,7 @@ router.get('/admin/kyc/list', protect, checkModule('kyc'), async (req, res) => {
 // @route   GET /api/employee/admin/kyc/details/:id
 // @desc    Get full KYC details for a specific user
 // @access  Private/Admin
-router.get('/admin/kyc/details/:id', protect, checkAdmin, async (req, res) => {
+router.get('/admin/kyc/details/:id', protect, checkModule("kyc"), async (req, res) => {
     try {
         const user = await User.findById(req.params.id)
             .select('-password')
@@ -4632,7 +4632,7 @@ router.get('/admin/kyc/details/:id', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/kyc/verify/:id
 // @desc    Approve or Reject KYC for a partner (supports profile edits)
 // @access  Private/Admin
-router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/kyc/verify/:id', protect, checkModule("kyc"), async (req, res) => {
     try {
         const { action, remarks, name, businessName, phone } = req.body;
         if (!['approve', 'reject', 'pending'].includes(action)) {
@@ -4678,7 +4678,7 @@ router.put('/admin/kyc/verify/:id', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/kyc/export
 // @desc    Export KYC data as CSV
 // @access  Private/Admin
-router.get('/admin/kyc/export', protect, checkAdmin, async (req, res) => {
+router.get('/admin/kyc/export', protect, checkModule("kyc"), async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         const roles = ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive', 'farmer', 'buyer'];
@@ -4773,7 +4773,7 @@ router.get('/admin/rental/export', protect, checkModule('equipment'), async (req
 // @route   GET /api/employee/admin/ksp/stats
 // @desc    Get key KPIs for KSP dashboards
 // @access  Private/Admin
-router.get('/admin/ksp/stats', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/stats', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const franchises = await User.find({ role: 'ksp' });
         const activeCount = franchises.filter(f => f.status === 'approved').length;
@@ -4821,7 +4821,7 @@ router.get('/admin/ksp/stats', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/ksp/franchises
 // @desc    Get all KSP franchises with their stock and wallet
 // @access  Private/Admin
-router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/franchises', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { search } = req.query;
         let query = { role: 'ksp' };
@@ -4908,7 +4908,7 @@ router.get('/admin/ksp/franchises', protect, checkAdmin, async (req, res) => {
 
 // @route   POST /api/employee/admin/ksp/direct-recharge
 // @desc    Admin directly recharges a KSP wallet
-router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) => {
+router.post('/admin/ksp/direct-recharge', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { id, amount, note } = req.body;
         if (!id || !amount || amount <= 0) {
@@ -4943,7 +4943,7 @@ router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) 
 
 // @route   GET /api/employee/admin/ksp/transactions/:id
 // @desc    Get all transactions (Sales & Recharges) for a franchise
-router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/transactions/:id', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -4983,7 +4983,7 @@ router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) 
 // @route   GET /api/employee/admin/ksp/inventory
 // @desc    Get items mapped to a specific KSP
 // @access  Private/Admin
-router.get('/admin/ksp/inventory', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/inventory', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { kspId } = req.query;
         let query = {};
@@ -5019,7 +5019,7 @@ router.get('/admin/ksp/inventory', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/ksp/ledger
 // @desc    Get Farmer Transactions Ledger
 // @access  Private/Admin
-router.get('/admin/ksp/ledger', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/ledger', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { paymentMode } = req.query;
         let query = { status: { $ne: 'CANCELLED' } };
@@ -5061,7 +5061,7 @@ router.get('/admin/ksp/ledger', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/ksp/wallets
 // @desc    Get all wallet balances for ksp
 // @access  Private/Admin
-router.get('/admin/ksp/wallets', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/wallets', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const franchises = await User.find({ role: 'ksp' }).select('name businessName phone address walletBalance walletRechargeAmount walletRechargeStatus').lean();
 
@@ -5084,7 +5084,7 @@ router.get('/admin/ksp/wallets', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/employee/admin/ksp/approve-wallet/:id
 // @desc    Approve a wallet recharge request
 // @access  Private/Admin
-router.put('/admin/ksp/approve-wallet/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/ksp/approve-wallet/:id', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ error: 'Franchise not found' });
@@ -5109,7 +5109,7 @@ router.put('/admin/ksp/approve-wallet/:id', protect, checkAdmin, async (req, res
 // @route   PUT /api/employee/admin/ksp/generate-wallet/:id
 // @desc    Generate a unique 11-digit wallet number for a franchise
 // @access  Private/Admin
-router.put('/admin/ksp/generate-wallet/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/ksp/generate-wallet/:id', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ error: 'Franchise not found' });
@@ -5138,7 +5138,7 @@ router.put('/admin/ksp/generate-wallet/:id', protect, checkAdmin, async (req, re
     }
 });
 
-router.get('/admin/ksp/export', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/export', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { type, paymentMode, startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -6534,7 +6534,7 @@ router.get('/admin/franchises', protect, checkModule('ksp_franchise'), async (re
 
 // @route   POST /api/employee/admin/ksp/direct-recharge
 // @desc    Admin directly recharges a KSP wallet
-router.post('/admin/ksp/direct-recharge', protect, checkAdmin, async (req, res) => {
+router.post('/admin/ksp/direct-recharge', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { id, amount, note } = req.body;
         if (!id || !amount || amount <= 0) {
@@ -6650,7 +6650,7 @@ router.get('/admin/user-full-history/:id', protect, checkModule('users'), async 
 
 // @route   GET /api/employee/admin/ksp/transactions/:id
 // @desc    Get all transactions (Sales & Recharges) for a franchise
-router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) => {
+router.get('/admin/ksp/transactions/:id', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -6689,7 +6689,7 @@ router.get('/admin/ksp/transactions/:id', protect, checkAdmin, async (req, res) 
 
 // @route   POST /api/employee/admin/ksp/direct-debit
 // @desc    Admin directly debits from a KSP wallet
-router.post('/admin/ksp/direct-debit', protect, checkAdmin, async (req, res) => {
+router.post('/admin/ksp/direct-debit', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { id, amount, note } = req.body;
         if (!id || !amount || amount <= 0) {
@@ -6728,7 +6728,7 @@ router.post('/admin/ksp/direct-debit', protect, checkAdmin, async (req, res) => 
 
 // @route   PATCH /api/employee/admin/ksp/profile/:id
 // @desc    Update KSP franchise profile details
-router.patch('/admin/ksp/profile/:id', protect, checkAdmin, async (req, res) => {
+router.patch('/admin/ksp/profile/:id', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { name, ownerName, businessName, franchiseName, phone, email, address, location, walletNumber, kspType, bankDetails } = req.body;
         const up = {};
@@ -6842,7 +6842,7 @@ const uploadFranchiseDoc = multer({ storage: franchiseStorage });
 
 // @route   POST /api/employee/admin/ksp/upload/:id
 // @desc    Upload documents/photo for KSP franchise
-router.post('/admin/ksp/upload/:id', protect, checkAdmin, uploadFranchiseDoc.fields([
+router.post('/admin/ksp/upload/:id', protect, checkModule("ksp_franchise"), uploadFranchiseDoc.fields([
     { name: 'profilePhoto', maxCount: 1 },
     { name: 'aadhaarDoc', maxCount: 1 },
     { name: 'panDoc', maxCount: 1 },
@@ -6873,7 +6873,7 @@ router.post('/admin/ksp/upload/:id', protect, checkAdmin, uploadFranchiseDoc.fie
 
 // @route   GET /api/employee/admin/franchise/inventory
 // @desc    Get inventory for all or specific franchise
-router.get('/admin/franchise/inventory', protect, checkAdmin, async (req, res) => {
+router.get('/admin/franchise/inventory', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { kspId, startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -6912,7 +6912,7 @@ router.get('/admin/franchise/inventory', protect, checkAdmin, async (req, res) =
 
 // @route   GET /api/employee/admin/franchise/ledger
 // @desc    Get sales ledger for all or specific payment mode
-router.get('/admin/franchise/ledger', protect, checkAdmin, async (req, res) => {
+router.get('/admin/franchise/ledger', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { paymentMode, startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -6955,7 +6955,7 @@ router.get('/admin/franchise/ledger', protect, checkAdmin, async (req, res) => {
 
 // @route   GET /api/employee/admin/franchise/wallets
 // @desc    Get wallet balances and recharge requests
-router.get('/admin/franchise/wallets', protect, checkAdmin, async (req, res) => {
+router.get('/admin/franchise/wallets', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
         const isAll = (all === 'true');
@@ -6991,7 +6991,7 @@ router.get('/admin/franchise/wallets', protect, checkAdmin, async (req, res) => 
 
 // @route   PUT /api/employee/admin/franchise/approve-wallet/:id
 // @desc    Approve wallet recharge for franchise
-router.put('/admin/franchise/approve-wallet/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/franchise/approve-wallet/:id', protect, checkModule("ksp_franchise"), async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ error: 'Franchise not found' });
@@ -7062,7 +7062,7 @@ router.post('/leads/generate', protect, uploadLeadPhoto.single('photo'), async (
 // @route   GET /api/employee/admin/leads
 // @desc    Get all marketing leads for admin
 // @access  Private/Admin
-router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
+router.get('/admin/leads', protect, checkModule("leads"), async (req, res) => {
     try {
         const { startDate, endDate, all, search } = req.query;
         let andConditions = [];
@@ -7101,7 +7101,7 @@ router.get('/admin/leads', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/all-nex-cards
 // @desc    Get all users who have a Nex Card issued
 // @access  Private/Admin
-router.get('/admin/all-nex-cards', protect, checkAdmin, async (req, res) => {
+router.get('/admin/all-nex-cards', protect, checkModule("nexcard"), async (req, res) => {
     try {
         const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
         const { search, role } = req.query;
@@ -7207,7 +7207,7 @@ router.get('/admin/all-nex-cards', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/employee/admin/export-nex-cards
 // @desc    Export all Nex Card users to CSV
 // @access  Private/Admin
-router.get('/admin/export-nex-cards', protect, checkAdmin, async (req, res) => {
+router.get('/admin/export-nex-cards', protect, checkModule("nexcard"), async (req, res) => {
     try {
         const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
         const users = await User.find({

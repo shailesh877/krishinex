@@ -830,7 +830,7 @@ router.put('/admin/credit/:id', protect, checkModule('users'), async (req, res) 
 // @route   PATCH /api/user/admin/profile/:id
 // @desc    Admin: Update farmer profile details including bank info
 // @access  Private (Admin Only)
-router.patch('/admin/profile/:id', protect, checkAdmin, async (req, res) => {
+router.patch('/admin/profile/:id', protect, checkModule("users"), async (req, res) => {
     try {
         const { name, phone, email, address, village, bankDetails } = req.body;
         const user = await User.findById(req.params.id);

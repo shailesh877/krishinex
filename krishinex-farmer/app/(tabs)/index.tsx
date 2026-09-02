@@ -1,4 +1,4 @@
-﻿// app/(tabs)/index.tsx
+// app/(tabs)/index.tsx
 import React from 'react';
 import {
   View,
@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { useCallback } from 'react';
 import { authApi, IMAGE_BASE_URL, BASE_URL } from '../../services/api';
+import { updateBackgroundLocation, getStoredLocation } from '@/utils/locationManager';
 import { useI18n } from '@/context/I18nContext';
 
 const SHADOW_COLOR = '#00000020';
@@ -91,67 +92,90 @@ export default function HomeScreen() {
       if (res.ok) {
         const data = await res.json();
         setUnreadNotifCount(data.count || 0);
+        await AsyncStorage.setItem('cached_unread', (data.count || 0).toString());
       }
     } catch (e) {
       console.log('Error fetching unread count', e);
     }
   };
 
-  const loadWeather = async () => {
+  const loadWeather = async (silent = false, forceFetch = false) => {
     try {
-      setWeatherLoading(true);
+      if (!silent) setWeatherLoading(true);
 
       // Helper to fetch and set weather
-      const updateWeatherForCoords = async (lat: number, lon: number, isFinal: boolean = false) => {
+      const updateWeatherForCoords = async (lat: number, lon: number, updateCache = true) => {
         try {
           const res = await authApi.getWeather(lat, lon);
 
           if (res.data && res.data.current_weather) {
             const cw = res.data.current_weather;
-            setWeatherData({
+            const newWeatherData = {
               temperature_2m: cw.temperature,
               weather_code: cw.weathercode,
               wind_speed_10m: cw.windspeed,
-              relative_humidity_2m: 65,
-              rain_probability: 10,
-              apparent_temperature: cw.temperature - 2
-            });
+              relative_humidity_2m: cw.relative_humidity_2m ?? 65,
+              rain_probability: cw.precipitation_probability ?? 10,
+              apparent_temperature: cw.apparent_temperature ?? (cw.temperature - 2)
+            };
+            setWeatherData(newWeatherData);
 
             // Background city name update
             Location.reverseGeocodeAsync({ latitude: lat, longitude: lon }).then(geo => {
+              let locName = null;
               if (geo && geo[0]) {
                 const { city, region } = geo[0];
-                setLocationName(`${city || ''}, ${region || ''}`.replace(/^, /, '').replace(/, $/, ''));
+                locName = `${city || ''}, ${region || ''}`.replace(/^, /, '').replace(/, $/, '');
+                setLocationName(locName);
               }
-            }).catch(() => { });
+              if (updateCache) {
+                 AsyncStorage.setItem('cached_weather', JSON.stringify({ weatherData: newWeatherData, locationName: locName }));
+              }
+            }).catch(() => {
+              if (updateCache) {
+                 AsyncStorage.setItem('cached_weather', JSON.stringify({ weatherData: newWeatherData, locationName: null }));
+              }
+            });
           }
         } catch (e) {
-          if (isFinal) throw e;
+          console.log('Weather update error', e);
         }
       };
 
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      // 1. Try Last Known Position (Instant)
-      const lastLoc = await Location.getLastKnownPositionAsync({});
-      if (lastLoc) {
-        await updateWeatherForCoords(lastLoc.coords.latitude, lastLoc.coords.longitude);
-        setWeatherLoading(false); // Stop loader early as we have some data
+      // 1. Immediately read cached weather if available
+      const cachedWeatherStr = await AsyncStorage.getItem('cached_weather');
+      if (cachedWeatherStr) {
+        const cw = JSON.parse(cachedWeatherStr);
+        if (cw.weatherData) setWeatherData(cw.weatherData);
+        if (cw.locationName) setLocationName(cw.locationName);
+        setWeatherLoading(false);
       } else {
-        // If no last known, use Delhi just as a base to start fetch
-        await updateWeatherForCoords(28.61, 77.21);
+        // Fallback default
+        await updateWeatherForCoords(28.61, 77.21, false);
       }
 
-      // 2. BACKGROUND: Try to get fresh current location (Accurate)
-      if (status === 'granted') {
-        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-          .then(location => {
-            updateWeatherForCoords(location.coords.latitude, location.coords.longitude, true);
-          })
-          .catch(err => {
-            console.log('Final fresh fetch failed, sticking with what we have');
-          });
-      }
+      // 2. BACKGROUND: Update centralized DB location
+      updateBackgroundLocation().then(async (result) => {
+        if (forceFetch || (result && (result.changed || !cachedWeatherStr))) {
+          // If location changed by > 2km, OR we had no cache originally, OR user pulled to refresh
+          let lat, lon;
+          if (result) {
+            lat = result.location.latitude;
+            lon = result.location.longitude;
+          } else {
+            // fallback if background check timed out but we want to force refresh weather anyway
+            const stored = await getStoredLocation();
+            if (stored) {
+              lat = stored.latitude;
+              lon = stored.longitude;
+            } else {
+              lat = 28.61;
+              lon = 77.21;
+            }
+          }
+          updateWeatherForCoords(lat, lon, true);
+        }
+      });
 
     } catch (error: any) {
       console.log('Weather process error:', error);
@@ -159,7 +183,6 @@ export default function HomeScreen() {
         setLocationName(hi ? 'मौसम जानकारी उपलब्ध नहीं' : 'Weather Unavailable');
       }
     } finally {
-      // Finally block only if we don't have data yet
       if (!weatherData) setWeatherLoading(false);
     }
   };
@@ -196,29 +219,63 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadWeather(), loadSuggestions(), loadProfile(), fetchUnreadCount()]);
+    await Promise.all([loadWeather(true, true), loadSuggestions(), loadProfile(), fetchUnreadCount()]);
     setRefreshing(false);
   };
 
+  const isFirstWeatherFetch = React.useRef(true);
+
   useFocusEffect(
     useCallback(() => {
-      const loadUserData = async () => {
+      const loadCachedData = async () => {
         try {
           const storedData = await AsyncStorage.getItem('userData');
           if (storedData) {
             const user = JSON.parse(storedData);
-            setFarmerName(user.name);
+            setFarmerName(user.name || 'किसान साथी');
             setVillage(user.address || '');
+            if (user.creditLimit !== undefined) setCreditLimit(user.creditLimit);
+            if (user.creditUsed !== undefined) setCreditUsed(user.creditUsed);
+            if (user.profilePhotoUrl) {
+              const fullUrl = user.profilePhotoUrl.startsWith('http')
+                ? user.profilePhotoUrl
+                : `${IMAGE_BASE_URL}/${user.profilePhotoUrl.replace(/\\/g, '/')}`;
+              setProfileImage(fullUrl);
+            }
           }
+
+          const cachedWeather = await AsyncStorage.getItem('cached_weather');
+          if (cachedWeather) {
+             const { weatherData, locationName } = JSON.parse(cachedWeather);
+             setWeatherData(weatherData);
+             setLocationName(locationName);
+             setWeatherLoading(false);
+          }
+
+          const cachedSuggestions = await AsyncStorage.getItem('cached_suggestions');
+          if (cachedSuggestions) setSuggestions(JSON.parse(cachedSuggestions));
+
+          const cachedUnread = await AsyncStorage.getItem('cached_unread');
+          if (cachedUnread) setUnreadNotifCount(parseInt(cachedUnread, 10));
+
         } catch (error) {
-          console.error('Error loading user data:', error);
+          console.error('Error loading cache:', error);
         }
       };
-      loadUserData();
-      loadWeather();
-      loadSuggestions();
-      loadProfile();
-      fetchUnreadCount();
+
+      const fetchFreshData = async () => {
+        if (isFirstWeatherFetch.current) {
+          await loadWeather(true);
+          isFirstWeatherFetch.current = false;
+        }
+        await loadSuggestions();
+        await loadProfile();
+        await fetchUnreadCount();
+      };
+
+      loadCachedData().then(() => {
+        fetchFreshData();
+      });
     }, [language])
   );
 
@@ -227,6 +284,7 @@ export default function HomeScreen() {
       const res = await authApi.getAllSuggestions();
       if (res.data && Array.isArray(res.data)) {
         setSuggestions(res.data);
+        await AsyncStorage.setItem('cached_suggestions', JSON.stringify(res.data));
       }
     } catch (error) {
       console.log('Error loading suggestions:', error);

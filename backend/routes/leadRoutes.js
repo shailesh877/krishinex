@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Lead = require('../models/Lead');
-const { protect, checkAdmin } = require('../middleware/authMiddleware');
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
 
 // @route   POST /api/leads
 // @desc    Submit a new loan application lead
@@ -46,7 +46,7 @@ router.get('/my-leads', protect, async (req, res) => {
 // @route   GET /api/leads/admin/all
 // @desc    Get all loan applications (Admin only)
 // @access  Private/Admin
-router.get('/admin/all', protect, checkAdmin, async (req, res) => {
+router.get('/admin/all', protect, checkModule("leads"), async (req, res) => {
     try {
         const leads = await Lead.find()
             .populate('user', 'name phone')
@@ -60,7 +60,7 @@ router.get('/admin/all', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/leads/status/:id
 // @desc    Update lead status (Admin only)
 // @access  Private/Admin
-router.put('/status/:id', protect, checkAdmin, async (req, res) => {
+router.put('/status/:id', protect, checkModule("leads"), async (req, res) => {
     try {
         const { status } = req.body;
         const lead = await Lead.findById(req.params.id);
@@ -78,7 +78,7 @@ router.put('/status/:id', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/leads/admin/update/:id
 // @desc    Update lead details (Admin only)
 // @access  Private/Admin
-router.put('/admin/update/:id', protect, checkAdmin, async (req, res) => {
+router.put('/admin/update/:id', protect, checkModule("leads"), async (req, res) => {
     try {
         const lead = await Lead.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!lead) return res.status(404).json({ error: 'Lead not found' });

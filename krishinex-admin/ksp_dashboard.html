@@ -624,7 +624,7 @@
                     </div>
                     <p class="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none">Partner
                         Wallet</p>
-                    <h3 class="text-3xl font-black text-slate-900 mt-2 mb-1" id="kspBalance">â‚¹0.00</h3>
+                    <h3 class="text-3xl font-black text-slate-900 mt-2 mb-1" id="kspBalance">₹0.00</h3>
                     <p class="text-[11px] text-blue-600 font-bold">Your Earnings & Payout Funds</p>
                 </div>
 
@@ -724,7 +724,7 @@
                                     <div class="text-right">
                                         <p class="text-[9px] uppercase font-black text-blue-200/40">Available Balance
                                         </p>
-                                        <p id="userWallet" class="text-2xl font-black text-emerald-400 mt-1">â‚¹0.00</p>
+                                        <p id="userWallet" class="text-2xl font-black text-emerald-400 mt-1">₹0.00</p>
                                     </div>
                                 </div>
                             </div>
@@ -881,7 +881,7 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    document.getElementById('kspBalance').textContent = `â‚¹${((data && data.balance) || 0).toLocaleString()}`;
+                    document.getElementById('kspBalance').textContent = `₹${((data && data.balance) || 0).toLocaleString()}`;
                     document.getElementById('kspPartnerName').textContent = (data && data.name) || 'Partner';
 
                     const badge = document.getElementById('kspStatusBadge');
@@ -1081,7 +1081,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="text-sm font-black ${t.type === 'Credit' ? 'text-emerald-600' : 'text-slate-900'}">${t.type === 'Credit' ? '+' : '-'} â‚¹${(t.amount || 0).toLocaleString()}</p>
+                        <p class="text-sm font-black ${t.type === 'Credit' ? 'text-emerald-600' : 'text-slate-900'}">${t.type === 'Credit' ? '+' : '-'} ₹${(t.amount || 0).toLocaleString()}</p>
                         <p class="text-[8px] text-slate-400 font-bold uppercase mt-1">WALLET TRF</p>
                     </div>
                 </div>
@@ -1181,7 +1181,7 @@
             document.getElementById('userName').textContent = user.name || 'Unknown User';
             document.getElementById('userPhone').textContent = user.phone ? `+91 ${user.phone}` : 'No Phone';
             document.getElementById('userRole').textContent = roleLabel;
-            document.getElementById('userWallet').textContent = `â‚¹${(user.walletBalance || 0).toLocaleString()}`;
+            document.getElementById('userWallet').textContent = `₹${(user.walletBalance || 0).toLocaleString()}`;
         }
 
         function setFlowType(type) {
@@ -1305,9 +1305,9 @@
                     if (res.ok) {
                         let successMsg = '';
                         if (currentFlow === 'withdraw') {
-                            successMsg = `SUCCESS! Withdrawal Completed.\nPrincipal: â‚¹${d.data.principal}\nCommission: â‚¹${d.data.commission}`;
+                            successMsg = `SUCCESS! Withdrawal Completed.\nPrincipal: ₹${d.data.principal}\nCommission: ₹${d.data.commission}`;
                         } else {
-                            successMsg = `SUCCESS! Recharge Completed.\nAmount: â‚¹${d.data.principalRecharged}\nCommission Earned: â‚¹${d.data.commissionEarned}`;
+                            successMsg = `SUCCESS! Recharge Completed.\nAmount: ₹${d.data.principalRecharged}\nCommission Earned: ₹${d.data.commissionEarned}`;
                         }
                         showToast(successMsg, 'success');
                         setTimeout(() => resetFlow(), 3500);
@@ -1516,7 +1516,7 @@
             icon.innerHTML = `<i class="fas ${isCredit ? 'fa-arrow-left' : 'fa-arrow-right'}"></i>`;
 
             type.textContent = isCredit ? 'Credit Received' : 'Debit Payment';
-            amount.textContent = `${isCredit ? '+' : '-'} â‚¹${(t.amount || 0).toLocaleString()}`;
+            amount.textContent = `${isCredit ? '+' : '-'} ₹${(t.amount || 0).toLocaleString()}`;
             amount.className = `text-3xl font-black ${isCredit ? 'text-emerald-600' : 'text-slate-900'}`;
 
             id.textContent = t.transactionId;

@@ -24,7 +24,10 @@ const GREEN = '#98cd06ff';
 const GREEN_DARK = '#467804ff';
 const GREEN_LIGHT = '#a3d546ff';
 
-// const crops = ['गेहूं', 'धान', 'सरसों'];
+let RAM_CACHE_MANDI_LIST: any = null;
+let RAM_CACHE_MANDI_CROPS: any = null;
+let RAM_CACHE_MANDI_PRICES: Record<string, any> = {};
+let RAM_CACHE_MANDI_TIMESTAMP = 0;
 
 export default function MandiBhavScreen() {
   const insets = useSafeAreaInsets();
@@ -47,37 +50,42 @@ export default function MandiBhavScreen() {
     fetchMandis();
     fetchCrops();
   }, []);
-  useEffect(() => {
+
+  useEffect(() => {
     if (selectedMandi && selectedCrop) {
       fetchPrices();
     }
   }, [selectedMandi, selectedCrop]);
 
-  const fetchCrops = async () => {
+  const fetchCrops = async (signal?: AbortSignal) => {
     try {
-      const res = await authApi.getCrops();
+      const res = await authApi.getCrops({ signal });
       const sortedCrops = (res.data || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       setCrops(sortedCrops);
-      if (sortedCrops.length > 0) {
-        setSelectedCrop(sortedCrops[0].name);
+        if (sortedCrops.length > 0) {
+        setSelectedCrop((prev: string) => prev || sortedCrops[0].name);
       }
-    } catch (e) {
-      console.error('Fetch crops error', e);
+      return sortedCrops;
+    } catch (e: any) {
+      if (e.name !== 'CanceledError') console.error('Fetch crops error', e);
+      return null;
     } finally {
       setLoadingCrops(false);
     }
   };
 
-  const fetchMandis = async () => {
+  const fetchMandis = async (signal?: AbortSignal) => {
     try {
-      const res = await authApi.getMandis();
+      const res = await authApi.getMandis({ signal });
       const sortedMandis = (res.data || []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       setMandis(sortedMandis);
-      if (sortedMandis.length > 0 && !selectedMandi) {
-        setSelectedMandi(sortedMandis[0]);
+      if (sortedMandis.length > 0) {
+        setSelectedMandi((prev: any) => prev || sortedMandis[0]);
       }
-    } catch (e) {
-      console.error('Fetch mandis error', e);
+      return sortedMandis;
+    } catch (e: any) {
+      if (e.name !== 'CanceledError') console.error('Fetch mandis error', e);
+      return null;
     } finally {
       setLoadingMandis(false);
     }
@@ -85,6 +93,7 @@ export default function MandiBhavScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    RAM_CACHE_MANDI_PRICES = {};
     await Promise.all([fetchMandis(), fetchCrops()]);
     if (selectedMandi && selectedCrop) {
       await fetchPrices();
@@ -92,8 +101,14 @@ export default function MandiBhavScreen() {
     setRefreshing(false);
   };
 
-  const fetchPrices = async () => {
+  const fetchPrices = async (signal?: AbortSignal) => {
     if (!selectedMandi || !selectedCrop || crops.length === 0) return;
+    const cacheKey = `${selectedMandi._id}_${selectedCrop}`;
+    if (RAM_CACHE_MANDI_PRICES[cacheKey]) {
+      setCropData(RAM_CACHE_MANDI_PRICES[cacheKey]);
+      setLoadingPrices(false);
+      return;
+    }
     setLoadingPrices(true);
     try {
       // Find the crop object to get the internal name for backend
@@ -105,7 +120,7 @@ export default function MandiBhavScreen() {
       }
       const apiCrop = cropObj.name;
 
-      const res = await authApi.getMandiPrices(selectedMandi._id, apiCrop);
+      const res = await authApi.getMandiPrices(selectedMandi._id, apiCrop, { signal });
 
       // Generate full 7-day list starting from today
       const full7Days = [];
@@ -132,9 +147,10 @@ export default function MandiBhavScreen() {
         });
       }
 
+      RAM_CACHE_MANDI_PRICES[cacheKey] = full7Days;
       setCropData(full7Days);
-    } catch (e) {
-      console.error('Fetch prices error', e);
+    } catch (e: any) {
+      if (e.name !== 'CanceledError') console.error('Fetch prices error', e);
     } finally {
       setLoadingPrices(false);
     }

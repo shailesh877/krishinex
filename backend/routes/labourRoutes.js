@@ -25,12 +25,16 @@ router.get('/my-bookings', protect, async (req, res) => {
 });
 
 // @route   GET /api/labour/public
-// @desc    Get all labourers with filters (including proximity)
+// @desc    Get all labourers with filters, pagination, and lightweight response
 // @access  Private
 router.get('/public', protect, async (req, res) => {
     try {
         const { search, maxDistance, category, userLat, userLng } = req.query;
         let query = { role: 'labour', status: 'approved' };
+        
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = (page - 1) * limit;
 
         if (search) {
             query.$or = [
@@ -50,7 +54,7 @@ router.get('/public', protect, async (req, res) => {
         if (radius && !isNaN(radius)) {
             if (!userLat || !userLng) {
                 console.log(`[LABOUR_PUBLIC] Distance (${radius}km) requested but no coords provided.`);
-                return res.json([]);
+                return res.json({ data: [], page, hasMore: false });
             }
 
             labourers = await User.aggregate([
@@ -68,25 +72,57 @@ router.get('/public', protect, async (req, res) => {
                         key: 'location'
                     }
                 },
+                { $skip: skip },
+                { $limit: limit },
                 {
                     $project: {
-                        password: 0
+                        name: 1,
+                        phone: 1,
+                        profilePhotoUrl: 1,
+                        'labourDetails.skills': 1,
+                        'labourDetails.rating': 1,
+                        'labourDetails.skillDescription': 1,
+                        'labourDetails.availability': 1,
+                        ratePerHour: 1,
+                        ratePerDay: 1,
+                        distanceKm: 1,
+                        businessName: 1
                     }
                 }
             ]);
         } else {
             // No distance filter, use standard find
             labourers = await User.find(query)
-                .select('-password')
-                .sort({ createdAt: -1 });
+                .select('name phone profilePhotoUrl labourDetails ratePerHour ratePerDay businessName')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
         }
 
-        console.log(`[LABOUR_PUBLIC] Query:`, JSON.stringify(query));
-        console.log(`[LABOUR_PUBLIC] Found ${labourers.length} results`);
-        res.json(labourers);
+        res.json({
+            data: labourers,
+            page,
+            limit,
+            hasMore: labourers.length === limit
+        });
     } catch (error) {
         console.error('Fetch public labour error:', error);
         res.status(500).json({ error: 'Failed to fetch labour', details: error.message });
+    }
+});
+
+// @route   GET /api/labour/:id
+// @desc    Get detailed labour profile
+// @access  Private
+router.get('/:id', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password -loginOtp -searchOtp');
+        if (!user || user.role !== 'labour') {
+            return res.status(404).json({ error: 'Labour profile not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch labour profile' });
     }
 });
 

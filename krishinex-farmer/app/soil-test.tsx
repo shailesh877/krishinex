@@ -42,6 +42,9 @@ const VISIT_TYPES = {
   en: ['Lab will collect from field', 'I will visit lab'],
 };
 
+let RAM_CACHE_SOIL_STATES: any = null;
+let RAM_CACHE_SOIL_DISTRICTS: Record<string, any> = {};
+
 export default function SoilTestScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -75,9 +78,11 @@ export default function SoilTestScreen() {
   const [districtDropdownOpen, setDistrictDropdownOpen] = useState(false);
 
   useEffect(() => {
-    fetchStates();
+    const controller = new AbortController();
+    fetchStates(controller.signal);
     fetchWalletConfig();
     fetchProfileStatus();
+    return () => controller.abort();
   }, []);
 
   const fetchProfileStatus = async () => {
@@ -106,6 +111,8 @@ export default function SoilTestScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
+      RAM_CACHE_SOIL_STATES = null;
+      RAM_CACHE_SOIL_DISTRICTS = {};
       await Promise.all([
         fetchStates(),
         fetchWalletConfig(),
@@ -119,38 +126,58 @@ export default function SoilTestScreen() {
   };
 
   useEffect(() => {
+    const controller = new AbortController();
     if (selectedState) {
-      fetchDistricts(selectedState);
+      fetchDistricts(selectedState, controller.signal);
     } else {
       setDistricts([]);
       setSelectedDistrict('');
     }
+    return () => controller.abort();
   }, [selectedState]);
 
-  const fetchStates = async () => {
-    try {
-      const res = await authApi.getStates();
-      setStates(res.data);
-      if (res.data.length > 0) {
-        setSelectedState(res.data[0]);
+  const fetchStates = async (signal?: AbortSignal) => {
+    if (RAM_CACHE_SOIL_STATES) {
+      setStates(RAM_CACHE_SOIL_STATES);
+      if (RAM_CACHE_SOIL_STATES.length > 0) {
+        setSelectedState((prev: string) => prev || RAM_CACHE_SOIL_STATES[0]);
       }
-    } catch (e) {
-      console.error('Fetch states error', e);
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await authApi.getStates({ signal });
+      setStates(res.data);
+      RAM_CACHE_SOIL_STATES = res.data;
+      if (res.data.length > 0) {
+        setSelectedState((prev: string) => prev || res.data[0]);
+      }
+    } catch (e: any) {
+      if (e.name !== 'CanceledError') console.error('Fetch states error', e);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchDistricts = async (state: string) => {
+  const fetchDistricts = async (state: string, signal?: AbortSignal) => {
+    if (RAM_CACHE_SOIL_DISTRICTS[state]) {
+      setDistricts(RAM_CACHE_SOIL_DISTRICTS[state]);
+      if (RAM_CACHE_SOIL_DISTRICTS[state].length > 0) {
+        setSelectedDistrict((prev: string) => prev || RAM_CACHE_SOIL_DISTRICTS[state][0]);
+      }
+      setLoadingDistricts(false);
+      return;
+    }
     setLoadingDistricts(true);
     try {
-      const res = await authApi.getDistricts(state);
+      const res = await authApi.getDistricts(state, { signal });
       setDistricts(res.data);
+      RAM_CACHE_SOIL_DISTRICTS[state] = res.data;
       if (res.data.length > 0) {
-        setSelectedDistrict(res.data[0]);
+        setSelectedDistrict((prev: string) => prev || res.data[0]);
       }
-    } catch (e) {
-      console.error('Fetch districts error', e);
+    } catch (e: any) {
+      if (e.name !== 'CanceledError') console.error('Fetch districts error', e);
     } finally {
       setLoadingDistricts(false);
     }

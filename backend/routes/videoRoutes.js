@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Video = require('../models/Video');
-const { protect, checkAdmin } = require('../middleware/authMiddleware');
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
 
 // @route   GET /api/videos
 // @desc    Get all active videos for Kisan Pathshala
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 // @route   GET /api/videos/admin/all
 // @desc    Get all videos for management (Admin only)
 // @access  Private/Admin
-router.get('/admin/all', protect, checkAdmin, async (req, res) => {
+router.get('/admin/all', protect, checkModule("pathshala"), async (req, res) => {
     try {
         const videos = await Video.find().sort({ createdAt: -1 });
         res.json(videos);
@@ -37,7 +37,7 @@ function extractYoutubeId(url) {
 // @route   POST /api/videos
 // @desc    Add a new video (Admin only)
 // @access  Private/Admin
-router.post('/', protect, checkAdmin, async (req, res) => {
+router.post('/', protect, checkModule("pathshala"), async (req, res) => {
     try {
         let { titleEn, titleHi, youtubeId, isActive } = req.body;
         if (!titleEn || !titleHi || !youtubeId) {
@@ -64,7 +64,7 @@ router.post('/', protect, checkAdmin, async (req, res) => {
 // @route   PUT /api/videos/:id
 // @desc    Update a video (Admin only)
 // @access  Private/Admin
-router.put('/:id', protect, checkAdmin, async (req, res) => {
+router.put('/:id', protect, checkModule("pathshala"), async (req, res) => {
     try {
         let { titleEn, titleHi, youtubeId, isActive } = req.body;
         const video = await Video.findById(req.params.id);
@@ -88,7 +88,7 @@ router.put('/:id', protect, checkAdmin, async (req, res) => {
 // @route   DELETE /api/videos/:id
 // @desc    Delete a video (Admin only)
 // @access  Private/Admin
-router.delete('/:id', protect, checkAdmin, async (req, res) => {
+router.delete('/:id', protect, checkModule("pathshala"), async (req, res) => {
     try {
         const video = await Video.findByIdAndDelete(req.params.id);
         if (!video) return res.status(404).json({ error: 'Video not found' });

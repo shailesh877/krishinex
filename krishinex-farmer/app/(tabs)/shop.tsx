@@ -24,9 +24,18 @@ import { authApi, IMAGE_BASE_URL } from '../../services/api';
 import { useI18n } from '@/context/I18nContext';
 import { useCart } from '@/context/CartContext';
 import * as Location from 'expo-location';
+import { getStoredLocation } from '@/utils/locationManager';
 
 const SHADOW_COLOR = '#00000020';
 const KHETIFY_GREEN_DARK = '#467804ff';
+
+const RAM_CACHE_SHOP: Record<string, {
+  timestamp: number;
+  banners: any[];
+  products: any[];
+  profileAvatar: string;
+  displayAddress: string;
+}> = {};
 
 const categoryTabs = [
   { key: 'all', labelEn: 'All', labelHi: 'सब', icon: 'grid-outline' as const },
@@ -77,6 +86,40 @@ function ShimmerBox({ width, height, borderRadius = 8, style }: { width: any; he
     />
   );
 }
+
+const LazyImage = ({ source, style }: any) => {
+  const [loading, setLoading] = useState(true);
+  const opacity = useRef(new Animated.Value(0)).current;
+  const [actualSource, setActualSource] = useState<any>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setActualSource(source);
+    }, 400); // Defer image loading to make card text render instantly
+    return () => clearTimeout(timer);
+  }, [source]);
+
+  return (
+    <View style={[style, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#E5E7EB', overflow: 'hidden' }]}>
+      {loading && <ActivityIndicator size="small" color="#16A34A" style={{ position: 'absolute', zIndex: 1 }} />}
+      {actualSource && (
+        <Animated.Image
+          source={actualSource}
+          style={[style, { position: 'absolute', opacity, zIndex: 2, width: '100%', height: '100%' }]}
+          onLoadEnd={() => {
+            setLoading(false);
+            Animated.timing(opacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }).start();
+          }}
+          onError={() => setLoading(false)}
+        />
+      )}
+    </View>
+  );
+};
 
 // ---- Skeleton for banner ----
 function BannerSkeleton() {
@@ -134,7 +177,10 @@ export default function ShopScreen() {
   const [searchText, setSearchText] = useState('');
   const [posterIndex, setPosterIndex] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [banners, setBanners] = useState<any[]>([]);
+  
+  const [banners, setBanners] = useState<any[]>(() => {
+    return RAM_CACHE_SHOP['shop_data']?.banners || [];
+  });
   const bannerScrollRef = useRef<ScrollView>(null);
   const scrollWidth = Dimensions.get('window').width - 28; // adjusting for margin
 
@@ -168,20 +214,53 @@ export default function ShopScreen() {
   const goToCart = () => router.push('/cart');
   const goToProduct = (id: string) => router.push(`../product/${id}`);
 
-  const [productsList, setProductsList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [bannerLoading, setBannerLoading] = useState(true);
+  const [productsList, setProductsList] = useState<any[]>(() => {
+    return RAM_CACHE_SHOP['shop_data']?.products || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    return RAM_CACHE_SHOP['shop_data'] ? false : true;
+  });
+  const [bannerLoading, setBannerLoading] = useState(() => {
+    return RAM_CACHE_SHOP['shop_data'] ? false : true;
+  });
   const [refreshing, setRefreshing] = useState(false);
-  const [profileAvatar, setProfileAvatar] = useState('https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200');
-  const [displayAddress, setDisplayAddress] = useState(displayAddressPlaceholder);
+  const [profileAvatar, setProfileAvatar] = useState(() => {
+    return RAM_CACHE_SHOP['shop_data']?.profileAvatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200';
+  });
+  const [displayAddress, setDisplayAddress] = useState(() => {
+    return RAM_CACHE_SHOP['shop_data']?.displayAddress || displayAddressPlaceholder;
+  });
 
-  const fetchShopData = async (isRefresh = false) => {
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchShopData = async (isRefresh = false, signal?: AbortSignal) => {
+    if (!isRefresh && RAM_CACHE_SHOP['shop_data']) {
+      const age = Date.now() - RAM_CACHE_SHOP['shop_data'].timestamp;
+      if (age < 5 * 60 * 1000) {
+        console.log('[DEBUG] Skipping API call, shop RAM cache is fresh');
+        return;
+      }
+    }
+
+    if (!isRefresh) {
+      setLoading(true);
+      setBannerLoading(true);
+    }
+
+    let fetchedBanners: any[] = [];
+    let fetchedProducts: any[] = [];
+    let fetchedAvatar = 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200';
+    let fetchedAddress = displayAddressPlaceholder;
+
     // ⚡ TIER 1 — Banners FIRST (lightest API, loads instantly)
     try {
-      const bannerRes = await authApi.getBanners();
-      setBanners(bannerRes.data);
-    } catch (e) {
-      console.log('Banner fetch error:', e);
+      const bannerRes = await authApi.getBanners(signal);
+      fetchedBanners = bannerRes.data || [];
+      setBanners(fetchedBanners);
+    } catch (e: any) {
+      if (e?.name !== 'CanceledError') console.log('Banner fetch error:', e);
     } finally {
       setBannerLoading(false);
     }
@@ -192,47 +271,67 @@ export default function ShopScreen() {
       let lng: number | undefined;
 
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === 'granted') {
-          const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
-          lat = location.coords.latitude;
-          lng = location.coords.longitude;
+        const stored = await getStoredLocation();
+        if (stored) {
+          lat = stored.latitude;
+          lng = stored.longitude;
         }
       } catch (e) {
-        console.log('GPS fetch skipped or failed:', e);
+        console.log('Stored location read failed:', e);
       }
 
       const [itemsRes, profileRes] = await Promise.all([
-        authApi.getItems(undefined, lat, lng),
-        authApi.getProfile(),
+        authApi.getItems(undefined, lat, lng, 1, 20, signal),
+        authApi.getProfile(signal),
       ]);
 
       if (itemsRes.data && Array.isArray(itemsRes.data) && itemsRes.data.length > 0) {
-        setProductsList(itemsRes.data);
+        fetchedProducts = itemsRes.data;
+        setProductsList(fetchedProducts);
+        setHasMore(fetchedProducts.length === 20);
       } else if (lat || lng) {
         // Fallback: If GPS fetch returned empty, fetch all without GPS
         try {
-          const fallbackRes = await authApi.getItems(undefined, undefined, undefined);
-          setProductsList(fallbackRes.data || []);
+          const fallbackRes = await authApi.getItems(undefined, undefined, undefined, 1, 20, signal);
+          fetchedProducts = fallbackRes.data || [];
+          setProductsList(fetchedProducts);
+          setHasMore(fetchedProducts.length === 20);
         } catch(e) {
           setProductsList([]);
+          setHasMore(false);
         }
       } else {
-        setProductsList(itemsRes.data || []);
+        fetchedProducts = itemsRes.data || [];
+        setProductsList(fetchedProducts);
+        setHasMore(fetchedProducts.length === 20);
       }
+      setPage(1);
 
       if (profileRes.data?.profilePhotoUrl) {
         const photoUrl = profileRes.data.profilePhotoUrl;
-        const fullUrl = photoUrl.startsWith('http')
+        fetchedAvatar = photoUrl.startsWith('http')
           ? photoUrl
           : `${IMAGE_BASE_URL}/${photoUrl}`;
-        setProfileAvatar(fullUrl);
+        setProfileAvatar(fetchedAvatar);
       }
       if (profileRes.data?.address) {
-        setDisplayAddress(profileRes.data.address);
+        fetchedAddress = profileRes.data.address;
+        setDisplayAddress(fetchedAddress);
       }
-    } catch (error) {
-      console.error('Error fetching shop data:', error);
+
+      // Update RAM Cache
+      RAM_CACHE_SHOP['shop_data'] = {
+        timestamp: Date.now(),
+        banners: fetchedBanners,
+        products: fetchedProducts,
+        profileAvatar: fetchedAvatar,
+        displayAddress: fetchedAddress,
+      };
+
+    } catch (error: any) {
+      if (error?.name !== 'CanceledError' && !error?.message?.includes('canceled')) {
+        console.error('Error fetching shop data:', error);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -244,9 +343,48 @@ export default function ShopScreen() {
     fetchShopData(true);
   };
 
+  const loadMoreProducts = async () => {
+    if (loadingMore || !hasMore || loading) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      let lat: number | undefined;
+      let lng: number | undefined;
+      try {
+        const stored = await getStoredLocation();
+        if (stored) {
+          lat = stored.latitude;
+          lng = stored.longitude;
+        }
+      } catch (e) {}
+
+      let newProducts: any[] = [];
+      const itemsRes = await authApi.getItems(undefined, lat, lng, nextPage, 20);
+      if (itemsRes.data && Array.isArray(itemsRes.data) && itemsRes.data.length > 0) {
+        newProducts = itemsRes.data;
+      } else if (lat || lng) {
+        const fallbackRes = await authApi.getItems(undefined, undefined, undefined, nextPage, 20);
+        newProducts = fallbackRes.data || [];
+      }
+      
+      if (newProducts.length > 0) {
+        setProductsList(prev => [...prev, ...newProducts]);
+        setPage(nextPage);
+        setHasMore(newProducts.length === 20);
+      } else {
+        setHasMore(false);
+      }
+    } catch (e) {
+      console.log('Error loading more:', e);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
-    setLoading(true);
-    fetchShopData();
+    const controller = new AbortController();
+    fetchShopData(false, controller.signal);
+    return () => controller.abort();
   }, []);
 
 
@@ -474,11 +612,17 @@ export default function ShopScreen() {
       {/* MAIN CONTENT - always visible, sections load independently */}
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[KHETIFY_GREEN_DARK]} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[KHETIFY_GREEN_DARK]} />}
+        onScroll={(e) => {
+          const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+          // Load more when user is 1500px from the bottom (continuous load)
+          if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 1500) {
+            loadMoreProducts();
+          }
+        }}
+        scrollEventThrottle={400}
       >
         {/* BANNER — shows instantly as soon as banners arrive */}
         {bannerLoading ? (
@@ -680,6 +824,12 @@ export default function ShopScreen() {
                 ? 'कोई उत्पाद नहीं मिला, खोज या कैटेगरी बदलकर देखें।'
                 : 'No products found, try another search or category.'}
             </Text>
+          </View>
+        )}
+
+        {loadingMore && (
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <ActivityIndicator size="small" color={KHETIFY_GREEN_DARK} />
           </View>
         )}
 

@@ -4,7 +4,7 @@ const User = require('../models/User');
 const FieldTask = require('../models/FieldTask');
 const FieldLead = require('../models/FieldLead');
 const Transaction = require('../models/Transaction');
-const { protect, checkAdmin } = require('../middleware/authMiddleware');
+const { protect, checkAdmin, checkModule } = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
 
 // Helper to generate IDs
@@ -15,7 +15,7 @@ const generateId = (prefix, number) => {
 // @route   GET /api/field/dashboard
 // @desc    Get Key Performance Indicators for Field Executives
 // @access  Private/Admin
-router.get('/dashboard', protect, checkAdmin, async (req, res) => {
+router.get('/dashboard', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
         const executivesCount = await User.countDocuments({ role: 'field_executive' });
@@ -70,7 +70,7 @@ router.get('/dashboard', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/field/executives
 // @desc    Get all Field Executives with their task stats
 // @access  Private/Admin
-router.get('/executives', protect, checkAdmin, async (req, res) => {
+router.get('/executives', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
         const executives = await User.find({ role: 'field_executive' })
@@ -115,7 +115,7 @@ router.get('/executives', protect, checkAdmin, async (req, res) => {
 // @access  Private/Admin
 router.get('/test', (req, res) => res.json({ msg: 'Field routes working' }));
 
-router.post('/executives/create', protect, checkAdmin, async (req, res) => {
+router.post('/executives/create', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { name, phone, email, assignedArea, password, employeeCode } = req.body;
 
@@ -163,7 +163,7 @@ router.post('/executives/create', protect, checkAdmin, async (req, res) => {
 // @route   GET /api/field/tasks
 // @desc    Get all tasks
 // @access  Private/Admin
-router.get('/tasks', protect, checkAdmin, async (req, res) => {
+router.get('/tasks', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { startDate, endDate, all, search, status } = req.query;
         let andConditions = [];
@@ -213,7 +213,7 @@ router.get('/tasks', protect, checkAdmin, async (req, res) => {
 // @route   POST /api/field/tasks/assign
 // @desc    Assign a new task to an executive
 // @access  Private/Admin
-router.post('/tasks/assign', protect, checkAdmin, async (req, res) => {
+router.post('/tasks/assign', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { executiveId, taskType, partnerName, location, mobileNumber, amount, dueDate, notes } = req.body;
 
@@ -313,7 +313,7 @@ router.patch('/tasks/:id/status', protect, async (req, res) => {
 // @route   PATCH /api/field/executives/:id
 // @desc    Edit a Field Executive's details
 // @access  Private/Admin
-router.patch('/executives/:id', protect, checkAdmin, async (req, res) => {
+router.patch('/executives/:id', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { name, phone, email, assignedArea, employeeCode } = req.body;
 
@@ -358,7 +358,7 @@ router.patch('/executives/:id', protect, checkAdmin, async (req, res) => {
 // @route   PATCH /api/field/executives/:id/status
 // @desc    Activate/Deactivate a Field Executive
 // @access  Private/Admin
-router.patch('/executives/:id/status', protect, checkAdmin, async (req, res) => {
+router.patch('/executives/:id/status', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { status } = req.body;
         if (!['approved', 'blocked'].includes(status)) {
@@ -383,7 +383,7 @@ router.patch('/executives/:id/status', protect, checkAdmin, async (req, res) => 
 // @route   GET /api/field/executives/:id/performance
 // @desc    Get 360-degree performance data for an executive
 // @access  Private/Admin
-router.get('/executives/:id/performance', protect, checkAdmin, async (req, res) => {
+router.get('/executives/:id/performance', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const execId = req.params.id;
         const { startDate, endDate, all } = req.query;
