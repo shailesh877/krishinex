@@ -94,6 +94,11 @@ const sendNotification = async (userId, { title, messageEn, messageHi, type, ref
             refId: refId || ''
         });
         console.log(`[NOTIFY-SERVICE] Notification record created: ${notification._id}`);
+        
+        // 1.5 Emit via Socket.io
+        if (global.io) {
+            global.io.to(`user_${userId}`).emit('notification_new', notification);
+        }
 
         // 2. Send push notification if user has an FCM token and Firebase is initialized
         const user = await User.findById(userId).select('fcmToken');

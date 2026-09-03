@@ -10,10 +10,11 @@ import {
     RefreshControl,
     Alert,
     SafeAreaView,
+    Modal,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '@/context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -101,7 +102,11 @@ export default function NotificationsScreen() {
         }
     }, []);
 
-    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchNotifications();
+        }, [fetchNotifications])
+    );
     const onRefresh = () => { setRefreshing(true); fetchNotifications(); };
 
     const markRead = async (id: string) => {
@@ -153,20 +158,30 @@ export default function NotificationsScreen() {
         );
     };
 
+    const [selectedNotif, setSelectedNotif] = useState<NotifItem | null>(null);
+
     const handleNotificationPress = async (item: NotifItem) => {
         // 1. Mark as read in UI and backend (if unread)
         if (item.unread) {
             markRead(item._id);
         }
 
-        // 2. Navigate based on type
-        const { type, refId } = item;
+        // 2. Show Modal
+        setSelectedNotif(item);
+    };
+
+    const handleNotifAction = () => {
+        if (!selectedNotif) return;
+        const { type, refId } = selectedNotif;
+        setSelectedNotif(null);
         
         switch (type) {
             case 'status':
             case 'order':
                 if (refId) {
                     router.push({ pathname: '/track-order', params: { id: refId } });
+                } else {
+                    router.push('/(tabs)/orders' as any);
                 }
                 break;
             case 'assigned':
@@ -179,8 +194,6 @@ export default function NotificationsScreen() {
                 router.push('/wallet');
                 break;
             default:
-                // For 'system' or others, we just stay here or maybe go to home?
-                // For now, just mark read is enough.
                 break;
         }
     };
@@ -221,18 +234,14 @@ export default function NotificationsScreen() {
         <SafeAreaView style={styles.root}>
             <StatusBar barStyle="light-content" backgroundColor={GREEN_DARK} />
 
-            <LinearGradient colors={[GREEN, GREEN_DARK]} style={styles.header}>
+            <LinearGradient colors={[GREEN, GREEN_DARK]} style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
                 <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={styles.title}>{labels.title}</Text>
-                        {unreadCount > 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{unreadCount}</Text>
-                            </View>
-                        )}
+                        
                     </View>
                     <Text style={styles.subtitle}>{labels.sub}</Text>
                 </View>
@@ -266,6 +275,34 @@ export default function NotificationsScreen() {
                     renderItem={renderItem}
                 />
             )}
+
+            {/* NOTIFICATION POPUP MODAL */}
+            <Modal
+                visible={!!selectedNotif}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setSelectedNotif(null)}
+            >
+                <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelectedNotif(null)}>
+                    <View style={styles.modalContent}>
+                        {selectedNotif && (
+                            <>
+                                <View style={[styles.iconBox, { backgroundColor: typeIcon(selectedNotif.type).bg, alignSelf: 'center', width: 60, height: 60, borderRadius: 30, marginRight: 0, marginBottom: 16 }]}>
+                                    <Ionicons name={typeIcon(selectedNotif.type).name as any} size={32} color={typeIcon(selectedNotif.type).color} />
+                                </View>
+                                <Text style={styles.modalTitle}>{selectedNotif.title}</Text>
+                                <Text style={styles.modalMsg}>{isHindi ? (selectedNotif.messageHi || selectedNotif.messageEn) : selectedNotif.messageEn}</Text>
+                                
+                                <View style={styles.modalActions}>
+                                    <TouchableOpacity style={styles.modalBtnPrimary} onPress={handleNotifAction}>
+                                        <Text style={styles.modalBtnPrimaryText}>{isHindi ? 'ठीक है' : 'Okay'}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -435,5 +472,70 @@ const styles = StyleSheet.create({
         paddingHorizontal: 6,
         paddingVertical: 2,
         borderRadius: 4,
+    },
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        padding: 24,
+        width: '100%',
+        maxWidth: 400,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#111827',
+        marginTop: 16,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    modalMsg: {
+        fontSize: 16,
+        color: '#4B5563',
+        textAlign: 'center',
+        lineHeight: 24,
+        marginBottom: 24,
+    },
+    modalActions: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    modalBtnCancel: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: '#F3F4F6',
+        alignItems: 'center',
+    },
+    modalBtnCancelText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#4B5563',
+    },
+    modalBtnPrimary: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: GREEN,
+        alignItems: 'center',
+    },
+    modalBtnPrimaryText: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#FFFFFF',
     }
 });

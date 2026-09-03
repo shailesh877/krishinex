@@ -10,7 +10,9 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
-  Alert,
+  ActivityIndicator,
+  Dimensions,
+  RefreshControl,
   Platform,
   ScrollView,
 } from 'react-native';
@@ -24,6 +26,7 @@ import { Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
 import { showAlert } from '@/components/CustomAlert';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const KHETIFY_GREEN = '#98cd06ff';
 const KHETIFY_GREEN_DARK = '#467804ff';
@@ -34,6 +37,7 @@ let RAM_CACHE_SELL: any = null;
 let RAM_CACHE_SELL_TIMESTAMP = 0;
 
 export default function SellScreen() {
+  const insets = useSafeAreaInsets();
   const { language } = useI18n();
   const hi = language === 'hi';
   const router = useRouter();
@@ -98,24 +102,20 @@ export default function SellScreen() {
     }, [hi])
   );
 
-  useEffect(() => {
-    requestMediaLibraryPermission();
-    if (RAM_CACHE_SELL) {
-      setMandis(RAM_CACHE_SELL.mandis);
-      setCrops(RAM_CACHE_SELL.crops);
-      const age = Date.now() - RAM_CACHE_SELL_TIMESTAMP;
-      if (age >= 5 * 60 * 1000) {
-        fetchData();
-      } else {
-        console.log('[DEBUG] Skipping Sell API call, RAM cache is fresh');
-      }
-    } else {
-      fetchData();
-    }
-  }, []);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = async (forceRefresh = false) => {
     try {
+      if (!forceRefresh && RAM_CACHE_SELL) {
+        setMandis(RAM_CACHE_SELL.mandis);
+        setCrops(RAM_CACHE_SELL.crops);
+        const age = Date.now() - RAM_CACHE_SELL_TIMESTAMP;
+        if (age < 5 * 60 * 1000) {
+          console.log('[DEBUG] Skipping Sell API call, RAM cache is fresh');
+          return;
+        }
+      }
+      
       const [newMandis, newCrops] = await Promise.all([fetchMandis(), fetchCrops()]);
       RAM_CACHE_SELL = { mandis: newMandis, crops: newCrops };
       RAM_CACHE_SELL_TIMESTAMP = Date.now();
@@ -123,6 +123,16 @@ export default function SellScreen() {
       console.error('Error fetching sell data:', error);
     }
   };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData(true).finally(() => setRefreshing(false));
+  };
+
+  useEffect(() => {
+    requestMediaLibraryPermission();
+    fetchData();
+  }, []);
 
   const fetchCrops = async () => {
     try {
@@ -313,7 +323,7 @@ export default function SellScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
         <TouchableOpacity
           style={styles.avatarWrap}
           activeOpacity={0.8}
@@ -356,6 +366,7 @@ export default function SellScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22c55e" />}
       >
         {/* LOCATION CARD */}
         <View style={styles.locationCard}>
@@ -677,7 +688,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 44,
     paddingBottom: 12,
     backgroundColor: '#F9FAFB',
     borderBottomColor: KHETIFY_GREEN_LIGHT,

@@ -5,6 +5,9 @@ if (!global.crypto) {
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 require('dotenv').config();
 
@@ -23,6 +26,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const shopRoutes = require('./routes/shopRoutes');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
@@ -53,6 +57,30 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Setup Socket.io
+const io = new Server(server, { cors: corsOptions });
+
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (!token) return next(new Error('Authentication error: Missing token'));
+    
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) return next(new Error('Authentication error: Invalid token'));
+        socket.user = decoded;
+        next();
+    });
+});
+
+io.on('connection', (socket) => {
+    console.log(`🔌 [Socket.io] User connected: ${socket.user.id} (${socket.user.role})`);
+    socket.join(`user_${socket.user.id}`);
+    socket.on('disconnect', () => {
+        console.log(`🔌 [Socket.io] User disconnected: ${socket.user.id}`);
+    });
+});
+
+global.io = io;
 
 // LOUD GLOBAL REQUEST LOGGER
 app.use((req, res, next) => {
@@ -127,8 +155,8 @@ mongoose.connect(MONGODB_URI)
             console.log('Old email_1_role_1 index not found or already dropped:', e.message);
         }
 
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server running on port ${PORT}`);
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server & Socket.io running on port ${PORT}`);
         });
     })
     .catch((err) => {

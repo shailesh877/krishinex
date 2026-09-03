@@ -124,16 +124,17 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
-      const formData = new FormData();
-      formData.append('role', 'farmer');
-      formData.append('name', name);
-      formData.append('phone', phone);
-      formData.append('email', email || '');
-      
       const fullAddress = `${village.trim()}, ${district.trim()}, ${state.trim()} - ${pincode.trim()}`;
-      formData.append('address', fullAddress);
 
-      const res = await authApi.register(formData);
+      const payload = {
+        role: 'farmer',
+        name,
+        phone,
+        email: email || '',
+        address: fullAddress
+      };
+
+      const res = await authApi.register(payload);
 
       if (res.status === 201) {
         showAlert(

@@ -2,7 +2,7 @@
   "expo": {
     "name": "KrishiNex",
     "slug": "khetify",
-    "version": "1.46.0",
+    "version": "1.54.0",
     "orientation": "portrait",
     "icon": "./assets/images/Krishinex App logo PNG.png",
     "scheme": "krishinex",
@@ -14,7 +14,7 @@
     "android": {
       "package": "com.pasiwaresocial.krishinex",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 46,
+      "versionCode": 54,
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

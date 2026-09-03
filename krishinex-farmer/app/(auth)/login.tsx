@@ -196,7 +196,9 @@ export default function LoginScreen() {
       setLoading(true);
 
       // Verify OTP via Widget
+      const identifier = phone.startsWith('91') ? phone : `91${phone}`;
       const body = {
+        identifier: identifier,
         reqId: reqId,
         otp: otp
       };

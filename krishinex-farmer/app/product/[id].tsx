@@ -126,18 +126,18 @@ export default function ProductDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.root}>
+      <View style={styles.root}>
         <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={KHETIFY_GREEN_DARK} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!product) {
     return (
-      <SafeAreaView style={styles.root}>
+      <View style={styles.root}>
         <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
         <View style={styles.center}>
           <Text style={styles.errorText}>
@@ -153,7 +153,7 @@ export default function ProductDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -165,11 +165,11 @@ export default function ProductDetailScreen() {
   const unitText = hi ? currentUnit : (currentUnit || 'per unit');
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* top elevated header (statusbar + header ek group) */}
-      <View style={styles.topShell}>
+      <View style={[styles.topShell, { paddingTop: Math.max(insets.top, 10) }]}>
         <View style={styles.appbar}>
           <TouchableOpacity
             style={styles.iconBtn}
@@ -416,7 +416,7 @@ export default function ProductDetailScreen() {
           )}
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
 
   // premium top shell (statusbar + header ek group)
   topShell: {
-    paddingTop: 8,
+    
     paddingBottom: 6,
     paddingHorizontal: 10,
     backgroundColor: '#F9FAFB',

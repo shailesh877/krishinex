@@ -18,16 +18,18 @@ import {
   Linking,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
 } from 'react-native';
-import { authApi, IMAGE_BASE_URL } from '../../services/api';
+import { authApi, IMAGE_BASE_URL, BASE_URL } from '../../services/api';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '@/context/I18nContext';
 import { showAlert } from '@/components/CustomAlert';
+import { useNotificationBadge } from '@/hooks/useNotificationBadge';
 
 const SHADOW_COLOR = '#00000020';
 const KHETIFY_GREEN = '#98cd06ff';
@@ -52,11 +54,17 @@ export default function ProfileScreen() {
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200'
   );
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProfile(true).finally(() => setRefreshing(false));
+  };
   const [saving, setSaving] = useState(false);
   const [aadhaarPhotoUrl, setAadhaarPhotoUrl] = useState<string | null>(null);
   const [aadhaarBackPhotoUrl, setAadhaarBackPhotoUrl] = useState<string | null>(null);
   const [viewAadhaarVisible, setViewAadhaarVisible] = useState(false);
   const [viewAadhaarBackVisible, setViewAadhaarBackVisible] = useState(false);
+  const { unreadCount } = useNotificationBadge();
 
   React.useEffect(() => {
     fetchProfile();
@@ -92,13 +100,13 @@ export default function ProfileScreen() {
     if (user.status) setStatus(user.status);
   };
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (forceRefresh = false) => {
     try {
       if (RAM_CACHE_PROFILE) {
-        applyProfileData(RAM_CACHE_PROFILE);
+        if (!forceRefresh) applyProfileData(RAM_CACHE_PROFILE);
         setLoading(false);
         const age = Date.now() - RAM_CACHE_TIMESTAMP;
-        if (age < 5 * 60 * 1000) {
+        if (!forceRefresh && age < 5 * 60 * 1000) {
           console.log('[DEBUG] Skipping Profile API call, RAM cache is fresh');
           return;
         }
@@ -106,7 +114,7 @@ export default function ProfileScreen() {
         const cached = await AsyncStorage.getItem('userData');
         if (cached) {
           const parsed = JSON.parse(cached);
-          applyProfileData(parsed);
+          if (!forceRefresh) applyProfileData(parsed);
           RAM_CACHE_PROFILE = parsed;
           RAM_CACHE_TIMESTAMP = Date.now();
           setLoading(false);
@@ -235,7 +243,7 @@ export default function ProfileScreen() {
             : `${IMAGE_BASE_URL}/${res.url.replace(/\\/g, '/')}`;
           setAvatarUrl(pfp);
           setDraftAvatar(pfp);
-          fetchProfile(); // Refresh local data
+          fetchProfile(true); // Refresh local data
         }
       } catch (e) {
         showAlert('Error', hi ? 'फोटो अपलोड करने में विफल' : 'Failed to upload photo');
@@ -317,7 +325,7 @@ export default function ProfileScreen() {
         await authApi.updateProfile(payload);
       }
 
-      await fetchProfile(); // Refresh logic
+      await fetchProfile(true); // Force refresh
       setEditModalVisible(false);
     } catch (e: any) {
       console.error('Save Edit Error:', e);
@@ -547,12 +555,31 @@ export default function ProfileScreen() {
 
         <Image source={mainLogo} style={styles.logo} resizeMode="contain" />
 
-        <TouchableOpacity onPress={() => router.push('/notifications' as any)}>
+        <TouchableOpacity onPress={() => router.push('/notifications' as any)} style={{ position: 'relative' }}>
           <Ionicons
             name="notifications-outline"
             size={24}
             color={KHETIFY_GREEN_DARK}
           />
+          {unreadCount > 0 && (
+            <View style={{
+              position: 'absolute',
+              top: -4,
+              right: -4,
+              backgroundColor: '#EF4444',
+              borderRadius: 10,
+              minWidth: 18,
+              height: 18,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 1.5,
+              borderColor: '#FFF',
+            }}>
+              <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '700' }}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -567,6 +594,7 @@ export default function ProfileScreen() {
         <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16A34A" />}
         >
           {/* PROFILE CARD */}
           <View style={styles.profileCard}>

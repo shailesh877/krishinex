@@ -23,6 +23,7 @@ import { useCallback } from 'react';
 import { authApi, IMAGE_BASE_URL, BASE_URL } from '../../services/api';
 import { updateBackgroundLocation, getStoredLocation } from '@/utils/locationManager';
 import { useI18n } from '@/context/I18nContext';
+import { useNotificationBadge } from '@/hooks/useNotificationBadge';
 
 const SHADOW_COLOR = '#00000020';
 const GREEN = '#98cd06ff';
@@ -76,28 +77,11 @@ export default function HomeScreen() {
   const [weatherLoading, setWeatherLoading] = React.useState(true);
   const [suggestions, setSuggestions] = React.useState<any[]>([]);
   const [banners, setBanners] = React.useState<any[]>([]); // Added banners state
-  const [unreadNotifCount, setUnreadNotifCount] = React.useState(0);
+  const { unreadCount: unreadNotifCount, fetchUnreadCount } = useNotificationBadge();
   const [refreshing, setRefreshing] = React.useState(false);
   const [profileImage, setProfileImage] = React.useState<string | null>(null);
   const [creditLimit, setCreditLimit] = React.useState(0);
   const [creditUsed, setCreditUsed] = React.useState(0);
-
-  const fetchUnreadCount = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${BASE_URL}/notifications/unread-count`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadNotifCount(data.count || 0);
-        await AsyncStorage.setItem('cached_unread', (data.count || 0).toString());
-      }
-    } catch (e) {
-      console.log('Error fetching unread count', e);
-    }
-  };
 
   const loadWeather = async (silent = false, forceFetch = false) => {
     try {
@@ -219,7 +203,7 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadWeather(true, true), loadSuggestions(), loadProfile(), fetchUnreadCount()]);
+    await Promise.all([loadWeather(true, true), loadSuggestions(), loadProfile(), fetchUnreadCount(true)]);
     setRefreshing(false);
   };
 
@@ -255,9 +239,6 @@ export default function HomeScreen() {
           const cachedSuggestions = await AsyncStorage.getItem('cached_suggestions');
           if (cachedSuggestions) setSuggestions(JSON.parse(cachedSuggestions));
 
-          const cachedUnread = await AsyncStorage.getItem('cached_unread');
-          if (cachedUnread) setUnreadNotifCount(parseInt(cachedUnread, 10));
-
         } catch (error) {
           console.error('Error loading cache:', error);
         }
@@ -270,7 +251,7 @@ export default function HomeScreen() {
         }
         await loadSuggestions();
         await loadProfile();
-        await fetchUnreadCount();
+        await fetchUnreadCount(true);
       };
 
       loadCachedData().then(() => {

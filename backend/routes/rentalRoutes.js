@@ -109,10 +109,14 @@ router.patch('/:id/status', protect, async (req, res) => {
             if (overlaps.length > 0) {
                 return res.status(400).json({ error: 'Another booking already exists for this time slot. Cannot accept this request.' });
             }
+        }
 
-            // Generate OTP
+        // Generate OTP
+        if (status === 'Accepted' || status === 'In Progress') {
+            console.log(`[DEBUG] Before generation: OTP is ${rental.completionOTP}`);
             if (!rental.completionOTP) {
                 rental.completionOTP = Math.floor(1000 + Math.random() * 9000).toString();
+                console.log(`[DEBUG] Generated OTP: ${rental.completionOTP}`);
             }
         }
 
@@ -121,7 +125,9 @@ router.patch('/:id/status', protect, async (req, res) => {
             rental.cancelReason = cancelReason;
         }
 
+        console.log(`[DEBUG] Before save: rental status is ${rental.status}, OTP is ${rental.completionOTP}`);
         await rental.save();
+        console.log(`[DEBUG] After save, OTP is ${rental.completionOTP}`);
 
         // Wallet Credit + Debit Logic on Completion
         if (status === 'Completed' && previousStatus !== 'Completed') {
@@ -230,6 +236,11 @@ router.patch('/:id/status', protect, async (req, res) => {
         }
 
         res.json({ message: `Rental status updated to ${status}`, rental });
+        
+        if (global.io) {
+            global.io.to(`user_${rental.buyer}`).emit('rental_status_update', rental);
+            global.io.to(`user_${rental.owner}`).emit('rental_status_update', rental);
+        }
     } catch (error) {
         console.error('Update rental status error:', error);
         res.status(500).json({ error: 'Failed to update rental status' });
@@ -330,6 +341,11 @@ router.post('/book', protect, async (req, res) => {
         }).catch(() => { });
 
         res.status(201).json({ message: 'Booking successful', rental });
+        
+        if (global.io) {
+            global.io.to(`user_${machine.owner}`).emit('rental_new', rental);
+            global.io.to(`user_${req.user.id}`).emit('rental_new', rental);
+        }
     } catch (error) {
         console.error('Book equipment error:', error);
         res.status(500).json({ error: 'Failed to book equipment' });

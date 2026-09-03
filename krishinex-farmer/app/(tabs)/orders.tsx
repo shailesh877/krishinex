@@ -1,6 +1,6 @@
 // app/(tabs)/orders.tsx
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,12 +12,13 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  DeviceEventEmitter,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '@/context/I18nContext';
 import { authApi, IMAGE_BASE_URL } from '../../services/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 const GREEN = '#98cd06ff';
 const GREEN_DARK = '#467804ff';
@@ -41,22 +42,39 @@ export default function UnifiedOrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData(); // initial fetch on focus
+      
+      const interval = setInterval(() => {
+        // Silent fetch every 5 seconds for active orders
+        fetchData(true, true);
+      }, 5000);
 
-  const fetchData = async (forceRefresh = false) => {
+      const sub = DeviceEventEmitter.addListener('pushNotificationReceived', (notif) => {
+        console.log('[ORDERS] Received push notification, refreshing...');
+        fetchData(true, true);
+      });
+
+      return () => {
+        clearInterval(interval);
+        sub.remove();
+      };
+    }, [])
+  );
+
+  const fetchData = async (forceRefresh = false, silent = false) => {
     try {
       if (!forceRefresh && RAM_CACHE_ORDERS) {
         setShopOrders(RAM_CACHE_ORDERS.shopOrders);
         setBookings(RAM_CACHE_ORDERS.bookings);
-        setLoading(false);
+        if (!silent) setLoading(false);
         const age = Date.now() - RAM_CACHE_ORDERS_TIMESTAMP;
         if (age < 5 * 60 * 1000) {
           console.log('[DEBUG] Skipping Orders API call, RAM cache is fresh');
           return;
         }
-      } else if (!forceRefresh) {
+      } else if (!forceRefresh && !silent) {
         setLoading(true);
       }
 
@@ -68,7 +86,7 @@ export default function UnifiedOrdersScreen() {
       };
       RAM_CACHE_ORDERS_TIMESTAMP = Date.now();
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
       setRefreshing(false);
     }
   };
@@ -215,7 +233,7 @@ export default function UnifiedOrdersScreen() {
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
         <View style={{ width: 42 }} />
         <Image source={mainLogo} style={styles.logo} resizeMode="contain" />
-        <TouchableOpacity onPress={() => fetchData()}>
+        <TouchableOpacity onPress={() => fetchData(true)}>
           <Ionicons name="refresh" size={22} color={GREEN_DARK} />
         </TouchableOpacity>
       </View>

@@ -38,11 +38,11 @@ export default function CartScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* premium top header (statusbar + header ek group) */}
-      <View style={styles.topShell}>
+      <View style={[styles.topShell, { paddingTop: Math.max(insets.top, 8) }]}>
         <View style={styles.appbar}>
           <TouchableOpacity
             style={styles.iconBtn}
@@ -198,7 +198,7 @@ export default function CartScreen() {
           </View>
         </>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -211,7 +211,6 @@ const styles = StyleSheet.create({
 
   // premium top shell (statusbar + header ek group)
   topShell: {
-    paddingTop: 8,
     paddingBottom: 6,
     paddingHorizontal: 10,
     backgroundColor: '#F9FAFB',

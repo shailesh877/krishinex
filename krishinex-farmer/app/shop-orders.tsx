@@ -176,11 +176,11 @@ export default function ShopOrdersScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* premium top header */}
-      <View style={styles.topShell}>
+      <View style={[styles.topShell, { paddingTop: Math.max(insets.top, 10) }]}>
         {/* appbar code ... */}
         <View style={styles.appbar}>
           <TouchableOpacity
@@ -364,19 +364,16 @@ export default function ShopOrdersScreen() {
           <View style={{ height: 20 }} />
         </ScrollView>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1, backgroundColor: '#F3F4F6',
-    paddingTop: 16,
+    flex: 1,
+    backgroundColor: '#F3F4F6',
   },
-
-  // premium top header + filter
   topShell: {
-    paddingTop: 8,
     paddingBottom: 4,
     backgroundColor: '#F9FAFB',
     shadowColor: SHADOW_COLOR,

@@ -4030,6 +4030,12 @@ router.put('/admin/rental/bookings/:id/status', protect, checkModule('equipment'
         rental.status = status;
         if (status === 'Cancelled' && cancelReason) rental.cancelReason = cancelReason;
 
+        if (status === 'Accepted' || status === 'In Progress') {
+            if (!rental.completionOTP) {
+                rental.completionOTP = Math.floor(1000 + Math.random() * 9000).toString();
+            }
+        }
+
         // Auto-calculate commission when completing
         if (status === 'Completed' && rental.totalAmount > 0 && rental.platformCommission === 0) {
             rental.platformCommission = Math.round(rental.totalAmount * 0.05);

@@ -422,7 +422,7 @@ export default function ShopScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F0FDF4" />
 
       {/* HEADER gradient */}
@@ -430,7 +430,7 @@ export default function ShopScreen() {
         colors={['#b9e573ff', '#69ad49ff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={styles.headerGradient}
+        style={[styles.headerGradient, { paddingTop: Math.max(insets.top, 16) }]}
       >
         <View style={styles.headerRow}>
           <TouchableOpacity
@@ -837,7 +837,7 @@ export default function ShopScreen() {
         </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

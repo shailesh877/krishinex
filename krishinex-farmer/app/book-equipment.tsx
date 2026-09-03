@@ -20,6 +20,7 @@ import {
   Linking,
   Dimensions,
   KeyboardAvoidingView,
+  RefreshControl,
 } from 'react-native';
 import { Audio } from 'expo-av';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -384,6 +385,14 @@ export default function BookEquipmentScreen() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setPage(1);
+    setHasMore(true);
+    fetchData(1, undefined, true).finally(() => setRefreshing(false));
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -395,7 +404,7 @@ export default function BookEquipmentScreen() {
     };
   }, [mode, searchText, maxDistance, selectedCategory]);
 
-  const fetchData = async (pageNum = 1, signal?: AbortSignal) => {
+  const fetchData = async (pageNum = 1, signal?: AbortSignal, forceRefresh = false) => {
     try {
       const categoryMap: { [key: number]: string } = mode === 'tractor' ? {
         1: 'all',
@@ -421,7 +430,7 @@ export default function BookEquipmentScreen() {
       const cacheKey = `equipments_${mode}_${selectedCategory || 1}_${searchText}_${maxDistance || ''}`;
 
       if (pageNum === 1) {
-        if (RAM_CACHE[cacheKey]) {
+        if (!forceRefresh && RAM_CACHE[cacheKey]) {
           const age = Date.now() - RAM_CACHE[cacheKey].timestamp;
           if (age < 5 * 60 * 1000) {
             setEquipmentList(RAM_CACHE[cacheKey].data);
@@ -430,7 +439,7 @@ export default function BookEquipmentScreen() {
             return;
           }
         }
-        setLoading(true);
+        if (!forceRefresh) setLoading(true);
       } else {
         setLoadingMore(true);
       }
@@ -1201,6 +1210,7 @@ export default function BookEquipmentScreen() {
           <FlatList
             style={styles.scroll}
             showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#467804" />}
             data={rows}
             keyExtractor={(item, index) => index.toString()}
             onEndReached={() => {

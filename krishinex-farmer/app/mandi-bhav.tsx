@@ -96,15 +96,15 @@ export default function MandiBhavScreen() {
     RAM_CACHE_MANDI_PRICES = {};
     await Promise.all([fetchMandis(), fetchCrops()]);
     if (selectedMandi && selectedCrop) {
-      await fetchPrices();
+      await fetchPrices(undefined, true);
     }
     setRefreshing(false);
   };
 
-  const fetchPrices = async (signal?: AbortSignal) => {
+  const fetchPrices = async (signal?: AbortSignal, forceRefresh = false) => {
     if (!selectedMandi || !selectedCrop || crops.length === 0) return;
     const cacheKey = `${selectedMandi._id}_${selectedCrop}`;
-    if (RAM_CACHE_MANDI_PRICES[cacheKey]) {
+    if (!forceRefresh && RAM_CACHE_MANDI_PRICES[cacheKey]) {
       setCropData(RAM_CACHE_MANDI_PRICES[cacheKey]);
       setLoadingPrices(false);
       return;

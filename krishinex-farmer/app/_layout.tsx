@@ -13,7 +13,7 @@ SplashScreen.preventAutoHideAsync();
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { I18nProvider } from '@/context/I18nContext';
 import { CartProvider } from '@/context/CartContext';
-import { View, ActivityIndicator, Image, Text } from 'react-native';
+import { View, ActivityIndicator, Image, Text, DeviceEventEmitter } from 'react-native';
 import { CustomAlert, customAlertRef } from '@/components/CustomAlert';
 
 
@@ -56,6 +56,7 @@ function RootLayoutContent() {
       // Foreground listener
       notificationListener = Notifications.addNotificationReceivedListener((notification: any) => {
         console.log('[NOTIFY] Received in foreground:', notification);
+        DeviceEventEmitter.emit('pushNotificationReceived', notification);
       });
 
       // Interaction listener (user clicks)

@@ -50,12 +50,16 @@ export const authApi = {
     sendOtp: (phone: string) => api.post('/auth/send-otp', { phone }),
     verifyOtp: (phone: string, otp: string, role: string = 'farmer', widget_verified: boolean = false) =>
         api.post('/auth/verify-otp', { phone, otp, role, widget_verified }),
-    register: async (formData: FormData) => {
+    register: async (data: any) => {
+        const isFormData = data instanceof FormData;
         const response = await fetch(`${BASE_URL}/auth/register`, {
             method: 'POST',
-            body: formData,
-            headers: {
+            body: isFormData ? data : JSON.stringify(data),
+            headers: isFormData ? {
                 'Accept': 'application/json',
+            } : {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
             },
         });
         if (!response.ok) {
