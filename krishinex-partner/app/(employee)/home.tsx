@@ -14,11 +14,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useI18n } from '../../context/I18nContext';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '../../context/UserContext';
+import { useCachedFetch } from '../../hooks/useCachedFetch';
 
 import { BASE_URL, BASE_API_URL } from '../../constants/api';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}`;
 
 const STATUS_GREEN = '#6bb313ff';
@@ -39,25 +41,37 @@ export default function EmployeeHome() {
   const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
 
-  const [employeeName, setEmployeeName] = React.useState('Loading...');
-  const [villageText, setVillageText] = React.useState('Loading...');
-  const [avatarUri, setAvatarUri] = React.useState<string | null>(null);
-  const [userRole, setUserRole] = React.useState<string | null>(null);
+  const { profile, refreshUser } = useUser();
+  const employeeName = profile?.name || 'Loading...';
+  const villageText = profile?.address || 'Loading...';
+  const avatarUri = profile?.avatarUri || null;
+  const userRole = profile?.role || null;
 
-  const [overviewStats, setOverviewStats] = React.useState({
+  // SWR Cached Fetches
+  const { data: statsData, refetch: refetchStats } = useCachedFetch('employee-dashboard-stats', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const res = await fetch(`${API_URL}/employee/dashboard`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
+  });
+
+  const overviewStats = statsData?.overviewStats || {
     totalAssigned: 0,
     totalPending: 0,
     totalCompleted: 0,
-  });
+  };
 
-  const [todayStats, setTodayStats] = React.useState({
+  const todayStats = statsData?.todayStats || {
     todayNew: 0,
     todayPending: 0,
     todayCompleted: 0,
-  });
+  };
   const [unreadCount, setUnreadCount] = React.useState(0);
 
-  const [modules, setModules] = React.useState<EmployeeModule[]>(['labour', 'equipment', 'soil', 'doctor']);
+  const modules = statsData?.access?.modules || ['labour', 'equipment', 'soil', 'doctor'];
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -65,7 +79,8 @@ export default function EmployeeHome() {
     setRefreshing(true);
     try {
       await Promise.all([
-        loadProfileAndDashboard(),
+        refreshUser(),
+        refetchStats(),
         fetchUnreadCount(),
       ]);
     } catch (e) {
@@ -73,68 +88,15 @@ export default function EmployeeHome() {
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshUser, refetchStats]);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadProfileAndDashboard();
+      // SWR handles stats, Context handles profile
       fetchUnreadCount();
     }, [])
   );
 
-  const loadProfileAndDashboard = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-
-      // Local fast load for Name/Avatar
-      const cached = await AsyncStorage.getItem('userData');
-      if (cached) {
-        const user = JSON.parse(cached);
-        setEmployeeName(user.name || 'Employee');
-        setVillageText(user.address || 'Unknown Region');
-        if (user.profilePhotoUrl) {
-          const pfp = user.profilePhotoUrl.startsWith('http')
-            ? user.profilePhotoUrl
-            : `${BASE_URL}/${user.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-        if (user.role) setUserRole(user.role);
-      }
-
-      // 1. Fetch live Profile
-      const profRes = await fetch(`${API_URL}/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (profRes.ok) {
-        const profData = await profRes.json();
-        setEmployeeName(profData.name || 'Employee');
-        setVillageText(profData.address || 'Unknown Region');
-        if (profData.profilePhotoUrl) {
-          const pfp = profData.profilePhotoUrl.startsWith('http')
-            ? profData.profilePhotoUrl
-            : `${BASE_URL}/${profData.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-        if (profData.role) setUserRole(profData.role);
-        await AsyncStorage.setItem('userData', JSON.stringify(profData));
-      }
-
-      // 2. Fetch live Dashboard numbers
-      const dashRes = await fetch(`${API_URL}/employee/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (dashRes.ok) {
-        const dashData = await dashRes.json();
-        if (dashData.overviewStats) setOverviewStats(dashData.overviewStats);
-        if (dashData.todayStats) setTodayStats(dashData.todayStats);
-        if (dashData.access && dashData.access.modules) setModules(dashData.access.modules);
-      }
-
-    } catch (e) {
-      console.error('Err fetching employee dashboard:', e);
-    }
-  };
   const fetchUnreadCount = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -205,7 +167,7 @@ export default function EmployeeHome() {
             activeOpacity={0.8}
             onPress={openNotifications}
           >
-            <Ionicons name="notifications-outline" size={18} color="#111827" />
+            <NotificationIcon size={18} color="#111827" />
             {unreadCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>

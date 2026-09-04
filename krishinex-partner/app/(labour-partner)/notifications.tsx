@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,7 +84,7 @@ export default function LabourNotificationsScreen() {
 
   const getToken = () => AsyncStorage.getItem('userToken');
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (silent = false) => {
     try {
       const token = await getToken();
       if (!token) return;
@@ -93,7 +93,7 @@ export default function LabourNotificationsScreen() {
       });
       if (res.ok) {
         const data = await res.json();
-        setItems(data);
+        setItems(prev => JSON.stringify(prev) !== JSON.stringify(data) ? data : prev);
       }
     } catch (e) {
       console.error('Fetch notifications error:', e);
@@ -103,8 +103,14 @@ export default function LabourNotificationsScreen() {
     }
   }, []);
 
-  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
-  const onRefresh = () => { setRefreshing(true); fetchNotifications(); };
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications(false);
+      const interval = setInterval(() => fetchNotifications(true), 5000);
+      return () => clearInterval(interval);
+    }, [fetchNotifications])
+  );
+  const onRefresh = () => { setRefreshing(true); fetchNotifications(false); };
 
   const markRead = async (id: string, refId?: string) => {
     setItems(prev => prev.map(n => n._id === id ? { ...n, unread: false } : n));
@@ -194,11 +200,7 @@ export default function LabourNotificationsScreen() {
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={styles.title}>{t.title}</Text>
-            {unreadCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{unreadCount}</Text>
-              </View>
-            )}
+            
           </View>
           <Text style={styles.subtitle}>{t.sub}</Text>
         </View>
@@ -223,6 +225,10 @@ export default function LabourNotificationsScreen() {
         </View>
       ) : (
         <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
           data={items}
           keyExtractor={item => item._id}
           contentContainerStyle={styles.listPad}

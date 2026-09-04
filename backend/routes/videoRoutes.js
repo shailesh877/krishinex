@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
         const videos = await Video.find({ isActive: true }).sort({ createdAt: -1 });
         res.json(videos);
     } catch (error) {
-        res.status(500).json({ error: 'Server error fetching videos' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -23,7 +23,7 @@ router.get('/admin/all', protect, checkModule("pathshala"), async (req, res) => 
         const videos = await Video.find().sort({ createdAt: -1 });
         res.json(videos);
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 

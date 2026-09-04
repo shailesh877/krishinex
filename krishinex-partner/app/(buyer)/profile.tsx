@@ -21,6 +21,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -150,53 +151,45 @@ export default function BuyerProfile() {
   const [editVisible, setEditVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Sync profile data to local state
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || '');
+      setPhone(profile.phone || '');
+      setEmail(profile.email || '');
+      setAddress(profile.address || '');
+      setBusinessName(profile.businessName || '');
+      setAadhaarNumber(profile.aadhaarNumber || '');
+      setStatus(profile.status || 'pending');
+      setAadhaarDocName(profile.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
+      setAadhaarDocUrl(profile.aadhaarDocUrl || null);
+      setAadhaarBackDocName(profile.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
+      setAadhaarBackDocUrl(profile.aadhaarBackDocUrl || null);
+      
+      if (profile.bankDetails) {
+          setBankHolder(profile.bankDetails.holderName || '');
+          setBankName(profile.bankDetails.bankName || '');
+          setAccountNumber(profile.bankDetails.accountNumber || '');
+          setIfscCode(profile.bankDetails.ifscCode || '');
+      }
+      if (profile.avatarUri) {
+        setProfilePhotoUrl(profile.avatarUri);
+      } else {
+        setProfilePhotoUrl('');
+      }
+      setLoading(false);
+    }
+  }, [profile, isHindi]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-
-      const res = await fetch(`${API_URL}/profile`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setName(data.name || '');
-        setPhone(data.phone || '');
-        setEmail(data.email || '');
-        setAddress(data.address || '');
-        setBusinessName(data.businessName || '');
-        setAadhaarNumber(data.aadhaarNumber || '');
-        setStatus(data.status || 'pending');
-        setAadhaarDocName(data.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
-        setAadhaarDocUrl(data.aadhaarDocUrl || null);
-        setAadhaarBackDocName(data.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
-        setAadhaarBackDocUrl(data.aadhaarBackDocUrl || null);
-        
-        if (data.bankDetails) {
-            setBankHolder(data.bankDetails.holderName || '');
-            setBankName(data.bankDetails.bankName || '');
-            setAccountNumber(data.bankDetails.accountNumber || '');
-            setIfscCode(data.bankDetails.ifscCode || '');
-        }
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setProfilePhotoUrl(pfp);
-        } else {
-          setProfilePhotoUrl('');
-        }
-      }
+      await refreshUser();
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching buyer profile:', error);
     } finally {
       setLoading(false);
     }
@@ -288,9 +281,18 @@ export default function BuyerProfile() {
       const data = await res.json();
 
       if (res.ok) {
-        showAlert('Success', 'Profile updated successfully!');
-        closeEdit();
-        fetchProfile(); // Refresh Data strictly from backend
+        showAlert('Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        
+        updateUser({
+          name: tempName.trim(),
+          email: tempEmail.trim(),
+          address: tempAddress.trim(),
+          businessName: tempBusinessName.trim(),
+          aadhaarNumber: tempAadhaar.trim(),
+        });
+        
+        setEditVisible(false);
+        fetchProfile(); 
       } else {
         showAlert('Error', data.error || 'Failed to update profile');
       }
@@ -346,6 +348,7 @@ export default function BuyerProfile() {
           ? data.url
           : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setProfilePhotoUrl(pfp);
+        updateUser({ avatarUri: pfp });
         showAlert(
           lang === 'hi' ? 'सफल!' : 'Done!',
           lang === 'hi' ? 'प्रोफाइल फोटो अपडेट हो गई' : 'Profile photo updated'

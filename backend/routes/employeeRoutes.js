@@ -177,7 +177,7 @@ router.get('/dashboard', protect, async (req, res) => {
 
     } catch (e) {
         console.error('Employee dash error:', e);
-        res.status(500).json({ error: 'Server error fetching employee dashboard' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -728,7 +728,7 @@ router.get('/farmer-lookup', protect, async (req, res) => {
         res.json(farmers);
     } catch (error) {
         console.error('Farmer lookup error:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -748,7 +748,7 @@ router.get('/recharge-history', protect, async (req, res) => {
         res.json(history);
     } catch (error) {
         console.error('Recharge history error:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -761,7 +761,7 @@ router.get('/recharge-stats', protect, async (req, res) => {
         res.json({ pendingAmount: user.collectedCash || 0 });
     } catch (error) {
         console.error('Recharge stats error:', error);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -826,7 +826,7 @@ router.post('/recharge-farmer', protect, async (req, res) => {
         });
     } catch (error) {
         console.error('Recharge farmer error:', error);
-        res.status(500).json({ error: 'Server error during recharge: ' + error.message });
+        res.status(500).json({ error: 'Network issue. Please try again later.' + error.message });
     }
 });
 
@@ -1086,7 +1086,7 @@ router.post('/admin/generate-card/:userId', protect, async (req, res, next) => {
         res.status(403).json({ error: 'Access denied. Card generation permission required.' });
     } catch (e) {
         console.error('Permission check error:', e);
-        res.status(500).json({ error: 'Server error check permissions' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 }, async (req, res) => {
     try {
@@ -7061,7 +7061,7 @@ router.post('/leads/generate', protect, uploadLeadPhoto.single('photo'), async (
         res.json({ message: 'Lead generated successfully', lead });
     } catch (error) {
         console.error('Lead generate error:', error);
-        res.status(500).json({ error: 'Server error: ' + error.message });
+        res.status(500).json({ error: 'Network issue. Please try again later.' + error.message });
     }
 });
 

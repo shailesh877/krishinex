@@ -28,7 +28,7 @@ const { width } = Dimensions.get('window');
 const CARD_H_MARGIN = 8;
 const CARD_WIDTH = (width - 16 * 2 - CARD_H_MARGIN * 2) / 2;
 const IMAGE_HEIGHT = 110;
-import { BASE_API_URL, BASE_URL, MACHINES_API_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, IMAGE_BASE_URL, MACHINES_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_BASE_URL = BASE_URL;
 
@@ -71,13 +71,20 @@ export default function MachinesScreen() {
   // Fetch machines on focus
   useFocusEffect(
     React.useCallback(() => {
-      fetchMachines();
+      const abortController = new AbortController();
+      const signal = abortController.signal;
+      fetchMachines(signal);
+      const interval = setInterval(() => fetchMachines(signal), 5000);
+      return () => {
+        clearInterval(interval);
+        abortController.abort();
+      };
     }, [])
   );
 
-  const fetchMachines = async () => {
+  const fetchMachines = async (signal?: AbortSignal) => {
     try {
-      setLoading(true);
+      // if (length === 0) setLoading(true) removed for silent polling
       const token = await AsyncStorage.getItem('userToken');
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
@@ -86,7 +93,8 @@ export default function MachinesScreen() {
       }
 
       const res = await fetch(`${MACHINES_API_URL}/my`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal
       });
       if (res.ok) {
         const data = await res.json();
@@ -94,12 +102,12 @@ export default function MachinesScreen() {
         const mapped = data.map((m: any) => {
           console.log('[DEBUG] RAW Machine from Server:', m.name, 'SubMachinery:', JSON.stringify(m.subMachinery));
           const imgs: string[] = (m.images || []).map((img: string) =>
-            img.startsWith('http') ? img : `${BASE_URL}/${img.replace(/^\//, '')}`
+            img.startsWith('http') ? img : `${IMAGE_BASE_URL}/${img.replace(/^\//, '')}`
           );
           // Format sub-machinery image URLs
           const sub = (m.subMachinery || []).map((s: any) => ({
             name: s.name || 'Attachment',
-            image: s.image ? (s.image.startsWith('http') ? s.image : `${BASE_URL}/${s.image.replace(/^\//, '')}`) : '',
+            image: s.image ? (s.image.startsWith('http') ? s.image : `${IMAGE_BASE_URL}/${s.image.replace(/^\//, '')}`) : '',
             priceDay: s.priceDay || 0,
             priceKattha: s.priceKattha || 0
           }));
@@ -113,10 +121,14 @@ export default function MachinesScreen() {
         });
         setMachines(mapped);
       }
-    } catch (error) {
-      console.error('Fetch machines error', error);
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error('Fetch machines error', error);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -158,7 +170,7 @@ export default function MachinesScreen() {
     // Initialize sub-machinery from item
     const formattedSub = (m.subMachinery || []).map(item => ({
       ...item,
-      image: item.image ? (item.image.startsWith('http') ? item.image : `${BASE_URL}/${item.image.replace(/^\//, '')}`) : '',
+      image: item.image ? (item.image.startsWith('http') ? item.image : `${IMAGE_BASE_URL}/${item.image.replace(/^\//, '')}`) : '',
       priceDay: String(item.priceDay ?? '0'),
       priceKattha: String(item.priceKattha ?? '0')
     }));
@@ -199,7 +211,7 @@ export default function MachinesScreen() {
       // 1. Prepare data
       editImages.forEach((uri, index) => {
         if (uri.startsWith('http')) {
-          existingImagesList.push(uri.replace(BASE_URL, '').replace(/^\//, ''));
+          existingImagesList.push(uri.replace(IMAGE_BASE_URL, '').replace(/^\//, ''));
         } else {
           const fileExt = uri.split('.').pop() || 'jpg';
           const fileName = `main_edit_machine_${Date.now()}_${index}.${fileExt}`;
@@ -214,7 +226,7 @@ export default function MachinesScreen() {
 
       const subMachineryMeta = editSubMachinery.map(item => ({
         name: (item.name || '').trim(),
-        image: item.isNewImage ? '' : item.image.replace(BASE_URL, '').replace(/^\//, ''),
+        image: item.isNewImage ? '' : item.image.replace(IMAGE_BASE_URL, '').replace(/^\//, ''),
         isNewImage: !!item.isNewImage,
         priceDay: String(item.priceDay || '0').trim(),
         priceKattha: String(item.priceKattha || '0').trim()
@@ -377,8 +389,7 @@ export default function MachinesScreen() {
           },
         },
         { text: isHindi ? 'Cancel' : 'Cancel', style: 'cancel' },
-      ],
-      { cancelable: true }
+      ]
     );
   };
 
@@ -691,6 +702,10 @@ export default function MachinesScreen() {
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.listContent}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

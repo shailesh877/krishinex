@@ -23,6 +23,7 @@ import { Alert, ActivityIndicator, Modal } from 'react-native';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/shop`;
 
 const getImageUrl = (url: string) => {
@@ -50,7 +51,8 @@ type OrderItem = {
   paymentMode: string;
 };
 
-export default function ShopOrders() {
+export default function ShopOrders() {
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { lang } = useI18n();
@@ -69,6 +71,8 @@ export default function ShopOrders() {
   useFocusEffect(
     React.useCallback(() => {
       fetchOrders();
+      const interval = setInterval(() => fetchOrders(), 5000);
+      return () => clearInterval(interval);
     }, [])
   );
 
@@ -102,7 +106,7 @@ export default function ShopOrders() {
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
+      // if (length === 0) setLoading(true) removed for silent polling
       const token = await AsyncStorage.getItem('userToken');
       const res = await fetch(`${API_URL}/orders`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -273,11 +277,15 @@ export default function ShopOrders() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(shop-partner)/notifications' as any)}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={orders}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}

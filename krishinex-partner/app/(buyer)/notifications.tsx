@@ -8,11 +8,12 @@ import {
     FlatList,
     ActivityIndicator,
     RefreshControl,
-    Alert,
+    Linking,
+    Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -83,8 +84,9 @@ export default function BuyerNotifications() {
 
     const getToken = () => AsyncStorage.getItem('userToken');
 
-    const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = useCallback(async (silent = false) => {
         try {
+            if (!silent) setLoading(true);
             const token = await getToken();
             if (!token) return;
             const res = await fetch(API_URL, {
@@ -92,7 +94,11 @@ export default function BuyerNotifications() {
             });
             if (res.ok) {
                 const data = await res.json();
-                setItems(data);
+                setItems(prev => {
+                    // Only update if data changed
+                    if (JSON.stringify(prev) !== JSON.stringify(data)) return data;
+                    return prev;
+                });
             }
         } catch (e) {
             console.error('Fetch notifications error:', e);
@@ -102,8 +108,14 @@ export default function BuyerNotifications() {
         }
     }, []);
 
-    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
-    const onRefresh = () => { setRefreshing(true); fetchNotifications(); };
+    useFocusEffect(
+        useCallback(() => {
+            fetchNotifications(false);
+            const interval = setInterval(() => fetchNotifications(true), 5000);
+            return () => clearInterval(interval);
+        }, [fetchNotifications])
+    );
+    const onRefresh = () => { setRefreshing(true); fetchNotifications(false); };
 
     const markRead = async (id: string) => {
         setItems(prev => prev.map(n => n._id === id ? { ...n, unread: false } : n));
@@ -153,6 +165,13 @@ export default function BuyerNotifications() {
 
     const unreadCount = items.filter(n => n.unread).length;
 
+    const [selectedNotif, setSelectedNotif] = useState<NotifItem | null>(null);
+
+    const handleNotificationPress = (item: NotifItem) => {
+        if (item.unread) markRead(item._id);
+        setSelectedNotif(item);
+    };
+
     const renderItem = ({ item }: { item: NotifItem }) => {
         const icon = typeIcon(item.type);
         const message = isHindi ? item.messageHi : item.messageEn;
@@ -161,7 +180,7 @@ export default function BuyerNotifications() {
             <TouchableOpacity
                 style={[styles.card, item.unread && styles.cardUnread]}
                 activeOpacity={0.88}
-                onPress={() => markRead(item._id)}
+                onPress={() => handleNotificationPress(item)}
                 onLongPress={() => deleteNotif(item._id)}
             >
                 <View style={[styles.iconWrap, { backgroundColor: icon.bg }]}>
@@ -195,11 +214,7 @@ export default function BuyerNotifications() {
                 <View style={{ flex: 1, marginLeft: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                         <Text style={styles.headerTitle}>{t.title}</Text>
-                        {unreadCount > 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{unreadCount}</Text>
-                            </View>
-                        )}
+                        
                     </View>
                     <Text style={styles.headerSub}>{t.sub}</Text>
                 </View>
@@ -234,6 +249,34 @@ export default function BuyerNotifications() {
                     showsVerticalScrollIndicator={false}
                 />
             )}
+
+            {/* NOTIFICATION POPUP MODAL */}
+            <Modal
+                visible={!!selectedNotif}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setSelectedNotif(null)}
+            >
+                <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelectedNotif(null)}>
+                    <View style={styles.modalContent}>
+                        {selectedNotif && (
+                            <>
+                                <View style={[styles.iconWrap, { backgroundColor: typeIcon(selectedNotif.type).bg, alignSelf: 'center', width: 60, height: 60, borderRadius: 30, marginRight: 0, marginBottom: 16 }]}>
+                                    <Ionicons name={typeIcon(selectedNotif.type).name as any} size={32} color={typeIcon(selectedNotif.type).color} />
+                                </View>
+                                <Text style={styles.modalTitle}>{selectedNotif.title}</Text>
+                                <Text style={styles.modalMsg}>{isHindi ? (selectedNotif.messageHi || selectedNotif.messageEn) : selectedNotif.messageEn}</Text>
+                                
+                                <View style={styles.modalActions}>
+                                    <TouchableOpacity style={styles.modalBtnPrimary} onPress={() => setSelectedNotif(null)}>
+                                        <Text style={styles.modalBtnPrimaryText}>{isHindi ? 'ठीक है' : 'Okay'}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 }
@@ -298,5 +341,56 @@ const styles = StyleSheet.create({
     emptyWrap: { alignItems: 'center', gap: 10 },
     emptyTitle: { fontSize: 16, fontWeight: '700', color: '#374151' },
     emptySub: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', lineHeight: 20 },
+    // Modal Styles
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        width: '100%',
+        maxWidth: 340,
+        borderRadius: 24,
+        padding: 24,
+        alignItems: 'center',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1F2937',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    modalMsg: {
+        fontSize: 15,
+        color: '#4B5563',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 24,
+    },
+    modalActions: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    modalBtnPrimary: {
+        flex: 1,
+        backgroundColor: '#2563EB',
+        paddingVertical: 14,
+        borderRadius: 14,
+        alignItems: 'center',
+    },
+    modalBtnPrimaryText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
-

@@ -17,9 +17,10 @@ import {
   Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -27,6 +28,7 @@ import { Linking } from 'react-native';
 
 import { BASE_URL, BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
 
 export default function EquipmentProfile() {
@@ -94,55 +96,53 @@ export default function EquipmentProfile() {
     setRefreshing(false);
   }, []);
 
+  const { profile, refreshUser, updateUser } = useUser();
+
+  // Sync profile data to local state
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || '');
+      setPhone(profile.phone || '');
+      setEmail(profile.email || '');
+      setAddress(profile.address || '');
+      setBusinessName(profile.businessName || '');
+      setAadhaarNumber(profile.aadhaarNumber || '');
+      setAadhaarDocName(profile.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
+      setAadhaarUrl(profile.aadhaarDocUrl || null);
+      setAadhaarBackDocName(profile.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
+      setAadhaarBackUrl(profile.aadhaarBackDocUrl || null);
+      if (profile.status) setStatus(profile.status);
+      if (profile.bankDetails) {
+        setBankHolder(profile.bankDetails.holderName || '');
+        setBankName(profile.bankDetails.bankName || '');
+        setAccountNumber(profile.bankDetails.accountNumber || '');
+        setIfsc(profile.bankDetails.ifscCode || '');
+        setBankAddress(profile.bankDetails.bankAddress || '');
+        setBankDocUrl(profile.bankDetails.bankDocUrl || null);
+        setBankDocName(profile.bankDetails.bankDocUrl ? (isHindi ? 'अपलोड किया गया' : 'Uploaded') : null);
+      }
+      if (profile.avatarUri) {
+        setProfilePhotoUrl(profile.avatarUri);
+      } else {
+        setProfilePhotoUrl('');
+      }
+      
+      setLoading(false);
+    }
+  }, [profile, isHindi]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-
-      const res = await fetch(`${API_URL}/profile`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setName(data.name || '');
-        setPhone(data.phone || '');
-        setEmail(data.email || '');
-        setAddress(data.address || '');
-        setBusinessName(data.businessName || '');
-        setAadhaarNumber(data.aadhaarNumber || '');
-        setAadhaarDocName(data.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
-        setAadhaarUrl(data.aadhaarDocUrl || null);
-        setAadhaarBackDocName(data.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
-        setAadhaarBackUrl(data.aadhaarBackDocUrl || null);
-        if (data.status) setStatus(data.status);
-        if (data.bankDetails) {
-          setBankHolder(data.bankDetails.holderName || '');
-          setBankName(data.bankDetails.bankName || '');
-          setAccountNumber(data.bankDetails.accountNumber || '');
-          setIfsc(data.bankDetails.ifscCode || '');
-          setBankAddress(data.bankDetails.bankAddress || '');
-          setBankDocUrl(data.bankDetails.bankDocUrl || null);
-          setBankDocName(data.bankDetails.bankDocUrl ? (isHindi ? 'अपलोड किया गया' : 'Uploaded') : null);
-        }
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setProfilePhotoUrl(pfp);
-        } else {
-          setProfilePhotoUrl('');
-        }
-      }
+      await refreshUser();
     } catch (error) {
-      console.error('Error fetching eqp profile:', error);
+      console.error('Error fetching equipment profile:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -255,7 +255,18 @@ export default function EquipmentProfile() {
 
       const data = await res.json();
       if (res.ok) {
-        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'बैंक विवरण अपडेट हो गया!' : 'Bank details updated!');
+        showAlert('Success', isHindi ? 'बैंक डिटेल्स अपडेट हो गईं!' : 'Bank details updated!');
+        
+        updateUser({
+          bankDetails: {
+            holderName: editBankHolder.trim(),
+            bankName: editBankName.trim(),
+            accountNumber: editAccountNumber.trim(),
+            ifscCode: editIfsc.trim().toUpperCase(),
+            bankAddress: editBankAddress.trim()
+          }
+        });
+        
         setBankEditVisible(false);
         fetchProfile();
       } else {
@@ -311,7 +322,16 @@ export default function EquipmentProfile() {
       const data = await res.json();
 
       if (res.ok) {
-        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        showAlert('Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        
+        updateUser({
+          name: editName.trim(),
+          email: editEmail.trim(),
+          address: editAddress.trim(),
+          businessName: editBusinessName.trim(),
+          aadhaarNumber: editAadhaarNumber.trim(),
+        });
+        
         setEditVisible(false);
         fetchProfile();
       } else {
@@ -358,19 +378,20 @@ export default function EquipmentProfile() {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          
         },
         body: formData,
       });
 
-      const data = await res.json();
       if (res.ok) {
+        const data = await res.json();
         const pfp = data.url?.startsWith('http')
           ? data.url
           : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setProfilePhotoUrl(pfp);
-        showAlert(isHindi ? 'सफल!' : 'Done!', isHindi ? 'प्रोफाइल फोटो अपडेट हो गई' : 'Profile photo updated');
+        updateUser({ avatarUri: pfp });
+        showAlert('Done!', isHindi ? 'फोटो अपडेट हो गई' : 'Photo updated');
       } else {
+        const data = await res.json();
         showAlert('Error', data.error || 'Upload failed');
       }
     } catch (e: any) {
@@ -643,7 +664,7 @@ export default function EquipmentProfile() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(equipment)/notifications' as any)}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 

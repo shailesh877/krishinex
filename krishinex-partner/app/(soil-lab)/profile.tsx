@@ -19,11 +19,13 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Linking from 'expo-linking';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AVATAR_SIZE = 86;
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
 
 export default function SoilLabProfile() {
@@ -69,48 +71,45 @@ export default function SoilLabProfile() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const { profile, refreshUser, updateUser } = useUser();
+
+  // Sync profile data to local state for the edit form
+  useEffect(() => {
+    if (profile) {
+      setOwnerName(profile.name || '');
+      setLabName(profile.businessName || '');
+      setAadhaarNumber(profile.aadhaarNumber || '');
+      setAadhaarDocName(profile.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
+      setAadhaarDocUrl(profile.aadhaarDocUrl || null);
+      setAadhaarBackDocName(profile.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
+      setAadhaarBackDocUrl(profile.aadhaarBackDocUrl || null);
+      setIsVerified(profile.status === 'approved');
+      if (profile.bankDetails) {
+        setBankDetails({
+          holderName: profile.bankDetails.holderName || '',
+          bankName: profile.bankDetails.bankName || '',
+          accountNumber: profile.bankDetails.accountNumber || '',
+          ifscCode: profile.bankDetails.ifscCode || '',
+          bankAddress: profile.bankDetails.bankAddress || '',
+        });
+      }
+      setLabLicenseDocName(profile.businessLicenseUrl ? profile.businessLicenseUrl : null);
+      setCancelChequeDocName(profile.bankDetails?.bankDocUrl ? profile.bankDetails.bankDocUrl : null);
+      if (profile.avatarUri) {
+        setAvatar(profile.avatarUri);
+      }
+      
+      setLoading(false);
+    }
+  }, [profile, isHindi]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-
-      const res = await fetch(`${API_URL}/profile`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setOwnerName(data.name || '');
-        setLabName(data.businessName || '');
-        setAadhaarNumber(data.aadhaarNumber || '');
-        setAadhaarDocName(data.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
-        setAadhaarDocUrl(data.aadhaarDocUrl || null);
-        setAadhaarBackDocName(data.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
-        setAadhaarBackDocUrl(data.aadhaarBackDocUrl || null);
-        setIsVerified(data.status === 'approved');
-        if (data.bankDetails) {
-          setBankDetails({
-            holderName: data.bankDetails.holderName || '',
-            bankName: data.bankDetails.bankName || '',
-            accountNumber: data.bankDetails.accountNumber || '',
-            ifscCode: data.bankDetails.ifscCode || '',
-            bankAddress: data.bankDetails.bankAddress || '',
-          });
-        }
-        setLabLicenseDocName(data.businessLicenseUrl ? data.businessLicenseUrl : null);
-        setCancelChequeDocName(data.bankDetails?.bankDocUrl ? data.bankDetails.bankDocUrl : null);
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatar(pfp);
-        }
-      }
+      await refreshUser();
     } catch (error) {
       console.error('Error fetching soil lab profile:', error);
     } finally {
@@ -195,6 +194,7 @@ export default function SoilLabProfile() {
           ? data.url
           : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setAvatar(pfp);
+        updateUser({ avatarUri: pfp });
         showAlert(
           lang === 'hi' ? 'सफल!' : 'Done!',
           lang === 'hi' ? 'प्रोफाइल फोटो अपडेट हो गई' : 'Profile photo updated'
@@ -245,7 +245,14 @@ export default function SoilLabProfile() {
       const data = await res.json();
 
       if (res.ok) {
-        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        showAlert('Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        
+        updateUser({
+          name: editOwnerName.trim(),
+          businessName: editLabName.trim(),
+          aadhaarNumber: editAadhaarNumber.trim(),
+        });
+        
         setEditVisible(false);
         fetchProfile();
       } else {
@@ -496,7 +503,7 @@ export default function SoilLabProfile() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(soil-lab)/notifications' as any)}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 

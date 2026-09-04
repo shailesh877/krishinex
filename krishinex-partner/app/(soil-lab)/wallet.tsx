@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -70,8 +70,9 @@ export default function SoilWallet() {
     },
   }[lang];
 
-  const fetchWallet = useCallback(async () => {
+  const fetchWallet = useCallback(async (silent = false) => {
     try {
+      if (!silent) setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const res = await fetch(`${API_URL}/wallet`, {
@@ -80,7 +81,10 @@ export default function SoilWallet() {
       if (res.ok) {
         const data = await res.json();
         setBalance(data.balance);
-        setTransactions(data.transactions);
+        setTransactions(prev => {
+          if (JSON.stringify(prev) !== JSON.stringify(data.transactions)) return data.transactions;
+          return prev;
+        });
       }
     } catch (e) {
       console.error('Wallet fetch error:', e);
@@ -90,9 +94,15 @@ export default function SoilWallet() {
     }
   }, []);
 
-  useEffect(() => { fetchWallet(); }, [fetchWallet]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchWallet(false);
+      const interval = setInterval(() => fetchWallet(true), 5000);
+      return () => clearInterval(interval);
+    }, [fetchWallet])
+  );
 
-  const onRefresh = () => { setRefreshing(true); fetchWallet(); };
+  const onRefresh = () => { setRefreshing(true); fetchWallet(false); };
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -155,6 +165,10 @@ export default function SoilWallet() {
         <View style={styles.center}><ActivityIndicator size="large" color="#16A34A" /></View>
       ) : (
         <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
           data={transactions}
           keyExtractor={item => item._id}
           renderItem={renderItem}

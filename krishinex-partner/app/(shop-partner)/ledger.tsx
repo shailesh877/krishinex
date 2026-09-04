@@ -98,7 +98,7 @@ export default function LedgerScreen() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
+      // if (length === 0) setLoading(true) removed for silent polling
       const token = await AsyncStorage.getItem('userToken');
 
       let startDate = '';
@@ -528,6 +528,10 @@ export default function LedgerScreen() {
 
             {loadingDetails ? <ActivityIndicator color="#16A34A" /> : (
               <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
                 data={farmerDetails}
                 keyExtractor={it => it._id}
                 renderItem={({ item }) => (

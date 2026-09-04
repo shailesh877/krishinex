@@ -8,14 +8,15 @@ import {
     FlatList,
     ActivityIndicator,
     RefreshControl,
-    Alert,
+    Linking,
+    Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { useFocusEffect } from 'expo-router';
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}/notifications`;
@@ -83,26 +84,46 @@ export default function EquipmentNotifications() {
 
     const getToken = () => AsyncStorage.getItem('userToken');
 
-    const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = useCallback(async (signal?: AbortSignal) => {
         try {
+            // if (length === 0) setLoading(true) removed for silent polling
             const token = await getToken();
             if (!token) return;
             const res = await fetch(API_URL, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
+                signal
             });
             if (res.ok) {
                 const data = await res.json();
-                setItems(data);
+                setItems(prev => JSON.stringify(prev) !== JSON.stringify(data) ? data : prev);
             }
-        } catch (e) {
-            console.error('Fetch notifications error:', e);
+        } catch (e: any) {
+            if (e.name !== 'AbortError') {
+                console.error('Fetch notifications error:', e);
+            }
         } finally {
-            setLoading(false);
-            setRefreshing(false);
+            if (!signal?.aborted) {
+                setLoading(false);
+                setRefreshing(false);
+            }
         }
     }, []);
 
-    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+    useFocusEffect(
+        useCallback(() => {
+            const abortController = new AbortController();
+            fetchNotifications(abortController.signal);
+
+            const interval = setInterval(() => {
+                fetchNotifications();
+            }, 5000);
+
+            return () => {
+                clearInterval(interval);
+                abortController.abort();
+            };
+        }, [fetchNotifications])
+    );
     const onRefresh = () => { setRefreshing(true); fetchNotifications(); };
 
     const markRead = async (id: string) => {
@@ -153,6 +174,13 @@ export default function EquipmentNotifications() {
 
     const unreadCount = items.filter(n => n.unread).length;
 
+    const [selectedNotif, setSelectedNotif] = useState<NotifItem | null>(null);
+
+    const handleNotificationPress = (item: NotifItem) => {
+        if (item.unread) markRead(item._id);
+        setSelectedNotif(item);
+    };
+
     const renderItem = ({ item }: { item: NotifItem }) => {
         const icon = typeIcon(item.type);
         const message = isHindi ? item.messageHi : item.messageEn;
@@ -161,7 +189,7 @@ export default function EquipmentNotifications() {
             <TouchableOpacity
                 style={[styles.card, item.unread && styles.cardUnread]}
                 activeOpacity={0.88}
-                onPress={() => markRead(item._id)}
+                onPress={() => handleNotificationPress(item)}
                 onLongPress={() => deleteNotif(item._id)}
             >
                 <View style={[styles.iconWrap, { backgroundColor: icon.bg }]}>
@@ -195,11 +223,7 @@ export default function EquipmentNotifications() {
                 <View style={{ flex: 1, marginLeft: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                         <Text style={styles.headerTitle}>{t.title}</Text>
-                        {unreadCount > 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{unreadCount}</Text>
-                            </View>
-                        )}
+                        
                     </View>
                     <Text style={styles.headerSub}>{t.sub}</Text>
                 </View>
@@ -218,6 +242,10 @@ export default function EquipmentNotifications() {
                     data={items}
                     keyExtractor={item => item._id}
                     renderItem={renderItem}
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    windowSize={5}
+                    removeClippedSubviews={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />}
                     contentContainerStyle={
                         items.length === 0
@@ -234,6 +262,34 @@ export default function EquipmentNotifications() {
                     showsVerticalScrollIndicator={false}
                 />
             )}
+
+            {/* NOTIFICATION POPUP MODAL */}
+            <Modal
+                visible={!!selectedNotif}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setSelectedNotif(null)}
+            >
+                <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelectedNotif(null)}>
+                    <View style={styles.modalContent}>
+                        {selectedNotif && (
+                            <>
+                                <View style={[styles.iconWrap, { backgroundColor: typeIcon(selectedNotif.type).bg, alignSelf: 'center', width: 60, height: 60, borderRadius: 30, marginRight: 0, marginBottom: 16 }]}>
+                                    <Ionicons name={typeIcon(selectedNotif.type).name as any} size={32} color={typeIcon(selectedNotif.type).color} />
+                                </View>
+                                <Text style={styles.modalTitle}>{selectedNotif.title}</Text>
+                                <Text style={styles.modalMsg}>{isHindi ? (selectedNotif.messageHi || selectedNotif.messageEn) : selectedNotif.messageEn}</Text>
+                                
+                                <View style={styles.modalActions}>
+                                    <TouchableOpacity style={styles.modalBtnPrimary} onPress={() => setSelectedNotif(null)}>
+                                        <Text style={styles.modalBtnPrimaryText}>{isHindi ? 'ठीक है' : 'Okay'}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 }
@@ -298,5 +354,56 @@ const styles = StyleSheet.create({
     emptyWrap: { alignItems: 'center', gap: 10 },
     emptyTitle: { fontSize: 16, fontWeight: '700', color: '#374151' },
     emptySub: { fontSize: 13, color: '#9CA3AF', textAlign: 'center', lineHeight: 20 },
+    // Modal Styles
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        width: '100%',
+        maxWidth: 340,
+        borderRadius: 24,
+        padding: 24,
+        alignItems: 'center',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1F2937',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    modalMsg: {
+        fontSize: 15,
+        color: '#4B5563',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 24,
+    },
+    modalActions: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    modalBtnPrimary: {
+        flex: 1,
+        backgroundColor: '#2563EB',
+        paddingVertical: 14,
+        borderRadius: 14,
+        alignItems: 'center',
+    },
+    modalBtnPrimaryText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
-

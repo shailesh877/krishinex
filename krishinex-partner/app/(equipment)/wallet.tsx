@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -72,27 +72,44 @@ export default function EquipmentWallet() {
     },
   }[lang];
 
-  const fetchWallet = useCallback(async () => {
+  const fetchWallet = useCallback(async (signal?: AbortSignal) => {
     try {
+      // if (length === 0) setLoading(true) removed for silent polling
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const res = await fetch(`${API_URL}/wallet`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal
       });
       if (res.ok) {
         const data = await res.json();
         setBalance(data.balance);
         setTransactions(data.transactions);
       }
-    } catch (e) {
-      console.error('Wallet fetch error:', e);
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('Wallet fetch error:', e);
+      }
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, []);
 
-  useEffect(() => { fetchWallet(); }, [fetchWallet]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const abortController = new AbortController();
+      const signal = abortController.signal;
+      fetchWallet(signal);
+      const interval = setInterval(() => fetchWallet(signal), 5000);
+      return () => {
+        clearInterval(interval);
+        abortController.abort();
+      };
+    }, [])
+  );
 
   const onRefresh = () => { setRefreshing(true); fetchWallet(); };
 
@@ -174,6 +191,10 @@ export default function EquipmentWallet() {
         <View style={styles.center}><ActivityIndicator size="large" color="#16A34A" /></View>
       ) : (
         <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
           data={transactions}
           keyExtractor={item => item._id}
           renderItem={renderItem}

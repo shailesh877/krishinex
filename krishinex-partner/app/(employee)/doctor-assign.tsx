@@ -215,6 +215,10 @@ export default function DoctorAssignScreen() {
 
       {/* CHAT LIST */}
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={chats}
         keyExtractor={item => item.id}
         renderItem={renderItem}

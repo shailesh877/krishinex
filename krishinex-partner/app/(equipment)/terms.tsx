@@ -12,6 +12,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import NotificationIcon from '@/components/NotificationIcon';
 
 export default function TermsScreen() {
   const insets = useSafeAreaInsets();
@@ -42,7 +43,7 @@ export default function TermsScreen() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(equipment)/notifications' as any)}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 

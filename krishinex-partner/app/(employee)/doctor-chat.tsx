@@ -480,6 +480,10 @@ export default function DoctorChatScreen() {
 
         {/* CHAT LIST */}
         <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
           ref={flatListRef}
           data={messages}
           keyExtractor={item => item.id}

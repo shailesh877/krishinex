@@ -341,7 +341,7 @@ router.post('/login-employee', async (req, res) => {
         }
     } catch (error) {
         console.error('Employee Login error:', error);
-        res.status(500).json({ error: 'Server error during employee login.' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -382,7 +382,7 @@ router.post('/verify-otp-employee', async (req, res) => {
         });
     } catch (error) {
         console.error('Verify Admin OTP error:', error);
-        res.status(500).json({ error: 'Server error during OTP verification.' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 

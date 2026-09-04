@@ -14,11 +14,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
+import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
 import * as Location from 'expo-location';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}`;
 
 export default function SoilLabHome() {
@@ -27,14 +30,26 @@ export default function SoilLabHome() {
   const { lang, toggleLang } = useI18n();
   const isHindi = lang === 'hi';
 
-  const [labName, setLabName] = React.useState('');
-  const [stats, setStats] = React.useState({
+  const { profile, refreshUser } = useUser();
+  const labName = profile?.businessName || profile?.name || 'Soil Lab';
+
+  // SWR Cached Fetches
+  const { data: statsData, refetch: refetchStats } = useCachedFetch('soil-dashboard-stats', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const res = await fetch(`${API_URL}/soil/dashboard`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
+  });
+
+  const stats = statsData || {
     lifetime: { totalRequests: 0, totalCompleted: 0 },
     today: { new: 0, accepted: 0, inProgress: 0, completed: 0 }
-  });
+  };
   const [unreadCount, setUnreadCount] = React.useState(0);
-  const [loading, setLoading] = React.useState(true);
-  const [avatarUri, setAvatarUri] = React.useState<string | null>(null);
+  const loading = false;
 
   // Weather state
   const [weatherCity, setWeatherCity] = React.useState('');
@@ -48,7 +63,8 @@ export default function SoilLabHome() {
     setRefreshing(true);
     try {
       await Promise.all([
-        fetchDashboardData(),
+        refreshUser(),
+        refetchStats(),
         fetchUnreadCount(),
         fetchWeather(),
       ]);
@@ -57,52 +73,15 @@ export default function SoilLabHome() {
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshUser, refetchStats]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchDashboardData();
+      // SWR handles stats and user context handles profile.
       fetchUnreadCount();
       fetchWeather();
     }, [])
   );
-
-  const fetchDashboardData = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      const dataStr = await AsyncStorage.getItem('userData');
-      if (dataStr) {
-        const user = JSON.parse(dataStr);
-        setLabName(user.businessName || user.name || 'Soil Lab');
-      }
-
-      const res = await fetch(`${API_URL}/soil/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
-      }
-
-      // Fetch profile for avatar
-      const profileRes = await fetch(`${BASE_API_URL}/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (profileRes.ok) {
-        const profileData = await profileRes.json();
-        if (profileData.profilePhotoUrl) {
-          const pfp = profileData.profilePhotoUrl.startsWith('http')
-            ? profileData.profilePhotoUrl
-            : `${BASE_URL}/${profileData.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-      }
-    } catch (e) {
-      console.error('Soil dashboard error:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
   const fetchUnreadCount = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -174,10 +153,10 @@ export default function SoilLabHome() {
       {/* TOP HEADER */}
       <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity style={styles.logoIconWrap} onPress={() => router.push('./profile')}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+          {profile?.avatarUri ? (
+            <Image source={{ uri: profile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           ) : (
-            <Image source={logoIconSource} style={styles.logoIcon} />
+            <Ionicons name="person-circle-outline" size={32} color="#16A34A" />
           )}
         </TouchableOpacity>
 
@@ -186,7 +165,7 @@ export default function SoilLabHome() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('./notifications')}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
           {unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -196,6 +175,10 @@ export default function SoilLabHome() {
       </View>
 
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={DUMMY}
         keyExtractor={item => item.id}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563EB"]} tintColor="#2563EB" />}

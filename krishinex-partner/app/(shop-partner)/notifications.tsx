@@ -8,11 +8,12 @@ import {
     FlatList,
     ActivityIndicator,
     RefreshControl,
-    Alert,
+    Linking,
+    Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -84,7 +85,7 @@ export default function ShopNotifications() {
 
     const getToken = () => AsyncStorage.getItem('userToken');
 
-    const fetchNotifications = useCallback(async () => {
+    const fetchNotifications = useCallback(async (silent = false) => {
         try {
             const token = await getToken();
             if (!token) return;
@@ -93,7 +94,7 @@ export default function ShopNotifications() {
             });
             if (res.ok) {
                 const data = await res.json();
-                setItems(data);
+                setItems(prev => JSON.stringify(prev) !== JSON.stringify(data) ? data : prev);
             }
         } catch (e) {
             console.error('Fetch notifications error:', e);
@@ -103,8 +104,14 @@ export default function ShopNotifications() {
         }
     }, []);
 
-    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
-    const onRefresh = () => { setRefreshing(true); fetchNotifications(); };
+    useFocusEffect(
+    useCallback(() => {
+      fetchNotifications(false);
+      const interval = setInterval(() => fetchNotifications(true), 5000);
+      return () => clearInterval(interval);
+    }, [fetchNotifications])
+  );
+    const onRefresh = () => { setRefreshing(true); fetchNotifications(false); };
 
     const markRead = async (id: string) => {
         setItems(prev => prev.map(n => n._id === id ? { ...n, unread: false } : n));
@@ -154,6 +161,13 @@ export default function ShopNotifications() {
 
     const unreadCount = items.filter(n => n.unread).length;
 
+    const [selectedNotif, setSelectedNotif] = useState<NotifItem | null>(null);
+
+    const handleNotificationPress = (item: NotifItem) => {
+        if (item.unread) markRead(item._id);
+        setSelectedNotif(item);
+    };
+
     const renderItem = ({ item }: { item: NotifItem }) => {
         const { name, color, bg } = typeIcon(item.type);
         const msg = isHindi ? item.messageHi : item.messageEn;
@@ -163,7 +177,7 @@ export default function ShopNotifications() {
             <TouchableOpacity
                 style={[styles.card, item.unread && styles.unreadCard]}
                 activeOpacity={0.7}
-                onPress={() => markRead(item._id)}
+                onPress={() => handleNotificationPress(item)}
                 onLongPress={() => deleteNotif(item._id)}
             >
                 <View style={[styles.iconBox, { backgroundColor: bg }]}>
@@ -192,11 +206,7 @@ export default function ShopNotifications() {
                 <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={styles.title}>{t.title}</Text>
-                        {unreadCount > 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{unreadCount}</Text>
-                            </View>
-                        )}
+                        
                     </View>
                     <Text style={styles.subtitle}>{t.sub}</Text>
                 </View>
@@ -221,6 +231,10 @@ export default function ShopNotifications() {
                 </View>
             ) : (
                 <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
                     data={items}
                     keyExtractor={item => item._id}
                     contentContainerStyle={styles.listPad}
@@ -230,6 +244,34 @@ export default function ShopNotifications() {
                     renderItem={renderItem}
                 />
             )}
+
+            {/* NOTIFICATION POPUP MODAL */}
+            <Modal
+                visible={!!selectedNotif}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setSelectedNotif(null)}
+            >
+                <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setSelectedNotif(null)}>
+                    <View style={styles.modalContent}>
+                        {selectedNotif && (
+                            <>
+                                <View style={[styles.iconBox, { backgroundColor: typeIcon(selectedNotif.type).bg, alignSelf: 'center', width: 60, height: 60, borderRadius: 30, marginRight: 0, marginBottom: 16 }]}>
+                                    <Ionicons name={typeIcon(selectedNotif.type).name as any} size={32} color={typeIcon(selectedNotif.type).color} />
+                                </View>
+                                <Text style={styles.modalTitle}>{selectedNotif.title}</Text>
+                                <Text style={styles.modalMsg}>{isHindi ? (selectedNotif.messageHi || selectedNotif.messageEn) : selectedNotif.messageEn}</Text>
+                                
+                                <View style={styles.modalActions}>
+                                    <TouchableOpacity style={styles.modalBtnPrimary} onPress={() => setSelectedNotif(null)}>
+                                        <Text style={styles.modalBtnPrimaryText}>{isHindi ? 'ठीक है' : 'Okay'}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 }
@@ -383,5 +425,57 @@ const styles = StyleSheet.create({
     cardTime: {
         fontSize: 12,
         color: '#9CA3AF',
+    },
+    // Modal Styles
+    modalBackdrop: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        width: '100%',
+        maxWidth: 340,
+        borderRadius: 24,
+        padding: 24,
+        alignItems: 'center',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1F2937',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    modalMsg: {
+        fontSize: 15,
+        color: '#4B5563',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 24,
+    },
+    modalActions: {
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    modalBtnPrimary: {
+        flex: 1,
+        backgroundColor: '#2563EB',
+        paddingVertical: 14,
+        borderRadius: 14,
+        alignItems: 'center',
+    },
+    modalBtnPrimaryText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

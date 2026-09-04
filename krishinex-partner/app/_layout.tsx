@@ -1,12 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { I18nProvider } from '../context/I18nContext';
+import { UserProvider } from '../context/UserContext';
 import { registerForPushNotificationsAsync, registerTokenWithBackend } from '../utils/notificationHelper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, ActivityIndicator, Image, Text, StatusBar, TouchableOpacity } from 'react-native';
+import { View, ActivityIndicator, Image, Text, StatusBar, TouchableOpacity, Animated, Easing, Modal } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BASE_API_URL } from '../constants/api';
 import { CustomAlert, customAlertRef } from '../components/CustomAlert';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
+
+// Intercept fetch to redirect all file uploads (FormData) to the live server
+const originalFetch = global.fetch;
+global.fetch = async (url, options) => {
+  if (options && options.body && options.body instanceof FormData && typeof url === 'string') {
+    if (url.includes('127.0.0.1') || url.includes('localhost') || url.includes('10.0.2.2')) {
+      const newUrl = url.replace(/http:\/\/(127\.0\.0\.1|localhost|10\.0\.2\.2):\d+/, 'https://demo.ranx24.com');
+      console.log(`[UPLOAD REDIRECT] Redirecting local upload to live server: ${newUrl}`);
+      return originalFetch(newUrl, options);
+    }
+  }
+  return originalFetch(url, options);
+};
 
 export default function RootLayout() {
   const router = useRouter();
@@ -16,13 +33,21 @@ export default function RootLayout() {
   const [targetRoute, setTargetRoute] = useState<string | null>(null);
   const [profileStatus, setProfileStatus] = useState<string | null>(null);
 
+  const [isNavGuardReady, setIsNavGuardReady] = useState(false);
+
   useEffect(() => {
     if (isReady && rootNavigationState?.key && targetRoute) {
       router.replace(targetRoute as any);
       setTargetRoute(null);
+      // Give a tiny delay for router to finish transition before hiding splash
+      setTimeout(() => setIsNavGuardReady(true), 100);
+    } else if (isReady && rootNavigationState?.key && !targetRoute) {
+      // No redirect needed, we can hide splash immediately
+      setIsNavGuardReady(true);
     }
   }, [isReady, rootNavigationState?.key, targetRoute]);
 
+  // 1. Setup notifications ONCE
   // 1. Setup notifications ONCE
   useEffect(() => {
     const isExpoGo = require('expo-constants').default.appOwnership === 'expo';
@@ -130,8 +155,12 @@ export default function RootLayout() {
             setTargetRoute(path);
           }
         } else {
+          // If unauthenticated and not already on auth/splash screen
           if (!inAuthGroup) {
-            setTargetRoute('/');
+            setTargetRoute('/(auth)/login');
+          } else if (segments[0] === undefined) {
+            // if we are at root index, we should also redirect to login
+            setTargetRoute('/(auth)/login');
           }
         }
       } catch (e) {
@@ -142,31 +171,86 @@ export default function RootLayout() {
     guardNav();
   }, [segments, isReady, rootNavigationState?.key]);
 
-  if (!isReady) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#0E9F6E', justifyContent: 'center', alignItems: 'center' }}>
-        <StatusBar barStyle="light-content" />
-        <Image
-          source={require('../assets/images/logo.png')}
-          style={{ width: 200, height: 80, marginBottom: 20 }}
-          resizeMode="contain"
-        />
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={{ color: '#ffffff', marginTop: 15, fontWeight: '700', fontSize: 16 }}>
-          KrishiNex Partner
-        </Text>
-      </View>
-    );
-  }
+  const [splashOpacity] = useState(new Animated.Value(1));
+  const [logoScale] = useState(new Animated.Value(0.9));
+  const [showSplash, setShowSplash] = useState(true);
 
-  return (
-    <I18nProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
+  // Pulse animation for logo
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(logoScale, {
+          toValue: 1.05,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoScale, {
+          toValue: 0.9,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  useEffect(() => {
+    if (isNavGuardReady) {
+      SplashScreen.hideAsync();
+      Animated.timing(splashOpacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowSplash(false);
+      });
+    }
+  }, [isNavGuardReady]);
+
+  const AnimatedSplashView = (
+    <Animated.View 
+      pointerEvents={showSplash ? "auto" : "none"}
+      style={{ 
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+        zIndex: 99999, elevation: 99999,
+        backgroundColor: '#0E9F6E', 
+        justifyContent: 'center', alignItems: 'center',
+        opacity: splashOpacity 
+    }}>
+      <StatusBar barStyle="light-content" />
+      <Animated.Image
+        source={require('../assets/images/logo.png')}
+        style={{ width: 220, height: 90, marginBottom: 30, transform: [{ scale: logoScale }] }}
+        resizeMode="contain"
       />
-      <CustomAlert ref={customAlertRef} />
-    </I18nProvider>
+      <ActivityIndicator size="large" color="#ffffff" />
+      <Text style={{ color: '#ffffff', marginTop: 20, fontWeight: '800', fontSize: 18, letterSpacing: 1 }}>
+        KrishiNex Partner
+      </Text>
+      <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 8, fontSize: 13, fontWeight: '600' }}>
+        Authenticating...
+      </Text>
+    </Animated.View>
+  );
+
+  // Do not return early, maintain the same React tree to prevent unmounting AnimatedSplashView
+  return (
+    <UserProvider>
+      <I18nProvider>
+        <View style={{ flex: 1 }}>
+          {isReady && (
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                animation: 'none'
+              }}
+            />
+          )}
+          {showSplash && AnimatedSplashView}
+          <CustomAlert ref={customAlertRef} />
+        </View>
+      </I18nProvider>
+    </UserProvider>
   );
 }

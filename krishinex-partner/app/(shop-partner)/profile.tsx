@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -62,52 +63,48 @@ export default function ShopProfile() {
   const [refreshing, setRefreshing] = useState(false);
   const [updatingLocation, setUpdatingLocation] = useState(false);
 
+  const { profile, refreshUser, updateUser } = useUser();
+
+  // Sync profile data to local state for the edit form
+  useEffect(() => {
+    if (profile) {
+      setOwnerName(profile.name || '');
+      setPhone(profile.phone || '');
+      setEmail(profile.email || '');
+      setAddress(profile.address || '');
+      setShopName(profile.businessName || '');
+      setGstNumber(profile.gstNumber || '');
+      setLicenseNumber(profile.licenseNumber || '');
+      setAadhaarNumber(profile.aadhaarNumber || '');
+      setStatus(profile.status || 'pending');
+      setAadhaarDocName(profile.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
+      setAadhaarDocUrl(profile.aadhaarDocUrl || null);
+      setAadhaarBackDocName(profile.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
+      setAadhaarBackDocUrl(profile.aadhaarBackDocUrl || null);
+      
+      if (profile.bankDetails) {
+          setBankHolder(profile.bankDetails.holderName || '');
+          setBankName(profile.bankDetails.bankName || '');
+          setAccountNumber(profile.bankDetails.accountNumber || '');
+          setIfscCode(profile.bankDetails.ifscCode || '');
+          setBankAddress(profile.bankDetails.bankAddress || '');
+          setBankDocUrl(profile.bankDetails.bankDocUrl || null);
+      }
+
+      setAvatarUri(profile.avatarUri || null);
+      
+      // Stop loading once cache is applied
+      setLoading(false);
+    }
+  }, [profile, isHindi]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-
-      const res = await fetch(`${API_URL}/profile`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setOwnerName(data.name || '');
-        setPhone(data.phone || '');
-        setEmail(data.email || '');
-        setAddress(data.address || '');
-        setShopName(data.businessName || '');
-        setGstNumber(data.gstNumber || '');
-        setLicenseNumber(data.licenseNumber || '');
-        setAadhaarNumber(data.aadhaarNumber || '');
-        setStatus(data.status || 'pending');
-        setAadhaarDocName(data.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
-        setAadhaarDocUrl(data.aadhaarDocUrl || null);
-        setAadhaarBackDocName(data.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
-        setAadhaarBackDocUrl(data.aadhaarBackDocUrl || null);
-        
-        if (data.bankDetails) {
-            setBankHolder(data.bankDetails.holderName || '');
-            setBankName(data.bankDetails.bankName || '');
-            setAccountNumber(data.bankDetails.accountNumber || '');
-            setIfscCode(data.bankDetails.ifscCode || '');
-            setBankAddress(data.bankDetails.bankAddress || '');
-            setBankDocUrl(data.bankDetails.bankDocUrl || null);
-        }
-
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-      }
+      await refreshUser();
     } catch (error) {
       console.error('Error fetching shop profile:', error);
     } finally {
@@ -204,6 +201,25 @@ export default function ShopProfile() {
 
       if (res.ok) {
         showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        
+        // Optimistically update context
+        updateUser({
+          name: ownerName.trim(),
+          email: email.trim(),
+          address: address.trim(),
+          businessName: shopName.trim(),
+          aadhaarNumber: aadhaarNumber.trim(),
+          gstNumber: gstNumber.trim(),
+          licenseNumber: licenseNumber.trim(),
+          bankDetails: {
+              holderName: bankHolder.trim(),
+              bankName: bankName.trim(),
+              accountNumber: accountNumber.trim(),
+              ifscCode: ifscCode.trim().toUpperCase(),
+              bankAddress: bankAddress.trim()
+          }
+        });
+        
         closeEdit();
         fetchProfile();
       } else {
@@ -261,6 +277,7 @@ export default function ShopProfile() {
             ? data.url
             : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
           setAvatarUri(pfp);
+          updateUser({ avatarUri: pfp }); // Update globally
           showAlert(isHindi ? 'सफल!' : 'Done!', isHindi ? 'प्रोफाइल फोटो अपडेट हो गई' : 'Profile photo updated');
         } else {
           showAlert('Error', 'Failed to upload photo');

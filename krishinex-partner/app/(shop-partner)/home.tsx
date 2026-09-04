@@ -15,10 +15,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
+import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/shop`;
  // root url used for images too
 
@@ -40,16 +43,46 @@ export default function ShopHome() {
   const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
 
-  const [stats, setStats] = useState({
+  const { profile, refreshUser } = useUser();
+  const profileStatus = profile?.status || 'pending';
+
+  // SWR Cached Fetches
+  const { 
+    data: statsData, 
+    loading: statsLoading, 
+    refetch: refetchStats 
+  } = useCachedFetch('shop-dashboard-stats', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const response = await fetch(`${API_URL}/dashboard`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
+  });
+
+  const { 
+    data: ordersData, 
+    loading: ordersLoading, 
+    refetch: refetchOrders 
+  } = useCachedFetch('shop-latest-orders', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const response = await fetch(`${API_URL}/orders`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    let data = await response.json();
+    return data.filter((o: any) => o.status === 'NEW').slice(0, 3);
+  });
+
+  const stats = statsData || {
     lifetime: { totalOrders: 0, totalDelivered: 0 },
     today: { new: 0, accepted: 0, delivered: 0 },
-  });
-  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
-  const [latestOrders, setLatestOrders] = useState<OrderItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<{ name: string, address: string, avatarUri?: string | null } | null>(null);
-  const [profileStatus, setProfileStatus] = useState<string>('approved');
+  };
+  const latestOrders = ordersData || [];
+  const loading = statsLoading || ordersLoading;
+  const error = null;
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -57,17 +90,17 @@ export default function ShopHome() {
     setRefreshing(true);
     try {
       await Promise.all([
-        fetchProfile(),
-        fetchDashboardStats(),
-        fetchLatestOrders(),
-        fetchUnreadCount(),
+        refreshUser(),
+        refetchStats(),
+        refetchOrders(),
+        // fetchUnreadCount is handled by NotificationIcon or similar if needed
       ]);
     } catch (e) {
       console.error('Refresh error:', e);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshUser, refetchStats, refetchOrders]);
 
   const logoTextSource = isHindi
     ? require('../../assets/images/Khetify_use_under_the_app-Hindi.png')
@@ -88,88 +121,11 @@ export default function ShopHome() {
   };
   const goViewItems = () => router.push('./items-list');
 
-  const fetchDashboardStats = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const response = await fetch(`${API_URL}/dashboard`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setStats(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch dashboard stats.');
-    }
-  };
-
-  const fetchProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const response = await fetch(`${BASE_API_URL}/user/profile`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      const pfp = data.profilePhotoUrl
-        ? (data.profilePhotoUrl.startsWith('http')
-          ? data.profilePhotoUrl
-          : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`)
-        : null;
-      setUserProfile({ name: data.name, address: data.address, avatarUri: pfp });
-      if (data.status) setProfileStatus(data.status);
-      await AsyncStorage.setItem('userData', JSON.stringify(data));
-    } catch (e) {
-      console.log('Error fetching profile', e);
-    }
-  };
-  const fetchLatestOrders = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const response = await fetch(`${API_URL}/orders`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      let data = await response.json();
-      // Filter ONLY 'NEW' orders
-      data = data.filter((o: any) => o.status === 'NEW').slice(0, 3);
-      setLatestOrders(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch latest orders.');
-    } finally {
-      setLoading(false);
-    }
-  };
-  const fetchUnreadCount = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${BASE_API_URL}/notifications/unread-count`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadNotifCount(data.count || 0);
-      }
-    } catch (e) {
-      console.log('Error fetching unread count', e);
-    }
-  };
-
+  // API fetches are now handled by useCachedFetch hook automatically on mount and silently revalidated.
   useFocusEffect(
     useCallback(() => {
-      setLoading(true);
-      setError(null);
-      fetchProfile();
-      fetchDashboardStats();
-      fetchLatestOrders();
-      fetchUnreadCount();
+      // We don't force manual fetches on every focus anymore.
+      // SWR handles the background refresh automatically.
     }, [])
   );
 
@@ -180,8 +136,8 @@ export default function ShopHome() {
       {/* TOP APP HEADER (user avatar + app logo + bell) */}
       <View style={[styles.appHeader, { paddingTop: Math.max(insets.top, 10) }]}>
         <TouchableOpacity style={styles.logoIconWrap} onPress={() => router.push('./profile')}>
-          {userProfile?.avatarUri ? (
-            <Image source={{ uri: userProfile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+          {profile?.avatarUri ? (
+            <Image source={{ uri: profile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           ) : (
             <Ionicons name="person-circle-outline" size={32} color="#16A34A" />
           )}
@@ -192,12 +148,7 @@ export default function ShopHome() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('./notifications')}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
-          {unreadNotifCount > 0 && (
-            <View style={styles.badgeDot}>
-              <Text style={styles.badgeDotText}>{unreadNotifCount > 9 ? '9+' : unreadNotifCount}</Text>
-            </View>
-          )}
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 
@@ -211,10 +162,10 @@ export default function ShopHome() {
         <View style={styles.topInfoRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.greetTitle}>
-              {isHindi ? `नमस्ते, ${userProfile?.name || ''} जी` : `Namaste, ${userProfile?.name || ''} ji`}
+              {isHindi ? 'नमस्ते' : 'Hello'}, {profile?.name || 'Partner'}! 👋
             </Text>
             <Text style={styles.greetSub}>
-              {userProfile?.address || (isHindi ? 'पता उपलब्ध नहीं' : 'Address not available')}
+              <Ionicons name="location" size={14} color="#D1D5DB" /> {profile?.address || (isHindi ? 'पता उपलब्ध नहीं' : 'No Address Available')}
             </Text>
             <Text style={styles.greetHint}>
               {isHindi

@@ -63,7 +63,7 @@ router.get('/dashboard', protect, checkModule("field_executive"), async (req, re
         });
     } catch (error) {
         console.error('Error fetching field dashboard:', error);
-        res.status(500).json({ error: 'Server error fetching dashboard' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -106,7 +106,7 @@ router.get('/executives', protect, checkModule("field_executive"), async (req, r
         res.json(enrichedExecutives);
     } catch (error) {
         console.error('Error fetching field executives:', error);
-        res.status(500).json({ error: 'Server error fetching executives' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -156,7 +156,7 @@ router.post('/executives/create', protect, checkModule("field_executive"), async
         res.status(201).json({ message: 'Field Executive created successfully', executive: newExecutive });
     } catch (error) {
         console.error('Error creating field executive:', error);
-        res.status(500).json({ error: 'Server error creating executive' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -206,7 +206,7 @@ router.get('/tasks', protect, checkModule("field_executive"), async (req, res) =
         res.json(tasks);
     } catch (error) {
         console.error('Error fetching tasks:', error);
-        res.status(500).json({ error: 'Server error fetching tasks' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -245,7 +245,7 @@ router.post('/tasks/assign', protect, checkModule("field_executive"), async (req
         res.status(201).json({ message: 'Task assigned successfully', task: populatedTask });
     } catch (error) {
         console.error('Error assigning task:', error);
-        res.status(500).json({ error: 'Server error assigning task' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -265,7 +265,7 @@ router.get('/tasks/:id', protect, async (req, res) => {
         res.json(task);
     } catch (error) {
         console.error('Error fetching task details:', error);
-        res.status(500).json({ error: 'Server error fetching task details' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -306,7 +306,7 @@ router.patch('/tasks/:id/status', protect, async (req, res) => {
         res.json({ message: `Task marked as ${status}`, task });
     } catch (error) {
         console.error('Error updating task status:', error);
-        res.status(500).json({ error: 'Server error updating status' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -351,7 +351,7 @@ router.patch('/executives/:id', protect, checkModule("field_executive"), async (
         res.json({ message: 'Executive updated successfully', executive: user });
     } catch (error) {
         console.error('Error updating executive:', error);
-        res.status(500).json({ error: 'Server error updating executive' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -376,7 +376,7 @@ router.patch('/executives/:id/status', protect, checkModule("field_executive"), 
         res.json({ message: `Executive status updated to ${status}`, status: user.status });
     } catch (error) {
         console.error('Error updating executive status:', error);
-        res.status(500).json({ error: 'Server error updating status' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -440,7 +440,7 @@ router.get('/executives/:id/performance', protect, checkModule("field_executive"
         });
     } catch (error) {
         console.error('Error fetching executive performance:', error);
-        res.status(500).json({ error: 'Server error fetching performance data' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 

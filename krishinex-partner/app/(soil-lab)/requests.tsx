@@ -22,6 +22,7 @@ import { Alert, ActivityIndicator } from 'react-native';
 
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/soil`;
 
 type StatusType = 'New' | 'Accepted' | 'InProgress' | 'Completed' | 'Cancelled';
@@ -63,8 +64,10 @@ export default function SoilLabRequests() {
   const [reportNote, setReportNote] = useState('');
 
   useFocusEffect(
-    useCallback(() => {
+    React.useCallback(() => {
       fetchRequests();
+      const interval = setInterval(() => fetchRequests(), 5000);
+      return () => clearInterval(interval);
     }, [])
   );
 
@@ -466,7 +469,7 @@ export default function SoilLabRequests() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(soil-lab)/notifications' as any)}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 
@@ -620,6 +623,10 @@ export default function SoilLabRequests() {
           <ActivityIndicator size="large" color="#16A34A" style={{ marginTop: 40 }} />
         ) : (
           <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
             data={filteredRequests}
             keyExtractor={item => item._id}
             renderItem={renderRequest}

@@ -39,10 +39,12 @@ export default function EmployeeNotifications() {
     };
 
     useFocusEffect(
-        useCallback(() => {
-            fetchNotifications();
-        }, [])
-    );
+    React.useCallback(() => {
+      fetchNotifications();
+      const interval = setInterval(() => fetchNotifications(), 5000);
+      return () => clearInterval(interval);
+    }, [])
+  );
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -117,6 +119,10 @@ export default function EmployeeNotifications() {
                 </View>
             ) : (
                 <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
                     data={notifications}
                     keyExtractor={(item) => item._id}
                     renderItem={renderNotification}

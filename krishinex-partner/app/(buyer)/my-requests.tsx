@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -89,8 +89,9 @@ export default function MyRequests() {
     },
   }[lang];
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (silent = false) => {
     try {
+      if (!silent) setLoading(true);
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
 
@@ -99,7 +100,10 @@ export default function MyRequests() {
       });
       if (res.ok) {
         const data = await res.json();
-        setOrders(data);
+        setOrders(prev => {
+          if (JSON.stringify(prev) !== JSON.stringify(data)) return data;
+          return prev;
+        });
       }
     } catch (e) {
       console.error('Fetch orders error:', e);
@@ -109,13 +113,17 @@ export default function MyRequests() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders(false);
+      const interval = setInterval(() => fetchOrders(true), 5000);
+      return () => clearInterval(interval);
+    }, [fetchOrders])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchOrders();
+    fetchOrders(false);
   };
 
   const formatDate = (dateStr: string) => {

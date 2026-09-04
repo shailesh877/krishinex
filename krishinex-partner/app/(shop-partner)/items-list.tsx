@@ -69,6 +69,8 @@ export default function ItemsListScreen() {
   useFocusEffect(
     React.useCallback(() => {
       fetchItems();
+      const interval = setInterval(() => fetchItems(), 5000);
+      return () => clearInterval(interval);
     }, [])
   );
 
@@ -80,7 +82,7 @@ export default function ItemsListScreen() {
 
   const fetchItems = async () => {
     try {
-      setLoading(true);
+      // if (length === 0) setLoading(true) removed for silent polling
       const token = await AsyncStorage.getItem('userToken');
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
@@ -379,6 +381,10 @@ export default function ItemsListScreen() {
       </View>
 
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}

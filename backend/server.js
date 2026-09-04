@@ -137,7 +137,7 @@ app.use((err, req, res, next) => {
     const errorMsg = `[${new Date().toISOString()}] 500_ERROR: ${err.message}\nStack: ${err.stack}\nURL: ${req.method} ${req.url}\n\n`;
     require('fs').appendFileSync('server_error.txt', errorMsg);
     console.error('SERVER ERROR:', err);
-    res.status(500).json({ error: 'Internal Server Error: ' + err.message });
+    res.status(500).json({ error: 'Network issue. Please try again later.' });
 });
 
 // Database connection

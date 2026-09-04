@@ -26,11 +26,24 @@ export function showAlert(
   message: string, 
   buttons: AlertButton[] = [{ text: 'OK', style: 'default' }]
 ) {
+  // Transform technical errors into generic network issue
+  let displayMessage = message;
+  const lowerMsg = (message || '').toLowerCase();
+  if (
+    lowerMsg.includes('server error') || 
+    lowerMsg.includes('internal server error') || 
+    lowerMsg.includes('failed to fetch') ||
+    lowerMsg.includes('network request failed') ||
+    lowerMsg.includes('status: 500')
+  ) {
+    displayMessage = 'Network issue. Please try again later.';
+  }
+
   if (customAlertRef.current) {
-    customAlertRef.current.show(title, message, buttons);
+    customAlertRef.current.show(title, displayMessage, buttons);
   } else {
     // Fallback if component is not mounted
-    Alert.alert(title, message, buttons as any);
+    Alert.alert(title, displayMessage, buttons as any);
   }
 }
 
@@ -129,7 +142,10 @@ export const CustomAlert = forwardRef((props, ref) => {
               <Text style={styles.title}>{title}</Text>
               {!!message && <Text style={styles.message}>{message}</Text>}
               
-              <View style={styles.buttonContainer}>
+              <View style={[
+                styles.buttonContainer, 
+                buttons.length > 2 && { flexDirection: 'column', gap: 8 }
+              ]}>
                 {buttons.map((btn, index) => {
                   const isCancel = btn.style === 'cancel';
                   const isDestructive = btn.style === 'destructive';
@@ -141,7 +157,8 @@ export const CustomAlert = forwardRef((props, ref) => {
                         styles.button,
                         isCancel ? styles.buttonCancel : 
                         isDestructive ? styles.buttonDestructive : styles.buttonDefault,
-                        buttons.length > 1 && { flex: 1, marginHorizontal: 4 }
+                        buttons.length > 1 && buttons.length <= 2 && { flex: 1, marginHorizontal: 4 },
+                        buttons.length > 2 && { width: '100%', minWidth: 'auto', marginBottom: index < buttons.length - 1 ? 8 : 0 }
                       ]}
                       onPress={() => hide(btn.onPress)}
                       activeOpacity={0.8}

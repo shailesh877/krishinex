@@ -36,7 +36,7 @@ const checkApprovedKsp = async (req, res, next) => {
     }
     next();
   } catch (error) {
-    res.status(500).json({ error: 'Server error checking account status.' });
+    res.status(500).json({ error: 'Network issue. Please try again later.' });
   }
 };
 

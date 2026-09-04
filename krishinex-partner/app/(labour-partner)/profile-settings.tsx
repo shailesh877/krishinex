@@ -17,6 +17,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -24,6 +25,7 @@ import * as Location from 'expo-location';
 
 import { BASE_URL, BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
 
 export default function LabourProfileSettings() {
@@ -66,52 +68,49 @@ export default function LabourProfileSettings() {
 
   const [loading, setLoading] = useState(true);
 
+  const { profile, refreshUser, updateUser } = useUser();
+
+  // Sync profile data to local state
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || '');
+      setPhone(profile.phone || '');
+      setEmail(profile.email || '');
+      setBaseVillage(profile.address || '');
+      setMaxDistanceKm(profile.maxDistanceKm ? profile.maxDistanceKm.toString() : '15');
+      setRatePerDay(profile.ratePerDay ? profile.ratePerDay.toString() : '700');
+      setRatePerHour(profile.ratePerHour ? profile.ratePerHour.toString() : '90');
+      setAadhaarNumber(profile.aadhaarNumber || '');
+      setAadhaarDocName(profile.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
+      setAadhaarDocUrl(profile.aadhaarDocUrl || null);
+      setAadhaarBackDocName(profile.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
+      setAadhaarBackDocUrl(profile.aadhaarBackDocUrl || null);
+      if (profile.avatarUri) {
+        setAvatarUri(profile.avatarUri);
+      }
+      if (profile.jobNotificationOn !== undefined) setJobNotificationOn(profile.jobNotificationOn);
+      if (profile.whatsappOn !== undefined) setWhatsappOn(profile.whatsappOn);
+      setSkills(profile.skills || []);
+      setSkillDescription(profile.skillDescription || '');
+
+      setStatus(profile.status || 'pending');
+      const bd = profile.bankDetails || {};
+      setBankHolder(bd.holderName || '');
+      setBankName(bd.bankName || '');
+      setBankAccount(bd.accountNumber || '');
+      setBankIfsc(bd.ifscCode || '');
+      
+      setLoading(false);
+    }
+  }, [profile, isHindi]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-
-      const res = await fetch(`${API_URL}/profile`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        setName(data.name || '');
-        setPhone(data.phone || '');
-        setEmail(data.email || '');
-        setBaseVillage(data.address || '');
-        setMaxDistanceKm(data.maxDistanceKm ? data.maxDistanceKm.toString() : '15');
-        setRatePerDay(data.ratePerDay ? data.ratePerDay.toString() : '700');
-        setRatePerHour(data.ratePerHour ? data.ratePerHour.toString() : '90');
-        setAadhaarNumber(data.aadhaarNumber || '');
-        setAadhaarDocName(data.aadhaarDocUrl ? (isHindi ? 'अपलोड किया गया (Front)' : 'Uploaded (Front)') : null);
-        setAadhaarDocUrl(data.aadhaarDocUrl || null);
-        setAadhaarBackDocName(data.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
-        setAadhaarBackDocUrl(data.aadhaarBackDocUrl || null);
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-        if (data.jobNotificationOn !== undefined) setJobNotificationOn(data.jobNotificationOn);
-        if (data.whatsappOn !== undefined) setWhatsappOn(data.whatsappOn);
-        setSkills(data.skills || []);
-        setSkillDescription(data.skillDescription || '');
-
-        setStatus(data.status || 'pending');
-        const bd = data.bankDetails || {};
-        setBankHolder(bd.holderName || '');
-        setBankName(bd.bankName || '');
-        setBankAccount(bd.accountNumber || '');
-        setBankIfsc(bd.ifscCode || '');
-      }
+      await refreshUser();
     } catch (error) {
       console.error('Error fetching labour profile:', error);
     } finally {
@@ -219,9 +218,16 @@ export default function LabourProfileSettings() {
       });
 
       const data = await res.json();
-
       if (res.ok) {
-        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile updated successfully!');
+        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'प्रोफाइल अपडेट हो गई!' : 'Profile details updated!');
+        
+        updateUser({
+          name: tempName.trim(),
+          email: tempEmail.trim(),
+          address: tempVillage.trim(),
+          aadhaarNumber: tempAadhaar.trim(),
+        });
+        
         setEditProfileModal(false);
         fetchProfile();
       } else {
@@ -263,16 +269,8 @@ export default function LabourProfileSettings() {
     }
     try {
       const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        setMaxDistanceKm(tempDistance);
-        setRatePerDay(tempDayRate);
-        setRatePerHour(tempHourRate);
-        setSkills(tempSkills);
-        setEditWorkModal(false);
-        return;
-      }
+      if (!token) return;
 
-      // Using the exact existing PUT route that updates user profiles
       const res = await fetch(`${API_URL}/profile`, {
         method: 'PUT',
         headers: {
@@ -289,16 +287,19 @@ export default function LabourProfileSettings() {
       });
 
       const data = await res.json();
-
       if (res.ok) {
-        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'काम की सेटिंग अपडेट हो गई!' : 'Work settings updated!');
+        showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'काम और रेट अपडेट हो गए!' : 'Work & rates updated!');
+        
+        updateUser({
+          skills: tempSkills,
+          skillDescription: tempSkillDescription.trim(),
+          maxDistanceKm: parseInt(tempDistance, 10),
+          ratePerDay: parseInt(tempDayRate, 10),
+          ratePerHour: parseInt(tempHourRate, 10),
+        });
+        
         setEditWorkModal(false);
-        // We also want to refresh local views just to be completely synchronized
-        setMaxDistanceKm(tempDistance);
-        setRatePerDay(tempDayRate);
-        setRatePerHour(tempHourRate);
-        setSkills(tempSkills);
-        setSkillDescription(tempSkillDescription);
+        fetchProfile();
       } else {
         showAlert(isHindi ? 'त्रुटि' : 'Error', data.error || 'Failed to update work settings');
       }
@@ -417,14 +418,18 @@ export default function LabourProfileSettings() {
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        showAlert('Error', data.error || 'Avatar upload failed');
-      } else if (data.url) {
-        const pfp = data.url.startsWith('http')
+      
+      if (res.ok) {
+        const data = await res.json();
+        const pfp = data.url?.startsWith('http')
           ? data.url
-          : `${BASE_URL}/${data.url.replace(/\\/g, '/')}`;
+          : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setAvatarUri(pfp);
+        updateUser({ avatarUri: pfp });
+        showAlert('Done!', isHindi ? 'फोटो अपडेट हो गई' : 'Photo updated');
+      } else {
+        const data = await res.json();
+        showAlert('Error', data.error || 'Avatar upload failed');
       }
     } catch (e) {
       console.error('Avatar upload error:', e);
@@ -1001,7 +1006,7 @@ export default function LabourProfileSettings() {
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
               <View style={[styles.settingIconWrap, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="notifications-outline" size={16} color="#D97706" />
+                <NotificationIcon size={16} color="#D97706" />
               </View>
               <View>
                 <Text style={styles.settingTitle}>

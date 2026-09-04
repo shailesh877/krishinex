@@ -25,7 +25,7 @@ router.post('/', protect, async (req, res) => {
         console.error('Lead submission error:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Server error submitting lead'
+            error: error.message || 'Network issue. Please try again later.'
         });
     }
 });
@@ -39,7 +39,7 @@ router.get('/my-leads', protect, async (req, res) => {
         res.json(leads);
     } catch (error) {
         console.error('Fetch leads error:', error);
-        res.status(500).json({ error: 'Server error fetching leads' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -53,7 +53,7 @@ router.get('/admin/all', protect, checkModule("leads"), async (req, res) => {
             .sort({ createdAt: -1 });
         res.json(leads);
     } catch (error) {
-        res.status(500).json({ error: 'Server error fetching leads' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 

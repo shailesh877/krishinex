@@ -39,10 +39,12 @@ export default function EmployeeTasks() {
     };
 
     useFocusEffect(
-        useCallback(() => {
-            fetchTasks();
-        }, [])
-    );
+    React.useCallback(() => {
+      fetchTasks();
+      const interval = setInterval(() => fetchTasks(), 5000);
+      return () => clearInterval(interval);
+    }, [])
+  );
 
     const onRefresh = () => {
         setRefreshing(true);
@@ -135,6 +137,10 @@ export default function EmployeeTasks() {
                 </View>
             ) : (
                 <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
                     data={tasks}
                     keyExtractor={(item) => item._id}
                     renderItem={renderTask}

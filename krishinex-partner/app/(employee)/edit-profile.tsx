@@ -17,6 +17,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
 
 import { BASE_URL, BASE_API_URL } from '../../constants/api';
@@ -40,6 +41,24 @@ export default function EmployeeEditProfileScreen() {
     const [address, setAddress] = useState('');
     const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
+    const { profile, refreshUser, updateUser } = useUser();
+
+    // Sync profile data to local state
+    useEffect(() => {
+        if (profile) {
+            setName(profile.name || '');
+            setEmail(profile.email || '');
+            setPhone(profile.phone || '');
+            setAddress(profile.address || '');
+            if (profile.avatarUri) {
+                setAvatarUri(profile.avatarUri);
+            } else {
+                setAvatarUri(null);
+            }
+            setLoading(false);
+        }
+    }, [profile]);
+
     useEffect(() => {
         fetchProfile();
     }, []);
@@ -47,25 +66,7 @@ export default function EmployeeEditProfileScreen() {
     const fetchProfile = async () => {
         setLoading(true);
         try {
-            const token = await AsyncStorage.getItem('userToken');
-            const res = await fetch(`${API_URL}/user/profile`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setName(data.name || '');
-                setEmail(data.email || '');
-                setPhone(data.phone || '');
-                setAddress(data.address || '');
-                if (data.profilePhotoUrl) {
-                    const pfp = data.profilePhotoUrl.startsWith('http')
-                        ? data.profilePhotoUrl
-                        : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-                    setAvatarUri(pfp);
-                } else {
-                    setAvatarUri(null);
-                }
-            }
+            await refreshUser();
         } catch (e) {
             console.error('Fetch edit profile error:', e);
         } finally {
@@ -113,19 +114,14 @@ export default function EmployeeEditProfileScreen() {
             });
 
             if (!res.ok) throw new Error('Photo upload failed');
+            
             const data = await res.json();
             if (data.url) {
-                const pfp = data.url.startsWith('http')
+                const pfp = data.url?.startsWith('http')
                     ? data.url
-                    : `${BASE_URL}/${data.url.replace(/\\/g, '/')}`;
+                    : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
                 setAvatarUri(pfp);
-                // Also update stored userData so other screens refresh
-                const cached = await AsyncStorage.getItem('userData');
-                if (cached) {
-                    const userData = JSON.parse(cached);
-                    userData.profilePhotoUrl = data.url;
-                    await AsyncStorage.setItem('userData', JSON.stringify(userData));
-                }
+                updateUser({ avatarUri: pfp });
             }
         } catch (e) {
             showAlert('Error', 'Failed to upload photo');
@@ -168,6 +164,7 @@ export default function EmployeeEditProfileScreen() {
             });
 
             if (res.ok) {
+                updateUser({ name, email, phone, address });
                 showAlert(
                     isHindi ? 'सफल' : 'Success',
                     isHindi ? 'प्रोफ़ाइल अपडेट हो गई।' : 'Profile updated successfully.',

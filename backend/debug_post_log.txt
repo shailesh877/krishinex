@@ -1,0 +1,5 @@
+
+--- [DEBUG] POST AT 2026-09-04T07:36:47.386Z ---
+REQ BODY: {"machineName":"Tractor","priceDay":"0","priceHour":"0","desc":"Testing","distanceKm":"15","village":"Varanasi","latitude":"25.366257","longitude":"83.005975","subMachinery":"[{\"name\":\"Testing\",\"hasImage\":true,\"priceDay\":\"25\",\"priceKattha\":\"5\"}]","imageConfig":"[\"main\",\"sub\"]"}
+REQ FILES: ["main_machine_1788507406915_0.jpg","sub_attachment_1788507406915_0.jpg"]
+HEADERS: {"authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhODY3YjMxMDYzMzdkYWY0ZmQxMTcxNSIsIm5hbWUiOiJUZXN0ZXIgTk0iLCJyb2xlIjoiZXF1aXBtZW50IiwiaWF0IjoxNzg4NTA0OTcwLCJleHAiOjE3OTEwOTY5NzB9.zDG77_KUUe6fj9bH9GwAsuDVngYCscZSxGguwnuw9Jo","content-type":"multipart/form-data; boundary=c4412dff-bd6c-4848-b09e-3d718a427dc8","content-length":"58428","host":"127.0.0.1:5500","connection":"Keep-Alive","accept-encoding":"gzip","user-agent":"okhttp/4.9.2"}

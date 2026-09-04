@@ -22,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 
 const API_URL = `${BASE_API_URL}/shop`;
 
@@ -368,7 +369,7 @@ export default function POSScreen() {
         <Text style={styles.title}>{isHindi ? 'बिक्री (POS)' : 'Point of Sale'}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
           <TouchableOpacity onPress={() => router.push('/(shop-partner)/notifications' as any)}>
-            <Ionicons name="notifications-outline" size={24} color="#16A34A" />
+            <NotificationIcon size={24} color="#16A34A" />
           </TouchableOpacity>
           <TouchableOpacity onPress={resetPOS}>
             <Text style={styles.resetText}>{isHindi ? 'साफ़ करें' : 'Reset'}</Text>
@@ -584,6 +585,10 @@ export default function POSScreen() {
               onChangeText={setSearchQuery}
             />
             <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
               data={products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))}
               keyExtractor={(item) => item._id}
               renderItem={({ item }) => (

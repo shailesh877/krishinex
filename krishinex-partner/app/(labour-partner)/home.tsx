@@ -14,11 +14,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
+import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}`;
 
 function getWeatherInfo(code: number, isHindi: boolean): { label: string; icon: keyof typeof Ionicons.glyphMap } {
@@ -39,10 +42,23 @@ export default function LabourPartnerHome() {
   const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
 
-  const [lifetimeStats, setLifetimeStats] = useState({
-    totalRequests: 0,
-    completed: 0,
+  const { profile, refreshUser } = useUser();
+
+  // SWR Cached Fetches
+  const { data: statsData, refetch: refetchStats } = useCachedFetch('labour-dashboard-stats', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const res = await fetch(`${API_URL}/labour/dashboard`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
   });
+
+  const lifetimeStats = statsData ? {
+    totalRequests: statsData.totalRequests || 0,
+    completed: statsData.completed || 0,
+  } : { totalRequests: 0, completed: 0 };
 
   // Weather state
   const [weatherCity, setWeatherCity] = useState('');
@@ -51,21 +67,14 @@ export default function LabourPartnerHome() {
 
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Dynamic Profile State
-  const [userProfile, setUserProfile] = useState<{
-    name: string;
-    address: string;
-    avatarUri?: string | null;
-  } | null>(null);
-
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       await Promise.all([
-        fetchProfile(),
-        fetchDashboardStats(),
+        refreshUser(),
+        refetchStats(),
         fetchUnreadCount(),
         fetchWeather(),
       ]);
@@ -74,55 +83,7 @@ export default function LabourPartnerHome() {
     } finally {
       setRefreshing(false);
     }
-  }, []);
-
-  const fetchProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${API_URL}/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setUserProfile({
-            name: data.name || '',
-            address: data.address || '',
-            avatarUri: pfp,
-          });
-        } else {
-          setUserProfile({
-            name: data.name || '',
-            address: data.address || '',
-            avatarUri: null,
-          });
-        }
-    } catch (e) {
-      console.error('Error fetching profile on home:', e);
-    }
-  };
-
-  const fetchDashboardStats = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${API_URL}/labour/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setLifetimeStats({
-          totalRequests: data.totalRequests || 0,
-          completed: data.completed || 0,
-        });
-      }
-    } catch (e) {
-      console.error('Error fetching dashboard stats:', e);
-    }
-  };
+  }, [refreshUser, refetchStats]);
 
   const fetchUnreadCount = async () => {
     try {
@@ -180,15 +141,14 @@ export default function LabourPartnerHome() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchProfile();
-      fetchDashboardStats();
+      // SWR handles stats, context handles profile
       fetchUnreadCount();
       fetchWeather();
     }, [])
   );
 
-  const locationText = weatherCity || userProfile?.address || (isHindi ? 'आपका बेस: ' : 'Your base: ');
-  const userName = userProfile?.name || (isHindi ? 'लेबर पार्टनर' : 'Labour partner');
+  const locationText = weatherCity || profile?.address || (isHindi ? 'आपका बेस: ' : 'Your base: ');
+  const userName = profile?.name || (isHindi ? 'लेबर पार्टनर' : 'Labour partner');
   const weatherInfo = getWeatherInfo(weatherCode, isHindi);
 
   const logoTextSource = isHindi
@@ -220,7 +180,7 @@ export default function LabourPartnerHome() {
             activeOpacity={0.8}
             onPress={openNotifications}
           >
-            <Ionicons name="notifications-outline" size={18} color="#065F46" />
+            <NotificationIcon size={18} color="#065F46" />
             {unreadCount > 0 && (
               <View style={styles.notifDot}>
                 <Text style={{ color: 'white', fontSize: 8, fontWeight: 'bold' }}>
@@ -240,11 +200,11 @@ export default function LabourPartnerHome() {
             activeOpacity={0.9}
             onPress={goProfile}
           >
-            {userProfile?.avatarUri ? (
-              <Image source={{ uri: userProfile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-            ) : (
-              <Ionicons name="person-circle-outline" size={32} color="#16A34A" />
-            )}
+            {profile?.avatarUri ? (
+            <Image source={{ uri: profile.avatarUri }} style={styles.avatarImg} />
+          ) : (
+            <Ionicons name="person-circle-outline" size={40} color="#16A34A" />
+          )}
           </TouchableOpacity>
         </View>
 

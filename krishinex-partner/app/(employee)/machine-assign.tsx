@@ -97,7 +97,11 @@ export default function MachineAssignScreen() {
   };
 
   useFocusEffect(
-    React.useCallback(() => { fetchTasks(); }, [])
+    React.useCallback(() => {
+      fetchTasks();
+      const interval = setInterval(() => fetchTasks(), 5000);
+      return () => clearInterval(interval);
+    }, [])
   );
 
   const t = {
@@ -276,6 +280,10 @@ export default function MachineAssignScreen() {
 
       {/* LIST */}
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={filteredTasks}
         keyExtractor={item => item.id}
         renderItem={renderItem}

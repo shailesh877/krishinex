@@ -33,7 +33,7 @@ router.get('/wallet', protect, async (req, res) => {
         });
     } catch (error) {
         console.error('Fetch wallet error:', error);
-        res.status(500).json({ error: 'Server error fetching wallet' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -62,7 +62,7 @@ router.get('/credit-data', protect, async (req, res) => {
         });
     } catch (error) {
         console.error('Fetch credit data error:', error);
-        res.status(500).json({ error: 'Server error fetching credit data' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -81,7 +81,7 @@ router.put('/wallet/number', protect, async (req, res) => {
         res.json({ message: 'Wallet number updated', walletNumber: user.walletNumber });
     } catch (error) {
         console.error('Update wallet number error:', error);
-        res.status(500).json({ error: 'Server error updating wallet number' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -182,7 +182,7 @@ router.get('/profile', protect, async (req, res) => {
         }
     } catch (error) {
         console.error('Error fetching profile:', error);
-        res.status(500).json({ error: 'Server error fetching profile' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -301,7 +301,7 @@ router.put('/profile', protect, async (req, res) => {
         }
     } catch (error) {
         console.error('Error updating profile:', error);
-        res.status(500).json({ error: 'Server error updating profile' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -320,7 +320,7 @@ router.get('/bank-details', protect, async (req, res) => {
             bankAddress: ''
         });
     } catch (error) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 
@@ -356,7 +356,7 @@ router.put('/bank-details', protect, async (req, res) => {
         res.json({ message: 'Bank details updated successfully', bankDetails: user.bankDetails });
     } catch (error) {
         console.error('Update bank details error:', error);
-        res.status(500).json({ error: 'Server error updating bank details' });
+        res.status(500).json({ error: 'Network issue. Please try again later.' });
     }
 });
 

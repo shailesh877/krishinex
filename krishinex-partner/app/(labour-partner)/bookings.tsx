@@ -143,8 +143,10 @@ export default function LabourBookingsScreen() {
   };
 
   useFocusEffect(
-    useCallback(() => {
+    React.useCallback(() => {
       fetchBookings();
+      const interval = setInterval(() => fetchBookings(), 5000);
+      return () => clearInterval(interval);
     }, [])
   );
 
@@ -432,6 +434,10 @@ export default function LabourBookingsScreen() {
 
       {/* LIST */}
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={filtered}
         keyExtractor={item => item.id}
         renderItem={renderBooking}

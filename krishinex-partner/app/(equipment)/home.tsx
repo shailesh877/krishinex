@@ -15,12 +15,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
+import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
-import * as Location from 'expo-location';
+import { useNotificationBadge } from '../../hooks/useNotificationBadge';
+import LocationService from '../../services/LocationService';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
 
 function getWeatherInfo(code: number, isHindi: boolean): { label: string; icon: keyof typeof Ionicons.glyphMap } {
@@ -85,15 +89,24 @@ export default function EquipmentHome() {
   const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
 
-  const [userName, setUserName] = useState('');
-  const [userAddress, setUserAddress] = useState('');
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [profileStatus, setProfileStatus] = useState<string>('approved');
+  const { profile, refreshUser } = useUser();
+  const profileStatus = profile?.status || 'approved';
+  
+  const { unreadCount, fetchUnreadCount } = useNotificationBadge();
 
-  // Stats logic
-  const [totalBookings, setTotalBookings] = useState(0);
-  const [todayBookings, setTodayBookings] = useState(0);
+  // SWR Cached Fetches
+  const { data: statsData, refetch: refetchStats } = useCachedFetch('equipment-dashboard-stats', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const res = await fetch(`${API_URL.replace('/user', '/rentals')}/dashboard`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
+  });
+
+  const totalBookings = statsData?.totalBookings || 0;
+  const todayBookings = statsData?.todayBookings || 0;
 
   // Weather state
   const [weatherCity, setWeatherCity] = useState('');
@@ -110,110 +123,45 @@ export default function EquipmentHome() {
     setRefreshing(true);
     try {
       await Promise.all([
-        loadUser(),
-        fetchUnreadCount(),
+        refreshUser(),
+        fetchUnreadCount(true),
         fetchWeather(),
-        fetchStats(),
+        refetchStats(),
       ]);
     } catch (e) {
       console.error('Refresh error:', e);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshUser, refetchStats, fetchUnreadCount, fetchWeather]);
 
   const logoTextSource = isHindi
     ? require('../../assets/images/Khetify_use_under_the_app-Hindi.png')
     : require('../../assets/images/Khetify_use_under_the_app-English.png');
-  const logoIconSource = require('../../assets/images/logo.png');
 
   useFocusEffect(
     useCallback(() => {
-      loadUser();
-      fetchUnreadCount();
-      fetchWeather();
-      fetchStats();
+      // SWR background fetch for stats, and UserContext handles profile.
+      const abortController = new AbortController();
+      fetchWeather(abortController.signal);
+      return () => abortController.abort();
     }, [])
   );
 
-  const loadUser = async () => {
+  const fetchWeather = async (signal?: AbortSignal) => {
     try {
-      const stored = await AsyncStorage.getItem('userData');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.name) setUserName(parsed.name);
-        if (parsed.address) setUserAddress(parsed.address);
-      }
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${API_URL}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUserName(data.name || '');
-        setUserAddress(data.address || '');
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-        if (data.status) {
-          setProfileStatus(data.status);
-        }
-        await AsyncStorage.setItem('userData', JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error fetching user for home:', error);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${BASE_API_URL}/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(data.count || 0);
-      }
-    } catch (error) { }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${API_URL.replace('/user', '/rentals')}/dashboard`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTotalBookings(data.totalBookings || 0);
-        setTodayBookings(data.todayBookings || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching equipment stats:', error);
-    }
-  };
-
-  const fetchWeather = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
-
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const loc = await LocationService.getLocation();
+      if (!loc) return;
+      
       const { latitude, longitude } = loc.coords;
 
       try {
-        const geo = await Location.reverseGeocodeAsync({ latitude, longitude });
-        if (geo && geo.length > 0) {
-          const g = geo[0];
-          const city = g.city || g.subregion || g.district || g.region || '';
-          const region = g.region || '';
+        const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        if (geo.ok) {
+          const g = await geo.json();
+          const address = g.address || {};
+          const city = address.city || address.county || address.state_district || '';
+          const region = address.state || '';
           setWeatherCity([city, region].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', '));
         }
       } catch (geoErr) {
@@ -221,7 +169,8 @@ export default function EquipmentHome() {
       }
 
       const weatherRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weather_code&hourly=precipitation_probability&wind_speed_unit=kmh&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weather_code&hourly=precipitation_probability&wind_speed_unit=kmh&timezone=auto`,
+        { signal }
       );
       const contentType = weatherRes.headers.get('content-type') || '';
       if (!weatherRes.ok || !contentType.includes('application/json')) {
@@ -241,16 +190,13 @@ export default function EquipmentHome() {
         setWeatherWind(c.wind_speed_10m !== undefined ? Math.round(c.wind_speed_10m) : null);
         setWeatherCode(c.weather_code !== undefined ? c.weather_code : 0);
       }
-    } catch (e) {
-      console.error('Weather fetch error:', e);
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('Weather fetch error:', e);
+      }
     }
   };
 
-  const displayName = userName
-    ? (isHindi ? `${userName} जी` : userName)
-    : (isHindi ? 'पार्टनर जी' : 'Partner');
-
-  const displayAddress = weatherCity || userAddress || (isHindi ? 'पता उपलब्ध नहीं' : 'Location not set');
   const weatherInfo = getWeatherInfo(weatherCode, isHindi);
 
   const t = {
@@ -326,10 +272,10 @@ export default function EquipmentHome() {
       {/* HEADER */}
       <View style={[styles.appHeader, { paddingTop: Math.max(insets.top, 10) }]}>
         <TouchableOpacity style={styles.logoIconWrap} onPress={() => router.push('/(equipment)/profile' as any)}>
-          {avatarUri ? (
-            <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+          {profile?.avatarUri ? (
+            <Image source={{ uri: profile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
           ) : (
-            <Image source={logoIconSource} style={styles.logoIcon} />
+            <Ionicons name="person-circle-outline" size={32} color="#16A34A" />
           )}
         </TouchableOpacity>
 
@@ -342,17 +288,16 @@ export default function EquipmentHome() {
           style={styles.iconCircle}
           onPress={() => router.push('/(equipment)/notifications' as any)}
         >
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-            </View>
-          )}
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 
       {/* BODY */}
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={QUICK_ACTIONS}
         keyExtractor={item => item.id}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2563EB"]} tintColor="#2563EB" />}
@@ -361,11 +306,14 @@ export default function EquipmentHome() {
             {/* Greeting + language toggle */}
             <View style={styles.greetRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.greetText} numberOfLines={1}>
-                  {t.hello} {displayName}
+                <Text style={styles.greetTitle}>
+                  {isHindi ? 'नमस्ते' : 'Hello'}, {profile?.name || 'Partner'}! 👋
                 </Text>
-                <Text style={styles.greetSub} numberOfLines={1}>
-                  <Ionicons name="location-outline" size={12} /> {displayAddress}
+                <Text style={styles.greetSub}>
+                  <Ionicons name="location" size={14} color="#D1D5DB" /> {profile?.address || (isHindi ? 'पता उपलब्ध नहीं' : 'Address not available')}
+                </Text>
+                <Text style={styles.greetHint}>
+                  {isHindi ? 'आज की बुकिंग्स और मौसम की जानकारी।' : 'Today\'s bookings and weather.'}
                 </Text>
               </View>
 
@@ -391,7 +339,7 @@ export default function EquipmentHome() {
               <View style={styles.weatherHeader}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.weatherPlace} numberOfLines={1}>
-                    {displayAddress}
+                    {weatherCity || (isHindi ? 'आपका स्थान' : 'Your Location')}
                   </Text>
                   <Text style={styles.weatherUpdated}>
                     {t.weatherUpdated}

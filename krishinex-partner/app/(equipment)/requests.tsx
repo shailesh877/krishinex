@@ -1,5 +1,5 @@
 // app/(equipment)/requests.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -52,8 +52,9 @@ type RequestItem = {
 };
 
 const INITIAL_REQUESTS: RequestItem[] = [];
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, IMAGE_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/rentals`;
 
 export default function EquipmentRequests() {
@@ -82,8 +83,20 @@ export default function EquipmentRequests() {
 
   // Fetch list on focus
   useFocusEffect(
-    React.useCallback(() => {
-      fetchRequests();
+    useCallback(() => {
+      const abortController = new AbortController();
+      const signal = abortController.signal;
+
+      fetchRequests(signal);
+
+      const interval = setInterval(() => {
+        fetchRequests(); // Silent fetch every 5 seconds
+      }, 5000);
+
+      return () => {
+        clearInterval(interval);
+        abortController.abort();
+      };
     }, [])
   );
 
@@ -111,12 +124,13 @@ export default function EquipmentRequests() {
     }
   };
 
-  const fetchRequests = async () => {
+  const fetchRequests = async (signal?: AbortSignal) => {
     try {
-      setLoading(true);
+      // if (length === 0) setLoading(true) removed for silent polling
       const token = await AsyncStorage.getItem('userToken');
       const res = await fetch(`${API_URL}/equipment`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal
       });
       if (res.ok) {
         const data = await res.json();
@@ -125,7 +139,7 @@ export default function EquipmentRequests() {
           status: r.status,
           machine: r.machine?.name || 'Unknown Machine',
           machineImage: (r.machine?.images && r.machine.images.length > 0)
-            ? (r.machine.images[0].startsWith('http') ? r.machine.images[0] : `${BASE_URL}/${r.machine.images[0].replace(/^\//, '')}`)
+            ? (r.machine.images[0].startsWith('http') ? r.machine.images[0] : `${IMAGE_BASE_URL}/${r.machine.images[0].replace(/^\//, '')}`)
             : '',
           owner: r.buyer?.name || 'Unknown Buyer',
           ownerPhone: r.buyer?.phone || '',
@@ -151,10 +165,14 @@ export default function EquipmentRequests() {
         }));
         setRequests(mapped);
       }
-    } catch (e) {
-      console.error('Fetch requests error', e);
+    } catch (e: any) {
+      if (e.name !== 'AbortError') {
+        console.error('Fetch requests error', e);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -284,7 +302,7 @@ export default function EquipmentRequests() {
           <Image source={logoTextSource} style={styles.logoTextImage} />
         </View>
         <TouchableOpacity style={styles.iconCircle}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 
@@ -349,6 +367,10 @@ export default function EquipmentRequests() {
           keyExtractor={item => item.id}
           contentContainerStyle={{ paddingBottom: 24 }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -470,7 +492,7 @@ export default function EquipmentRequests() {
                       {item.selectedSubMachinery.map((sub, idx) => (
                         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 4, borderRadius: 6, borderWidth: 1, borderColor: '#E0F2FE' }}>
                           {sub.image ? (
-                            <Image source={{ uri: sub.image.startsWith('http') ? sub.image : `${BASE_URL}/${sub.image.replace(/^\//, '')}` }} style={{ width: 24, height: 24, borderRadius: 4, marginRight: 4 }} />
+                            <Image source={{ uri: sub.image.startsWith('http') ? sub.image : `${IMAGE_BASE_URL}/${sub.image.replace(/^\//, '')}` }} style={{ width: 24, height: 24, borderRadius: 4, marginRight: 4 }} />
                           ) : (
                             <Ionicons name="cog-outline" size={14} color="#0369A1" style={{ marginRight: 4 }} />
                           )}

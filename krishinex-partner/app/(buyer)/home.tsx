@@ -12,12 +12,15 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
+import { useCachedFetch } from '../../hooks/useCachedFetch';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
 
 // WMO weather code → label and icon
@@ -39,9 +42,10 @@ export default function BuyerHome() {
   const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
 
-  const [userName, setUserName] = useState('');
-  const [userAddress, setUserAddress] = useState('');
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const { profile, refreshUser } = useUser();
+  const userName = profile?.name || '';
+  const userAddress = profile?.address || '';
+  const avatarUri = profile?.avatarUri || null;
 
   // Weather state
   const [weatherCity, setWeatherCity] = useState('');
@@ -53,7 +57,18 @@ export default function BuyerHome() {
   const [weatherFeels, setWeatherFeels] = useState<number | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
 
-  const [orderStats, setOrderStats] = useState({ totalOrders: 0, totalAmount: 0 });
+  // SWR Cached Fetches
+  const { data: statsData, refetch: refetchStats } = useCachedFetch('buyer-dashboard-stats', async () => {
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) throw new Error('No token');
+    const res = await fetch(`${BASE_API_URL}/orders/my/stats`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return await res.json();
+  });
+
+  const orderStats = statsData || { totalOrders: 0, totalAmount: 0 };
   const [unreadCount, setUnreadCount] = useState(0);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -62,9 +77,9 @@ export default function BuyerHome() {
     setRefreshing(true);
     try {
       await Promise.all([
-        loadUser(),
+        refreshUser(),
         fetchWeather(),
-        fetchStats(),
+        refetchStats(),
         fetchUnreadCount(),
       ]);
     } catch (e) {
@@ -72,19 +87,15 @@ export default function BuyerHome() {
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [refreshUser, refetchStats]);
 
   useFocusEffect(
     useCallback(() => {
-      loadUser();
+      // SWR handles stats, UserContext handles profile
+      fetchUnreadCount();
       fetchWeather();
     }, [])
   );
-
-  useEffect(() => {
-    fetchStats();
-    fetchUnreadCount();
-  }, []);
 
   const fetchUnreadCount = async () => {
     try {
@@ -98,52 +109,6 @@ export default function BuyerHome() {
         setUnreadCount(data.count || 0);
       }
     } catch (e) { }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${BASE_API_URL}/orders/my/stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setOrderStats({ totalOrders: data.totalOrders, totalAmount: data.totalAmount });
-      }
-    } catch (e) {
-      console.error('fetchStats error:', e);
-    }
-  };
-
-  const loadUser = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('userData');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed.name) setUserName(parsed.name);
-        if (parsed.address) setUserAddress(parsed.address);
-      }
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${API_URL}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUserName(data.name || '');
-        setUserAddress(data.address || '');
-        if (data.profilePhotoUrl) {
-          const pfp = data.profilePhotoUrl.startsWith('http')
-            ? data.profilePhotoUrl
-            : `${BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
-          setAvatarUri(pfp);
-        }
-        await AsyncStorage.setItem('userData', JSON.stringify(data));
-      }
-    } catch (e) {
-      console.error('Home: loadUser error', e);
-    }
   };
 
   const fetchWeather = async () => {
@@ -282,7 +247,7 @@ export default function BuyerHome() {
           style={styles.circleIcon}
           onPress={() => router.push('/(buyer)/notifications' as any)}
         >
-          <Ionicons name="notifications-outline" size={18} color="#4B5563" />
+          <NotificationIcon size={18} color="#4B5563" />
           {unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>

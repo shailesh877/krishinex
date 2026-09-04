@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '../../context/I18nContext';
+import NotificationIcon from '@/components/NotificationIcon';
 
 function SoilLabTabs() {
   const { lang } = useI18n();
@@ -61,7 +62,7 @@ function SoilLabTabs() {
           title: isHindi ? 'सूचनाएं' : 'Notifications',
           tabBarLabel: isHindi ? 'सूचनाएं' : 'Notifications',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="notifications-outline" size={size} color={color} />
+            <NotificationIcon size={size} color={color} />
           ),
         }}
       />

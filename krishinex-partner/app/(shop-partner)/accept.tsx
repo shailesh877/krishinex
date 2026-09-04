@@ -24,6 +24,7 @@ import { Alert, ActivityIndicator } from 'react-native';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/shop`;
 
 const getImageUrl = (url: string) => {
@@ -76,6 +77,8 @@ export default function ShopAccept() {
   useFocusEffect(
     React.useCallback(() => {
       fetchOrders();
+      const interval = setInterval(() => fetchOrders(), 5000);
+      return () => clearInterval(interval);
     }, [])
   );
 
@@ -325,7 +328,7 @@ export default function ShopAccept() {
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(shop-partner)/notifications' as any)}>
-          <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+          <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
 
@@ -393,6 +396,10 @@ export default function ShopAccept() {
       </View>
 
       <FlatList
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={false}
         data={data}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
