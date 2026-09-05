@@ -11,3 +11,6 @@ yarn-error.log*
 *.mobileprovision
 # serviceAccountKey.json
 # google-services.json
+fix*
+debug*
+test*

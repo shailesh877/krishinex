@@ -1243,7 +1243,7 @@
         </div>
 
         <!-- Documents: Lab License & Cancel Cheque -->
-        <div class="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
+        <div class="hidden rounded-2xl border-2 border-slate-200 bg-slate-50 p-5">
           <p class="text-[10px] uppercase tracking-wider text-slate-400 font-black mb-3"><i
               class="fas fa-folder-open mr-1"></i> KYC Documents</p>
           <div class="space-y-3">
@@ -1601,12 +1601,12 @@
         const hasDocs = isValidDoc(lab.documentUrl) || isValidDoc(lab.aadhaarBackDocUrl);
         const canApproveLab = (typeof window.hasPermission === 'function') ? window.hasPermission('soil') : true;
         const approveBtn = !canApproveLab ? '' : (lab.status === 'approved'
-          ? `<button onclick="blocklabPartner('${lab._id}','${(lab.labName||'').replace(/'/g,\"\\\'\")}')"
+          ? `<button onclick="blocklabPartner('${lab._id}','${(lab.labName||'').replace(/'/g,"\\'")}')"
               class="w-full justify-center inline-flex items-center rounded-lg border-2 border-rose-200 bg-rose-50 px-2 py-1 text-[10px] text-rose-700 font-bold hover:bg-rose-100 transition-all">
               <i class="fas fa-ban mr-1"></i> Block
             </button>`
           : hasDocs
-          ? `<button onclick="approveLabPartner('${lab._id}','${(lab.labName||'').replace(/'/g,\"\\\'\")}')"
+          ? `<button onclick="approveLabPartner('${lab._id}','${(lab.labName||'').replace(/'/g,"\\'")}')"
               class="w-full justify-center inline-flex items-center rounded-lg border-2 border-sky-200 bg-sky-50 px-2 py-1 text-[10px] text-sky-700 font-bold hover:bg-sky-100 transition-all">
               <i class="fas fa-check mr-1"></i> Approve
             </button>`
@@ -2269,7 +2269,8 @@
       actionsContainer.innerHTML = '';
 
       const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
-      const hasDocs = isValidDoc(lab.certDocUrl) || isValidDoc(lab.licenseDocUrl) || isValidDoc(lab.aadhaarDocUrl) || isValidDoc(lab.aadhaarFrontUrl) || isValidDoc(lab.photoUrl);
+      const bd = lab.bankDetails || {};
+      const hasDocs = isValidDoc(lab.businessLicenseUrl) || isValidDoc(lab.certDocUrl) || isValidDoc(lab.licenseDocUrl) || isValidDoc(lab.aadhaarDocUrl) || isValidDoc(lab.aadhaarFrontUrl) || isValidDoc(lab.aadhaarFront) || isValidDoc(lab.aadhaarBackDocUrl) || isValidDoc(lab.aadhaarBackUrl) || isValidDoc(lab.aadhaarBack) || isValidDoc(bd.chequeUrl) || isValidDoc(bd.passbookUrl) || isValidDoc(bd.cancelledChequeUrl) || isValidDoc(bd.cancelledCheque) || isValidDoc(lab.bankPassbookUrl) || isValidDoc(lab.photoUrl);
 
       if (lab.status === 'pending' || lab.status === 'blocked' || lab.status === 'rejected') {
         if (hasDocs) {
