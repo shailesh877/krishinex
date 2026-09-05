@@ -7,9 +7,8 @@ import {
   StyleSheet,
   Image,
   StatusBar,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import { useUser } from '../../context/UserContext';
@@ -39,7 +38,7 @@ function getWeatherInfo(code: number, isHindi: boolean): { label: string; icon: 
 export default function BuyerHome() {
   const router = useRouter();
   const { lang, toggleLang } = useI18n();
-  const insets = useSafeAreaInsets();
+  
   const isHindi = lang === 'hi';
 
   const { profile, refreshUser } = useUser();
@@ -188,8 +187,7 @@ export default function BuyerHome() {
       buyBtn: 'नयी खरीद करें',
       assignOrdersBtn: 'असाइन ऑर्डर',
       premiumAssignSubtitle: 'जो ऑर्डर आपको असाइन किए गए हैं',
-      loadingWeather: 'मौसम लोड हो रहा है...',
-    },
+      loadingWeather: 'मौसम लोड हो रहा है...' },
     en: {
       hello: 'Hello,',
       translate: 'हिन्दी',
@@ -208,14 +206,11 @@ export default function BuyerHome() {
       buyBtn: 'Place new order',
       assignOrdersBtn: 'Assigned orders',
       premiumAssignSubtitle: 'Orders assigned to you',
-      loadingWeather: 'Loading weather...',
-    },
-  }[lang];
+      loadingWeather: 'Loading weather...' } }[lang];
 
   const stats = {
     totalPurchaseAmount: '₹ 1,25,000',
-    totalPurchaseOrders: 32,
-  };
+    totalPurchaseOrders: 32 };
 
   const logoSource =
     lang === 'hi'
@@ -226,11 +221,11 @@ export default function BuyerHome() {
   const goAssignedOrders = () => router.push('/(buyer)/assigned-orders');
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
-      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.topBar}>
         <TouchableOpacity style={styles.avatarWrap} onPress={goProfile}>
           {avatarUri ? (
             <Image source={{ uri: avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -410,23 +405,21 @@ export default function BuyerHome() {
         </View>
 
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#E5E7EB',
-  },
+    backgroundColor: '#E5E7EB' },
 
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   avatarWrap: {
     width: 40,
     height: 40,
@@ -435,27 +428,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
-  },
+    zIndex: 1 },
   topCenter: {
     flex: 1,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   headerLogo: {
-    height: 32,
-  },
+    height: 32 },
   circleIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   headerBorder: {
     height: 2,
-    backgroundColor: '#87D528',
-  },
+    backgroundColor: '#87D528' },
 
   nameRow: {
     flexDirection: 'row',
@@ -465,133 +453,110 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
+    borderBottomColor: '#E5E7EB' },
   helloText: {
     fontSize: 16,
-    color: '#111827',
-  },
+    color: '#111827' },
   nameText: {
-    fontWeight: '800',
-  },
+    fontWeight: '800' },
   villageRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   villageText: {
     fontSize: 13,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   translateBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   translateText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
 
   scroll: { flex: 1 },
   scrollContent: {
     paddingTop: 16,
     paddingBottom: 24,
-    gap: 18,
-  },
+    gap: 18 },
 
   weatherCard: {
     marginHorizontal: 16,
     borderRadius: 20,
     padding: 16,
-    flexDirection: 'row',
-  },
+    flexDirection: 'row' },
   weatherLeft: { flex: 1 },
   weatherLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
+    gap: 4 },
   weatherPlace: {
     fontSize: 13,
     color: '#BFDBFE',
     fontWeight: '700',
     marginLeft: 4,
-    flex: 1,
-  },
+    flex: 1 },
   weatherUpdated: {
     fontSize: 11,
     color: '#DBEAFE',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   weatherTemp: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   weatherCond: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#E5E7EB',
-  },
+    color: '#E5E7EB' },
   feelsLike: {
     fontSize: 11,
     color: '#E5E7EB',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   weatherRight: {
     width: 130,
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   sunCircle: {
     width: 56,
     height: 56,
     borderRadius: 28,
     backgroundColor: '#1D4ED8',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   weatherMetaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   metaCol: { alignItems: 'center' },
   metaValue: {
     fontSize: 12,
     fontWeight: '800',
     color: '#FFFFFF',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   metaLabel: {
     fontSize: 10,
     color: '#DBEAFE',
-    marginTop: 2,
-  },
+    marginTop: 2 },
 
   sectionHeader: { marginHorizontal: 16 },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   overviewRow: {
     flexDirection: 'row',
     marginHorizontal: 16,
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   overviewCard: {
     width: '48%',
     borderRadius: 16,
-    padding: 14,
-  },
+    padding: 14 },
   overviewIconWrap: {
     width: 26,
     height: 26,
@@ -599,43 +564,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   overviewTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   overviewSub: {
     fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   overviewValue: {
     fontSize: 18,
     fontWeight: '900',
     color: '#111827',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   cardShadow: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
-    elevation: 4,
-  },
+    elevation: 4 },
 
   actionsGrid: {
     marginHorizontal: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   actionCard: {
     width: '48%',
     borderRadius: 16,
     paddingVertical: 20,
-    paddingHorizontal: 12,
-  },
+    paddingHorizontal: 12 },
   actionIconWrap: {
     width: 30,
     height: 30,
@@ -643,35 +601,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.24)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   actionTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   premiumAssignCard: {
     marginHorizontal: 16,
     borderRadius: 18,
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   premiumGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 16,
-  },
+    paddingHorizontal: 16 },
   premiumTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#111827',
-  },
+    color: '#111827' },
   premiumSub: {
     fontSize: 12,
     color: '#1F2937',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   premiumIconWrap: {
     width: 40,
     height: 40,
@@ -679,8 +631,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 12,
-  },
+    marginLeft: 12 },
   badge: {
     position: 'absolute',
     top: -2,
@@ -692,12 +643,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-  },
+    borderColor: '#FFFFFF' },
   badgeText: {
     color: '#FFFFFF',
     fontSize: 8,
-    fontWeight: 'bold',
-  },
-});
+    fontWeight: 'bold' } });
 

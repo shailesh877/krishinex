@@ -115,11 +115,34 @@ router.get('/admin/all', protect, async (req, res) => {
 
         let query = andConditions.length > 0 ? { $and: andConditions } : {};
 
-        const consultations = await DoctorConsultation.find(query)
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+        const total = await DoctorConsultation.countDocuments(query);
+
+        let findQuery = DoctorConsultation.find(query)
             .populate('farmer', 'name phone address')
             .populate('assignedTo', 'name phone')
             .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        }
+
+        const consultations = await findQuery;
         console.log(`[DOCTOR] Found ${consultations.length} consultations.`);
+
+        if (isPaginated) {
+            return res.json({
+                data: consultations,
+                total,
+                page,
+                limit,
+                hasMore: (skip + consultations.length) < total
+            });
+        }
+
         res.json(consultations);
     } catch (error) {
         console.error('Fetch all consultations error:', error);

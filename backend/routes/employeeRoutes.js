@@ -1528,11 +1528,24 @@ router.get('/admin/soil-requests', protect, checkModule('soil'), async (req, res
 
         let query = andConditions.length > 0 ? { $and: andConditions } : {};
 
-        const requests = await SoilRequest.find(query)
+        const total = await SoilRequest.countDocuments(query);
+        const isPaginated = req.query.page !== undefined || req.query.limit !== undefined || req.query.paginated === 'true';
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.max(1, Math.min(200, parseInt(req.query.limit) || 25));
+        const skip = (page - 1) * limit;
+
+        let findQuery = SoilRequest.find(query)
             .populate('farmer', 'name phone address')
             .populate('lab', 'name businessName phone address')
-            .sort({ createdAt: -1 })
-            .limit(200);
+            .sort({ createdAt: -1 });
+
+        if (isPaginated) {
+            findQuery = findQuery.skip(skip).limit(limit);
+        } else {
+            findQuery = findQuery.limit(200);
+        }
+
+        const requests = await findQuery;
 
         const result = requests.map(r => ({
             _id: r._id,
@@ -1555,6 +1568,16 @@ router.get('/admin/soil-requests', protect, checkModule('soil'), async (req, res
             reportUrl: r.reportUrl || '',
             advisoryText: r.advisoryText || ''
         }));
+
+        if (isPaginated) {
+            return res.json({
+                data: result,
+                total,
+                page,
+                limit,
+                hasMore: (skip + requests.length) < total
+            });
+        }
 
         res.json(result);
     } catch (e) {
@@ -2199,7 +2222,7 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
         }
         
         let userQuery = { $and: andConditions };
-
+        
         let orderQuery = {};
         if (hasFilter) {
             const start = new Date(startDate);
@@ -2207,6 +2230,10 @@ router.get('/admin/buyers', protect, checkModule('buyer'), async (req, res) => {
             const end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
             orderQuery.createdAt = { $gte: start, $lte: end };
+            
+            // Also apply date filter to buyer registration
+            andConditions.push({ createdAt: { $gte: start, $lte: end } });
+            userQuery = { $and: andConditions };
         }
 
         const total = await User.countDocuments(userQuery);
@@ -3251,6 +3278,19 @@ router.put('/admin/shop/approve/:id', protect, checkModule('shops'), async (req,
     try {
         const shop = await User.findById(req.params.id);
         if (!shop) return res.status(404).json({ error: 'Shop not found' });
+
+        const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+        const bank = shop.bankDetails || {};
+        const hasDoc = (
+            isValidDoc(shop.aadhaarDocUrl) || isValidDoc(shop.aadhaarFrontUrl) || isValidDoc(shop.aadhaarBackDocUrl) ||
+            isValidDoc(shop.panDocUrl) || isValidDoc(shop.licenseDocUrl) || isValidDoc(shop.gstDocUrl) ||
+            isValidDoc(shop.certDocUrl) || isValidDoc(shop.profilePhotoUrl) || isValidDoc(bank.bankDocUrl)
+        );
+
+        if (!hasDoc) {
+            return res.status(400).json({ error: 'KYC approval failed: No identification or license documents uploaded for this shop.' });
+        }
+
         shop.status = 'approved';
         await shop.save();
         res.json({ message: 'Shop approved' });
@@ -4583,7 +4623,7 @@ router.get('/admin/kyc/stats', protect, checkModule('kyc'), async (req, res) => 
 // @access  Private/Admin
 router.get('/admin/kyc/list', protect, checkModule('kyc'), async (req, res) => {
     try {
-        const { status, role, search, startDate, endDate } = req.query;
+        const { status, role, search, startDate, endDate, page = 1, limit = 25 } = req.query;
         let query = { role: { $in: ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive', 'farmer', 'buyer'] } };
 
         if (status && status !== 'all') query.status = status;
@@ -4597,7 +4637,11 @@ router.get('/admin/kyc/list', protect, checkModule('kyc'), async (req, res) => {
         }
         if (startDate || endDate) {
             query.createdAt = {};
-            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (startDate) {
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                query.createdAt.$gte = start;
+            }
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
@@ -4605,12 +4649,25 @@ router.get('/admin/kyc/list', protect, checkModule('kyc'), async (req, res) => {
             }
         }
 
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
         const users = await User.find(query)
             .select('name businessName phone role status createdAt aadhaarNumber panNumber gstNumber aadhaarDocUrl aadhaarBackDocUrl panDocUrl businessLicenseUrl')
             .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limitNum)
             .lean();
 
-        res.json(users);
+        const total = await User.countDocuments(query);
+
+        res.json({
+            data: users,
+            total,
+            page: pageNum,
+            totalPages: Math.ceil(total / limitNum)
+        });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Failed to fetch KYC list' });
@@ -4656,6 +4713,19 @@ router.put('/admin/kyc/verify/:id', protect, checkModule("kyc"), async (req, res
 
         // Update KYC Status
         if (action === 'approve') {
+            const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+            const bank = user.bankDetails || {};
+            const hasDoc = (
+                isValidDoc(user.aadhaarDocUrl) || isValidDoc(user.aadhaarFrontUrl) || isValidDoc(user.aadhaarBackDocUrl) ||
+                isValidDoc(user.panDocUrl) || isValidDoc(user.licenseDocUrl) || isValidDoc(user.gstDocUrl) ||
+                isValidDoc(user.certDocUrl) || isValidDoc(user.profilePhotoUrl) || isValidDoc(bank.bankDocUrl) ||
+                isValidDoc(user.businessLicenseUrl) || isValidDoc(user.bankPassbookUrl)
+            );
+
+            if (!hasDoc) {
+                return res.status(400).json({ error: 'Cannot approve: User has not uploaded any identification/license documents.' });
+            }
+
             user.status = 'approved';
             user.kycStatus = 'verified';
             user.kycVerifiedAt = new Date();

@@ -9,9 +9,8 @@ import {
   StatusBar,
   Image,
   RefreshControl,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -40,7 +39,7 @@ type OrderItem = {
 export default function ShopHome() {
   const router = useRouter();
   const { lang, toggleLang } = useI18n();
-  const insets = useSafeAreaInsets();
+  
   const isHindi = lang === 'hi';
 
   const { profile, refreshUser } = useUser();
@@ -78,8 +77,7 @@ export default function ShopHome() {
 
   const stats = statsData || {
     lifetime: { totalOrders: 0, totalDelivered: 0 },
-    today: { new: 0, accepted: 0, delivered: 0 },
-  };
+    today: { new: 0, accepted: 0, delivered: 0 } };
   const latestOrders = ordersData || [];
   const loading = statsLoading || ordersLoading;
   const error = null;
@@ -130,11 +128,11 @@ export default function ShopHome() {
   );
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* TOP APP HEADER (user avatar + app logo + bell) */}
-      <View style={[styles.appHeader, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity style={styles.logoIconWrap} onPress={() => router.push('./profile')}>
           {profile?.avatarUri ? (
             <Image source={{ uri: profile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -309,7 +307,7 @@ export default function ShopHome() {
           <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -323,8 +321,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -332,8 +329,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E0F2FE',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoIcon: { width: 26, height: 26, resizeMode: 'contain' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
@@ -342,8 +338,7 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   body: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
 
@@ -351,8 +346,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 10,
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   greetTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
   greetSub: { fontSize: 13, color: '#4B5563', marginTop: 2 },
   greetHint: { fontSize: 12, color: '#6B7280', marginTop: 4 },
@@ -364,8 +358,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     backgroundColor: '#E0F2FE',
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   langText: { fontSize: 13, fontWeight: '600', color: '#0369A1' },
 
   sectionTitle: {
@@ -373,14 +366,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
-    marginTop: 4,
-  },
+    marginTop: 4 },
 
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   statCard: { // This style is no longer used for the main stats but kept if other parts of the app use it.
     width: '48%',
     borderRadius: 16,
@@ -393,13 +384,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 10,
-    elevation: 4,
-  },
+    elevation: 4 },
   totalHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   totalIconWrap: {
     width: 30,
     height: 30,
@@ -407,8 +396,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
-    borderWidth: 1,
-  },
+    borderWidth: 1 },
   statLabelTop: { fontSize: 12, fontWeight: '600', color: '#111827' },
   statSubLabel: { fontSize: 11, color: '#6B7280', marginTop: 2 },
 
@@ -416,8 +404,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   statValue: { fontSize: 20, fontWeight: '700', color: '#111827' },
 
   chip: {
@@ -425,22 +412,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   chipText: { fontSize: 10, fontWeight: '600' },
 
   quickRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   quickCard: {
     flex: 1,
     borderRadius: 16,
     paddingHorizontal: 10,
     paddingVertical: 10,
-    marginRight: 8,
-  },
+    marginRight: 8 },
   quickIconWrap: {
     width: 30,
     height: 30,
@@ -448,18 +432,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#00000022',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   quickTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   quickSub: {
     fontSize: 11,
     color: '#E5E7EB',
-    marginTop: 2,
-  },
+    marginTop: 2 },
 
   // New styles for dashboard
   metricCard: {
@@ -475,8 +456,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 10,
-    elevation: 4,
-  },
+    elevation: 4 },
   metricIconBox: {
     width: 40,
     height: 40,
@@ -484,24 +464,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#DBEAFE',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   metricValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   metricLabel: {
     fontSize: 12,
     color: '#6B7280',
     textAlign: 'center',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   statusRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   statusBox: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -516,19 +492,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 10,
-    elevation: 4,
-  },
+    elevation: 4 },
   statusBoxCount: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#EF4444',
-  },
+    color: '#EF4444' },
   statusBoxLabel: {
     fontSize: 12,
     color: '#6B7280',
     textAlign: 'center',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   badgeDot: {
     position: 'absolute',
     top: -2,
@@ -540,13 +513,11 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFFFFF',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   badgeDotText: {
     color: '#FFFFFF',
     fontSize: 8,
-    fontWeight: 'bold',
-  },
+    fontWeight: 'bold' },
 
   fullQuickCard: {
     flexDirection: 'row',
@@ -561,8 +532,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    marginTop: 10,
-  },
+    marginTop: 10 },
   fullQuickTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  fullQuickSub: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-});
+  fullQuickSub: { fontSize: 12, color: '#6B7280', marginTop: 2 } });

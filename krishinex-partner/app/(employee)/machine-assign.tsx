@@ -6,9 +6,8 @@ import {
   StyleSheet,
   StatusBar,
   FlatList,
-  TouchableOpacity,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -50,13 +49,12 @@ const DUMMY_MACHINE: MachineTask[] = [
     dateLabel: 'Today • 3:00 PM',
     rateType: 'hour',
     rateAmount: 600,
-    status: 'new',
-  },
+    status: 'new' },
 ];
 
 export default function MachineAssignScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -87,8 +85,7 @@ export default function MachineAssignScreen() {
           status: r.status === 'New' ? 'new'
             : r.status === 'Accepted' ? 'accepted'
               : r.status === 'Completed' ? 'completed'
-                : 'new' as MachineStatus,
-        }));
+                : 'new' as MachineStatus }));
         setTasks(mapped);
       }
     } catch (e) {
@@ -109,8 +106,7 @@ export default function MachineAssignScreen() {
     chipNew: isHindi ? 'New' : 'New',
     chipAccepted: isHindi ? 'Accepted' : 'Accepted',
     chipProgress: isHindi ? 'In progress' : 'In progress',
-    chipCompleted: isHindi ? 'Completed' : 'Completed',
-  };
+    chipCompleted: isHindi ? 'Completed' : 'Completed' };
 
   const statusLabel = (status: MachineStatus) => {
     if (status === 'new') return isHindi ? 'नई machine booking' : 'New machine booking';
@@ -261,11 +257,11 @@ export default function MachineAssignScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
@@ -311,7 +307,7 @@ export default function MachineAssignScreen() {
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -323,23 +319,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN,
-  },
+    backgroundColor: STATUS_GREEN },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#5BA40F',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   chipRow: {
     flexDirection: 'row',
@@ -347,32 +340,26 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: '#EFF6FF',
     borderBottomWidth: 1,
-    borderBottomColor: '#DBEAFE',
-  },
+    borderBottomColor: '#DBEAFE' },
   chip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
     backgroundColor: '#E5E7EB',
-    marginRight: 6,
-  },
+    marginRight: 6 },
   chipActive: {
-    backgroundColor: '#2563EB',
-  },
+    backgroundColor: '#2563EB' },
   chipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#374151',
-  },
+    color: '#374151' },
   chipTextActive: {
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 16,
-  },
+    paddingBottom: 16 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -381,50 +368,41 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   rowText: {
     fontSize: 12,
     color: '#6B7280',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 6,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   statusChip: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#FEF3C7',
-  },
+    backgroundColor: '#FEF3C7' },
   statusChipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#B45309',
-  },
+    color: '#B45309' },
   rateText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -433,38 +411,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 10,
-    alignSelf: 'flex-start',
-  },
+    alignSelf: 'flex-start' },
   primaryBtnText: {
     fontSize: 12,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   footerInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-  },
+    marginTop: 8 },
   footerInfoText: {
     fontSize: 11,
     color: '#6B7280',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   emptyWrap: {
     alignItems: 'center',
-    paddingHorizontal: 32,
-  },
+    paddingHorizontal: 32 },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   emptySub: {
     fontSize: 12,
     color: '#6B7280',
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center' } });

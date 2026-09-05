@@ -6,25 +6,24 @@ import {
   StyleSheet,
   StatusBar,
   ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 
 export default function TermsScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
-      <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.appHeader}>
         <View style={styles.headerLeftRow}>
           <TouchableOpacity
             style={styles.backBtn}
@@ -105,7 +104,7 @@ export default function TermsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -119,21 +118,18 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   headerLeftRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
   headerSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
 
@@ -146,24 +142,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   infoCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   sectionText: {
     fontSize: 12,
-    color: '#4B5563',
-  },
-});
+    color: '#4B5563' } });

@@ -9,9 +9,8 @@ import {
   StatusBar,
   Image,
   RefreshControl,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -86,7 +85,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 export default function EquipmentHome() {
   const router = useRouter();
   const { lang, toggleLang } = useI18n();
-  const insets = useSafeAreaInsets();
+  
   const isHindi = lang === 'hi';
 
   const { profile, refreshUser } = useUser();
@@ -266,11 +265,11 @@ export default function EquipmentHome() {
   );
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
-      <View style={[styles.appHeader, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity style={styles.logoIconWrap} onPress={() => router.push('/(equipment)/profile' as any)}>
           {profile?.avatarUri ? (
             <Image source={{ uri: profile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -419,7 +418,7 @@ export default function EquipmentHome() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -429,11 +428,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 15,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -441,8 +440,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
@@ -451,8 +449,7 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   badge: {
     position: 'absolute',
     top: -2,
@@ -464,8 +461,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FFFFFF',
-  },
+    borderColor: '#FFFFFF' },
   badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: 'bold' },
 
   listContent: { paddingHorizontal: 16, paddingVertical: 10 },
@@ -475,8 +471,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   greetText: { fontSize: 18, fontWeight: '700', color: '#111827' },
   greetSub: { marginTop: 4, fontSize: 13, color: '#6B7280' },
   langButton: {
@@ -485,8 +480,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: '#E0F2FE',
-  },
+    backgroundColor: '#E0F2FE' },
   langText: { fontSize: 13, fontWeight: '600', color: '#0369A1' },
 
   smallHint: { fontSize: 11, color: '#6B7280', marginBottom: 10 },
@@ -495,21 +489,18 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 14,
     backgroundColor: '#2563EB',
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   weatherHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   weatherPlace: { color: '#E0F2FE', fontSize: 13, fontWeight: '600' },
   weatherUpdated: { color: '#BFDBFE', fontSize: 11, marginTop: 2 },
   weatherMainRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   weatherTemp: { fontSize: 34, fontWeight: '700', color: '#FFFFFF', marginRight: 8 },
   weatherCondition: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
   weatherFeels: { fontSize: 12, color: '#DBEAFE', marginTop: 2 },
@@ -524,8 +515,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1D4ED8',
     borderRadius: 12,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
+    paddingVertical: 4 },
   weatherChipText: { fontSize: 11, color: '#F9FAFB', marginLeft: 4 },
 
   sectionTitle: {
@@ -533,20 +523,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
-    marginTop: 6,
-  },
+    marginTop: 6 },
   overviewRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   overviewCard: { width: '48%', borderRadius: 16, padding: 12 },
   overviewTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   overviewLabel: { fontSize: 12, color: '#4B5563' },
   overviewValue: { fontSize: 22, fontWeight: '700', color: '#111827' },
   overviewHint: { fontSize: 11, color: '#6B7280', marginTop: 4 },
@@ -555,8 +542,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 12,
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   quickTitle: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
-  quickSub: { fontSize: 11, color: '#F9FAFB' },
-});
+  quickSub: { fontSize: 11, color: '#F9FAFB' } });

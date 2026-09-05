@@ -10,9 +10,8 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -52,7 +51,7 @@ const defaultCropImage = require('../../assets/images/android-icon-foreground.pn
 
 export default function AssignedOrders() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -98,8 +97,7 @@ export default function AssignedOrders() {
       totalAmount: 'कुल राशि',
       commission: 'कमीशन',
       netPayout: 'कुल भुगतान (एडमिन को)',
-      hidden: 'किसान (Hidden)',
-    },
+      hidden: 'किसान (Hidden)' },
     en: {
       title: 'Assigned orders',
       sub: 'Orders assigned to you by admin',
@@ -130,9 +128,7 @@ export default function AssignedOrders() {
       totalAmount: 'Crop Price',
       commission: 'Commission',
       netPayout: 'Net Payout',
-      hidden: 'Farmer (Hidden)',
-    },
-  }[lang];
+      hidden: 'Farmer (Hidden)' } }[lang];
 
   const getKgValue = (qtyStr: string): string => {
     if (!qtyStr) return '0';
@@ -252,8 +248,7 @@ export default function AssignedOrders() {
       new: { label: t.statusNew, color: '#2563EB', bg: '#EFF6FF' },
       ok: { label: t.statusOk, color: '#16A34A', bg: '#ECFDF5' },
       delivered: { label: t.statusDelivered, color: '#7C3AED', bg: '#F5F3FF' },
-      cancelled: { label: t.statusCancelled, color: '#DC2626', bg: '#FEF2F2' },
-    };
+      cancelled: { label: t.statusCancelled, color: '#DC2626', bg: '#FEF2F2' } };
     return map[status] ?? map.new;
   };
 
@@ -481,10 +476,10 @@ export default function AssignedOrders() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <View style={[styles.topBar, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.topBar}>
         <TouchableOpacity style={styles.backWrap} onPress={() => router.push('/(buyer)/home')}>
           <Ionicons name="arrow-back" size={20} color="#111827" />
         </TouchableOpacity>
@@ -573,7 +568,7 @@ export default function AssignedOrders() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -583,22 +578,18 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 10,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   backWrap: {
     width: 32, height: 32, borderRadius: 16,
     justifyContent: 'center', alignItems: 'center',
-    backgroundColor: '#F3F4F6', marginRight: 8,
-  },
+    backgroundColor: '#F3F4F6', marginRight: 8 },
   headerTitle: {
-    flex: 1, fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center',
-  },
+    flex: 1, fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center' },
   headerBorder: { height: 2, backgroundColor: '#87D528' },
 
   subHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 8,
-  },
+    paddingHorizontal: 16, paddingVertical: 8 },
   subText: { fontSize: 12, color: '#6B7280' },
   countText: { fontSize: 13, fontWeight: '800', color: '#374151' },
 
@@ -606,28 +597,23 @@ const styles = StyleSheet.create({
 
   cardOuter: {
     borderRadius: 20, padding: 1.5,
-    backgroundColor: 'rgba(34,197,94,0.15)',
-  },
+    backgroundColor: 'rgba(34,197,94,0.15)' },
   cardInner: {
     backgroundColor: '#FFFFFF', borderRadius: 18, padding: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08, shadowRadius: 6, elevation: 3,
-  },
+    shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 },
   topRow: { flexDirection: 'row', alignItems: 'flex-start' },
   imageWrap: {
     width: 60, height: 60, borderRadius: 14,
-    overflow: 'hidden', backgroundColor: '#F3F4F6',
-  },
+    overflow: 'hidden', backgroundColor: '#F3F4F6' },
   image: { width: '100%', height: '100%' },
 
   nameRow: {
     flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', marginBottom: 2,
-  },
+    justifyContent: 'space-between', marginBottom: 2 },
   farmerName: { fontSize: 15, fontWeight: '800', color: '#111827', flex: 1 },
   badge: {
-    borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 6,
-  },
+    borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 6 },
   badgeText: { fontSize: 11, fontWeight: '700' },
 
   row: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
@@ -640,8 +626,7 @@ const styles = StyleSheet.create({
   btnRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, gap: 6 },
   smallBtn: {
     flex: 1, borderRadius: 999, paddingVertical: 9,
-    alignItems: 'center', justifyContent: 'center',
-  },
+    alignItems: 'center', justifyContent: 'center' },
   smallBtnText: { fontSize: 12, fontWeight: '800', color: '#FFFFFF' },
   okBtn: { backgroundColor: '#22C55E' },
   deliveredBtn: { backgroundColor: '#2563EB' },
@@ -651,12 +636,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-start',
     borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB',
     paddingHorizontal: 10, paddingVertical: 6,
-    marginTop: 10, backgroundColor: '#F9FAFB',
-  },
+    marginTop: 10, backgroundColor: '#F9FAFB' },
   cancelInput: {
     flex: 1, fontSize: 12, color: '#111827',
-    minHeight: 40, textAlignVertical: 'top',
-  },
+    minHeight: 40, textAlignVertical: 'top' },
 
   emptyContainer: { alignItems: 'center', gap: 12 },
   emptyText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center' },
@@ -665,8 +648,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 12,
     marginBottom: 12,
-    gap: 6,
-  },
+    gap: 6 },
   tab: {
     flex: 1,
     height: 44,
@@ -676,20 +658,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
-    position: 'relative',
-  },
+    position: 'relative' },
   activeTab: {
-    backgroundColor: '#87D528',
-  },
+    backgroundColor: '#87D528' },
   tabText: {
     fontSize: 11,
     fontWeight: '800',
     color: '#4B5563',
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   activeTabText: {
-    color: '#000000',
-  },
+    color: '#000000' },
   tabBadge: {
     backgroundColor: '#EF4444',
     minWidth: 16,
@@ -704,12 +682,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
     elevation: 2,
-    zIndex: 10,
-  },
+    zIndex: 10 },
   tabBadgeText: {
     fontSize: 9,
     fontWeight: '900',
-    color: '#FFFFFF',
-  },
-});
+    color: '#FFFFFF' } });
 

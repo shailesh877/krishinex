@@ -9,16 +9,15 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../../context/I18nContext';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { BASE_URL, BASE_API_URL } from '../../constants/api';
+import { BASE_URL, FILES_BASE_URL, BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}/user`;
 
@@ -34,12 +33,11 @@ const DUMMY_PROFILE = {
   villageHi: 'करनाल, हरियाणा',
   villageEn: 'Karnal, Haryana',
   joinDate: 'Jan 2025',
-  modules: ['labour', 'equipment', 'soil'] as EmployeeModule[],
-};
+  modules: ['labour', 'equipment', 'soil'] as EmployeeModule[] };
 
 export default function EmployeeProfileScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang, toggleLang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -84,7 +82,7 @@ export default function EmployeeProfileScreen() {
     ? {
       uri: activeProfile.profilePhotoUrl.startsWith('http')
         ? activeProfile.profilePhotoUrl
-        : `${BASE_URL}/${activeProfile.profilePhotoUrl.replace(/\\/g, '/')}`
+        : `${FILES_BASE_URL}/${activeProfile.profilePhotoUrl.replace(/\\/g, '/')}`
     }
     : require('../../assets/images/logo.png');
 
@@ -102,8 +100,7 @@ export default function EmployeeProfileScreen() {
     moduleDoctor: isHindi ? 'Doctor / crop सलाह' : 'Doctor / crop advice',
     editProfile: isHindi ? 'प्रोफ़ाइल बदलें' : 'Edit profile',
     logout: isHindi ? 'Log out' : 'Log out',
-    langBtn: isHindi ? 'English' : 'हिन्दी',
-  };
+    langBtn: isHindi ? 'English' : 'हिन्दी' };
 
   const handleEdit = () => {
     router.push('/(employee)/edit-profile');
@@ -124,8 +121,7 @@ export default function EmployeeProfileScreen() {
             await AsyncStorage.removeItem('userToken');
             await AsyncStorage.removeItem('userData');
             router.replace('/');
-          },
-        },
+          } },
       ],
     );
   };
@@ -138,12 +134,12 @@ export default function EmployeeProfileScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
       {Platform.OS === 'ios' && <View style={styles.statusBg} />}
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -267,7 +263,7 @@ export default function EmployeeProfileScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -276,36 +272,31 @@ const styles = StyleSheet.create({
 
   statusBg: {
     height: 44,
-    backgroundColor: STATUS_GREEN,
-  },
+    backgroundColor: STATUS_GREEN },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN,
-  },
+    backgroundColor: STATUS_GREEN },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#5BA40F',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   headerRight: {
     width: 120,
-    alignItems: 'flex-end',
-  },
+    alignItems: 'flex-end' },
   langPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -314,19 +305,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: '#ECFDF5',
     borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
+    borderColor: '#A7F3D0' },
   langPillText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#047857',
-  },
+    color: '#047857' },
 
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 10,
-  },
+    paddingTop: 10 },
 
   topCard: {
     alignItems: 'center',
@@ -336,24 +324,20 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   avatarBig: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   nameBig: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#111827',
-  },
+    color: '#111827' },
   roleText: {
     fontSize: 12,
     color: '#6B7280',
-    marginTop: 4,
-  },
+    marginTop: 4 },
 
   infoCard: {
     backgroundColor: '#FFFFFF',
@@ -362,13 +346,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 6,
-  },
+    marginVertical: 6 },
   infoIconWrap: {
     width: 30,
     height: 30,
@@ -376,28 +358,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
-  },
+    marginRight: 10 },
   infoTextWrap: {
-    flex: 1,
-  },
+    flex: 1 },
   infoLabel: {
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   infoValue: {
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
-    marginTop: 1,
-  },
+    marginTop: 1 },
 
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
 
   modulesCard: {
     backgroundColor: '#FFFFFF',
@@ -406,24 +383,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   moduleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 4,
-  },
+    marginVertical: 4 },
   moduleText: {
     marginLeft: 8,
     fontSize: 13,
     color: '#111827',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
 
   buttonsRow: {
     flexDirection: 'row',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   editBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -435,14 +408,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginRight: 8,
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   editBtnText: {
     marginLeft: 6,
     fontSize: 13,
     fontWeight: '700',
-    color: '#0369A1',
-  },
+    color: '#0369A1' },
   logoutBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -451,12 +422,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#DC2626',
     paddingHorizontal: 14,
     paddingVertical: 10,
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoutBtnText: {
     marginLeft: 6,
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
-});
+    color: '#FFFFFF' } });

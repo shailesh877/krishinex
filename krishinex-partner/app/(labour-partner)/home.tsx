@@ -8,9 +8,8 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -39,7 +38,7 @@ function getWeatherInfo(code: number, isHindi: boolean): { label: string; icon: 
 export default function LabourPartnerHome() {
   const router = useRouter();
   const { lang } = useI18n();
-  const insets = useSafeAreaInsets();
+  
   const isHindi = lang === 'hi';
 
   const { profile, refreshUser } = useUser();
@@ -57,8 +56,7 @@ export default function LabourPartnerHome() {
 
   const lifetimeStats = statsData ? {
     totalRequests: statsData.totalRequests || 0,
-    completed: statsData.completed || 0,
-  } : { totalRequests: 0, completed: 0 };
+    completed: statsData.completed || 0 } : { totalRequests: 0, completed: 0 };
 
   // Weather state
   const [weatherCity, setWeatherCity] = useState('');
@@ -168,12 +166,12 @@ export default function LabourPartnerHome() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#ECFDF3" />
 
       {/* PREMIUM HEADER */}
-      <View style={[styles.headerBg, { paddingTop: Math.max(insets.top, 10) }]}>
-        <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.headerBg}>
+        <View style={styles.appHeader}>
           {/* LEFT: notifications */}
           <TouchableOpacity
             style={styles.notifBtn}
@@ -446,7 +444,7 @@ export default function LabourPartnerHome() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -462,14 +460,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
-    elevation: 6,
-  },
+    elevation: 6 },
   appHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
+    paddingBottom: 8 },
   notifBtn: {
     width: 32,
     height: 32,
@@ -478,8 +474,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#6EE7B7',
-  },
+    borderColor: '#6EE7B7' },
   notifDot: {
     position: 'absolute',
     top: 0,
@@ -489,18 +484,15 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: '#DC2626',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoWrap: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoTextImage: {
     width: 150,
     height: 30,
-    resizeMode: 'contain',
-  },
+    resizeMode: 'contain' },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -508,8 +500,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
 
   topInfoCard: {
@@ -519,124 +510,103 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   nameRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   helloText: {
     fontSize: 12,
-    color: '#BBF7D0',
-  },
+    color: '#BBF7D0' },
   nameText: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#ECFDF5',
-  },
+    color: '#ECFDF5' },
   badgeChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#14532D',
-  },
+    backgroundColor: '#14532D' },
   badgeText: {
     fontSize: 10,
     color: '#BBF7D0',
     marginLeft: 4,
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
 
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
-  },
+    marginTop: 6 },
   locationText: {
     fontSize: 12,
     color: '#D1FAE5',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   weatherRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   weatherLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   weatherIconWrap: {
     width: 26,
     height: 26,
     borderRadius: 13,
     backgroundColor: '#F97316',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   weatherTitle: { fontSize: 12, fontWeight: '600', color: '#ECFEFF' },
   weatherText: { fontSize: 11, color: '#E5E7EB', marginTop: 2 },
   weatherRight: {
     alignItems: 'flex-end',
     justifyContent: 'center',
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   weatherTemp: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FEFCE8',
-  },
+    color: '#FEFCE8' },
   weatherMetaSmall: { fontSize: 11, color: '#BBF7D0' },
 
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 12,
-  },
+    paddingTop: 12 },
 
   bodyTopStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   bodyHello: {
     fontSize: 12,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   bodyName: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   bodyLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: '55%',
-  },
+    maxWidth: '55%' },
   bodyLocationText: {
     fontSize: 11,
     color: '#4B5563',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   sectionTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
-    marginTop: 4,
-  },
+    marginTop: 4 },
 
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   totalCard: {
     width: '48%',
     borderRadius: 18,
@@ -644,13 +614,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   totalHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   totalIconWrap: {
     width: 30,
     height: 30,
@@ -658,21 +626,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
-    borderWidth: 1,
-  },
+    borderWidth: 1 },
   totalLabel: { fontSize: 12, fontWeight: '600', color: '#111827' },
   totalSubText: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   totalMiddleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   totalValue: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#111827',
-  },
+    color: '#111827' },
   totalApplyBorder: { borderColor: '#C7D2FE' },
   totalCompleteBorder: { borderColor: '#BBF7D0' },
 
@@ -681,8 +646,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   chipText: { fontSize: 10, marginLeft: 2 },
 
   cardShadow: {
@@ -690,20 +654,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.14,
     shadowRadius: 12,
-    elevation: 5,
-  },
+    elevation: 5 },
   cardShadowSoft: {
     shadowColor: '#0000001F',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 10,
-    elevation: 4,
-  },
+    elevation: 4 },
 
   actionsRow: {
     flexDirection: 'row',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   actionCard: {
     flex: 1,
     borderRadius: 18,
@@ -712,24 +673,19 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   actionIconWrap: {
     width: 26,
     height: 26,
     borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   actionTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   actionSub: {
     fontSize: 11,
     color: '#4B5563',
-    marginTop: 2,
-  },
-});
+    marginTop: 2 } });

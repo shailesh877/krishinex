@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -21,7 +20,7 @@ const API_URL = `${BASE_API_URL}/user`;
 
 export default function BuyerWallet() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -38,8 +37,7 @@ export default function BuyerWallet() {
       totalCompleted: 'पूर्ण ऑर्डर',
       allOrders: 'सभी ऑर्डर',
       adminNote: 'सभी भुगतान एडमिन को किए जाते हैं',
-      empty: 'अभी तक कोई लेन-देन नहीं है',
-    },
+      empty: 'अभी तक कोई लेन-देन नहीं है' },
     en: {
       title: 'Wallet',
       sub: 'Your orders and total spend',
@@ -47,9 +45,7 @@ export default function BuyerWallet() {
       totalCompleted: 'Completed',
       allOrders: 'All Orders',
       adminNote: 'All payments are made to admin',
-      empty: 'No transactions yet',
-    },
-  }[lang];
+      empty: 'No transactions yet' } }[lang];
 
   const fetchWallet = useCallback(async (silent = false) => {
     try {
@@ -89,10 +85,10 @@ export default function BuyerWallet() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <View style={[styles.topBar, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.topBar}>
         <TouchableOpacity style={styles.backWrap} onPress={() => router.push('/(buyer)/home')}>
           <Ionicons name="arrow-back" size={20} color="#111827" />
         </TouchableOpacity>
@@ -179,7 +175,7 @@ export default function BuyerWallet() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -188,51 +184,42 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingBottom: 10,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   backWrap: {
     width: 32, height: 32, borderRadius: 16,
     justifyContent: 'center', alignItems: 'center',
-    backgroundColor: '#F3F4F6', marginRight: 8,
-  },
+    backgroundColor: '#F3F4F6', marginRight: 8 },
   headerTitle: {
-    flex: 1, fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center',
-  },
+    flex: 1, fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center' },
   headerBorder: { height: 2, backgroundColor: '#87D528' },
 
   summaryCard: {
     margin: 16, borderRadius: 18, padding: 18,
-    flexDirection: 'row', justifyContent: 'space-around',
-  },
+    flexDirection: 'row', justifyContent: 'space-around' },
   summaryItem: { alignItems: 'center' },
   summaryValue: { fontSize: 20, fontWeight: '900', color: '#FFFFFF' },
   summaryLabel: { fontSize: 11, color: '#BBF7D0', marginTop: 2 },
 
   adminNote: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 16, paddingBottom: 8,
-  },
+    paddingHorizontal: 16, paddingBottom: 8 },
   adminNoteText: { fontSize: 12, color: '#16A34A' },
 
   sectionTitle: {
     fontSize: 16, fontWeight: '700', color: '#374151',
-    marginHorizontal: 16, marginTop: 10, marginBottom: 8,
-  },
+    marginHorizontal: 16, marginTop: 10, marginBottom: 8 },
 
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   transactionItem: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFFFFF', padding: 12, borderRadius: 12,
-  },
+    backgroundColor: '#FFFFFF', padding: 12, borderRadius: 12 },
   iconBox: {
     width: 36, height: 36, borderRadius: 18,
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
-  },
+    justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   transTitle: { fontSize: 14, fontWeight: '600', color: '#111827' },
   transDate: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   transAmount: { fontSize: 15, fontWeight: '700' },
 
   emptyContainer: { alignItems: 'center', marginTop: 40 },
-  emptyText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center' },
-});
+  emptyText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center' } });

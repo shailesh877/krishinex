@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -48,15 +47,14 @@ function statusLabel(status: OrderStatus, isHindi: boolean) {
     accepted: ['Accepted', 'स्वीकृत'],
     'in-progress': ['In Progress', 'जारी है'],
     completed: ['Completed', 'पूर्ण'],
-    cancelled: ['Cancelled', 'रद्द'],
-  };
+    cancelled: ['Cancelled', 'रद्द'] };
   const pair = labels[status] ?? ['Unknown', 'अज्ञात'];
   return isHindi ? pair[1] : pair[0];
 }
 
 export default function MyRequests() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -74,8 +72,7 @@ export default function MyRequests() {
       created: 'तारीख',
       variety: 'वैरायटी',
       empty: 'अभी तक कोई खरीद रिक्वेस्ट नहीं की है',
-      newOrder: 'नयी रिक्वेस्ट',
-    },
+      newOrder: 'नयी रिक्वेस्ट' },
     en: {
       title: 'My requests',
       sub: 'Buy requests created by you',
@@ -85,9 +82,7 @@ export default function MyRequests() {
       created: 'Date',
       variety: 'Variety',
       empty: 'You have not created any buy request yet',
-      newOrder: 'New Request',
-    },
-  }[lang];
+      newOrder: 'New Request' } }[lang];
 
   const fetchOrders = useCallback(async (silent = false) => {
     try {
@@ -178,10 +173,10 @@ export default function MyRequests() {
   );
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <View style={[styles.topBar, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.backWrap}
           onPress={() => router.push('/(buyer)/create-order')}
@@ -234,7 +229,7 @@ export default function MyRequests() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -246,28 +241,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 10,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   backWrap: {
     width: 32, height: 32, borderRadius: 16,
     justifyContent: 'center', alignItems: 'center',
-    backgroundColor: '#F3F4F6', marginRight: 8,
-  },
+    backgroundColor: '#F3F4F6', marginRight: 8 },
   headerTitle: {
-    flex: 1, fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center',
-  },
+    flex: 1, fontSize: 18, fontWeight: '800', color: '#111827', textAlign: 'center' },
   newBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 10, paddingVertical: 6,
-    borderRadius: 999, backgroundColor: '#ECFDF5',
-  },
+    borderRadius: 999, backgroundColor: '#ECFDF5' },
   newBtnText: { fontSize: 12, fontWeight: '700', color: '#16A34A' },
   headerBorder: { height: 2, backgroundColor: '#87D528' },
 
   subHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8,
-  },
+    alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8 },
   subText: { fontSize: 12, color: '#6B7280' },
   countText: { fontSize: 12, fontWeight: '700', color: '#374151' },
 
@@ -279,24 +269,20 @@ const styles = StyleSheet.create({
     borderRadius: 16, padding: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07, shadowRadius: 6, elevation: 3,
-  },
+    shadowOpacity: 0.07, shadowRadius: 6, elevation: 3 },
   cardHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 10,
-  },
+    alignItems: 'center', marginBottom: 10 },
   cropRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   cropText: { fontSize: 16, fontWeight: '800', color: '#111827' },
   varietyText: { fontSize: 13, color: '#6B7280' },
   statusBadge: {
-    borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3,
-  },
+    borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   statusText: { fontSize: 11, fontWeight: '700' },
 
   detailRow: {
     flexDirection: 'row', alignItems: 'flex-start',
-    gap: 6, marginBottom: 4,
-  },
+    gap: 6, marginBottom: 4 },
   detailText: { fontSize: 13, color: '#6B7280', flex: 1 },
   detailBold: { fontWeight: '700', color: '#374151' },
 
@@ -305,8 +291,6 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, color: '#9CA3AF', textAlign: 'center' },
   emptyBtn: {
     backgroundColor: '#16A34A', borderRadius: 14,
-    paddingHorizontal: 20, paddingVertical: 10,
-  },
-  emptyBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
-});
+    paddingHorizontal: 20, paddingVertical: 10 },
+  emptyBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 } });
 

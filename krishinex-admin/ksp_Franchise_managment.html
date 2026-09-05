@@ -619,13 +619,7 @@
                 </p>
               </div>
               <div class="flex gap-2">
-                <select id="franchise-state-filter" onchange="filterFranchises()"
-                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
-                  <option value="all">All States</option>
-                  <option value="Haryana">Haryana</option>
-                  <option value="Uttar Pradesh">Uttar Pradesh</option>
-                  <option value="Punjab">Punjab</option>
-                </select>
+
                 <input id="franchise-search" type="text" placeholder="🔍 Search franchise / location"
                   onkeydown="if(event.key === 'Enter') { document.getElementById('franchiseTableBody')?.closest('.overflow-y-auto, .overflow-auto, div[style*=\'max-height\']')?.scrollTo({top: 0}); fetchFranchises(1, false); }"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-56" />
@@ -1003,7 +997,12 @@
 
     function setDatePreset(preset) {
       const today = new Date();
-      const formatDate = (d) => d.toISOString().split('T')[0];
+      const formatDate = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
 
       if (preset === 'today') {
         selectedStartDate = formatDate(today);
@@ -1086,7 +1085,7 @@
 
     function refreshAllData() {
       fetchStats();
-      fetchFranchises();
+      fetchFranchises(1, false);
       const kspSelect = document.getElementById('ksp-select-inventory');
       const selectedKspId = kspSelect ? kspSelect.value : 'all';
       fetchInventory(selectedKspId);
@@ -1404,9 +1403,14 @@
         ? `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-rose-100 to-amber-100 flex items-center justify-center shadow-sm animate-pulse-warning"><i class="fas fa-store text-rose-600"></i></div>`
         : `<div class="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 flex items-center justify-center shadow-sm"><i class="fas fa-store text-teal-600"></i></div>`;
 
-      const statusBadge = k.status === 'approved'
-        ? `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`
-        : `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
+      let statusBadge = '';
+      if (k.status === 'approved') {
+        statusBadge = `<span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200"><i class="fas fa-check-circle mr-1"></i> Active</span>`;
+      } else if (k.status === 'rejected') {
+        statusBadge = `<span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[10px] font-black text-rose-700 border border-rose-200"><i class="fas fa-times-circle mr-1"></i> Rejected</span>`;
+      } else {
+        statusBadge = `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[10px] font-black text-amber-700 border border-amber-200"><i class="fas fa-clock mr-1"></i> Pending</span>`;
+      }
 
       const escapedName = (k.franchiseName || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
       const escapedLoc = (k.location || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
@@ -1439,10 +1443,13 @@
     }
 
     function renderFranchises(list) {
-      window.progressiveRenderTable('franchiseTableBody', list, createFranchiseRow, {
-        chunkSize: 20,
-        emptyHtml: '<tr><td colspan="9" class="text-center py-10 text-slate-400 font-medium">No franchises found matching your search.</td></tr>'
-      });
+      const tbody = document.getElementById('franchiseTableBody');
+      if (!tbody) return;
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10 text-slate-400 font-medium">No franchises found matching your search.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(createFranchiseRow).join('');
     }
 
     function filterFranchises() {
@@ -1734,7 +1741,7 @@
           const statusEl = document.getElementById('modal-ksp-status-text');
           if (statusEl) {
             statusEl.textContent = k.status || 'UNKNOWN';
-            statusEl.className = `text-[10px] font-black uppercase mt-1 ${k.status === 'approved' ? 'text-emerald-600' : 'text-rose-600'}`;
+            statusEl.className = `text-[10px] font-black uppercase mt-1 ${k.status === 'approved' ? 'text-emerald-600' : k.status === 'rejected' ? 'text-rose-600' : 'text-amber-600'}`;
           }
 
           const walletInp = document.getElementById('edit-wallet-number');
@@ -1752,10 +1759,15 @@
           if (document.getElementById('edit-bank-addr')) document.getElementById('edit-bank-addr').value = bd.bankAddress || '';
 
           const actionBox = document.getElementById('modal-franchise-actions');
+          const hasDocs = k.aadhaarDocUrl && k.panDocUrl;
           if (k.status === 'approved') {
             actionBox.innerHTML = `<button onclick="blockFranchise('${id}', '${name}')" class="h-9 px-4 rounded-xl border-2 border-rose-200 bg-rose-50 text-[10px] font-black text-rose-700 hover:bg-rose-100 transition-all flex items-center gap-2"><i class="fas fa-ban"></i> Block Account</button>`;
           } else {
-            actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-[10px] font-black text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center gap-2"><i class="fas fa-check"></i> Approve Franchise</button>`;
+            if (hasDocs) {
+                actionBox.innerHTML = `<button onclick="approveFranchise('${id}', '${name}')" class="h-9 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-[10px] font-black text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center gap-2"><i class="fas fa-check"></i> Approve Franchise</button>`;
+            } else {
+                actionBox.innerHTML = `<button disabled class="h-9 px-4 rounded-xl bg-slate-200 text-slate-400 text-[10px] font-black cursor-not-allowed flex items-center gap-2" title="Aadhaar and PAN documents are required to approve"><i class="fas fa-lock"></i> Doc Missing</button>`;
+            }
           }
         }
       });

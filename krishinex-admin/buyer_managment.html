@@ -1034,7 +1034,12 @@
 
         function setDatePreset(preset) {
             const today = new Date();
-            const formatDate = (d) => d.toISOString().split('T')[0];
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
 
             if (preset === 'today') {
                 selectedStartDate = formatDate(today);
@@ -1116,6 +1121,11 @@
         }
 
         function refreshAllData() {
+            const reconFromEl = document.getElementById('reconFromDate');
+            const reconToEl = document.getElementById('reconToDate');
+            if (reconFromEl) reconFromEl.value = selectedStartDate === 'all' ? '' : selectedStartDate;
+            if (reconToEl) reconToEl.value = selectedEndDate === 'all' ? '' : selectedEndDate;
+
             fetchBuyerStats();
             fetchBuyers();
             fetchRequests();
@@ -1246,13 +1256,25 @@
             const isRejected = b.status === 'rejected';
 
             let actionBtns = '';
+            const isValidDoc = (u) => u && typeof u === 'string' && u.trim() !== '' && u !== 'undefined' && u !== 'null' && u !== 'none' && !u.includes('undefined');
+            const hasDocs = isValidDoc(b.aadhaarDocUrl) || isValidDoc(b.aadhaarFrontUrl) || isValidDoc(b.aadhaarBackDocUrl) || isValidDoc(b.panDocUrl) || isValidDoc(b.licenseDocUrl) || isValidDoc(b.gstDocUrl) || isValidDoc(b.certDocUrl) || isValidDoc(b.profilePhotoUrl) || (b.bankDetails && b.bankDetails.bankDocUrl) || isValidDoc(b.businessLicenseUrl) || isValidDoc(b.bankPassbookUrl);
+
             if (isPending) {
-                actionBtns = `<button onclick="approveBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-emerald-500 text-white px-2.5 py-1 text-[9px] font-black hover:bg-emerald-600 transition-all mr-1"><i class="fas fa-check mr-1"></i>Approve</button>
-                              <button onclick="rejectBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i>Reject</button>`;
+                if (hasDocs) {
+                    actionBtns = `<button onclick="approveBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-emerald-500 text-white px-2.5 py-1 text-[9px] font-black hover:bg-emerald-600 transition-all mr-1"><i class="fas fa-check mr-1"></i>Approve</button>
+                                  <button onclick="rejectBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i>Reject</button>`;
+                } else {
+                    actionBtns = `<span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-400 px-1.5 py-1 text-[9px] font-bold border border-slate-200 mr-1" title="Cannot approve: No KYC documents uploaded"><i class="fas fa-lock mr-1"></i> Doc Missing</span>
+                                  <button onclick="rejectBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-200 transition-all mr-1"><i class="fas fa-ban mr-1"></i>Reject</button>`;
+                }
             } else if (isActive) {
                 actionBtns = `<button onclick="rejectBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-rose-50 text-rose-600 border border-rose-200 px-2.5 py-1 text-[9px] font-black hover:bg-rose-100 transition-all mr-1"><i class="fas fa-ban mr-1"></i>Suspend</button>`;
             } else if (isRejected) {
-                actionBtns = `<button onclick="approveBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 text-[9px] font-black hover:bg-emerald-100 transition-all mr-1"><i class="fas fa-check-circle mr-1"></i>Re-activate</button>`;
+                if (hasDocs) {
+                    actionBtns = `<button onclick="approveBuyer('${b._id}')" class="inline-flex items-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200 px-2.5 py-1 text-[9px] font-black hover:bg-emerald-100 transition-all mr-1"><i class="fas fa-check-circle mr-1"></i>Re-activate</button>`;
+                } else {
+                    actionBtns = `<span class="inline-flex items-center rounded-lg bg-slate-100 text-slate-400 px-1.5 py-1 text-[9px] font-bold border border-slate-200 mr-1" title="Cannot reactivate: No KYC documents uploaded"><i class="fas fa-lock mr-1"></i> Doc Missing</span>`;
+                }
             }
 
             const statusBadge = isActive
@@ -1276,10 +1298,13 @@
         }
 
         function renderBuyersTable(buyers) {
-            window.progressiveRenderTable('buyersTbody', buyers, createBuyerRow, {
-                chunkSize: 20,
-                emptyHtml: '<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-slate-400">No buyers found.</td></tr>'
-            });
+            const tbody = document.getElementById('buyersTbody');
+            if (!tbody) return;
+            if (!buyers || buyers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-slate-400">No buyers found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = buyers.map(createBuyerRow).join('');
         }
 
 

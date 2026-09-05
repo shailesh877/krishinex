@@ -10,14 +10,13 @@ import {
   Alert,
   Modal,
   TextInput,
-  Linking,
-} from 'react-native';
+  Linking } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
@@ -56,8 +55,7 @@ const INITIAL_BOOKINGS: BookingItem[] = [
     distanceKm: 4.2,
     dateLabel: 'Today • 2:30 PM',
     offerRate: '₹ 750 / day per person',
-    status: 'new',
-  },
+    status: 'new' },
   {
     id: '2',
     farmerName: 'Sohan Lal',
@@ -67,8 +65,7 @@ const INITIAL_BOOKINGS: BookingItem[] = [
     distanceKm: 7.8,
     dateLabel: 'Today • 11:00 AM',
     offerRate: '₹ 120 / hour',
-    status: 'accepted',
-  },
+    status: 'accepted' },
   {
     id: '3',
     farmerName: 'Mahesh',
@@ -78,15 +75,14 @@ const INITIAL_BOOKINGS: BookingItem[] = [
     distanceKm: 3.5,
     dateLabel: 'Yesterday • 4:15 PM',
     offerRate: '₹ 700 / day per person',
-    status: 'completed',
-  },
+    status: 'completed' },
 ];
 
 export default function LabourBookingsScreen() {
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
-  const insets = useSafeAreaInsets();
+  
 
   const [tab, setTab] = useState<BookingStatus>('new');
   // Initialize as empty now
@@ -171,8 +167,7 @@ export default function LabourBookingsScreen() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+          Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status, otp })
       });
       const resData = await res.json();
@@ -212,23 +207,20 @@ export default function LabourBookingsScreen() {
         bg: '#DBEAFE',
         color: '#1D4ED8',
         icon: 'sparkles-outline' as const,
-        label: isHindi ? 'नया आया काम' : 'New work',
-      };
+        label: isHindi ? 'नया आया काम' : 'New work' };
     }
     if (status === 'accepted') {
       return {
         bg: '#FEF3C7',
         color: '#B45309',
         icon: 'time-outline' as const,
-        label: isHindi ? 'काम fix हो गया' : 'Job fixed',
-      };
+        label: isHindi ? 'काम fix हो गया' : 'Job fixed' };
     }
     return {
       bg: '#DCFCE7',
       color: '#15803D',
       icon: 'checkmark-circle-outline' as const,
-      label: isHindi ? 'काम पूरा हो चुका' : 'Work completed',
-    };
+      label: isHindi ? 'काम पूरा हो चुका' : 'Work completed' };
   };
 
   const renderBooking = ({ item }: { item: BookingItem }) => {
@@ -382,11 +374,11 @@ export default function LabourBookingsScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER SIMPLE */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -524,7 +516,7 @@ export default function LabourBookingsScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -538,58 +530,48 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   headerSub: {
     fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
-  },
+    marginTop: 2 },
 
   tabsRow: {
     flexDirection: 'row',
     marginTop: 8,
     paddingHorizontal: 16,
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   tabChip: {
     flex: 1,
     borderRadius: 999,
     paddingVertical: 7,
     marginRight: 6,
     backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   tabChipActive: {
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   tabText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   tabTextActive: {
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 16,
-  },
+    paddingBottom: 16 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -603,37 +585,30 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
-    elevation: 4,
-  },
+    elevation: 4 },
   cardTopRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
+    alignItems: 'flex-start' },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#111827',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   phoneText: {
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   workRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   workText: {
     fontSize: 12,
     color: '#4B5563',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   statusChip: {
     flexDirection: 'row',
@@ -641,71 +616,59 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   statusChipText: {
     fontSize: 11,
     fontWeight: '600',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   cardMiddleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
-  },
+    marginTop: 8 },
   locationWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: 8,
-  },
+    marginRight: 8 },
   dateWrap: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   cardSubText: {
     color: '#6B7280',
-    marginLeft: 3,
-  },
+    marginLeft: 3 },
   detailsBox: {
     flexDirection: 'row',
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
     padding: 8,
     marginTop: 8,
-    gap: 12,
-  },
+    gap: 12 },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
+    gap: 4 },
   detailText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   purposeBox: {
     marginTop: 8,
     padding: 8,
     backgroundColor: '#F3F4F6',
     borderRadius: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#16A34A',
-  },
+    borderLeftColor: '#16A34A' },
   purposeLabel: {
     fontSize: 10,
     fontWeight: '700',
     color: '#6B7280',
     textTransform: 'uppercase',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   purposeText: {
     fontSize: 12,
     color: '#374151',
-    lineHeight: 16,
-  },
+    lineHeight: 16 },
 
 
 
@@ -713,55 +676,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   rateText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: 8,
-  },
+    columnGap: 8 },
   smallBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   smallBtnText: {
     fontSize: 11,
     fontWeight: '700',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   rejectBtn: {
-    backgroundColor: '#FEE2E2',
-  },
+    backgroundColor: '#FEE2E2' },
   acceptBtn: {
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   completeBtn: {
-    backgroundColor: '#22C55E',
-  },
+    backgroundColor: '#22C55E' },
 
   emptyWrap: {
     alignItems: 'center',
-    paddingHorizontal: 32,
-  },
+    paddingHorizontal: 32 },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   emptySub: {
     fontSize: 12,
     color: '#6B7280',
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
 
   // Modal Styles
   modalOverlay: {
@@ -769,8 +721,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-  },
+    padding: 20 },
   otpModalContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
@@ -778,21 +729,18 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 340,
     alignItems: 'center',
-    elevation: 10,
-  },
+    elevation: 10 },
   otpModalTitle: {
     fontSize: 18,
     fontWeight: '800',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   otpModalSub: {
     fontSize: 13,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 20,
-    lineHeight: 18,
-  },
+    lineHeight: 18 },
   otpInput: {
     width: '100%',
     backgroundColor: '#F3F4F6',
@@ -803,33 +751,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 10,
     color: '#111827',
-    marginBottom: 24,
-  },
+    marginBottom: 24 },
   modalActions: {
     flexDirection: 'row',
     width: '100%',
-    gap: 12,
-  },
+    gap: 12 },
   modalBtn: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   cancelBtn: {
-    backgroundColor: '#F3F4F6',
-  },
+    backgroundColor: '#F3F4F6' },
   submitBtn: {
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   cancelBtnText: {
     color: '#4B5563',
     fontWeight: '700',
-    fontSize: 14,
-  },
+    fontSize: 14 },
   submitBtnText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 14,
-  },
-});
+    fontSize: 14 } });

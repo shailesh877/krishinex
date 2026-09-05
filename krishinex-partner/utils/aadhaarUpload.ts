@@ -1,7 +1,7 @@
 // utils/aadhaarUpload.ts — Shared Aadhaar upload utility for all partner profiles
 
 import * as DocumentPicker from 'expo-document-picker';
-import { BASE_API_URL, BASE_URL } from '../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../constants/api';
 import { Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -39,7 +39,7 @@ export async function openAadhaarMenu(
 function viewAadhaar(url: string) {
     const formattedUrl = url.startsWith('http')
         ? url
-        : `${BASE_URL}/${url.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${url.replace(/\\/g, '/')}`;
 
     Linking.openURL(formattedUrl).catch(() =>
         Alert.alert('Error', 'Cannot open document')

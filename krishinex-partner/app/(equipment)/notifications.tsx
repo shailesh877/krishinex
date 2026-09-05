@@ -9,9 +9,8 @@ import {
     ActivityIndicator,
     RefreshControl,
     Linking,
-    Modal,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+    Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
@@ -57,7 +56,7 @@ function timeAgo(dateStr: string, isHindi: boolean) {
 
 export default function EquipmentNotifications() {
     const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
     const { lang } = useI18n();
     const isHindi = lang === 'hi';
 
@@ -71,16 +70,13 @@ export default function EquipmentNotifications() {
             sub: 'आपके खाते से जुड़ी सूचनाएं',
             markAll: 'सभी पढ़ें',
             empty: 'कोई notification नहीं है',
-            emptySub: 'नया ऑर्डर या स्टेटस अपडेट आने पर यहाँ दिखेगा',
-        },
+            emptySub: 'नया ऑर्डर या स्टेटस अपडेट आने पर यहाँ दिखेगा' },
         en: {
             title: 'Notifications',
             sub: 'All updates for your account',
             markAll: 'Mark all read',
             empty: 'No notifications yet',
-            emptySub: 'New orders and status updates will appear here',
-        },
-    }[lang];
+            emptySub: 'New orders and status updates will appear here' } }[lang];
 
     const getToken = () => AsyncStorage.getItem('userToken');
 
@@ -212,11 +208,11 @@ export default function EquipmentNotifications() {
     };
 
     return (
-        <View style={styles.root}>
+        <SafeAreaView style={styles.root}>
             <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
             {/* HEADER */}
-            <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+            <View style={styles.header}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                     <Ionicons name="arrow-back" size={20} color="#111827" />
                 </TouchableOpacity>
@@ -290,7 +286,7 @@ export default function EquipmentNotifications() {
                     </View>
                 </TouchableOpacity>
             </Modal>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -299,26 +295,24 @@ const styles = StyleSheet.create({
 
     header: {
         flexDirection: 'row', alignItems: 'center',
-        paddingHorizontal: 16, paddingBottom: 10,
-        backgroundColor: '#FFFFFF',
-    },
+       paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+        backgroundColor: '#FFFFFF' },
     backBtn: {
         width: 32, height: 32, borderRadius: 16,
         backgroundColor: '#F3F4F6',
-        alignItems: 'center', justifyContent: 'center',
-    },
+        alignItems: 'center', justifyContent: 'center' },
     headerTitle: { fontSize: 18, fontWeight: '800', color: '#111827' },
     headerSub: { fontSize: 12, color: '#6B7280', marginTop: 1 },
     badge: {
         backgroundColor: '#EF4444', borderRadius: 999,
         minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center',
-        paddingHorizontal: 5,
-    },
+        paddingHorizontal: 5 },
     badgeText: { fontSize: 11, color: '#FFFFFF', fontWeight: '800' },
     markAllBtn: {
         paddingHorizontal: 10, paddingVertical: 5,
-        borderRadius: 999, backgroundColor: '#ECFDF5',
-    },
+        borderRadius: 999, backgroundColor: '#ECFDF5' },
     markAllText: { fontSize: 11, fontWeight: '700', color: '#16A34A' },
     headerBorder: { height: 2, backgroundColor: '#87D528' },
 
@@ -329,27 +323,22 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF', borderRadius: 16,
         padding: 12, borderWidth: 1, borderColor: '#E5E7EB',
         shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
-    },
+        shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
     cardUnread: {
-        backgroundColor: '#ECFDF5', borderColor: '#A7F3D0',
-    },
+        backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
     iconWrap: {
         width: 36, height: 36, borderRadius: 12,
         alignItems: 'center', justifyContent: 'center',
-        marginRight: 10, marginTop: 2,
-    },
+        marginRight: 10, marginTop: 2 },
     titleRow: {
-        flexDirection: 'row', alignItems: 'center', marginBottom: 3,
-    },
+        flexDirection: 'row', alignItems: 'center', marginBottom: 3 },
     titleText: { fontSize: 13, fontWeight: '600', color: '#111827', flex: 1, marginRight: 6 },
     titleBold: { fontWeight: '800' },
     timeText: { fontSize: 10, color: '#9CA3AF' },
     msgText: { fontSize: 12, color: '#4B5563', lineHeight: 18 },
     dot: {
         width: 8, height: 8, borderRadius: 4,
-        backgroundColor: '#16A34A', marginLeft: 6, marginTop: 4,
-    },
+        backgroundColor: '#16A34A', marginLeft: 6, marginTop: 4 },
 
     emptyWrap: { alignItems: 'center', gap: 10 },
     emptyTitle: { fontSize: 16, fontWeight: '700', color: '#374151' },
@@ -360,8 +349,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 24,
-    },
+        padding: 24 },
     modalContent: {
         backgroundColor: '#FFFFFF',
         width: '100%',
@@ -373,37 +361,30 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.15,
-        shadowRadius: 12,
-    },
+        shadowRadius: 12 },
     modalTitle: {
         fontSize: 20,
         fontWeight: '700',
         color: '#1F2937',
         textAlign: 'center',
-        marginBottom: 8,
-    },
+        marginBottom: 8 },
     modalMsg: {
         fontSize: 15,
         color: '#4B5563',
         textAlign: 'center',
         lineHeight: 22,
-        marginBottom: 24,
-    },
+        marginBottom: 24 },
     modalActions: {
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'center',
-    },
+        justifyContent: 'center' },
     modalBtnPrimary: {
         flex: 1,
         backgroundColor: '#2563EB',
         paddingVertical: 14,
         borderRadius: 14,
-        alignItems: 'center',
-    },
+        alignItems: 'center' },
     modalBtnPrimaryText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: '600',
-    },
-});
+        fontWeight: '600' } });

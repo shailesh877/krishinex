@@ -5,10 +5,9 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
-  FlatList,
-} from 'react-native';
+  FlatList } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,7 +35,7 @@ type BookingItem = {
 };
 
 export default function LabourAssignScreen() {
-  const insets = useSafeAreaInsets();
+  
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -92,8 +91,7 @@ export default function LabourAssignScreen() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+          Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status })
       });
       if (res.ok) {
@@ -116,23 +114,20 @@ export default function LabourAssignScreen() {
         bg: '#DBEAFE',
         color: '#1D4ED8',
         icon: 'sparkles-outline' as const,
-        label: isHindi ? 'नया काम' : 'New task',
-      };
+        label: isHindi ? 'नया काम' : 'New task' };
     }
     if (status === 'accepted') {
       return {
         bg: '#FEF9C3',
         color: '#ca8a04',
         icon: 'time-outline' as const,
-        label: isHindi ? 'प्रगति पर' : 'In progress',
-      };
+        label: isHindi ? 'प्रगति पर' : 'In progress' };
     }
     return {
       bg: '#DCFCE7',
       color: '#16A34A',
       icon: 'checkmark-circle-outline' as const,
-      label: isHindi ? 'पूरा हुआ' : 'Completed',
-    };
+      label: isHindi ? 'पूरा हुआ' : 'Completed' };
   };
 
   const t = {
@@ -150,8 +145,7 @@ export default function LabourAssignScreen() {
     btnComplete: isHindi ? 'काम पूरा मार्क करें' : 'Mark completed',
     emptyNew: isHindi ? 'कोई नया काम नहीं है' : 'No new tasks',
     emptyAccepted: isHindi ? 'कोई चालू काम नहीं है' : 'No active tasks',
-    emptyCompleted: isHindi ? 'अभी तक कोई काम पूरा नहीं हुआ' : 'No completed tasks yet',
-  };
+    emptyCompleted: isHindi ? 'अभी तक कोई काम पूरा नहीं हुआ' : 'No completed tasks yet' };
 
   const renderItem = ({ item }: { item: BookingItem }) => {
     const s = getStatusChip(item.status);
@@ -282,10 +276,10 @@ export default function LabourAssignScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor="#6bb313ff" />
 
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
@@ -343,7 +337,7 @@ export default function LabourAssignScreen() {
           </View>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -356,58 +350,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#6bb313ff',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#5BA40F',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFF',
-  },
+    color: '#FFF' },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   tabBtn: {
     flex: 1,
     paddingVertical: 14,
     alignItems: 'center',
     borderBottomWidth: 2,
-    borderColor: 'transparent',
-  },
+    borderColor: 'transparent' },
   tabActive: {
-    borderColor: '#6bb313ff',
-  },
+    borderColor: '#6bb313ff' },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   tabTextActive: {
-    color: '#111827',
-  },
+    color: '#111827' },
   listContent: {
     padding: 16,
-    paddingBottom: 40,
-  },
+    paddingBottom: 40 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -416,48 +400,39 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#F9FAFB',
     borderBottomWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 6,
-  },
+    borderRadius: 6 },
   chipText: {
     fontSize: 11,
     fontWeight: '700',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   dateLabel: {
     fontSize: 12,
     color: '#6B7280',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   cardInfoBox: {
-    padding: 14,
-  },
+    padding: 14 },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   iconWrap: {
     width: 24,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   infoLabel: {
     width: 55,
     fontSize: 13,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   infoValue: {
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   cardBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -466,21 +441,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   rateLabel: {
     fontSize: 11,
     color: '#6B7280',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   rateValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   actionRow: {
-    flexDirection: 'row',
-  },
+    flexDirection: 'row' },
   rejectBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -488,28 +459,24 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     backgroundColor: '#FEE2E2',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   rejectBtnText: {
     color: '#DC2626',
     fontWeight: '600',
     fontSize: 12,
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   acceptBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   acceptBtnText: {
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 12,
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   completeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -518,25 +485,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    backgroundColor: '#ECFDF5',
-  },
+    backgroundColor: '#ECFDF5' },
   completeBtnText: {
     color: '#047857',
     fontWeight: '700',
     fontSize: 12,
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   emptyWrap: {
     marginTop: 60,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   emptyText: {
     marginTop: 12,
     fontSize: 15,
     color: '#6B7280',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -544,18 +507,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
     borderLeftWidth: 3,
     borderLeftColor: '#6bb313ff',
-    paddingLeft: 8,
-  },
+    paddingLeft: 8 },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: '#374151',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5 },
   divider: {
     height: 1,
     backgroundColor: '#F3F4F6',
-    marginVertical: 12,
-  },
-});
+    marginVertical: 12 } });

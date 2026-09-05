@@ -6,12 +6,11 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+  ScrollView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type BookingStatus = 'new' | 'accepted' | 'completed';
 
@@ -56,14 +55,13 @@ const MOCK_BOOKING: BookingDetail = {
   offerRate: 750,
   paymentMode: 'CASH',
   purpose: '1 एकड़ गेहूं की कटाई के लिए मजदूर चाहिए',
-  status: 'new',
-};
+  status: 'new' };
 
 export default function LabourBookingDetailScreen() {
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
-  const insets = useSafeAreaInsets();
+  
 
   const params = useLocalSearchParams<{ id?: string }>();
   const currentBookingId = params.id || MOCK_BOOKING.id;
@@ -105,11 +103,11 @@ export default function LabourBookingDetailScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -399,7 +397,7 @@ export default function LabourBookingDetailScreen() {
           </View>
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -413,32 +411,27 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   headerSub: {
     fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
-  },
+    marginTop: 2 },
 
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 8,
-  },
+    paddingTop: 8 },
 
   statusStrip: {
     marginTop: 6,
@@ -450,35 +443,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#BBF7D0',
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   statusLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   statusIconWrap: {
     width: 28,
     height: 28,
     borderRadius: 14,
     backgroundColor: '#DCFCE7',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   statusTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#14532D',
-  },
+    color: '#14532D' },
   statusSub: {
     fontSize: 11,
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   bookingIdText: {
     fontSize: 11,
     color: '#6B7280',
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -487,158 +474,132 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
 
   cardHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   avatarCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: '#ECFDF5',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   cardSubRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   cardSubText: {
     fontSize: 11,
     color: '#6B7280',
-    marginLeft: 3,
-  },
+    marginLeft: 3 },
   distancePill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#DBEAFE',
-  },
+    backgroundColor: '#DBEAFE' },
   distanceText: {
     fontSize: 11,
     color: '#1D4ED8',
     fontWeight: '600',
-    marginLeft: 3,
-  },
+    marginLeft: 3 },
 
   contactRow: {
     flexDirection: 'row',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   contactBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
-    marginRight: 8,
-  },
+    marginRight: 8 },
   contactText: {
     fontSize: 11,
     fontWeight: '600',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   sectionSmallTitle: {
     fontSize: 13,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
 
   rowBetween: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   inlineRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   rowLabel: {
     fontSize: 12,
     color: '#4B5563',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   rateRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     marginTop: 10,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   rateLeft: {
     flex: 1,
-    marginRight: 10,
-  },
+    marginRight: 10 },
   rateMain: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#111827',
-  },
+    color: '#111827' },
   rateSub: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   rateHint: {
     fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   tagPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     backgroundColor: '#DCFCE7',
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   tagPillText: {
     fontSize: 11,
     color: '#166534',
     fontWeight: '600',
-    marginLeft: 3,
-  },
+    marginLeft: 3 },
 
   descLabel: {
     fontSize: 12,
     fontWeight: '600',
     color: '#111827',
     marginTop: 4,
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   descText: {
     fontSize: 11,
     color: '#4B5563',
-    lineHeight: 16,
-  },
+    lineHeight: 16 },
 
   // timeline
   timelineRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
-  },
+    marginTop: 6 },
   timelineDotActive: {
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: '#16A34A',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   timelineDotInactive: {
     width: 10,
     height: 10,
@@ -646,18 +607,15 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#D1D5DB',
     backgroundColor: '#FFFFFF',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   timelineConnector: {
     height: 12,
     marginLeft: 4,
     borderLeftWidth: 1,
-    borderColor: '#D1D5DB',
-  },
+    borderColor: '#D1D5DB' },
   timelineText: {
     fontSize: 11,
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
 
   // bottom bar
   bottomBar: {
@@ -667,40 +625,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    columnGap: 8,
-  },
+    columnGap: 8 },
   bottomBtn: {
     flex: 1,
     borderRadius: 999,
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   bottomAccept: {
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   bottomReject: {
-    backgroundColor: '#FEE2E2',
-  },
+    backgroundColor: '#FEE2E2' },
   bottomPrimary: {
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   bottomBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   completedWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   completedText: {
     fontSize: 12,
     color: '#166534',
     marginLeft: 6,
-    fontWeight: '600',
-  },
-});
+    fontWeight: '600' } });

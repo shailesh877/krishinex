@@ -22,10 +22,11 @@ router.get('/dashboard', protect, checkModule("field_executive"), async (req, re
 
         let taskQuery = {};
         if (all !== 'true' && startDate && endDate) {
-            taskQuery.createdAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
-            };
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            taskQuery.createdAt = { $gte: start, $lte: end };
         }
 
         const tasks = await FieldTask.find(taskQuery);
@@ -73,7 +74,16 @@ router.get('/dashboard', protect, checkModule("field_executive"), async (req, re
 router.get('/executives', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
-        const executives = await User.find({ role: 'field_executive' })
+        let query = { role: 'field_executive' };
+        if (all !== 'true' && startDate && endDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            query.createdAt = { $gte: start, $lte: end };
+        }
+
+        const executives = await User.find(query)
             .select('-password -__v')
             .sort({ createdAt: -1 })
             .lean();
@@ -82,10 +92,11 @@ router.get('/executives', protect, checkModule("field_executive"), async (req, r
         const enrichedExecutives = await Promise.all(executives.map(async (exec) => {
             let taskQuery = { executive: exec._id };
             if (all !== 'true' && startDate && endDate) {
-                taskQuery.createdAt = {
-                    $gte: new Date(startDate),
-                    $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
-                };
+                const start = new Date(startDate);
+                start.setHours(0, 0, 0, 0);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                taskQuery.createdAt = { $gte: start, $lte: end };
             }
             const tasks = await FieldTask.find(taskQuery);
 
@@ -169,11 +180,12 @@ router.get('/tasks', protect, checkModule("field_executive"), async (req, res) =
         let andConditions = [];
 
         if (all !== 'true' && startDate && endDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
             andConditions.push({
-                createdAt: {
-                    $gte: new Date(startDate),
-                    $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999))
-                }
+                createdAt: { $gte: start, $lte: end }
             });
         }
 

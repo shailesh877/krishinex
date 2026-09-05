@@ -23,7 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Location from 'expo-location';
 
-import { BASE_URL, BASE_API_URL } from '../../constants/api';
+import { BASE_URL, FILES_BASE_URL, BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}/user`;
 
@@ -91,7 +91,11 @@ export default function ShopProfile() {
           setBankDocUrl(profile.bankDetails.bankDocUrl || null);
       }
 
-      setAvatarUri(profile.avatarUri || null);
+      setAvatarUri(profile.avatarUri
+        ? (profile.avatarUri.startsWith('http')
+          ? profile.avatarUri
+          : `${FILES_BASE_URL}/${profile.avatarUri.replace(/\\/g, '/')}`)
+        : null);
       
       // Stop loading once cache is applied
       setLoading(false);
@@ -275,7 +279,7 @@ export default function ShopProfile() {
           const data = await res.json();
           const pfp = data.url?.startsWith('http')
             ? data.url
-            : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
+            : `${FILES_BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
           setAvatarUri(pfp);
           updateUser({ avatarUri: pfp }); // Update globally
           showAlert(isHindi ? 'सफल!' : 'Done!', isHindi ? 'प्रोफाइल फोटो अपडेट हो गई' : 'Profile photo updated');
@@ -294,7 +298,7 @@ export default function ShopProfile() {
       if (aadhaarDocUrl) {
         const formattedUrl = aadhaarDocUrl.startsWith('http')
           ? aadhaarDocUrl
-          : `${BASE_URL}/${aadhaarDocUrl.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${aadhaarDocUrl.replace(/\\/g, '/')}`;
         Linking.openURL(formattedUrl).catch(() =>
           showAlert('Error', 'Cannot open document')
         );
@@ -312,7 +316,7 @@ export default function ShopProfile() {
     if (aadhaarDocUrl) {
       const formattedUrl = aadhaarDocUrl.startsWith('http')
         ? aadhaarDocUrl
-        : `${BASE_URL}/${aadhaarDocUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${aadhaarDocUrl.replace(/\\/g, '/')}`;
 
       showAlert(
         isHindi ? 'आधार फ्रंट साइड' : 'Aadhaar Front Side',
@@ -339,7 +343,7 @@ export default function ShopProfile() {
       if (aadhaarBackDocUrl) {
         const formattedUrl = aadhaarBackDocUrl.startsWith('http')
           ? aadhaarBackDocUrl
-          : `${BASE_URL}/${aadhaarBackDocUrl.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${aadhaarBackDocUrl.replace(/\\/g, '/')}`;
         Linking.openURL(formattedUrl).catch(() =>
           showAlert('Error', 'Cannot open document')
         );
@@ -357,7 +361,7 @@ export default function ShopProfile() {
     if (aadhaarBackDocUrl) {
       const formattedUrl = aadhaarBackDocUrl.startsWith('http')
         ? aadhaarBackDocUrl
-        : `${BASE_URL}/${aadhaarBackDocUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${aadhaarBackDocUrl.replace(/\\/g, '/')}`;
 
       showAlert(
         isHindi ? 'आधार बैक साइड' : 'Aadhaar Back Side',

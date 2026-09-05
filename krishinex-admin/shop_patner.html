@@ -609,9 +609,10 @@
                   class="h-9 w-48 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs placeholder:text-slate-400 focus:border-teal-400 focus:outline-none focus:ring-4 focus:ring-teal-50 transition-all font-semibold" />
                 <select id="shopStatusFilter" onchange="filterShops()"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
-                  <option value="All">All Categories</option>
+                  <option value="All">All Status</option>
                   <option value="Active">Active</option>
                   <option value="Pending">Pending</option>
+                  <option value="blocked">Blocked</option>
                 </select>
                 <div class="flex items-center gap-1 bg-white rounded-xl border-2 border-slate-200 px-2 h-9">
                   <i class="far fa-calendar-alt text-slate-400 text-xs"></i>
@@ -1320,12 +1321,16 @@
         }
       }
 
-      const startDate = document.getElementById('globalStartDate')?.value || '';
-      const endDate = document.getElementById('globalEndDate')?.value || '';
+      const startDate = document.getElementById('shopStartDate')?.value || '';
+      const endDate = document.getElementById('shopEndDate')?.value || '';
       const search = document.getElementById('shopSearchInput')?.value || '';
+      const status = document.getElementById('shopStatusFilter')?.value || 'All';
 
       try {
-        const res = await fetch(`${API_BASE}/employee/admin/shops?startDate=${startDate}&endDate=${endDate}&search=${encodeURIComponent(search)}&page=${page}&limit=25`, {
+        let url = `${API_BASE}/employee/admin/shops?startDate=${startDate}&endDate=${endDate}&search=${encodeURIComponent(search)}&page=${page}&limit=25`;
+        if (status !== 'All') url += `&status=${encodeURIComponent(status)}`;
+        
+        const res = await fetch(url, {
           headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
@@ -1415,10 +1420,13 @@
     }
 
     function renderShopsTable(shops) {
-      window.progressiveRenderTable('shops-table-body', shops, createShopRow, {
-        chunkSize: 20,
-        emptyHtml: '<tr><td colspan="7" class="text-center py-10 text-slate-400 font-bold">No partners found.</td></tr>'
-      });
+      const tbody = document.getElementById('shops-table-body');
+      if (!tbody) return;
+      if (!shops || shops.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-slate-400 font-bold">No partners found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = shops.map(createShopRow).join('');
     }
 
     function renderOrdersTable(orders) {
@@ -2007,9 +2015,24 @@
       if (ordersLabel) ordersLabel.textContent = label;
       if (revenueLabel) revenueLabel.textContent = label;
 
+      const startEl = document.getElementById('globalStartDate');
+      const endEl = document.getElementById('globalEndDate');
+      if (startEl) startEl.value = startDate || '';
+      if (endEl) endEl.value = endDate || '';
+
+      const shopStartEl = document.getElementById('shopStartDate');
+      const shopEndEl = document.getElementById('shopEndDate');
+      if (shopStartEl) shopStartEl.value = startDate || '';
+      if (shopEndEl) shopEndEl.value = endDate || '';
+
+      const orderStartEl = document.getElementById('orderStartDate');
+      const orderEndEl = document.getElementById('orderEndDate');
+      if (orderStartEl) orderStartEl.value = startDate || '';
+      if (orderEndEl) orderEndEl.value = endDate || '';
+
       fetchShopStats(startDate, endDate);
-      fetchShops(startDate, endDate);
-      fetchShopOrders(startDate, endDate);
+      fetchShops(1, false);
+      fetchShopOrders();
     }
 
     function openOrderModal(orderId) {
@@ -2228,14 +2251,14 @@
     window.addEventListener('DOMContentLoaded', () => {
       setGlobalDatePreset('all');
 
-      const shopsTbody = document.getElementById('shopsTbody');
+      const shopsTbody = document.getElementById('shops-table-body') || document.getElementById('shopsTbody');
       const shopsContainer = shopsTbody ? shopsTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
       if (shopsContainer) {
         shopsContainer.addEventListener('scroll', () => {
           if (shopsHasMore && !shopsLoading) {
             if (shopsContainer.scrollTop + shopsContainer.clientHeight >= shopsContainer.scrollHeight - 150) {
               shopsPage++;
-              fetchShops(document.getElementById('globalStartDate')?.value || '', document.getElementById('globalEndDate')?.value || '', shopsPage, true);
+              fetchShops(shopsPage, true);
             }
           }
         }, { passive: true });

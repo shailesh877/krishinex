@@ -613,6 +613,11 @@
     const token = localStorage.getItem('employeeToken');
     let allConsultations = [];
 
+    // Pagination state
+    let consultPage = 1;
+    let consultHasMore = false;
+    let consultLoading = false;
+
     // --- Date Filter State ---
     let selectedStartDate = 'all';
     let selectedEndDate = 'all';
@@ -715,12 +720,17 @@
       setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
     }
 
-    async function fetchConsultations() {
+    async function fetchConsultations(page = 1, isAppend = false) {
+      if (consultLoading) return;
+      consultLoading = true;
       const qs = getQueryParamString();
       const query = document.getElementById('searchInput')?.value || '';
-      const url = `${API_BASE}/doctor/admin/all?${qs}&search=${encodeURIComponent(query)}&status=${encodeURIComponent(currentStatusFilter)}`;
-      console.log('Fetching consultations from:', url);
-      document.getElementById('loadingState').classList.remove('hidden');
+      const url = `${API_BASE}/doctor/admin/all?${qs}&search=${encodeURIComponent(query)}&status=${encodeURIComponent(currentStatusFilter)}&page=${page}&limit=25`;
+      if (!isAppend) {
+        document.getElementById('loadingState').classList.remove('hidden');
+        const tbody = document.getElementById('consultationBody');
+        if (tbody) tbody.innerHTML = '';
+      }
       try {
         const res = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -733,18 +743,77 @@
            return;
         }
 
-        const data = await res.json();
-        console.log('Loaded consultations:', data.length);
-        
-        allConsultations = Array.isArray(data) ? data : [];
-        renderTable(allConsultations);
-        updateStats(allConsultations);
+        const response = await res.json();
+        let list = [];
+        if (response && Array.isArray(response.data)) {
+          list = response.data;
+          consultHasMore = response.hasMore;
+          consultPage = page;
+        } else if (Array.isArray(response)) {
+          list = response;
+          consultHasMore = false;
+          consultPage = page;
+        }
+
+        if (isAppend) {
+          allConsultations = [...allConsultations, ...list];
+          appendConsultationRows(list);
+        } else {
+          allConsultations = list;
+          renderTable(allConsultations);
+        }
+        if (!isAppend) updateStats(allConsultations);
       } catch (err) {
         console.error('Fetch error:', err);
         showToast('Connection error. Check backend server.', true);
       } finally {
+        consultLoading = false;
         document.getElementById('loadingState').classList.add('hidden');
       }
+    }
+
+    function appendConsultationRows(items) {
+      const tbody = document.getElementById('consultationBody');
+      const emptyState = document.getElementById('emptyState');
+      if (!tbody || !items || items.length === 0) return;
+      if (emptyState) emptyState.classList.add('hidden');
+      items.forEach(item => {
+        const ticketId = item._id.slice(-6).toUpperCase();
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors group cursor-pointer';
+        tr.onclick = (e) => { if (e.target.closest('button')) return; openDetailModal(item); };
+        const statusConfig = getStatusConfig(item.status);
+        tr.innerHTML = `
+          <td class="px-6 py-4">
+            <span class="text-[11px] font-black bg-slate-100 px-2 py-1 rounded text-slate-600 block w-fit border border-slate-200">#${ticketId}</span>
+            <p class="text-[10px] text-slate-400 font-bold mt-1">${new Date(item.createdAt).toLocaleDateString()}</p>
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-sm font-black text-slate-900 uppercase">${item.name || 'Unknown'}</p>
+            <p class="text-xs text-brand-blue font-bold tracking-tight mb-1"><i class="fas fa-phone-alt mr-1"></i>${item.phone || 'N/A'}</p>
+            ${item.farmer && item.farmer.address ? `<p class="text-[11px] text-slate-500 font-medium leading-tight max-w-[200px] truncate" title="${item.farmer.address}"><i class="fas fa-map-marker-alt text-rose-500 mr-1"></i>${item.farmer.address}</p>` : ''}
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-[11px] font-black text-emerald-600 uppercase mb-0.5">${item.cropName}</p>
+            <p class="text-xs font-semibold text-slate-600 line-clamp-1">${item.issue}</p>
+            ${item.assignedTo ? `<p class="text-[10px] text-brand-blue font-black mt-1 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-fit"><i class="fas fa-user-tag mr-1"></i>Assigned: ${item.assignedTo.name}</p>` : ''}
+          </td>
+          <td class="px-6 py-4">${item.imageUrl ? `<div class="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shadow-sm" onclick="event.stopPropagation(); window.open('${item.imageUrl}', '_blank')"><img src="${item.imageUrl}" alt="issue" class="h-full w-full object-cover"></div>` : '<span class="text-[10px] text-slate-400 font-bold">No Image</span>'}</td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center gap-1.5 rounded-full ${statusConfig.class} px-3 py-1 text-[10px] font-black">
+              <i class="${statusConfig.icon} text-[8px]"></i>${item.status}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-end gap-1.5">
+              ${item.status !== 'Resolved' && item.status !== 'Cancelled' ? `<button onclick="event.stopPropagation(); openDetailModal('${item._id}')" class="h-8 px-3 rounded-lg bg-brand-blue text-white text-xs font-bold hover:bg-blue-700 flex items-center gap-1.5 transition-all shadow-sm"><i class="fas fa-headset"></i>Manage</button>` : ''}
+              ${item.status === 'Resolved' || item.status === 'Cancelled' ? `<button onclick="event.stopPropagation(); openDetailModal('${item._id}')" class="h-8 px-3 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 text-xs font-bold flex items-center gap-1.5"><i class="fas fa-check"></i>Close</button>` : ''}
+              <button onclick="openDetailModal('${item._id}')" class="h-8 w-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition-all"><i class="fas fa-eye text-xs"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     function renderTable(data) {
@@ -919,12 +988,12 @@
 
     function filterByStatus(status) {
         currentStatusFilter = status;
-        filterRequests();
+        fetchConsultations(1, false);
         showToast(`Filtered by: ${status}`);
     }
 
     function filterRequests() {
-        fetchConsultations();
+        fetchConsultations(1, false);
     }
 
     let detailModalOpen = false;
@@ -1113,7 +1182,19 @@
         detailModalOpen = false;
     }
 
-    fetchConsultations();
+    fetchConsultations(1, false);
+
+    // Scroll-based infinite loading for consultations table
+    const consultTbody = document.getElementById('consultationBody');
+    const consultContainer = consultTbody ? consultTbody.closest('.overflow-auto, .overflow-y-auto, main, div[class*="overflow"]') : null;
+    if (consultContainer) {
+      consultContainer.addEventListener('scroll', () => {
+        if (consultLoading || !consultHasMore) return;
+        if (consultContainer.scrollTop + consultContainer.clientHeight >= consultContainer.scrollHeight - 200) {
+          fetchConsultations(consultPage + 1, true);
+        }
+      }, { passive: true });
+    }
     
     // Close modal on escape
     document.addEventListener('keydown', (e) => {

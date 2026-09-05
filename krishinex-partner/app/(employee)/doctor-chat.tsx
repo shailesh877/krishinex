@@ -11,13 +11,11 @@ import {
   TouchableNativeFeedback,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   Alert,
   Image,
   ActivityIndicator,
-  ToastAndroid,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  ToastAndroid } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -46,19 +44,17 @@ const INITIAL_MESSAGES: Message[] = [
     id: 'm1',
     text: 'Doctor साहब, पत्तों पर पीला दाग आ रहा है।',
     createdAt: '2:10 PM',
-    fromDoctor: false,
-  },
+    fromDoctor: false },
   {
     id: 'm2',
     text: 'कौन सी फसल है और कितनी उम्र हो गई है?',
     createdAt: '2:11 PM',
-    fromDoctor: true,
-  },
+    fromDoctor: true },
 ];
 
 export default function DoctorChatScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -110,8 +106,7 @@ export default function DoctorChatScreen() {
           mediaType: m.mediaType,
           createdAt: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           fromDoctor: m.fromDoctor,
-          audioDuration: m.audioDuration || 0,
-        }));
+          audioDuration: m.audioDuration || 0 }));
 
         // Check for new farmer messages to play a local sound or update UI
         const newFarmerMsgs = mapped.filter(m => !m.fromDoctor);
@@ -148,8 +143,7 @@ export default function DoctorChatScreen() {
     placeholder: isHindi ? 'यहां message लिखें…' : 'Type a message…',
     actionBlock: isHindi ? 'Block करें' : 'Block farmer',
     actionClear: isHindi ? 'Chat clear करें' : 'Clear chat',
-    actionCancel: isHindi ? 'Cancel' : 'Cancel',
-  };
+    actionCancel: isHindi ? 'Cancel' : 'Cancel' };
 
   const sendMessage = async () => {
     const textTrim = input.trim();
@@ -160,8 +154,7 @@ export default function DoctorChatScreen() {
       id: `opt-${Date.now()}`,
       text: textTrim,
       createdAt: 'Now',
-      fromDoctor: true,
-    };
+      fromDoctor: true };
     setMessages(prev => [...prev, optimistic]);
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
 
@@ -230,8 +223,7 @@ export default function DoctorChatScreen() {
         mediaType: type,
         audioDuration: duration,
         createdAt: 'Now',
-        fromDoctor: true,
-      };
+        fromDoctor: true };
       setMessages(prev => [...prev, optimistic]);
 
       const form = new FormData();
@@ -239,8 +231,7 @@ export default function DoctorChatScreen() {
       const uploadRes = await fetch(`${API_URL}/employee/upload-chat-media`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        body: form,
-      });
+        body: form });
       const uploadData = await uploadRes.json();
       const mediaUrl = uploadData.url || uri;
 
@@ -266,8 +257,7 @@ export default function DoctorChatScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
-      quality: 0.7,
-    });
+      quality: 0.7 });
     if (!result.canceled) {
       await uploadAndSendMedia(result.assets[0].uri, 'image');
     }
@@ -302,8 +292,7 @@ export default function DoctorChatScreen() {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-      });
+        staysActiveInBackground: false });
       const rec = new Audio.Recording();
       await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
       await rec.startAsync();
@@ -336,8 +325,7 @@ export default function DoctorChatScreen() {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-      });
+        staysActiveInBackground: false });
       const uri = rec.getURI();
       if (uri) await uploadAndSendMedia(uri, 'audio', dur);
     } catch (e) {
@@ -441,7 +429,7 @@ export default function DoctorChatScreen() {
         <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
 
         {/* HEADER */}
-        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+        <View style={styles.header}>
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => router.back()}
@@ -565,46 +553,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN,
-  },
+    backgroundColor: STATUS_GREEN },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#5BA40F',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerMid: {
     flex: 1,
-    marginLeft: 10,
-  },
+    marginLeft: 10 },
   headerRight: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   nameText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   subText: {
     fontSize: 11,
     color: '#E5E7EB',
-    marginLeft: 2,
-  },
+    marginLeft: 2 },
   dotSmall: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
     backgroundColor: '#E5E7EB',
-    marginHorizontal: 4,
-  },
+    marginHorizontal: 4 },
   iconCircle: {
     width: 32,
     height: 32,
@@ -612,48 +592,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#BBF7D0',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   chatContent: {
     paddingHorizontal: 12,
     paddingTop: 10,
-    paddingBottom: 8,
-  },
+    paddingBottom: 8 },
   bubbleRow: {
     flexDirection: 'row',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   bubble: {
     maxWidth: '80%',
     borderRadius: 18,
     paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
+    paddingVertical: 6 },
   bubbleOwn: {
     backgroundColor: '#16A34A',
-    borderBottomRightRadius: 4,
-  },
+    borderBottomRightRadius: 4 },
   bubbleOther: {
     backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 4,
-  },
+    borderBottomLeftRadius: 4 },
   bubbleText: {
     fontSize: 13,
-    color: '#111827',
-  },
+    color: '#111827' },
   bubbleTextOwn: {
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   timeText: {
     fontSize: 10,
     color: '#9CA3AF',
     alignSelf: 'flex-end',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   timeTextOwn: {
-    color: '#DCFCE7',
-  },
+    color: '#DCFCE7' },
 
   inputBar: {
     flexDirection: 'row',
@@ -662,14 +632,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
+    borderTopColor: '#E5E7EB' },
   iconSmall: {
     width: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 2,
-  },
+    paddingBottom: 2 },
   input: {
     flex: 1,
     maxHeight: 120,
@@ -679,8 +647,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     fontSize: 13,
     color: '#111827',
-    marginHorizontal: 4,
-  },
+    marginHorizontal: 4 },
   iconCircleSmall: {
     width: 34,
     height: 34,
@@ -688,36 +655,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#16A34A',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   mediaImage: {
     width: 180,
     height: 180,
     borderRadius: 12,
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   audioMsg: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 2,
-    minWidth: 140,
-  },
+    minWidth: 140 },
   playBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#DCFCE7',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   playBtnOwn: {
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   audioDuration: {
     fontSize: 10,
     color: '#9CA3AF',
-    marginTop: 1,
-  },
+    marginTop: 1 },
   recordingPill: {
     flex: 1,
     flexDirection: 'row',
@@ -727,18 +688,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     backgroundColor: '#FEE2E2',
     borderRadius: 18,
-    marginHorizontal: 4,
-  },
+    marginHorizontal: 4 },
   recordingText: {
     fontSize: 13,
     color: '#DC2626',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   releaseHint: {
     fontSize: 11,
     color: '#6B7280',
-    marginRight: 4,
-  },
+    marginRight: 4 },
   blockedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -747,23 +705,18 @@ const styles = StyleSheet.create({
     borderTopColor: '#FECACA',
     paddingHorizontal: 14,
     paddingVertical: 10,
-    gap: 8,
-  },
+    gap: 8 },
   blockedText: {
     flex: 1,
     fontSize: 13,
     color: '#DC2626',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   unblockBtn: {
     backgroundColor: '#16A34A',
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 18,
-  },
+    borderRadius: 18 },
   unblockBtnText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '700',
-  },
-});
+    fontWeight: '700' } });

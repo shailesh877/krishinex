@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -577,9 +577,12 @@
                 <select class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
                   <option>All Status</option>
                   <option>Pending</option>
-                  <option>High Priority</option>
-                  <option>Under Review</option>
+                  <option>Approved</option>
+                  <option>Rejected</option>
                 </select>
+                <input id="kyc-search" type="text" placeholder="🔍 Search name, phone..."
+                  onkeydown="if(event.key === 'Enter') { document.querySelector('tbody')?.closest('.overflow-auto, .overflow-y-auto, div[style*=\\'max-height\\']')?.scrollTo({top: 0}); fetchKYCList(1, false); }"
+                  class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-56" />
                 <button onclick="exportKYC()"
                   class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 text-xs text-white font-black hover:from-amber-600 hover:to-orange-600 shadow-md transition-all">
                   <i class="fas fa-download mr-2"></i> Export
@@ -894,7 +897,7 @@
 
     function applyGlobalFilter(startDate, endDate, label) {
       fetchStats(startDate, endDate);
-      fetchKYCList(startDate, endDate);
+      fetchKYCList();
     }
 
     // Page Load
@@ -907,9 +910,7 @@
       // Hook up filters
       document.querySelectorAll('select').forEach(sel => {
         sel.addEventListener('change', () => {
-          const start = document.getElementById('globalStartDate').value;
-          const end = document.getElementById('globalEndDate').value;
-          fetchKYCList(start, end);
+          fetchKYCList();
         });
       });
 
@@ -946,16 +947,44 @@
         console.error('Stats error:', e);
       }
     }
+    let kycPage = 1;
+    let kycHasMore = true;
+    let kycLoading = false;
 
-    async function fetchKYCList(startDate = '', endDate = '') {
+    document.addEventListener('DOMContentLoaded', () => {
+      const tbody = document.querySelector('tbody');
+      const container = tbody ? tbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+      if (container) {
+        container.addEventListener('scroll', () => {
+          if (kycHasMore && !kycLoading) {
+            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 150) {
+              kycPage++;
+              fetchKYCList(kycPage, true);
+            }
+          }
+        }, { passive: true });
+      }
+    });
+
+    async function fetchKYCList(page = 1, isAppend = false) {
+      if (typeof page !== 'number') page = 1;
+      if (kycLoading) return;
+      kycLoading = true;
+      if (!isAppend) {
+        kycPage = 1;
+        kycHasMore = true;
+      }
       try {
         const typeFilter = document.querySelectorAll('select')[0].value;
         const statusFilter = document.querySelectorAll('select')[1].value;
+        const start = document.getElementById('globalStartDate').value;
+        const end = document.getElementById('globalEndDate').value;
+        const searchVal = document.getElementById('kyc-search') ? document.getElementById('kyc-search').value.trim() : '';
 
-        const start = typeof startDate === 'string' ? startDate : document.getElementById('globalStartDate').value;
-        const end = typeof endDate === 'string' ? endDate : document.getElementById('globalEndDate').value;
-
-        let url = `${API_BASE}/employee/admin/kyc/list?`;
+        let url = `${API_BASE}/employee/admin/kyc/list?page=${page}&limit=25&`;
+        if (searchVal) {
+          url += `search=${encodeURIComponent(searchVal)}&`;
+        }
         if (typeFilter !== 'All Types') {
           const map = { 
             'Farmer': 'farmer', 
@@ -975,24 +1004,39 @@
         if (end) url += `endDate=${end}&`;
 
         const res = await fetch(url, { headers: H });
-        if (!res.ok) throw new Error('Failed to fetch list');
-        const users = await res.json();
+        const data = await res.json();
+        
+        let usersList = [];
+        if (data && data.data) {
+           usersList = data.data;
+           kycHasMore = page < data.totalPages;
+        } else {
+           usersList = Array.isArray(data) ? data : [];
+           kycHasMore = false;
+        }
 
-        renderTable(users);
+        renderTable(usersList, isAppend);
       } catch (e) {
         console.error('List error:', e);
         showToast('Failed to load KYC queue', 'info');
+      } finally {
+        kycLoading = false;
       }
     }
 
-    function renderTable(users) {
+    function renderTable(users, isAppend = false) {
       const tbody = document.querySelector('tbody');
-      if (users.length === 0) {
+      
+      if (!isAppend) {
+        tbody.innerHTML = '';
+      }
+
+      if (users.length === 0 && !isAppend) {
         tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500 font-bold">No pending KYC found</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = users.map(u => {
+      const newRowsHtml = users.map(u => {
         const date = new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
         const roleIcon = u.role === 'farmer' ? 'fa-seedling' : u.role === 'ksp' ? 'fa-store' : 'fa-user';
         const roleColor = u.role === 'farmer' ? 'emerald' : u.role === 'ksp' ? 'teal' : 'sky';
@@ -1054,6 +1098,12 @@
           </tr>
         `;
       }).join('');
+
+      if (isAppend) {
+        tbody.insertAdjacentHTML('beforeend', newRowsHtml);
+      } else {
+        tbody.innerHTML = newRowsHtml;
+      }
     }
 
     // Approve KYC

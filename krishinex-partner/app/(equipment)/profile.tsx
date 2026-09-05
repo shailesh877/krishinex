@@ -14,9 +14,8 @@ import {
   RefreshControl,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Keyboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
@@ -26,14 +25,14 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Linking } from 'react-native';
 
-import { BASE_URL, BASE_API_URL } from '../../constants/api';
+import { BASE_URL, FILES_BASE_URL, BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
 
 export default function EquipmentProfile() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -122,7 +121,10 @@ export default function EquipmentProfile() {
         setBankDocName(profile.bankDetails.bankDocUrl ? (isHindi ? 'अपलोड किया गया' : 'Uploaded') : null);
       }
       if (profile.avatarUri) {
-        setProfilePhotoUrl(profile.avatarUri);
+        const photoUrl = profile.avatarUri.startsWith('http')
+          ? profile.avatarUri
+          : `${FILES_BASE_URL}/${profile.avatarUri.replace(/\\/g, '/')}`;
+        setProfilePhotoUrl(photoUrl);
       } else {
         setProfilePhotoUrl('');
       }
@@ -163,17 +165,18 @@ export default function EquipmentProfile() {
     aadhaarBackDocNotUploaded: isHindi
       ? 'बैक साइड अपलोड नहीं की गई'
       : 'Back side not uploaded yet',
-    viewOrUploadAadhaar: isHindi
-      ? 'फ्रंट देखें / अपलोड करें'
-      : 'View / Upload Front',
-    viewOrUploadAadhaarBack: isHindi
-      ? 'बैक देखें / अपलोड करें'
-      : 'View / Upload Back',
+    viewOrUploadAadhaar: status === 'approved'
+      ? (isHindi ? 'फ्रंट देखें' : 'View Front')
+      : (isHindi ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front'),
+    viewOrUploadAadhaarBack: status === 'approved'
+      ? (isHindi ? 'बैक देखें' : 'View Back')
+      : (isHindi ? 'बैक देखें / अपलोड करें' : 'View / Upload Back'),
     bankDocLabel: isHindi ? 'कैंसिल चेक / बैंक पासबुक' : 'Cancelled Cheque / Bank Passbook',
     bankDocPlaceholder: isHindi ? 'अपलोड नहीं किया गया' : 'Not uploaded',
-    viewOrUploadBankDoc: isHindi ? 'देखें / अपलोड करें' : 'View / Upload',
-    loading: isHindi ? 'लोड हो रहा है...' : 'Loading...',
-  };
+    viewOrUploadBankDoc: status === 'approved'
+      ? (isHindi ? 'देखें' : 'View')
+      : (isHindi ? 'देखें / अपलोड करें' : 'View / Upload'),
+    loading: isHindi ? 'लोड हो रहा है...' : 'Loading...' };
 
   const openEdit = () => {
     setEditAvatar(profilePhotoUrl);
@@ -329,8 +332,7 @@ export default function EquipmentProfile() {
           email: editEmail.trim(),
           address: editAddress.trim(),
           businessName: editBusinessName.trim(),
-          aadhaarNumber: editAadhaarNumber.trim(),
-        });
+          aadhaarNumber: editAadhaarNumber.trim() });
         
         setEditVisible(false);
         fetchProfile();
@@ -358,8 +360,7 @@ export default function EquipmentProfile() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
-      });
+        quality: 0.8 });
 
       if (result.canceled || !result.assets?.[0]) return;
 
@@ -371,22 +372,19 @@ export default function EquipmentProfile() {
       formData.append('photo', {
         uri: asset.uri,
         type: asset.mimeType || 'image/jpeg',
-        name: `photo_${Date.now()}.jpg`,
-      } as any);
+        name: `photo_${Date.now()}.jpg` } as any);
 
       const res = await fetch(`${API_URL}/upload-photo`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+          'Authorization': `Bearer ${token}` },
+        body: formData });
 
       if (res.ok) {
         const data = await res.json();
         const pfp = data.url?.startsWith('http')
           ? data.url
-          : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setProfilePhotoUrl(pfp);
         updateUser({ avatarUri: pfp });
         showAlert('Done!', isHindi ? 'फोटो अपडेट हो गई' : 'Photo updated');
@@ -417,8 +415,7 @@ export default function EquipmentProfile() {
             await AsyncStorage.removeItem('userToken');
             await AsyncStorage.removeItem('userData');
             router.replace('/');
-          },
-        },
+          } },
       ],
     );
   };
@@ -428,7 +425,7 @@ export default function EquipmentProfile() {
       if (aadhaarUrl) {
         const formattedUrl = aadhaarUrl.startsWith('http')
           ? aadhaarUrl
-          : `${BASE_URL}/${aadhaarUrl.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${aadhaarUrl.replace(/\\/g, '/')}`;
         Linking.openURL(formattedUrl).catch(() =>
           showAlert('Error', 'Cannot open document')
         );
@@ -446,7 +443,7 @@ export default function EquipmentProfile() {
     if (aadhaarUrl) {
       const formattedUrl = aadhaarUrl.startsWith('http')
         ? aadhaarUrl
-        : `${BASE_URL}/${aadhaarUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${aadhaarUrl.replace(/\\/g, '/')}`;
 
       showAlert(
         isHindi ? 'आधार फ्रंट साइड' : 'Aadhaar Front Side',
@@ -455,12 +452,10 @@ export default function EquipmentProfile() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: isHindi ? 'देखें (View)' : 'View',
-            onPress: () => Linking.openURL(formattedUrl),
-          },
+            onPress: () => Linking.openURL(formattedUrl) },
           {
             text: isHindi ? 'नया अपलोड करें' : 'Upload New',
-            onPress: () => uploadAadhaarDoc('front'),
-          },
+            onPress: () => uploadAadhaarDoc('front') },
         ]
       );
     } else {
@@ -473,7 +468,7 @@ export default function EquipmentProfile() {
       if (aadhaarBackUrl) {
         const formattedUrl = aadhaarBackUrl.startsWith('http')
           ? aadhaarBackUrl
-          : `${BASE_URL}/${aadhaarBackUrl.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${aadhaarBackUrl.replace(/\\/g, '/')}`;
         Linking.openURL(formattedUrl).catch(() =>
           showAlert('Error', 'Cannot open document')
         );
@@ -491,7 +486,7 @@ export default function EquipmentProfile() {
     if (aadhaarBackUrl) {
       const formattedUrl = aadhaarBackUrl.startsWith('http')
         ? aadhaarBackUrl
-        : `${BASE_URL}/${aadhaarBackUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${aadhaarBackUrl.replace(/\\/g, '/')}`;
 
       showAlert(
         isHindi ? 'आधार बैक साइड' : 'Aadhaar Back Side',
@@ -500,12 +495,10 @@ export default function EquipmentProfile() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: isHindi ? 'देखें (View)' : 'View',
-            onPress: () => Linking.openURL(formattedUrl),
-          },
+            onPress: () => Linking.openURL(formattedUrl) },
           {
             text: isHindi ? 'नया अपलोड करें' : 'Upload New',
-            onPress: () => uploadAadhaarDoc('back'),
-          },
+            onPress: () => uploadAadhaarDoc('back') },
         ]
       );
     } else {
@@ -517,8 +510,7 @@ export default function EquipmentProfile() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['image/*', 'application/pdf'],
-        copyToCacheDirectory: true,
-      });
+        copyToCacheDirectory: true });
 
       if (result.canceled || !result.assets || result.assets.length === 0) {
         return;
@@ -533,8 +525,7 @@ export default function EquipmentProfile() {
       formData.append('aadhaar', {
         uri: file.uri,
         name: file.name,
-        type: file.mimeType || 'application/pdf',
-      } as any);
+        type: file.mimeType || 'application/pdf' } as any);
 
       const res = await fetch(`${API_URL}/upload-aadhaar?side=${side}`, {
         method: 'POST',
@@ -542,8 +533,7 @@ export default function EquipmentProfile() {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-      });
+        } });
 
       const data = await res.json();
       if (res.ok) {
@@ -567,10 +557,29 @@ export default function EquipmentProfile() {
   };
 
   const handleBankDocAction = async () => {
+    if (status === 'approved') {
+      if (bankDocUrl) {
+        const formattedUrl = bankDocUrl.startsWith('http')
+          ? bankDocUrl
+          : `${FILES_BASE_URL}/${bankDocUrl.replace(/\\/g, '/')}`;
+        Linking.openURL(formattedUrl).catch(() =>
+          showAlert('Error', 'Cannot open document')
+        );
+      } else {
+        showAlert(
+          isHindi ? 'प्रतिबंधित' : 'Restricted',
+          isHindi 
+            ? 'आपका बैंक विवरण सत्यापित है। नया डॉक्यूमेंट अपलोड नहीं किया जा सकता।' 
+            : 'Your bank details are verified. You cannot upload new documents.'
+        );
+      }
+      return;
+    }
+
     if (bankDocUrl) {
       const formattedUrl = bankDocUrl.startsWith('http')
         ? bankDocUrl
-        : `${BASE_URL}/${bankDocUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${bankDocUrl.replace(/\\/g, '/')}`;
 
       showAlert(
         t.bankDocLabel,
@@ -579,12 +588,10 @@ export default function EquipmentProfile() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: isHindi ? 'देखें (View)' : 'View',
-            onPress: () => Linking.openURL(formattedUrl),
-          },
+            onPress: () => Linking.openURL(formattedUrl) },
           {
             text: isHindi ? 'नया अपलोड करें' : 'Upload New',
-            onPress: uploadBankDoc,
-          },
+            onPress: uploadBankDoc },
         ]
       );
     } else {
@@ -596,8 +603,7 @@ export default function EquipmentProfile() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['image/*', 'application/pdf'],
-        copyToCacheDirectory: true,
-      });
+        copyToCacheDirectory: true });
 
       if (result.canceled || !result.assets || result.assets.length === 0) {
         return;
@@ -612,8 +618,7 @@ export default function EquipmentProfile() {
       formData.append('bankDoc', {
         uri: file.uri,
         name: file.name,
-        type: file.mimeType || 'application/pdf',
-      } as any);
+        type: file.mimeType || 'application/pdf' } as any);
 
       const res = await fetch(`${BASE_API_URL}/user/upload-bank-doc`, {
         method: 'POST',
@@ -621,8 +626,7 @@ export default function EquipmentProfile() {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-      });
+        } });
 
       const data = await res.json();
       if (res.ok) {
@@ -650,11 +654,11 @@ export default function EquipmentProfile() {
   }
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER same as home */}
-      <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity style={styles.logoIconWrap}>
           <Image source={logoIconSource} style={styles.logoIcon} />
         </TouchableOpacity>
@@ -1173,7 +1177,7 @@ export default function EquipmentProfile() {
           </KeyboardAvoidingView>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -1186,11 +1190,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 15,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -1198,8 +1202,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
@@ -1208,15 +1211,13 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   container: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
 
   profileTop: {
     alignItems: 'center',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   avatarWrap: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
@@ -1225,38 +1226,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E7EB',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-  },
+    position: 'relative' },
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
   avatarGlow: {
     position: 'absolute',
     inset: 0,
     borderRadius: AVATAR_SIZE / 2,
     borderWidth: 2,
-    borderColor: '#A7F3D0',
-  },
+    borderColor: '#A7F3D0' },
 
   nameText: {
     marginTop: 8,
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   phoneText: {
     marginTop: 4,
     fontSize: 13,
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   emailText: {
     marginTop: 2,
     fontSize: 13,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
 
   addressPill: {
     marginTop: 8,
@@ -1266,13 +1261,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: '#EFF6FF',
-  },
+    backgroundColor: '#EFF6FF' },
   addressText: {
     fontSize: 12,
     color: '#1D4ED8',
-    flexShrink: 1,
-  },
+    flexShrink: 1 },
 
   // Aadhaar doc row
   aadhaarDocRow: {
@@ -1280,13 +1273,11 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   aadhaarDocLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   aadhaarDocIconWrap: {
     width: 30,
     height: 30,
@@ -1294,24 +1285,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   aadhaarDocTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#065F46',
-  },
+    color: '#065F46' },
   aadhaarDocSub: {
     fontSize: 11,
     color: '#6B7280',
     marginTop: 2,
-    maxWidth: 200,
-  },
+    maxWidth: 200 },
   aadhaarDocAction: {
     fontSize: 11,
     color: '#16A34A',
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
 
   editProfileBtn: {
     flexDirection: 'row',
@@ -1320,13 +1307,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: '#E0F2FE',
-  },
+    backgroundColor: '#E0F2FE' },
   editProfileText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#0369A1',
-  },
+    color: '#0369A1' },
 
   sectionCard: {
     borderRadius: 18,
@@ -1335,14 +1320,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 8,
     elevation: 1,
-    shadowColor: '#00000010',
-  },
+    shadowColor: '#00000010' },
   rowItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   rowLeft: { flexDirection: 'row', alignItems: 'center' },
   iconBadge: {
     width: 32,
@@ -1350,43 +1333,36 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
-  },
+    marginRight: 10 },
   rowLabel: { fontSize: 14, color: '#111827' },
   rowDivider: {
     height: 1,
-    backgroundColor: '#E5E7EB',
-  },
+    backgroundColor: '#E5E7EB' },
 
   modalBackdrop: {
     flex: 1,
     backgroundColor: '#00000080',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   modalBox: {
     width: '90%',
     maxHeight: '80%',
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    padding: 14,
-  },
+    padding: 14 },
   keyboardAvoidingWrap: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   modalTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   modalAvatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   modalAvatarWrap: {
     width: 70,
     height: 70,
@@ -1395,14 +1371,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    marginRight: 10,
-  },
+    marginRight: 10 },
   modalAvatar: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
   modalAvatarBadge: {
     position: 'absolute',
     bottom: 0,
@@ -1419,20 +1393,17 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-  },
+    shadowRadius: 1.5 },
   modalAvatarHint: {
     flex: 1,
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
 
   modalLabel: {
     fontSize: 12,
     color: '#374151',
     marginBottom: 4,
-    marginTop: 6,
-  },
+    marginTop: 6 },
   modalInput: {
     borderRadius: 10,
     borderWidth: 1,
@@ -1441,40 +1412,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 13,
-    color: '#111827',
-  },
+    color: '#111827' },
 
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 12,
-  },
+    marginTop: 12 },
   modalBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   modalBtnText: {
     fontSize: 13,
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
   bankDetailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
+    borderBottomColor: '#F3F4F6' },
   bankLabelText: {
     fontSize: 12,
     color: '#6B7280',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   bankValueText: {
     fontSize: 13,
     color: '#111827',
-    fontWeight: '700',
-  },
-});
+    fontWeight: '700' } });
 

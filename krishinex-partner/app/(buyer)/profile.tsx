@@ -27,7 +27,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 const dummyProfileImageUri: string | null = null;
 const defaultAvatar = require('../../assets/images/android-icon-foreground.png');
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}/user`; // User API Base
 
@@ -173,7 +173,10 @@ export default function BuyerProfile() {
           setIfscCode(profile.bankDetails.ifscCode || '');
       }
       if (profile.avatarUri) {
-        setProfilePhotoUrl(profile.avatarUri);
+        const photoUrl = profile.avatarUri.startsWith('http')
+          ? profile.avatarUri
+          : `${FILES_BASE_URL}/${profile.avatarUri.replace(/\\/g, '/')}`;
+        setProfilePhotoUrl(photoUrl);
       } else {
         setProfilePhotoUrl('');
       }
@@ -346,7 +349,7 @@ export default function BuyerProfile() {
       if (res.ok) {
         const pfp = data.url?.startsWith('http')
           ? data.url
-          : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setProfilePhotoUrl(pfp);
         updateUser({ avatarUri: pfp });
         showAlert(
@@ -412,7 +415,7 @@ export default function BuyerProfile() {
     if (docUrl) {
       const formattedUrl = docUrl.startsWith('http')
         ? docUrl
-        : `${BASE_URL}/${docUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${docUrl.replace(/\\/g, '/')}`;
 
       Linking.openURL(formattedUrl).catch(() =>
         showAlert('Error', 'Cannot open document URL')

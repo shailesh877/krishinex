@@ -11,14 +11,13 @@ import {
   Alert,
   Modal,
   TextInput,
-  Platform,
-} from 'react-native';
+  Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 
@@ -68,7 +67,7 @@ interface Transaction {
 export default function LedgerScreen() {
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
-  const insets = useSafeAreaInsets();
+  
 
   const [stats, setStats] = useState<LedgerStats | null>(null);
   const [dues, setDues] = useState<DueInfo[]>([]);
@@ -156,10 +155,8 @@ export default function LedgerScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ farmerId, amount }),
-      });
+          Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ farmerId, amount }) });
 
       if (response.ok) {
         showAlert(
@@ -220,9 +217,9 @@ export default function LedgerScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 16) : 24 }]}>
+      <View style={styles.header}>
         <Text style={styles.title}>{isHindi ? 'बही-खाता (Ledger)' : 'Digital Ledger'}</Text>
         <TouchableOpacity onPress={onRefresh}>
           <Ionicons name="refresh" size={24} color="#16A34A" />
@@ -577,7 +574,7 @@ export default function LedgerScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -600,8 +597,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     shadowColor: '#00000010',
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-  },
+    shadowRadius: 4 },
   dateRangeBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -609,36 +605,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderRadius: 10,
     paddingVertical: 8,
-    paddingHorizontal: 10,
-  },
+    paddingHorizontal: 10 },
   dateRangeLabel: {
     fontSize: 9,
     fontWeight: '800',
     color: '#94A3B8',
     textTransform: 'uppercase',
-    marginBottom: 1,
-  },
+    marginBottom: 1 },
   dateRangeValue: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#0F172A',
-  },
+    color: '#0F172A' },
   applyBtn: {
     backgroundColor: '#16A34A',
     padding: 10,
     borderRadius: 10,
     marginLeft: 6,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   clearBtn: {
     backgroundColor: '#F1F5F9',
     padding: 10,
     borderRadius: 10,
     marginLeft: 4,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
   statCard: { flex: 1, backgroundColor: '#FFF', padding: 12, borderRadius: 16, elevation: 2, borderLeftWidth: 4, minHeight: 80, justifyContent: 'center' },
@@ -671,13 +662,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     height: 44,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
 
   historyCard: { backgroundColor: '#FFF', padding: 12, borderRadius: 16, marginBottom: 8, elevation: 1, borderWidth: 1, borderColor: '#F1F5F9' },
   historyMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

@@ -12,10 +12,9 @@ import {
   Dimensions,
   Modal,
   Alert,
-  RefreshControl,
-} from 'react-native';
+  RefreshControl } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -28,7 +27,7 @@ const { width } = Dimensions.get('window');
 const CARD_H_MARGIN = 8;
 const CARD_WIDTH = (width - 16 * 2 - CARD_H_MARGIN * 2) / 2;
 const IMAGE_HEIGHT = 110;
-import { BASE_API_URL, BASE_URL, IMAGE_BASE_URL, MACHINES_API_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL, MACHINES_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_BASE_URL = BASE_URL;
 
@@ -49,7 +48,7 @@ type Machine = {
 const INITIAL_MACHINES: Machine[] = [];
 
 export default function MachinesScreen() {
-  const insets = useSafeAreaInsets();
+  
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -102,12 +101,12 @@ export default function MachinesScreen() {
         const mapped = data.map((m: any) => {
           console.log('[DEBUG] RAW Machine from Server:', m.name, 'SubMachinery:', JSON.stringify(m.subMachinery));
           const imgs: string[] = (m.images || []).map((img: string) =>
-            img.startsWith('http') ? img : `${IMAGE_BASE_URL}/${img.replace(/^\//, '')}`
+            img.startsWith('http') ? img : `${FILES_BASE_URL}/${img.replace(/^\//, '')}`
           );
           // Format sub-machinery image URLs
           const sub = (m.subMachinery || []).map((s: any) => ({
             name: s.name || 'Attachment',
-            image: s.image ? (s.image.startsWith('http') ? s.image : `${IMAGE_BASE_URL}/${s.image.replace(/^\//, '')}`) : '',
+            image: s.image ? (s.image.startsWith('http') ? s.image : `${FILES_BASE_URL}/${s.image.replace(/^\//, '')}`) : '',
             priceDay: s.priceDay || 0,
             priceKattha: s.priceKattha || 0
           }));
@@ -116,8 +115,7 @@ export default function MachinesScreen() {
             id: m._id,
             addedAt: m.createdAt,
             images: imgs,
-            subMachinery: sub,
-          };
+            subMachinery: sub };
         });
         setMachines(mapped);
       }
@@ -170,7 +168,7 @@ export default function MachinesScreen() {
     // Initialize sub-machinery from item
     const formattedSub = (m.subMachinery || []).map(item => ({
       ...item,
-      image: item.image ? (item.image.startsWith('http') ? item.image : `${IMAGE_BASE_URL}/${item.image.replace(/^\//, '')}`) : '',
+      image: item.image ? (item.image.startsWith('http') ? item.image : `${FILES_BASE_URL}/${item.image.replace(/^\//, '')}`) : '',
       priceDay: String(item.priceDay ?? '0'),
       priceKattha: String(item.priceKattha ?? '0')
     }));
@@ -211,7 +209,7 @@ export default function MachinesScreen() {
       // 1. Prepare data
       editImages.forEach((uri, index) => {
         if (uri.startsWith('http')) {
-          existingImagesList.push(uri.replace(IMAGE_BASE_URL, '').replace(/^\//, ''));
+          existingImagesList.push(uri.replace(FILES_BASE_URL, '').replace(/^\//, ''));
         } else {
           const fileExt = uri.split('.').pop() || 'jpg';
           const fileName = `main_edit_machine_${Date.now()}_${index}.${fileExt}`;
@@ -226,7 +224,7 @@ export default function MachinesScreen() {
 
       const subMachineryMeta = editSubMachinery.map(item => ({
         name: (item.name || '').trim(),
-        image: item.isNewImage ? '' : item.image.replace(IMAGE_BASE_URL, '').replace(/^\//, ''),
+        image: item.isNewImage ? '' : item.image.replace(FILES_BASE_URL, '').replace(/^\//, ''),
         isNewImage: !!item.isNewImage,
         priceDay: String(item.priceDay || '0').trim(),
         priceKattha: String(item.priceKattha || '0').trim()
@@ -312,8 +310,7 @@ export default function MachinesScreen() {
       [
         {
           text: isHindi ? 'Cancel' : 'Cancel',
-          style: 'cancel',
-        },
+          style: 'cancel' },
         {
           text: isHindi ? 'Delete' : 'Delete',
           style: 'destructive',
@@ -333,8 +330,7 @@ export default function MachinesScreen() {
               console.error('Delete flow error', error);
               showAlert('Error', 'Failed to delete machine');
             }
-          },
-        },
+          } },
       ],
     );
   };
@@ -365,8 +361,7 @@ export default function MachinesScreen() {
                 setEditImages(prev => [...prev, result.assets![0].uri]);
               }
             }
-          },
-        },
+          } },
         {
           text: isHindi ? 'गैलरी' : 'Gallery',
           onPress: async () => {
@@ -386,8 +381,7 @@ export default function MachinesScreen() {
                 setEditImages(prev => [...prev, result.assets![0].uri]);
               }
             }
-          },
-        },
+          } },
         { text: isHindi ? 'Cancel' : 'Cancel', style: 'cancel' },
       ]
     );
@@ -432,8 +426,7 @@ export default function MachinesScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 0.8,
-    });
+      quality: 0.8 });
     if (!result.canceled && result.assets?.length) {
       try {
         const manipulatedImage = await ImageManipulator.manipulateAsync(
@@ -652,11 +645,11 @@ export default function MachinesScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* Header */}
-      <View style={[styles.appHeader, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -938,7 +931,7 @@ export default function MachinesScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -948,20 +941,18 @@ const styles = StyleSheet.create({
   appHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
     paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   backBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
   headerRight: { width: 34, height: 34 },
@@ -977,24 +968,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
+    paddingVertical: 6 },
   searchInput: {
     flex: 1,
     fontSize: 13,
     color: '#111827',
-    paddingVertical: 0,
-  },
+    paddingVertical: 0 },
 
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 4,
-    paddingBottom: 16,
-  },
+    paddingBottom: 16 },
   columnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
 
   card: {
     width: CARD_WIDTH,
@@ -1004,46 +991,39 @@ const styles = StyleSheet.create({
     shadowColor: '#00000010',
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 1,
-  },
+    elevation: 1 },
 
   imageCarousel: {
     borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: '#E5E7EB',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   image: {
     width: CARD_WIDTH - 16,
     height: IMAGE_HEIGHT,
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
 
   dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   dot: {
     width: 5,
     height: 5,
     borderRadius: 3,
     backgroundColor: '#D1D5DB',
-    marginHorizontal: 2,
-  },
+    marginHorizontal: 2 },
   dotActive: {
     backgroundColor: '#16A34A',
     width: 7,
     height: 7,
-    borderRadius: 4,
-  },
+    borderRadius: 4 },
 
   nameText: {
     fontSize: 13,
     fontWeight: '700',
     color: '#111827',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   row: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   metaText: { fontSize: 11, color: '#6B7280' },
 
@@ -1051,25 +1031,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     fontWeight: '600',
-    color: '#16A34A',
-  },
+    color: '#16A34A' },
   priceUnit: {
     fontSize: 11,
     color: '#4B5563',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
 
   descText: {
     marginTop: 4,
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
 
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
-  },
+    marginTop: 8 },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -1077,25 +1053,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 6,
     borderRadius: 999,
-    marginHorizontal: 2,
-  },
+    marginHorizontal: 2 },
   actionText: {
     fontSize: 11,
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
 
   emptyWrap: {
     marginTop: 40,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   emptyText: { fontSize: 13, color: '#9CA3AF' },
 
   modalBackdrop: {
     flex: 1,
     backgroundColor: '#00000060',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   modalBox: {
     width: '94%',
     maxHeight: '90%',
@@ -1106,20 +1078,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
-    elevation: 10,
-  },
+    elevation: 10 },
   modalTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   modalLabel: {
     fontSize: 12,
     color: '#374151',
     marginBottom: 4,
-    marginTop: 6,
-  },
+    marginTop: 6 },
   modalInput: {
     borderRadius: 10,
     borderWidth: 1,
@@ -1128,29 +1097,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 13,
-    color: '#111827',
-  },
+    color: '#111827' },
   modalRow2: {
     flexDirection: 'row',
-    marginTop: 2,
-  },
+    marginTop: 2 },
 
   modalImageRow: {
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   modalImageWrap: {
     width: 70,
     height: 70,
     borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: '#E5E7EB',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   modalImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
   modalImageDelete: {
     position: 'absolute',
     top: 4,
@@ -1160,8 +1124,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#EF4444',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   modalAddImage: {
     width: 80,
     height: 70,
@@ -1171,28 +1134,22 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   modalAddImageText: {
     fontSize: 11,
     color: '#6B7280',
     marginTop: 4,
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
 
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 12,
-  },
+    marginTop: 12 },
   modalBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   modalBtnText: {
     fontSize: 13,
-    fontWeight: '700',
-  },
-});
+    fontWeight: '700' } });

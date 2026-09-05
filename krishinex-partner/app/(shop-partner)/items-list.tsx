@@ -11,9 +11,8 @@ import {
   Modal,
   TextInput,
   ScrollView,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -21,7 +20,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert, ActivityIndicator } from 'react-native';
 
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}/shop`;
  // root url used for images too
@@ -50,7 +49,7 @@ const INITIAL_ITEMS: ItemRow[] = [];
 
 export default function ItemsListScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -104,8 +103,8 @@ export default function ItemsListScreen() {
           stockQty: item.stockQty,
           stockLabel: item.stockQty > 0 ? `In stock • ${item.stockQty}` : 'Out of stock',
           description: item.description || '',
-          imageUrl: item.imageUrl ? `${BASE_URL}/${item.imageUrl.replace(/\\/g, '/')}` : 'https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg',
-          imageUrls: item.imageUrls ? item.imageUrls.map((u: string) => `${BASE_URL}/${u.replace(/\\/g, '/')}`) : [],
+          imageUrl: item.imageUrl ? `${FILES_BASE_URL}/${item.imageUrl.replace(/\\/g, '/')}` : 'https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg',
+          imageUrls: item.imageUrls ? item.imageUrls.map((u: string) => `${FILES_BASE_URL}/${u.replace(/\\/g, '/')}`) : [],
           hasVariants: item.hasVariants || false,
           variants: item.variants || [],
           hsnCode: item.hsnCode || '',
@@ -220,7 +219,7 @@ export default function ItemsListScreen() {
       if (imageEdited) {
         const existingImages = previewImages
           .filter(u => u.startsWith('http'))
-          .map(u => u.replace(`${BASE_URL}/`, ''));
+          .map(u => u.replace(`${FILES_BASE_URL}/`, ''));
         formData.append('existingImages', JSON.stringify(existingImages));
 
         const newImages = previewImages.filter(u => !u.startsWith('http'));
@@ -259,8 +258,7 @@ export default function ItemsListScreen() {
       [key]:
         key === 'price'
           ? Number(value || 0)
-          : value,
-    });
+          : value });
   };
 
   const handleEditUnit = (unit: string) => {
@@ -308,8 +306,7 @@ export default function ItemsListScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
-    });
+      quality: 0.8 });
 
     if (!pickerResult.canceled && pickerResult.assets[0]) {
       const uri = pickerResult.assets[0].uri;
@@ -338,11 +335,11 @@ export default function ItemsListScreen() {
     : 'All items currently available in your shop';
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER with back + title */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           activeOpacity={0.8}
@@ -902,7 +899,7 @@ export default function ItemsListScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -914,13 +911,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   itemCountText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#16A34A',
-  },
+    color: '#16A34A' },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -932,16 +927,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    height: 44,
-  },
+    height: 44 },
   searchIcon: {
-    marginRight: 8,
-  },
+    marginRight: 8 },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#111827',
-  },
+    color: '#111827' },
 
   header: {
     paddingBottom: 10,
@@ -951,16 +943,14 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E7EB',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-  },
+    backgroundColor: '#F3F4F6' },
   headerCenter: { flex: 1, marginHorizontal: 8 },
   headerTitle: { fontSize: 17, fontWeight: '700', color: '#111827' },
   headerSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
@@ -968,13 +958,11 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    paddingBottom: 24,
-  },
+    paddingBottom: 24 },
 
   stockText: {
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
 
   cardContainer: {
     backgroundColor: '#FFFFFF',
@@ -986,157 +974,131 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
+    shadowRadius: 2 },
   cardContainerExpanded: {
     borderColor: '#D1FAE5',
-    backgroundColor: '#FBFEFB',
-  },
+    backgroundColor: '#FBFEFB' },
   card: {
     flexDirection: 'row',
-    padding: 12,
-  },
+    padding: 12 },
   imageWrap: {
     width: 60,
     height: 60,
     borderRadius: 12,
     backgroundColor: '#F3F4F6',
     marginRight: 10,
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   productImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
 
   titleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   itemName: {
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   categoryPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
-    backgroundColor: '#ECFDF5',
-  },
+    backgroundColor: '#ECFDF5' },
   categoryText: {
     fontSize: 11,
     color: '#047857',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   idText: {
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
 
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   priceText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   unitText: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
 
   descText: {
     marginTop: 4,
     fontSize: 11,
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
 
   actionsCol: {
     marginLeft: 6,
     justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
+    alignItems: 'flex-end' },
   iconBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EFF6FF',
-  },
+    backgroundColor: '#EFF6FF' },
 
   emptyWrap: {
     marginTop: 40,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   emptyTitle: {
     marginTop: 8,
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   emptySub: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
     textAlign: 'center',
-    paddingHorizontal: 24,
-  },
+    paddingHorizontal: 24 },
 
   // MODAL STYLES
   modalBackdrop: {
     flex: 1,
     backgroundColor: '#00000066',
-    justifyContent: 'flex-end',
-  },
+    justifyContent: 'flex-end' },
   modalSheet: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
     paddingHorizontal: 14,
     paddingTop: 10,
-    paddingBottom: 14,
-  },
+    paddingBottom: 14 },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   modalTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   modalImageWrap: {
     borderRadius: 14,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   modalImage: {
     width: '100%',
     height: 150,
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
   modalImageOverlay: {
     position: 'absolute',
     right: 8,
@@ -1146,22 +1108,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
+    paddingVertical: 4 },
   modalImageText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   modalFieldBox: {
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   modalLabel: {
     fontSize: 11,
     color: '#6B7280',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   modalInput: {
     borderRadius: 10,
     borderWidth: 1,
@@ -1169,18 +1127,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 6,
     fontSize: 13,
-    color: '#111827',
-  },
+    color: '#111827' },
   modalTextArea: {
     minHeight: 80,
-    textAlignVertical: 'top',
-  },
+    textAlignVertical: 'top' },
 
   categoryRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   categoryChip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -1189,24 +1144,19 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     marginRight: 6,
     marginBottom: 6,
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   categoryChipActive: {
     backgroundColor: '#E0F2FE',
-    borderColor: '#0284C7',
-  },
+    borderColor: '#0284C7' },
   categoryTextChip: {
     fontSize: 12,
     color: '#4B5563',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   categoryTextChipActive: {
-    color: '#0369A1',
-  },
+    color: '#0369A1' },
 
   modalPriceRow: {
-    marginTop: 4,
-  },
+    marginTop: 4 },
   modalPriceInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1215,25 +1165,21 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   pricePrefix: {
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
-    marginRight: 4,
-  },
+    marginRight: 4 },
   modalPriceInput: {
     flex: 1,
     fontSize: 13,
     color: '#111827',
-    paddingVertical: 0,
-  },
+    paddingVertical: 0 },
 
   unitRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   unitChip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -1241,20 +1187,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginRight: 6,
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   unitChipActive: {
     backgroundColor: '#DCFCE7',
-    borderColor: '#16A34A',
-  },
+    borderColor: '#16A34A' },
   unitTextChip: {
     fontSize: 12,
     color: '#4B5563',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   unitTextChipActive: {
-    color: '#166534',
-  },
+    color: '#166534' },
 
   saveBtn: {
     marginTop: 8,
@@ -1264,20 +1206,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   saveText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   variantsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
-  },
+    marginTop: 12 },
   variantToggle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1286,25 +1225,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   variantToggleText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   variantsList: {
-    marginTop: 8,
-  },
+    marginTop: 8 },
   variantCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   variantTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1312,24 +1247,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
-    paddingBottom: 4,
-  },
+    paddingBottom: 4 },
   variantTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#374151',
-  },
+    color: '#374151' },
   variantInputRow: {
     flexDirection: 'row',
-    columnGap: 8,
-  },
+    columnGap: 8 },
   variantInputWrap: {
   },
   variantLabel: {
     fontSize: 10,
     color: '#6B7280',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   variantInput: {
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
@@ -1338,8 +1269,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#111827',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   addVariantBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1349,54 +1279,45 @@ const styles = StyleSheet.create({
     borderColor: '#16A34A',
     borderStyle: 'dashed',
     borderRadius: 12,
-    marginTop: 4,
-  },
+    marginTop: 4 },
   addVariantText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#16A34A',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   customUnitInputWrap: {
     marginTop: 8,
     borderRadius: 8,
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    paddingHorizontal: 8,
-  },
+    paddingHorizontal: 8 },
   customUnitInput: {
     height: 36,
     fontSize: 12,
-    color: '#111827',
-  },
+    color: '#111827' },
 
   expandedSection: {
     paddingHorizontal: 12,
-    paddingBottom: 14,
-  },
+    paddingBottom: 14 },
   expandedDivider: {
     height: 1,
     backgroundColor: '#F3F4F6',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   expandedTitle: {
     fontSize: 13,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   detailsBox: {
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   detailsLabel: {
     fontSize: 11,
     fontWeight: '600',
     color: '#6B7280',
     marginBottom: 4,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5 },
   variantDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1405,44 +1326,36 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   variantPoint: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: '#16A34A',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   variantDetailLabel: {
     flex: 1,
     fontSize: 12,
     color: '#374151',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   variantDetailPrice: {
     fontSize: 13,
     fontWeight: '700',
     color: '#111827',
-    marginHorizontal: 8,
-  },
+    marginHorizontal: 8 },
   variantDetailStock: {
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
-  },
+    borderRadius: 6 },
   variantStockText: {
     fontSize: 10,
     color: '#4B5563',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   fullDescText: {
     fontSize: 12,
     lineHeight: 18,
     color: '#4B5563',
     backgroundColor: '#F9FAFB',
     padding: 8,
-    borderRadius: 10,
-  },
-});
+    borderRadius: 10 } });

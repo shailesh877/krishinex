@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -26,7 +25,7 @@ const API_URL = `${BASE_API_URL}`;
 
 export default function SoilLabHome() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang, toggleLang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -147,11 +146,11 @@ export default function SoilLabHome() {
   const DUMMY = [{ id: '1' }];
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* TOP HEADER */}
-      <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity style={styles.logoIconWrap} onPress={() => router.push('./profile')}>
           {profile?.avatarUri ? (
             <Image source={{ uri: profile.avatarUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -498,7 +497,7 @@ export default function SoilLabHome() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -512,8 +511,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -521,8 +519,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
@@ -531,8 +528,7 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   listContent: { paddingHorizontal: 16, paddingVertical: 10 },
 
@@ -540,14 +536,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 6,
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   labName: { fontSize: 18, fontWeight: '700', color: '#111827' },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   locationText: { fontSize: 13, color: '#4B5563', flexShrink: 1 },
 
   langButton: {
@@ -557,8 +551,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     backgroundColor: '#E0F2FE',
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   langText: { fontSize: 13, fontWeight: '600', color: '#0369A1' },
 
   /* WEATHER STRIP */
@@ -572,28 +565,24 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
-  },
+    borderColor: '#BFDBFE' },
   weatherLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   weatherIconWrap: {
     width: 28,
     height: 28,
     borderRadius: 14,
     backgroundColor: '#FEF3C7',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   weatherTitle: { fontSize: 12, fontWeight: '600', color: '#111827' },
   weatherText: { fontSize: 11, color: '#4B5563', marginTop: 2 },
   weatherRight: {
     alignItems: 'flex-end',
     justifyContent: 'center',
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   weatherTemp: { fontSize: 18, fontWeight: '700', color: '#111827' },
   weatherMetaSmall: { fontSize: 11, color: '#6B7280' },
 
@@ -602,15 +591,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginBottom: 8,
-    marginTop: 4,
-  },
+    marginTop: 4 },
 
   // TOTAL CARDS
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 14,
-  },
+    marginBottom: 14 },
   totalCard: {
     width: '48%',
     borderRadius: 18,
@@ -618,13 +605,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.2,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   totalHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
   totalIconWrap: {
     width: 30,
     height: 30,
@@ -632,36 +617,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
-    borderWidth: 1,
-  },
+    borderWidth: 1 },
   totalLabel: { fontSize: 12, fontWeight: '600', color: '#111827' },
   totalSubText: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   totalMiddleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   totalValue: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   totalApplyBorder: {
-    borderColor: '#A5B4FC',
-  },
+    borderColor: '#A5B4FC' },
   totalCompleteBorder: {
-    borderColor: '#86EFAC',
-  },
+    borderColor: '#86EFAC' },
 
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   chipText: { fontSize: 10, marginLeft: 2 },
 
   // TODAY GRID CARDS
@@ -670,8 +649,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     rowGap: 10,
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   statCard: {
     width: '48%',
     borderRadius: 16,
@@ -679,13 +657,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.2,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   statIconWrap: {
     width: 26,
     height: 26,
@@ -693,8 +669,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
-    borderWidth: 1,
-  },
+    borderWidth: 1 },
   statLabel: { fontSize: 12, color: '#111827', flexShrink: 1 },
   statValue: { fontSize: 20, fontWeight: '700', color: '#111827' },
   statHint: { fontSize: 11, color: '#6B7280', marginTop: 3 },
@@ -709,8 +684,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 10,
-    elevation: 4,
-  },
+    elevation: 4 },
   badge: {
     position: 'absolute',
     top: -2,
@@ -722,8 +696,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FFFFFF',
-  },
+    borderColor: '#FFFFFF' },
   badgeText: { color: '#FFFFFF', fontSize: 8, fontWeight: 'bold' },
 
   // Quick Actions Styles
@@ -731,15 +704,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
-    marginTop: 10,
-  },
+    marginTop: 10 },
   quickActionCard: {
     width: '48%',
     borderRadius: 16,
     paddingVertical: 20,
     paddingHorizontal: 12,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   quickActionIconWrap: {
     width: 36,
     height: 36,
@@ -747,12 +718,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   quickActionTitle: {
     fontSize: 14,
     fontWeight: '800',
     color: '#FFFFFF',
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center' } });

@@ -23,7 +23,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Location from 'expo-location';
 
-import { BASE_URL, BASE_API_URL } from '../../constants/api';
+import { BASE_URL, FILES_BASE_URL, BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
@@ -86,7 +86,10 @@ export default function LabourProfileSettings() {
       setAadhaarBackDocName(profile.aadhaarBackDocUrl ? (isHindi ? 'अपलोड किया गया (Back)' : 'Uploaded (Back)') : null);
       setAadhaarBackDocUrl(profile.aadhaarBackDocUrl || null);
       if (profile.avatarUri) {
-        setAvatarUri(profile.avatarUri);
+        const photoUrl = profile.avatarUri.startsWith('http')
+          ? profile.avatarUri
+          : `${FILES_BASE_URL}/${profile.avatarUri.replace(/\\/g, '/')}`;
+        setAvatarUri(photoUrl);
       }
       if (profile.jobNotificationOn !== undefined) setJobNotificationOn(profile.jobNotificationOn);
       if (profile.whatsappOn !== undefined) setWhatsappOn(profile.whatsappOn);
@@ -423,7 +426,7 @@ export default function LabourProfileSettings() {
         const data = await res.json();
         const pfp = data.url?.startsWith('http')
           ? data.url
-          : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setAvatarUri(pfp);
         updateUser({ avatarUri: pfp });
         showAlert('Done!', isHindi ? 'फोटो अपडेट हो गई' : 'Photo updated');
@@ -518,7 +521,7 @@ export default function LabourProfileSettings() {
     if (docUrl) {
       const formattedUrl = docUrl.startsWith('http')
         ? docUrl
-        : `${BASE_URL}/${docUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${docUrl.replace(/\\/g, '/')}`;
 
       Linking.openURL(formattedUrl).catch(() =>
         showAlert('Error', 'Cannot open document URL')
@@ -1433,6 +1436,7 @@ function ModalInput({
   onChangeText,
   icon,
   keyboardType,
+  editable,
 }: {
   label: string;
   value: string;

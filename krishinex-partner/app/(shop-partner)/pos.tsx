@@ -13,14 +13,13 @@ import {
   Image,
   ScrollView,
   Alert,
-  RefreshControl,
-} from 'react-native';
+  RefreshControl } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 
@@ -60,7 +59,7 @@ export default function POSScreen() {
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
 
   // --- STATE ---
   const [farmerIdentifier, setFarmerIdentifier] = useState('');
@@ -98,8 +97,7 @@ export default function POSScreen() {
       setIsLoadingProducts(true);
       const token = await AsyncStorage.getItem('userToken');
       const res = await fetch(`${API_URL}/items/my`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         const data = await res.json();
         setProducts(data);
@@ -126,10 +124,8 @@ export default function POSScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ identifier: farmerIdentifier }),
-      });
+          Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ identifier: farmerIdentifier }) });
       if (res.ok) {
         const data = await res.json();
         setFarmer(data);
@@ -154,10 +150,8 @@ export default function POSScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ identifier: farmerIdentifier, otp: searchOtp }),
-      });
+          Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ identifier: farmerIdentifier, otp: searchOtp }) });
       if (res.ok) {
         const data = await res.json();
         setFarmer(data);
@@ -209,14 +203,11 @@ export default function POSScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+          Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           farmerId: farmer._id,
           items: cart,
-          paymentBreakdown,
-        }),
-      });
+          paymentBreakdown }) });
 
       if (res.ok) {
         const data = await res.json();
@@ -242,13 +233,10 @@ export default function POSScreen() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+          Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           orderId: activeOrderId,
-          otp,
-        }),
-      });
+          otp }) });
 
       if (res.ok) {
         showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'बिक्री पूरी हुई' : 'Sale completed successfully');
@@ -288,8 +276,7 @@ export default function POSScreen() {
           quantity: 1,
           unit: product.unit,
           variantLabel,
-          imageUrl: product.imageUrl,
-        },
+          imageUrl: product.imageUrl },
       ];
     });
     setShowProductPicker(false);
@@ -308,8 +295,7 @@ export default function POSScreen() {
         name: manualItem.name,
         price: Number(manualItem.price),
         quantity: Number(manualItem.quantity),
-        unit: manualItem.unit,
-      },
+        unit: manualItem.unit },
     ]);
     setManualItem({ name: '', price: '', quantity: '1', unit: 'Pcs' });
     setShowManualModal(false);
@@ -364,8 +350,8 @@ export default function POSScreen() {
 
   // --- RENDER ---
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 16) + 4 : 24 }]}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
         <Text style={styles.title}>{isHindi ? 'बिक्री (POS)' : 'Point of Sale'}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
           <TouchableOpacity onPress={() => router.push('/(shop-partner)/notifications' as any)}>
@@ -595,7 +581,7 @@ export default function POSScreen() {
                 <View style={[styles.productListItem, { flexDirection: 'column', alignItems: 'stretch' }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                     {item.imageUrl ? (
-                      <Image source={{ uri: `${BASE_URL}/${item.imageUrl.replace(/\\/g, '/')}` }} style={{ width: 45, height: 45, borderRadius: 8, marginRight: 10 }} />
+                      <Image source={{ uri: `${FILES_BASE_URL}/${item.imageUrl.replace(/\\/g, '/')}` }} style={{ width: 45, height: 45, borderRadius: 8, marginRight: 10 }} />
                     ) : (
                       <View style={{ width: 45, height: 45, borderRadius: 8, marginRight: 10, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' }}>
                         <Ionicons name="image-outline" size={20} color="#9CA3AF" />
@@ -770,7 +756,7 @@ export default function POSScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -845,5 +831,4 @@ const styles = StyleSheet.create({
   otpInput: { backgroundColor: '#F3F4F6', padding: 20, borderRadius: 15, fontSize: 32, fontWeight: '900', letterSpacing: 10, textAlign: 'center', marginTop: 25 },
   verifyBtn: { backgroundColor: '#16A34A', padding: 20, borderRadius: 15, marginTop: 20, alignItems: 'center' },
   verifyBtnText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
-  cancelText: { textAlign: 'center', color: '#9CA3AF', fontWeight: '700' },
-});
+  cancelText: { textAlign: 'center', color: '#9CA3AF', fontWeight: '700' } });

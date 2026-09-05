@@ -13,15 +13,16 @@ import {
   Alert,
   RefreshControl,
   Linking,
+  ScrollView,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 
-type RequestStatus = 'New' | 'Accepted' | 'Completed' | 'Cancelled';
+type RequestStatus = 'New' | 'Accepted' | 'In Progress' | 'Completed' | 'Cancelled';
 
 type RequestItem = {
   id: string;
@@ -49,21 +50,21 @@ type RequestItem = {
   kattha?: number;
   startTime?: string;
   selectedSubMachinery?: { name: string; image: string }[];
+  createdAt?: string;
 };
 
 const INITIAL_REQUESTS: RequestItem[] = [];
-import { BASE_API_URL, BASE_URL, IMAGE_BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/rentals`;
 
 export default function EquipmentRequests() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
-  const [activeTab, setActiveTab] = useState<RequestStatus>('New');
+  const [activeTab, setActiveTab] = useState<RequestStatus | 'All'>('All');
   const [search, setSearch] = useState('');
   const [requests, setRequests] = useState<RequestItem[]>(INITIAL_REQUESTS);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
@@ -139,7 +140,7 @@ export default function EquipmentRequests() {
           status: r.status,
           machine: r.machine?.name || 'Unknown Machine',
           machineImage: (r.machine?.images && r.machine.images.length > 0)
-            ? (r.machine.images[0].startsWith('http') ? r.machine.images[0] : `${IMAGE_BASE_URL}/${r.machine.images[0].replace(/^\//, '')}`)
+            ? (r.machine.images[0].startsWith('http') ? r.machine.images[0] : `${FILES_BASE_URL}/${r.machine.images[0].replace(/^\//, '')}`)
             : '',
           owner: r.buyer?.name || 'Unknown Buyer',
           ownerPhone: r.buyer?.phone || '',
@@ -161,7 +162,8 @@ export default function EquipmentRequests() {
           days: r.days || 0,
           kattha: r.kattha || 0,
           startTime: formatTime(r.fromDate),
-          selectedSubMachinery: r.selectedSubMachinery || []
+          selectedSubMachinery: r.selectedSubMachinery || [],
+          createdAt: r.createdAt || new Date().toISOString()
         }));
         setRequests(mapped);
       }
@@ -181,25 +183,35 @@ export default function EquipmentRequests() {
     : require('../../assets/images/Khetify_use_under_the_app-English.png');
   const logoIconSource = require('../../assets/images/logo.png');
 
-  const headerTabs: RequestStatus[] = ['New', 'Accepted', 'Completed'];
+  const headerTabs: (RequestStatus | 'All')[] = ['All', 'New', 'Accepted', 'In Progress', 'Completed', 'Cancelled'];
 
   const filtered = useMemo(() => {
-    return requests.filter(r => {
-      if (r.status !== activeTab) return false;
-      if (!search.trim()) return true;
+    let list = requests;
+    if (activeTab !== 'All') {
+      list = list.filter(r => r.status === activeTab);
+    }
+    if (search.trim()) {
       const q = search.toLowerCase();
-      return (
+      list = list.filter(r => 
         r.machine.toLowerCase().includes(q) ||
         r.owner.toLowerCase().includes(q) ||
         r.village.toLowerCase().includes(q)
       );
+    }
+    
+    // Sort by latest (descending order of createdAt)
+    return list.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [activeTab, search, requests]);
 
-  const tabCounts: Record<RequestStatus, number> = useMemo(() => {
-    const base: Record<RequestStatus, number> = {
+  const tabCounts: Record<RequestStatus | 'All', number> = useMemo(() => {
+    const base: Record<RequestStatus | 'All', number> = {
+      All: requests.length,
       New: 0,
       Accepted: 0,
+      'In Progress': 0,
       Completed: 0,
       Cancelled: 0,
     };
@@ -214,6 +226,8 @@ export default function EquipmentRequests() {
       return { color: '#22C55E', label: isHindi ? 'नया' : 'New' };
     if (status === 'Accepted')
       return { color: '#EAB308', label: isHindi ? 'स्वीकृत' : 'Accepted' };
+    if (status === 'In Progress')
+      return { color: '#3B82F6', label: isHindi ? 'चालू है' : 'In Progress' };
     if (status === 'Completed')
       return { color: '#16A34A', label: isHindi ? 'पूर्ण' : 'Completed' };
     return { color: '#EF4444', label: isHindi ? 'रद्द' : 'Cancelled' };
@@ -250,6 +264,7 @@ export default function EquipmentRequests() {
   };
 
   const markAccepted = (id: string) => updateStatus(id, 'Accepted');
+  const markInProgress = (id: string) => updateStatus(id, 'In Progress');
 
   const openCompleteModal = (id: string) => {
     setCompleteId(id);
@@ -282,15 +297,17 @@ export default function EquipmentRequests() {
     setCancelId(null);
   };
 
-  const labelForTab = (tab: RequestStatus) => {
+  const labelForTab = (tab: RequestStatus | 'All') => {
+    if (tab === 'All') return isHindi ? 'सभी' : 'All';
     if (tab === 'New') return isHindi ? 'नया' : 'New';
     if (tab === 'Accepted') return isHindi ? 'स्वीकृत' : 'Accepted';
+    if (tab === 'In Progress') return isHindi ? 'चालू है' : 'In Progress';
     if (tab === 'Completed') return isHindi ? 'पूर्ण' : 'Completed';
     return isHindi ? 'रद्द' : 'Cancelled';
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
@@ -301,7 +318,10 @@ export default function EquipmentRequests() {
         <View style={styles.logoWrap}>
           <Image source={logoTextSource} style={styles.logoTextImage} />
         </View>
-        <TouchableOpacity style={styles.iconCircle}>
+        <TouchableOpacity 
+          style={styles.iconCircle}
+          onPress={() => router.push('/notifications')}
+        >
           <NotificationIcon size={20} color="#4B5563" />
         </TouchableOpacity>
       </View>
@@ -320,24 +340,35 @@ export default function EquipmentRequests() {
         </View>
 
         {/* Tabs */}
-        <View style={styles.tabsRow}>
-          {headerTabs.map(tab => {
-            const active = activeTab === tab;
-            return (
-              <TouchableOpacity
-                key={tab}
-                style={[
-                  styles.tabChip,
-                  active && styles.tabChipActive,
-                ]}
-                onPress={() => setActiveTab(tab)}
-              >
-                <Text style={active ? styles.tabTextActive : styles.tabText}>
-                  {labelForTab(tab)} · {tabCounts[tab]}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+        <View style={{ marginBottom: 10 }}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.tabsRow}
+          >
+            {headerTabs.map(tab => {
+              const active = activeTab === tab;
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  style={[
+                    styles.tabChip,
+                    active && styles.tabChipActive,
+                  ]}
+                  onPress={() => setActiveTab(tab)}
+                >
+                  <Text style={active ? styles.tabTextActive : styles.tabText}>
+                    {labelForTab(tab)}
+                  </Text>
+                  {tab === 'New' && tabCounts['New'] > 0 && (
+                    <View style={styles.badgeContainer}>
+                      <Text style={styles.badgeText}>{tabCounts['New']}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
 
         {/* Search */}
@@ -406,6 +437,9 @@ export default function EquipmentRequests() {
               primaryLabel = isHindi ? 'Accept करो' : 'Accept';
               primaryAction = () => markAccepted(item.id);
             } else if (item.status === 'Accepted') {
+              primaryLabel = isHindi ? 'Start करो' : 'Start';
+              primaryAction = () => markInProgress(item.id);
+            } else if (item.status === 'In Progress') {
               primaryLabel = isHindi ? 'Complete करो' : 'Complete';
               primaryAction = () => openCompleteModal(item.id);
             } else {
@@ -413,7 +447,7 @@ export default function EquipmentRequests() {
             }
 
             const showCancel =
-              item.status === 'New' || item.status === 'Accepted';
+              item.status === 'New' || item.status === 'Accepted' || item.status === 'In Progress';
 
             return (
               <View style={styles.card}>
@@ -492,7 +526,7 @@ export default function EquipmentRequests() {
                       {item.selectedSubMachinery.map((sub, idx) => (
                         <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 4, borderRadius: 6, borderWidth: 1, borderColor: '#E0F2FE' }}>
                           {sub.image ? (
-                            <Image source={{ uri: sub.image.startsWith('http') ? sub.image : `${IMAGE_BASE_URL}/${sub.image.replace(/^\//, '')}` }} style={{ width: 24, height: 24, borderRadius: 4, marginRight: 4 }} />
+                            <Image source={{ uri: sub.image.startsWith('http') ? sub.image : `${FILES_BASE_URL}/${sub.image.replace(/^\//, '')}` }} style={{ width: 24, height: 24, borderRadius: 4, marginRight: 4 }} />
                           ) : (
                             <Ionicons name="cog-outline" size={14} color="#0369A1" style={{ marginRight: 4 }} />
                           )}
@@ -697,7 +731,7 @@ export default function EquipmentRequests() {
         </View>
       </Modal>
 
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -708,7 +742,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     elevation: 3,
@@ -742,8 +776,10 @@ const styles = StyleSheet.create({
 
   tabsRow: {
     flexDirection: 'row',
-    marginBottom: 10,
     gap: 8,
+    paddingRight: 16,
+    paddingTop: 8, // Give space for absolute badges
+    paddingBottom: 4, // Give space for shadow
   },
   tabChip: {
     paddingHorizontal: 12,
@@ -760,6 +796,25 @@ const styles = StyleSheet.create({
   },
   tabText: { fontSize: 12, color: '#4B5563' },
   tabTextActive: { fontSize: 12, color: '#15803D', fontWeight: '600' },
+  badgeContainer: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 99,
+    elevation: 10,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
 
   searchBox: {
     flexDirection: 'row',

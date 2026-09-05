@@ -6,16 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Image,
-} from 'react-native';
+  Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import NotificationIcon from '@/components/NotificationIcon';
 
 export default function TermsScreen() {
-  const insets = useSafeAreaInsets();
+  
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -26,11 +25,11 @@ export default function TermsScreen() {
   const logoIconSource = require('../../assets/images/logo.png');
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* header with back + logo + bell */}
-      <View style={[styles.appHeader, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -98,7 +97,7 @@ export default function TermsScreen() {
             : 'The company may update these terms from time to time. Updated terms will be shown inside the app.'}
         </Text>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -109,19 +108,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   backBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 160, height: 30, resizeMode: 'contain' },
   iconCircle: {
@@ -129,8 +126,7 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   container: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
 
@@ -138,18 +134,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   sectionHeading: {
     marginTop: 10,
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   paragraph: {
     marginTop: 4,
     fontSize: 13,
     color: '#4B5563',
-    lineHeight: 19,
-  },
-});
+    lineHeight: 19 } });

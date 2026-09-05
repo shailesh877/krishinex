@@ -2108,10 +2108,13 @@
       else if (statusFilter === 'pending') emptyMsg = 'No farmers Pending yet.';
       else if (statusFilter === 'approved') emptyMsg = 'No farmers Approved yet.';
 
-      window.progressiveRenderTable('usersTableBody', farmers, createFarmerRow, {
-        chunkSize: 20,
-        emptyHtml: `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold">${emptyMsg}</td></tr>`
-      });
+      const tbody = document.getElementById('usersTableBody');
+      if (!tbody) return;
+      if (!farmers || farmers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold">${emptyMsg}</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = farmers.map(createFarmerRow).join('');
     }
 
     async function approveUser(userId, name) {
@@ -2392,10 +2395,13 @@
       if (shouldUpdateCards && Array.isArray(requests)) {
         fetchCropStats();
       }
-      window.progressiveRenderTable('cropRequestsTbody', requests, createCropRequestRow, {
-        chunkSize: 25,
-        emptyHtml: '<tr><td colspan="9" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>'
-      });
+      const tbody = document.getElementById('cropRequestsTbody');
+      if (!tbody) return;
+      if (!requests || requests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = requests.map(createCropRequestRow).join('');
     }
 
     async function populateBuyerList() {
@@ -2583,10 +2589,16 @@
     }
 
     function applyGlobalFilter(startDate, endDate, label) {
+      // Set DOM values so fetch functions pick them up correctly
+      const startEl = document.getElementById('globalStartDate');
+      const endEl = document.getElementById('globalEndDate');
+      if (startEl) startEl.value = startDate || '';
+      if (endEl) endEl.value = endDate || '';
+
       fetchStats(startDate, endDate);
       fetchCropStats(startDate, endDate);
-      fetchFarmers(startDate, endDate);
-      fetchCropRequests(startDate, endDate);
+      fetchFarmers(1, false);
+      fetchCropRequests(1, false);
     }
 
     function getInitialTabFromUrl() {

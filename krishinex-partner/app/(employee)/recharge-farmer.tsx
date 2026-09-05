@@ -11,21 +11,20 @@ import {
   Platform,
   ScrollView,
   Alert,
-  Image,
-} from 'react-native';
+  Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 
 const API_URL = `${BASE_API_URL}`;
 const STATUS_GREEN = '#6bb313ff';
 
 export default function RechargeFarmerScreen() {
-  const insets = useSafeAreaInsets();
+  
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -135,14 +134,12 @@ export default function RechargeFarmerScreen() {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
+                  Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ 
                   cardNumber: farmer.cardNumber, 
                   phone: farmer.phone,
                   amount: Number(amount) 
-                }),
-              });
+                }) });
 
               const data = await res.json();
               if (res.ok) {
@@ -181,7 +178,7 @@ export default function RechargeFarmerScreen() {
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
       
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.header}>
         <View style={styles.headerTop}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
@@ -268,7 +265,7 @@ export default function RechargeFarmerScreen() {
               </View>
               {farmer.profilePhotoUrl ? (
                 <Image 
-                  source={{ uri: farmer.profilePhotoUrl.startsWith('http') ? farmer.profilePhotoUrl : `${BASE_URL}/${farmer.profilePhotoUrl.replace(/\\/g, '/')}` }} 
+                  source={{ uri: farmer.profilePhotoUrl.startsWith('http') ? farmer.profilePhotoUrl : `${FILES_BASE_URL}/${farmer.profilePhotoUrl.replace(/\\/g, '/')}` }} 
                   style={styles.farmerAvatar} 
                 />
               ) : (
@@ -355,58 +352,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: STATUS_GREEN,
     borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
+    borderBottomRightRadius: 30 },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
     color: '#FFF',
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5 },
   statsCard: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   statsLabel: {
     color: '#E2E8F0',
     fontSize: 12,
     fontWeight: '600',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   statsValue: {
     color: '#FFF',
     fontSize: 24,
-    fontWeight: '800',
-  },
+    fontWeight: '800' },
   statsIcon: {
     width: 44,
     height: 44,
     borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   scrollContent: {
-    padding: 20,
-  },
+    padding: 20 },
   card: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -415,15 +403,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 15,
     elevation: 4,
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   sectionLabel: {
     fontSize: 13,
     color: '#64748B',
     fontWeight: '600',
     marginBottom: 12,
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   searchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -431,48 +417,39 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingLeft: 12,
     paddingRight: 6,
-    height: 54,
-  },
+    height: 54 },
   inputIcon: {
-    marginRight: 10,
-  },
+    marginRight: 10 },
   searchInput: {
     flex: 1,
     height: '100%',
     fontSize: 16,
     color: '#1E293B',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   searchBtn: {
     width: 42,
     height: 42,
     borderRadius: 10,
     backgroundColor: STATUS_GREEN,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   farmerCard: {
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#E2E8F0' },
   farmerHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   farmerInfo: {
-    flex: 1,
-  },
+    flex: 1 },
   farmerName: {
     fontSize: 20,
     fontWeight: '800',
     color: '#0F172A',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   farmerSubText: {
     fontSize: 13,
     color: '#64748B',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   balanceTag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -480,63 +457,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
+    alignSelf: 'flex-start' },
   balanceTagLabel: {
     fontSize: 11,
     color: '#166534',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   balanceTagValue: {
     fontSize: 13,
     color: STATUS_GREEN,
     fontWeight: '800',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   farmerAvatar: {
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: '#F1F5F9',
-  },
+    backgroundColor: '#F1F5F9' },
   farmerAvatarPlaceholder: {
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   divider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginVertical: 20,
-  },
+    marginVertical: 20 },
   inputGroup: {
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   label: {
     fontSize: 13,
     fontWeight: '700',
     color: '#475569',
     marginBottom: 10,
-    marginLeft: 2,
-  },
+    marginLeft: 2 },
   amountInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#E2E8F0',
-    paddingBottom: 8,
-  },
+    paddingBottom: 8 },
   currencySymbol: {
     fontSize: 28,
     fontWeight: '800',
     color: '#1E293B',
-    marginRight: 10,
-  },
+    marginRight: 10 },
   amountInput: {
     flex: 1,
     fontSize: 32,
     fontWeight: '800',
-    color: STATUS_GREEN,
-  },
+    color: STATUS_GREEN },
   rechargeBtn: {
     backgroundColor: STATUS_GREEN,
     height: 56,
@@ -546,25 +512,21 @@ const styles = StyleSheet.create({
     shadowColor: STATUS_GREEN,
     shadowOpacity: 0.3,
     shadowRadius: 10,
-    elevation: 8,
-  },
+    elevation: 8 },
   rechargeBtnText: {
     color: '#FFF',
     fontSize: 16,
     fontWeight: '800',
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5 },
   disabledBtn: { opacity: 0.7 },
   historyContainer: {
-    marginTop: 10,
-  },
+    marginTop: 10 },
   historyTitle: {
     fontSize: 16,
     fontWeight: '800',
     color: '#1E293B',
     marginBottom: 15,
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
   emptyHistory: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -572,14 +534,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
+    borderColor: '#F1F5F9' },
   emptyHistoryText: {
     marginTop: 10,
     color: '#94A3B8',
     fontSize: 14,
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   historyItem: {
     backgroundColor: '#FFF',
     borderRadius: 16,
@@ -590,8 +550,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.03,
     shadowRadius: 5,
-    elevation: 2,
-  },
+    elevation: 2 },
   historyIcon: {
     width: 36,
     height: 36,
@@ -599,60 +558,46 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDF4',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
-  },
+    marginRight: 12 },
   historyIconDebit: {
-    backgroundColor: '#FEF2F2',
-  },
+    backgroundColor: '#FEF2F2' },
   historyDetails: {
-    flex: 1,
-  },
+    flex: 1 },
   historyName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   historyDate: {
     fontSize: 11,
     color: '#94A3B8',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   historyAmount: {
     fontSize: 15,
     fontWeight: '800',
-    color: STATUS_GREEN,
-  },
+    color: STATUS_GREEN },
   historyAmountDebit: {
-    color: '#EF4444',
-  },
+    color: '#EF4444' },
   selectionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
+    paddingVertical: 12 },
   borderBottom: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
+    borderBottomColor: '#F3F4F6' },
   selectionInfo: {
     flex: 1,
-    marginRight: 10,
-  },
+    marginRight: 10 },
   selectionName: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   roleTag: {
     fontSize: 12,
     color: STATUS_GREEN,
     fontWeight: '600',
-    textTransform: 'capitalize',
-  },
+    textTransform: 'capitalize' },
   selectionSubText: {
     fontSize: 12,
     color: '#64748B',
-    marginTop: 2,
-  },
-});
+    marginTop: 2 } });

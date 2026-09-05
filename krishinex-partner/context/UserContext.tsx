@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_API_URL } from '../constants/api';
+import { BASE_API_URL, FILES_BASE_URL } from '../constants/api';
 import * as Location from 'expo-location';
 
 type UserProfile = {
@@ -76,7 +76,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         if (data.profilePhotoUrl) {
           data.avatarUri = data.profilePhotoUrl.startsWith('http') 
             ? data.profilePhotoUrl 
-            : `${BASE_API_URL.replace('/api', '')}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
+            : `${FILES_BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
         }
         
         setProfile(data);

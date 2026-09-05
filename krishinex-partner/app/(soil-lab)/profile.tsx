@@ -23,7 +23,7 @@ import { useUser } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AVATAR_SIZE = 86;
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/user`;
@@ -96,7 +96,10 @@ export default function SoilLabProfile() {
       setLabLicenseDocName(profile.businessLicenseUrl ? profile.businessLicenseUrl : null);
       setCancelChequeDocName(profile.bankDetails?.bankDocUrl ? profile.bankDetails.bankDocUrl : null);
       if (profile.avatarUri) {
-        setAvatar(profile.avatarUri);
+        const photoUrl = profile.avatarUri.startsWith('http')
+          ? profile.avatarUri
+          : `${FILES_BASE_URL}/${profile.avatarUri.replace(/\\/g, '/')}`;
+        setAvatar(photoUrl);
       }
       
       setLoading(false);
@@ -192,7 +195,7 @@ export default function SoilLabProfile() {
       if (res.ok) {
         const pfp = data.url?.startsWith('http')
           ? data.url
-          : `${BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
+          : `${FILES_BASE_URL}/${data.url?.replace(/\\/g, '/')}`;
         setAvatar(pfp);
         updateUser({ avatarUri: pfp });
         showAlert(
@@ -332,7 +335,7 @@ export default function SoilLabProfile() {
     if (docUrl) {
       const formattedUrl = docUrl.startsWith('http')
         ? docUrl
-        : `${BASE_URL}/${docUrl.replace(/\\/g, '/')}`;
+        : `${FILES_BASE_URL}/${docUrl.replace(/\\/g, '/')}`;
 
       Linking.openURL(formattedUrl).catch(() =>
         showAlert('Error', 'Cannot open document URL')
@@ -696,7 +699,7 @@ export default function SoilLabProfile() {
               onPress={() => {
                 if (isVerified) {
                   if (labLicenseDocName) {
-                    const url = labLicenseDocName.startsWith('http') ? labLicenseDocName : `${BASE_URL}/${labLicenseDocName.replace(/\\/g, '/')}`;
+                    const url = labLicenseDocName.startsWith('http') ? labLicenseDocName : `${FILES_BASE_URL}/${labLicenseDocName.replace(/\\/g, '/')}`;
                     Linking.openURL(url).catch(() => showAlert('Error', 'Cannot open document'));
                   }
                   return;
@@ -706,7 +709,7 @@ export default function SoilLabProfile() {
                     isHindi ? 'लैब लाइसेंस' : 'Lab License',
                     isHindi ? 'क्या करना है?' : 'What would you like to do?',
                     [
-                      { text: isHindi ? 'देखें' : 'View', onPress: () => { const url = labLicenseDocName.startsWith('http') ? labLicenseDocName : `${BASE_URL}/${labLicenseDocName.replace(/\\/g, '/')}`; Linking.openURL(url); } },
+                      { text: isHindi ? 'देखें' : 'View', onPress: () => { const url = labLicenseDocName.startsWith('http') ? labLicenseDocName : `${FILES_BASE_URL}/${labLicenseDocName.replace(/\\/g, '/')}`; Linking.openURL(url); } },
                       { text: isHindi ? 'नया अपलोड' : 'Re-upload', onPress: pickAndUploadLabLicense },
                       { text: 'Cancel', style: 'cancel' },
                     ]
@@ -739,7 +742,7 @@ export default function SoilLabProfile() {
               onPress={() => {
                 if (isVerified) {
                   if (cancelChequeDocName) {
-                    const url = cancelChequeDocName.startsWith('http') ? cancelChequeDocName : `${BASE_URL}/${cancelChequeDocName.replace(/\\/g, '/')}`;
+                    const url = cancelChequeDocName.startsWith('http') ? cancelChequeDocName : `${FILES_BASE_URL}/${cancelChequeDocName.replace(/\\/g, '/')}`;
                     Linking.openURL(url).catch(() => showAlert('Error', 'Cannot open document'));
                   }
                   return;
@@ -749,7 +752,7 @@ export default function SoilLabProfile() {
                     isHindi ? 'कैंसिल चेक' : 'Cancelled Cheque',
                     isHindi ? 'क्या करना है?' : 'What would you like to do?',
                     [
-                      { text: isHindi ? 'देखें' : 'View', onPress: () => { const url = cancelChequeDocName.startsWith('http') ? cancelChequeDocName : `${BASE_URL}/${cancelChequeDocName.replace(/\\/g, '/')}`; Linking.openURL(url); } },
+                      { text: isHindi ? 'देखें' : 'View', onPress: () => { const url = cancelChequeDocName.startsWith('http') ? cancelChequeDocName : `${FILES_BASE_URL}/${cancelChequeDocName.replace(/\\/g, '/')}`; Linking.openURL(url); } },
                       { text: isHindi ? 'नया अपलोड' : 'Re-upload', onPress: pickAndUploadCancelCheque },
                       { text: 'Cancel', style: 'cancel' },
                     ]

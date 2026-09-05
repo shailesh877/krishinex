@@ -13,16 +13,15 @@ import {
   RefreshControl,
   TextInput,
   KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import { useFocusEffect, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, ActivityIndicator } from 'react-native';
 
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/shop`;
@@ -30,7 +29,7 @@ const API_URL = `${BASE_API_URL}/shop`;
 const getImageUrl = (url: string) => {
   if (!url || url.includes('pexels-photo')) return null;
   if (url.startsWith('http')) return url;
-  return `${BASE_URL}/${url.replace(/\\/g, '/')}`;
+  return `${FILES_BASE_URL}/${url.replace(/\\/g, '/')}`;
 };
  // root url used for images too
 
@@ -56,7 +55,7 @@ type TopTabKey = 'ACCEPTED' | 'IN_PROGRESS' | 'DELIVERED';
 
 export default function ShopAccept() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -307,10 +306,10 @@ export default function ShopAccept() {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+     SafeAreaViewatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HOME जैसा header style, अब green accent */}
-      <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.appHeader}>
         <View style={styles.headerLeftRow}>
           <View style={styles.headerIconWrap}>
             <Ionicons name="checkmark-done-outline" size={18} color="#16A34A" />
@@ -677,7 +676,7 @@ export default function ShopAccept() {
         </KeyboardAvoidingView>
       </Modal>
     </View>
-  );
+  );SafeAreaView
 }
 
 const styles = StyleSheet.create({
@@ -691,21 +690,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     elevation: 3,
     shadowColor: '#00000020',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   headerLeftRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-  },
+    flex: 1 },
   headerIconWrap: {
     width: 34,
     height: 34,
     borderRadius: 17,
     backgroundColor: '#DCFCE7',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
   headerSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   iconCircle: {
@@ -713,16 +709,14 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   chipRow: {
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 6,
     backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-  },
+    flexDirection: 'row' },
   chipTab: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -732,38 +726,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginRight: 8,
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   chipTabActive: {
     backgroundColor: '#DCFCE7',
-    borderColor: '#16A34A',
-  },
+    borderColor: '#16A34A' },
   chipTabText: {
     fontSize: 12,
     color: '#4B5563',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   chipTabTextActive: {
-    color: '#166534',
-  },
+    color: '#166534' },
   chipCount: {
     marginLeft: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 999,
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   chipCountText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   listContent: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    paddingBottom: 24,
-  },
+    paddingBottom: 24 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -774,303 +761,249 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 2,
-  },
+    elevation: 2 },
   cardTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   orderIdText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   topRight: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   metaText: {
     fontSize: 11,
     color: '#6B7280',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   amountText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   middleRow: {
     marginTop: 10,
-    flexDirection: 'row',
-  },
+    flexDirection: 'row' },
   imageWrap: {
     width: 60,
     height: 60,
     borderRadius: 12,
     backgroundColor: '#F3F4F6',
     marginRight: 10,
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   productImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
 
   itemsText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   customerName: {
     fontSize: 12,
     color: '#4B5563',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   infoText: {
     fontSize: 11,
     color: '#6B7280',
-    flexShrink: 1,
-  },
+    flexShrink: 1 },
 
   cardBottomRow: {
     marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
 
   statusChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: 4,
-  },
+    marginRight: 4 },
   statusText: {
     fontSize: 11,
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
 
   actionsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 999,
-  },
+    borderRadius: 999 },
   progressBtn: {
-    backgroundColor: '#16A34A',
-  },
+    backgroundColor: '#16A34A' },
   deliverBtn: {
-    backgroundColor: '#15803D',
-  },
+    backgroundColor: '#15803D' },
   actionText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   emptyWrap: {
     marginTop: 40,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   emptyTitle: {
     marginTop: 8,
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   emptySub: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
     textAlign: 'center',
-    paddingHorizontal: 24,
-  },
+    paddingHorizontal: 24 },
 
   // MODAL STYLES
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
+    justifyContent: 'flex-end' },
   modalContent: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     height: '80%',
-    paddingBottom: 20,
-  },
+    paddingBottom: 20 },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
+    borderBottomColor: '#F3F4F6' },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   modalScroll: {
-    padding: 20,
-  },
+    padding: 20 },
   modalSection: {
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   modalLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   modalTime: {
     fontSize: 12,
     color: '#9CA3AF',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   borderTop: {
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
-    paddingTop: 16,
-  },
+    paddingTop: 16 },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
+    letterSpacing: 0.5 },
   detailName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
-    gap: 8,
-  },
+    gap: 8 },
   detailText: {
     fontSize: 14,
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   noteBox: {
     backgroundColor: '#FFFBEB',
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
     borderLeftWidth: 3,
-    borderLeftColor: '#F59E0B',
-  },
+    borderLeftColor: '#F59E0B' },
   noteText: {
     fontSize: 13,
     color: '#92400E',
-    fontStyle: 'italic',
-  },
+    fontStyle: 'italic' },
   itemDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   itemThumb: {
     width: 50,
     height: 50,
     borderRadius: 8,
-    backgroundColor: '#F3F4F6',
-  },
+    backgroundColor: '#F3F4F6' },
   itemNameText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   itemQtyText: {
     fontSize: 12,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   itemTotalText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
+    borderTopColor: '#F3F4F6' },
   totalLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   totalVal: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#16A34A',
-  },
+    color: '#16A34A' },
   paymentTag: {
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
     marginTop: 4,
-    textAlign: 'right',
-  },
+    textAlign: 'right' },
   modalActions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 10,
-  },
+    marginTop: 10 },
   modalBtn: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   otpCard: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 30,
     borderRadius: 24,
     padding: 28,
-    alignSelf: 'stretch',
-  },
+    alignSelf: 'stretch' },
   otpTitle: {
     fontSize: 22,
     fontWeight: '900',
     textAlign: 'center',
     color: '#111827',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   otpSub: {
     fontSize: 13,
     textAlign: 'center',
     color: '#6B7280',
-    marginBottom: 20,
-  },
+    marginBottom: 20 },
   otpInput: {
     backgroundColor: '#F3F4F6',
     borderRadius: 14,
@@ -1080,17 +1013,13 @@ const styles = StyleSheet.create({
     letterSpacing: 10,
     textAlign: 'center',
     marginBottom: 20,
-    color: '#111827',
-  },
+    color: '#111827' },
   otpBtn: {
     backgroundColor: '#15803D',
     paddingVertical: 16,
     borderRadius: 14,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   otpBtnText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '800',
-  },
-});
+    fontWeight: '800' } });

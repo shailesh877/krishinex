@@ -7,9 +7,8 @@ import {
   StatusBar,
   FlatList,
   TouchableOpacity,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
@@ -55,8 +54,7 @@ const DUMMY_SOIL: SoilTask[] = [
     status: 'new',
     cropName: 'Wheat',
     testType: 'NPK',
-    visitType: 'Field Pickup',
-  },
+    visitType: 'Field Pickup' },
   {
     id: 'S2',
     farmerName: 'Rakesh',
@@ -67,8 +65,7 @@ const DUMMY_SOIL: SoilTask[] = [
     status: 'sample-picked',
     cropName: 'Rice',
     testType: 'pH',
-    visitType: "I'll visit lab",
-  },
+    visitType: "I'll visit lab" },
   {
     id: 'S3',
     farmerName: 'Suresh',
@@ -79,13 +76,12 @@ const DUMMY_SOIL: SoilTask[] = [
     status: 'sent-to-lab',
     cropName: 'Sugarcane',
     testType: 'Micro Nutrients',
-    visitType: 'Field Pickup',
-  },
+    visitType: 'Field Pickup' },
 ];
 
 export default function SoilAssignScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -115,8 +111,7 @@ export default function SoilAssignScreen() {
             : r.status === 'Accepted' ? 'sample-picked'
               : r.status === 'InProgress' ? 'sent-to-lab'
                 : r.status === 'Completed' ? 'reported'
-                  : 'new' as SoilStatus,
-        }));
+                  : 'new' as SoilStatus }));
         setTasks(mapped);
       }
     } catch (e) {
@@ -137,8 +132,7 @@ export default function SoilAssignScreen() {
     chipNew: isHindi ? 'New' : 'New',
     chipPicked: isHindi ? 'Sample pickup' : 'Sample picked',
     chipLab: isHindi ? 'Lab को भेजा' : 'Sent to lab',
-    chipReported: isHindi ? 'Report upload' : 'Report uploaded',
-  };
+    chipReported: isHindi ? 'Report upload' : 'Report uploaded' };
 
   const statusLabel = (status: SoilStatus) => {
     if (status === 'new') return isHindi ? 'नया soil test request' : 'New soil test request';
@@ -176,8 +170,7 @@ export default function SoilAssignScreen() {
       if (newStatus === 'reported') {
         const docRes = await DocumentPicker.getDocumentAsync({
           type: ['application/pdf', 'image/*'],
-          copyToCacheDirectory: true,
-        });
+          copyToCacheDirectory: true });
 
         if (docRes.canceled) return;
 
@@ -188,8 +181,7 @@ export default function SoilAssignScreen() {
         formData.append('report', {
           uri: file.uri,
           name: file.name,
-          type: file.mimeType || 'application/pdf',
-        });
+          type: file.mimeType || 'application/pdf' });
 
         const res = await fetch(`${API_URL}/soil/requests/${task.id}/status`, {
           method: 'PATCH',
@@ -197,8 +189,7 @@ export default function SoilAssignScreen() {
             Authorization: `Bearer ${token}`,
             // Do not set Content-Type for FormData
           },
-          body: formData,
-        });
+          body: formData });
 
         if (res.ok) {
           showAlert(isHindi ? 'सफल' : 'Success', isHindi ? 'रिपोर्ट अपलोड हो गई' : 'Report uploaded successfully');
@@ -347,11 +338,11 @@ export default function SoilAssignScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
@@ -397,7 +388,7 @@ export default function SoilAssignScreen() {
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -409,23 +400,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN,
-  },
+    backgroundColor: STATUS_GREEN },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#5BA40F',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   chipRow: {
     flexDirection: 'row',
@@ -433,32 +421,26 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: '#F0F9FF',
     borderBottomWidth: 1,
-    borderBottomColor: '#DBEAFE',
-  },
+    borderBottomColor: '#DBEAFE' },
   chip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
     backgroundColor: '#E5E7EB',
-    marginRight: 6,
-  },
+    marginRight: 6 },
   chipActive: {
-    backgroundColor: '#0EA5E9',
-  },
+    backgroundColor: '#0EA5E9' },
   chipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#374151',
-  },
+    color: '#374151' },
   chipTextActive: {
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 16,
-  },
+    paddingBottom: 16 },
 
   card: {
     backgroundColor: '#FFFFFF',
@@ -470,8 +452,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 5,
-    elevation: 2,
-  },
+    elevation: 2 },
   cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -480,59 +461,48 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#F9FAFB',
     borderBottomWidth: 1,
-    borderColor: '#F3F4F6',
-  },
+    borderColor: '#F3F4F6' },
   dateLabel: {
     fontSize: 12,
     color: '#6B7280',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   cardBody: {
-    padding: 14,
-  },
+    padding: 14 },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   iconWrap: {
     width: 24,
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   infoLabel: {
     width: 55,
     fontSize: 13,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   infoValue: {
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   divider: {
     height: 1,
     backgroundColor: '#F3F4F6',
-    marginVertical: 8,
-  },
+    marginVertical: 8 },
   cardFooter: {
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderColor: '#E5E7EB',
-    backgroundColor: '#FFFFFF',
-  },
+    backgroundColor: '#FFFFFF' },
   statusChip: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: '#DBEAFE',
-  },
+    backgroundColor: '#DBEAFE' },
   statusChipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#1D4ED8',
-  },
+    color: '#1D4ED8' },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -540,39 +510,31 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   primaryBtnText: {
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   footerInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
-  },
+    paddingVertical: 4 },
   footerInfoText: {
     fontSize: 12,
     color: '#6B7280',
-    marginLeft: 4,
-  },
+    marginLeft: 4 },
 
   emptyWrap: {
     alignItems: 'center',
-    paddingHorizontal: 32,
-  },
+    paddingHorizontal: 32 },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   emptySub: {
     fontSize: 12,
     color: '#6B7280',
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center' } });

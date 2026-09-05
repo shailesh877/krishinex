@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -35,7 +34,7 @@ type Transaction = {
 
 export default function EquipmentWallet() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
 
   const [balance, setBalance] = useState(0);
@@ -55,8 +54,7 @@ export default function EquipmentWallet() {
         Completed: 'सफल',
         Failed: 'विफल'
       },
-      empty: 'अभी तक कोई लेन-देन नहीं है',
-    },
+      empty: 'अभी तक कोई लेन-देन नहीं है' },
     en: {
       title: 'Wallet & Earnings',
       balanceLabel: 'Total Balance',
@@ -68,9 +66,7 @@ export default function EquipmentWallet() {
         Completed: 'Completed',
         Failed: 'Failed'
       },
-      empty: 'No transactions yet',
-    },
-  }[lang];
+      empty: 'No transactions yet' } }[lang];
 
   const fetchWallet = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -167,10 +163,10 @@ export default function EquipmentWallet() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor="#16A34A" />
 
-      <LinearGradient colors={['#16A34A', '#15803D']} style={[styles.topSection, { paddingTop: insets.top + 10 }]}>
+      <LinearGradient colors={['#16A34A', '#15803D']} style={styles.topSection}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
@@ -213,58 +209,51 @@ export default function EquipmentWallet() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F9FAFB' },
   topSection: {
-    paddingBottom: 30,
-    paddingHorizontal: 16,
     borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-  },
+    borderBottomRightRadius: 32 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 5,
-  },
+  paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8, },
   backBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   balanceCard: {
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   balanceSub: {
     fontSize: 14,
     color: '#D1FAE5',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   balanceValue: {
     fontSize: 36,
     fontWeight: '800',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#374151',
     marginHorizontal: 16,
     marginTop: 20,
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -275,52 +264,42 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
+    shadowRadius: 2 },
   cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   iconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
-  },
+    marginRight: 12 },
   typeText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   idText: {
     fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   dateText: {
     fontSize: 11,
     color: '#9CA3AF',
-    marginTop: 1,
-  },
+    marginTop: 1 },
   amountWrap: {
-    alignItems: 'flex-end',
-  },
+    alignItems: 'flex-end' },
   amountText: {
     fontSize: 16,
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
   statusBadge: {
     marginTop: 4,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 8,
-  },
+    borderRadius: 8 },
   statusText: {
     fontSize: 10,
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
   noteText: {
     marginTop: 10,
     fontSize: 11,
@@ -328,47 +307,38 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
+    borderTopColor: '#F3F4F6' },
   breakdownContainer: {
     marginTop: 12,
     padding: 10,
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   breakdownRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   breakdownLabel: {
     fontSize: 12,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   breakdownValue: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#374151',
-  },
+    color: '#374151' },
   netRow: {
     marginTop: 4,
     paddingTop: 4,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
+    borderTopColor: '#E5E7EB' },
   netLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   netValue: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#16A34A',
-  },
+    color: '#16A34A' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { alignItems: 'center' },
-  emptyText: { fontSize: 14, color: '#9CA3AF', marginTop: 10 },
-});
+  emptyText: { fontSize: 14, color: '#9CA3AF', marginTop: 10 } });

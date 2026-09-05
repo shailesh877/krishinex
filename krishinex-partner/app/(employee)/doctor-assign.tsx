@@ -8,9 +8,8 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  Platform,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -39,7 +38,7 @@ type DoctorChatItem = {
 };
 export default function DoctorAssignScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
   const [chats, setChats] = React.useState<DoctorChatItem[]>([]);
@@ -63,8 +62,7 @@ export default function DoctorAssignScreen() {
           lastMessage: c.isBlocked ? '🚫 Blocked' : (c.lastMessage || 'Start chatting...'),
           lastTime: c.lastTime ? new Date(c.lastTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
           unreadCount: c.isBlocked ? 0 : (c.unreadByDoctor || 0),
-          isBlocked: c.isBlocked || false,
-        }));
+          isBlocked: c.isBlocked || false }));
         setChats(mapped);
       }
     } catch (e) {
@@ -129,8 +127,7 @@ export default function DoctorAssignScreen() {
     subtitle: isHindi
       ? 'जितने किसान doctor से जुड़े हैं, उनकी chat यहां दिखेगी'
       : 'All farmers assigned to doctor appear here as chats',
-    searchPlaceholder: isHindi ? 'किसान / village खोजें' : 'Search farmer / village',
-  };
+    searchPlaceholder: isHindi ? 'किसान / village खोजें' : 'Search farmer / village' };
 
   const goChat = (item: DoctorChatItem) => {
     router.push({
@@ -141,9 +138,7 @@ export default function DoctorAssignScreen() {
         phone: item.farmerPhone,
         village: item.village,
         cropName: item.cropName,
-        isBlocked: item.isBlocked ? '1' : '0',
-      },
-    });
+        isBlocked: item.isBlocked ? '1' : '0' } });
   };
 
   const renderItem = ({ item }: { item: DoctorChatItem }) => {
@@ -193,11 +188,11 @@ export default function DoctorAssignScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -246,7 +241,7 @@ export default function DoctorAssignScreen() {
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -258,41 +253,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN,
-  },
+    backgroundColor: STATUS_GREEN },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: '#5BA40F',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   subHeader: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     backgroundColor: '#ECFDF5',
     borderBottomWidth: 1,
-    borderBottomColor: '#D1FAE5',
-  },
+    borderBottomColor: '#D1FAE5' },
   subHeaderText: {
     fontSize: 12,
-    color: '#065F46',
-  },
+    color: '#065F46' },
 
   listContent: {
     paddingHorizontal: 10,
     paddingTop: 4,
-    paddingBottom: 16,
-  },
+    paddingBottom: 16 },
 
   row: {
     flexDirection: 'row',
@@ -300,8 +289,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 8,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#E5E7EB',
-  },
+    borderBottomColor: '#E5E7EB' },
   avatarWrap: {
     width: 44,
     height: 44,
@@ -309,56 +297,45 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCFCE7',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
-  },
+    marginRight: 10 },
   avatarInitials: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#047857',
-  },
+    color: '#047857' },
   mid: {
-    flex: 1,
-  },
+    flex: 1 },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   nameText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   timeText: {
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   villageText: {
     fontSize: 11,
     color: '#6B7280',
-    marginLeft: 2,
-  },
+    marginLeft: 2 },
   dotSmall: {
     width: 3,
     height: 3,
     borderRadius: 1.5,
     backgroundColor: '#9CA3AF',
-    marginHorizontal: 4,
-  },
+    marginHorizontal: 4 },
   cropText: {
     fontSize: 11,
-    color: '#6B7280',
-  },
+    color: '#6B7280' },
   lastMessageText: {
     fontSize: 12,
     color: '#4B5563',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   unreadBadge: {
     minWidth: 20,
     paddingHorizontal: 6,
@@ -366,27 +343,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#16A34A',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   unreadText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   emptyWrap: {
     alignItems: 'center',
-    paddingHorizontal: 32,
-  },
+    paddingHorizontal: 32 },
   emptyTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   emptySub: {
     fontSize: 12,
     color: '#6B7280',
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center' } });

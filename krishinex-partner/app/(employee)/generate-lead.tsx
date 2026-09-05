@@ -11,10 +11,9 @@ import {
   Platform,
   ScrollView,
   Alert,
-  Image,
-} from 'react-native';
+  Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -28,7 +27,7 @@ const STATUS_GREEN = '#6bb313ff';
 type Category = 'Kisan' | 'Dukan';
 
 export default function GenerateLeadScreen() {
-  const insets = useSafeAreaInsets();
+  
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -65,8 +64,7 @@ export default function GenerateLeadScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.7,
-    });
+      quality: 0.7 });
 
     if (!result.canceled) {
       setPhoto(result.assets[0].uri);
@@ -175,18 +173,15 @@ export default function GenerateLeadScreen() {
         formData.append('photo', {
           uri: photo,
           name: `lead_${Date.now()}.${fileType}`,
-          type: `image/${fileType}`,
-        } as any);
+          type: `image/${fileType}` } as any);
       }
 
       const res = await fetch(`${API_URL}/employee/leads/generate`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-        body: formData,
-      });
+          'Content-Type': 'multipart/form-data' },
+        body: formData });
 
       const data = await res.json();
       if (res.ok) {
@@ -207,7 +202,7 @@ export default function GenerateLeadScreen() {
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
       
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
@@ -341,16 +336,14 @@ const styles = StyleSheet.create({
     backgroundColor: STATUS_GREEN,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#FFF' },
   scrollContent: { padding: 20 },
   card: {
@@ -361,8 +354,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     shadowColor: '#64748B',
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
+    shadowRadius: 10 },
   sectionLabel: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 15 },
   categoryRow: { flexDirection: 'row', gap: 12 },
   categoryBtn: {
@@ -374,8 +366,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-  },
+    gap: 8 },
   categoryBtnActive: { backgroundColor: STATUS_GREEN, borderColor: STATUS_GREEN },
   categoryBtnText: { fontWeight: '700', color: '#64748B' },
   categoryBtnTextActive: { color: '#FFF' },
@@ -387,8 +378,7 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 15,
     fontSize: 14,
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   textArea: { height: 80, textAlignVertical: 'top', paddingTop: 12 },
   optionRow: { flexDirection: 'row', gap: 10, marginBottom: 15 },
   choiceBtn: {
@@ -398,8 +388,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   choiceBtnActive: { backgroundColor: '#F0FDF4', borderColor: STATUS_GREEN },
   choiceText: { fontWeight: '700', color: '#64748B' },
   choiceTextActive: { color: STATUS_GREEN },
@@ -413,8 +402,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   previewImg: { width: '100%', height: '100%' },
   photoPlaceholder: { marginTop: 8, fontSize: 13, color: '#94A3B8', fontWeight: '600' },
   submitBtn: {
@@ -425,8 +413,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 8,
     shadowColor: STATUS_GREEN,
-    shadowOpacity: 0.3,
-  },
+    shadowOpacity: 0.3 },
   submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
-  disabledBtn: { opacity: 0.7 },
-});
+  disabledBtn: { opacity: 0.7 } });

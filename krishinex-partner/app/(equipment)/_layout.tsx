@@ -1,13 +1,16 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { View, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '../../context/I18nContext';
+import { useEquipmentBadge } from '../../hooks/useEquipmentBadge';
 
 function EquipmentTabs() {
   const { lang } = useI18n();
   const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
+  const { newCount } = useEquipmentBadge();
 
   return (
     <Tabs
@@ -38,7 +41,29 @@ function EquipmentTabs() {
           title: isHindi ? 'रिक्वेस्ट' : 'Requests',
           tabBarLabel: isHindi ? 'रिक्वेस्ट' : 'Requests',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+            <View>
+              <Ionicons name="list-outline" size={size} color={color} />
+              {newCount > 0 && (
+                <View style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -8,
+                  backgroundColor: '#EF4444',
+                  borderRadius: 10,
+                  minWidth: 16,
+                  paddingHorizontal: 4,
+                  paddingVertical: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
+                  elevation: 5,
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}>
+                    {newCount > 99 ? '99+' : newCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />

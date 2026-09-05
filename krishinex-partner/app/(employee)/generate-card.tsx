@@ -11,21 +11,20 @@ import {
   Platform,
   ScrollView,
   Alert,
-  Image,
-} from 'react-native';
+  Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_API_URL, BASE_URL } from '../../constants/api';
+import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { OTPWidget } from '@msg91comm/sendotp-react-native';
 import { showAlert } from '../../components/CustomAlert';
 
 const STATUS_GREEN = '#6bb313ff';
 
 export default function GenerateCardScreen() {
-  const insets = useSafeAreaInsets();
+  
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -205,10 +204,8 @@ export default function GenerateCardScreen() {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ cardNumber: cardInput.trim() }),
-              });
+                  Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ cardNumber: cardInput.trim() }) });
 
               const data = await res.json();
               if (res.ok) {
@@ -255,7 +252,7 @@ export default function GenerateCardScreen() {
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
       
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
@@ -329,7 +326,7 @@ export default function GenerateCardScreen() {
               </View>
               {selectedUser.profilePhotoUrl ? (
                 <Image 
-                  source={{ uri: selectedUser.profilePhotoUrl.startsWith('http') ? selectedUser.profilePhotoUrl : `${BASE_URL}/${selectedUser.profilePhotoUrl.replace(/\\/g, '/')}` }} 
+                  source={{ uri: selectedUser.profilePhotoUrl.startsWith('http') ? selectedUser.profilePhotoUrl : `${FILES_BASE_URL}/${selectedUser.profilePhotoUrl.replace(/\\/g, '/')}` }} 
                   style={styles.userAvatar} 
                 />
               ) : (
@@ -444,24 +441,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
+    borderBottomRightRadius: 24 },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FFF',
-  },
+    color: '#FFF' },
   scrollContent: {
-    padding: 16,
-  },
+    padding: 16 },
   card: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -472,14 +465,12 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#E2E8F0' },
   sectionLabel: {
     fontSize: 13,
     color: '#64748B',
     fontWeight: '600',
-    marginBottom: 12,
-  },
+    marginBottom: 12 },
   searchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -487,81 +478,66 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingLeft: 12,
     paddingRight: 6,
-    height: 54,
-  },
+    height: 54 },
   inputIcon: {
-    marginRight: 10,
-  },
+    marginRight: 10 },
   searchInput: {
     flex: 1,
     height: '100%',
     fontSize: 15,
     color: '#1E293B',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   searchBtn: {
     width: 42,
     height: 42,
     borderRadius: 10,
     backgroundColor: STATUS_GREEN,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   userCard: {
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-  },
+    borderColor: '#E2E8F0' },
   userHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   userInfo: {
-    flex: 1,
-  },
+    flex: 1 },
   userName: {
     fontSize: 18,
     fontWeight: '800',
     color: '#0F172A',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   roleBadge: {
     backgroundColor: '#EFF6FF',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
-  },
+    borderRadius: 6 },
   roleBadgeText: {
     fontSize: 10,
     color: '#2563EB',
     fontWeight: '700',
-    textTransform: 'uppercase',
-  },
+    textTransform: 'uppercase' },
   userSubText: {
     fontSize: 13,
     color: '#64748B',
     marginTop: 4,
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   userAddress: {
     fontSize: 12,
     color: '#94A3B8',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   userAvatar: {
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: '#F1F5F9',
-  },
+    backgroundColor: '#F1F5F9' },
   userAvatarPlaceholder: {
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   divider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginVertical: 16,
-  },
+    marginVertical: 16 },
   assignedCardBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -569,54 +545,45 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#A7F3D0',
     padding: 16,
-    borderRadius: 16,
-  },
+    borderRadius: 16 },
   cardStatusLabel: {
     fontSize: 11,
     color: '#047857',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   cardStatusValue: {
     fontSize: 16,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontWeight: '800',
     color: '#065F46',
     marginTop: 2,
-    letterSpacing: 1.5,
-  },
+    letterSpacing: 1.5 },
   inputGroup: {
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   label: {
     fontSize: 13,
     fontWeight: '700',
     color: '#475569',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   cardInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: '#E2E8F0',
-    paddingBottom: 6,
-  },
+    paddingBottom: 6 },
   cardInput: {
     flex: 1,
     fontSize: 20,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontWeight: '800',
     color: STATUS_GREEN,
-    letterSpacing: 2,
-  },
+    letterSpacing: 2 },
   inventoryTitle: {
     fontSize: 11,
     fontWeight: '700',
     color: '#64748B',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   inventoryScroll: {
-    flexDirection: 'row',
-  },
+    flexDirection: 'row' },
   inventoryCardBtn: {
     backgroundColor: '#F1F5F9',
     paddingHorizontal: 12,
@@ -624,14 +591,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   inventoryCardText: {
     fontSize: 12,
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
     fontWeight: '600',
-    color: '#475569',
-  },
+    color: '#475569' },
   assignBtn: {
     backgroundColor: STATUS_GREEN,
     height: 50,
@@ -641,44 +606,34 @@ const styles = StyleSheet.create({
     shadowColor: STATUS_GREEN,
     shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 5,
-  },
+    elevation: 5 },
   assignBtnText: {
     color: '#FFF',
     fontSize: 15,
-    fontWeight: '800',
-  },
+    fontWeight: '800' },
   disabledBtn: {
-    opacity: 0.7,
-  },
+    opacity: 0.7 },
   selectionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
+    paddingVertical: 12 },
   borderBottom: {
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
+    borderBottomColor: '#F3F4F6' },
   selectionInfo: {
     flex: 1,
-    marginRight: 10,
-  },
+    marginRight: 10 },
   selectionName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1E293B',
-  },
+    color: '#1E293B' },
   roleTag: {
     fontSize: 11,
     color: STATUS_GREEN,
     fontWeight: '600',
-    textTransform: 'capitalize',
-  },
+    textTransform: 'capitalize' },
   selectionSubText: {
     fontSize: 11,
     color: '#64748B',
-    marginTop: 2,
-  },
-});
+    marginTop: 2 } });

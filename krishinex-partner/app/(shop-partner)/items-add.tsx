@@ -8,9 +8,8 @@ import {
   TouchableOpacity,
   StatusBar,
   TextInput,
-  Image,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -34,7 +33,7 @@ const CATEGORIES = [
 
 export default function AddItemScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -284,8 +283,7 @@ export default function AddItemScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
-    });
+      quality: 0.8 });
 
     if (!pickerResult.canceled && pickerResult.assets.length > 0) {
       try {
@@ -323,11 +321,11 @@ export default function AddItemScreen() {
   const headerTitle = isHindi ? 'नया आइटम' : 'Add item';
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER with back + title */}
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.backBtn}
           activeOpacity={0.8}
@@ -688,7 +686,7 @@ export default function AddItemScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -703,21 +701,18 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E7EB',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between' },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-  },
+    backgroundColor: '#F3F4F6' },
   headerTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   body: { flex: 1, paddingHorizontal: 16, paddingTop: 10 },
 
@@ -726,38 +721,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
     marginTop: 12,
-    marginBottom: 6,
-  },
+    marginBottom: 6 },
 
   imagePicker: {
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden' },
   imagePreview: {
     width: '100%',
     height: 170,
-    resizeMode: 'cover',
-  },
+    resizeMode: 'cover' },
   imagePlaceholder: {
     height: 170,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   imagePlaceholderTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
   imagePlaceholderSub: {
     fontSize: 11,
     color: '#6B7280',
     marginTop: 2,
     paddingHorizontal: 20,
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
 
   fieldBox: {
     marginTop: 4,
@@ -766,29 +755,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   fieldLabel: {
     fontSize: 11,
     color: '#6B7280',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   input: {
     paddingHorizontal: 0,
     paddingVertical: 6,
     fontSize: 13,
-    color: '#111827',
-  },
+    color: '#111827' },
   textArea: {
     minHeight: 90,
-    textAlignVertical: 'top',
-  },
+    textAlignVertical: 'top' },
 
   categoryRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   categoryChip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -797,25 +781,20 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     marginRight: 6,
     marginBottom: 6,
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   categoryChipActive: {
     backgroundColor: '#E0F2FE',
-    borderColor: '#0284C7',
-  },
+    borderColor: '#0284C7' },
   categoryText: {
     fontSize: 12,
     color: '#4B5563',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   categoryTextActive: {
-    color: '#0369A1',
-  },
+    color: '#0369A1' },
 
   priceRow: {
     flexDirection: 'column',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   priceInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -824,25 +803,21 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   pricePrefix: {
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
-    marginRight: 4,
-  },
+    marginRight: 4 },
   priceInput: {
     flex: 1,
     fontSize: 13,
     color: '#111827',
-    paddingVertical: 0,
-  },
+    paddingVertical: 0 },
 
   unitRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   unitChip: {
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -850,26 +825,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginRight: 6,
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   unitChipActive: {
     backgroundColor: '#DCFCE7',
-    borderColor: '#16A34A',
-  },
+    borderColor: '#16A34A' },
   unitText: {
     fontSize: 12,
     color: '#4B5563',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   unitTextActive: {
-    color: '#166534',
-  },
+    color: '#166534' },
 
   stockHint: {
     fontSize: 10,
     color: '#9CA3AF',
-    marginTop: 3,
-  },
+    marginTop: 3 },
 
   saveBtn: {
     marginTop: 18,
@@ -879,20 +849,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   saveText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   variantsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
-  },
+    marginTop: 12 },
   variantToggle: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -901,25 +868,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   variantToggleText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   variantsList: {
-    marginTop: 8,
-  },
+    marginTop: 8 },
   variantCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   variantTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -927,24 +890,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
-    paddingBottom: 4,
-  },
+    paddingBottom: 4 },
   variantTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#374151',
-  },
+    color: '#374151' },
   variantInputRow: {
     flexDirection: 'row',
-    columnGap: 8,
-  },
+    columnGap: 8 },
   variantInputWrap: {
   },
   variantLabel: {
     fontSize: 10,
     color: '#6B7280',
-    marginBottom: 2,
-  },
+    marginBottom: 2 },
   variantInput: {
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
@@ -953,8 +912,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#111827',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   addVariantBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -964,25 +922,20 @@ const styles = StyleSheet.create({
     borderColor: '#16A34A',
     borderStyle: 'dashed',
     borderRadius: 12,
-    marginTop: 4,
-  },
+    marginTop: 4 },
   addVariantText: {
     fontSize: 12,
     fontWeight: '600',
     color: '#16A34A',
-    marginLeft: 6,
-  },
+    marginLeft: 6 },
   customUnitInputWrap: {
     marginTop: 8,
     borderRadius: 8,
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    paddingHorizontal: 8,
-  },
+    paddingHorizontal: 8 },
   customUnitInput: {
     height: 36,
     fontSize: 12,
-    color: '#111827',
-  },
-});
+    color: '#111827' } });

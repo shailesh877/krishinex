@@ -10,9 +10,8 @@ import {
   Image,
   TextInput,
   RefreshControl,
-  Linking,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useI18n } from '../../context/I18nContext';
@@ -47,7 +46,7 @@ type RequestItem = {
 
 export default function SoilLabRequests() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -160,10 +159,8 @@ export default function SoilLabRequests() {
       const res = await fetch(`${API_URL}/requests/${item._id}/status`, {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+          Authorization: `Bearer ${token}` },
+        body: formData });
 
       if (res.ok) {
         // Optimistic UI update or re-fetch
@@ -182,8 +179,7 @@ export default function SoilLabRequests() {
     const result = await DocumentPicker.getDocumentAsync({
       type: 'application/pdf',
       multiple: false,
-      copyToCacheDirectory: true,
-    });
+      copyToCacheDirectory: true });
 
     if (result.canceled) {
       return;
@@ -456,10 +452,10 @@ export default function SoilLabRequests() {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+     SafeAreaViewatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER same style */}
-      <View style={[styles.appHeader, { paddingTop: insets.top + 10 }]}>
+      <View style={styles.appHeader}>
         <TouchableOpacity style={styles.logoIconWrap}>
           <Image source={logoIcon} style={styles.logoIcon} />
         </TouchableOpacity>
@@ -594,8 +590,7 @@ export default function SoilLabRequests() {
                 style={[
                   styles.uploadActionBtn,
                   {
-                    backgroundColor: (uploadedPdfName || (uploadingFor && uploadingFor.reportUrl)) ? '#16A34A' : '#9CA3AF',
-                  },
+                    backgroundColor: (uploadedPdfName || (uploadingFor && uploadingFor.reportUrl)) ? '#16A34A' : '#9CA3AF' },
                 ]}
                 disabled={!uploadedPdfName && !(uploadingFor && uploadingFor.reportUrl)}
                 onPress={() => {
@@ -640,7 +635,7 @@ export default function SoilLabRequests() {
         )}
       </View>
     </View>
-  );
+  );SafeAreaView
 }
 
 const styles = StyleSheet.create({
@@ -653,8 +648,7 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020' },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -662,8 +656,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
@@ -672,48 +665,40 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center' },
 
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 10,
-  },
+    paddingTop: 10 },
 
   pageTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   pageSubTitle: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
 
   // green tabs (strip)
   tabStripRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   tabStripChip: {
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 999,
     backgroundColor: '#E5E7EB',
-    marginRight: 8,
-  },
+    marginRight: 8 },
   tabStripChipActive: {
-    backgroundColor: '#DCFCE7',
-  },
+    backgroundColor: '#DCFCE7' },
   tabStripText: {
     fontSize: 12,
     color: '#4B5563',
-    fontWeight: '500',
-  },
+    fontWeight: '500' },
   tabStripTextActive: {
     color: '#15803D',
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
 
   // search
   searchRow: { marginBottom: 8 },
@@ -725,19 +710,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
+    borderColor: '#E5E7EB' },
   searchInput: {
     flex: 1,
     fontSize: 13,
     color: '#111827',
-    paddingVertical: 0,
-  },
+    paddingVertical: 0 },
 
   listContent: {
     paddingBottom: 20,
-    paddingTop: 0,
-  },
+    paddingTop: 0 },
 
   // big card like equipment
   reqCard: {
@@ -751,31 +733,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 12,
-    elevation: 4,
-  },
+    elevation: 4 },
 
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-  },
+    marginBottom: 10 },
   statusRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   smallDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#16A34A',
-    marginRight: 6,
-  },
+    marginRight: 6 },
   statusText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827',
-  },
+    color: '#111827' },
 
   datePill: {
     flexDirection: 'row',
@@ -783,61 +760,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: '#EFF6FF',
-  },
+    backgroundColor: '#EFF6FF' },
   datePillText: {
     fontSize: 11,
     color: '#2563EB',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
 
   reqFarmer: {
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   infoLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   reqMobile: { fontSize: 13, color: '#4B5563' },
   reqInfoText: { fontSize: 13, color: '#4B5563' },
 
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    marginTop: 12,
-  },
+    marginTop: 12 },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 999,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
+    paddingVertical: 8 },
   primaryBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
 
   completedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
-  },
+    marginTop: 12 },
   completedText: {
     fontSize: 12,
-    color: '#16A34A',
-  },
+    color: '#16A34A' },
 
   emptyWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-  },
+    paddingVertical: 20 },
   emptyText: { fontSize: 12, color: '#9CA3AF', marginTop: 6 },
 
   // upload sheet
@@ -851,19 +818,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 3,
-  },
+    elevation: 3 },
   uploadTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827',
-  },
+    color: '#111827' },
   uploadSub: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   uploadPdfBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -873,12 +837,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginTop: 4,
-  },
+    marginTop: 4 },
   uploadPdfText: {
     fontSize: 13,
-    color: '#1D4ED8',
-  },
+    color: '#1D4ED8' },
   uploadNoteInput: {
     marginTop: 10,
     minHeight: 70,
@@ -890,29 +852,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#111827',
     textAlignVertical: 'top',
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   uploadActionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 10,
-  },
+    marginTop: 10 },
   uploadActionBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    marginLeft: 8,
-  },
+    marginLeft: 8 },
   uploadActionText: {
     fontSize: 13,
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
   completedContainer: {
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-  },
+    borderTopColor: '#F3F4F6' },
   viewReportBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -923,36 +880,30 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginTop: 8,
-    alignSelf: 'flex-start',
-  },
+    alignSelf: 'flex-start' },
   viewReportBtnText: {
     fontSize: 13,
     color: '#2563EB',
-    fontWeight: '600',
-  },
+    fontWeight: '600' },
   advisoryBox: {
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
     padding: 8,
     marginTop: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#9CA3AF',
-  },
+    borderLeftColor: '#9CA3AF' },
   advisoryLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#4B5563',
-  },
+    color: '#4B5563' },
   advisoryText: {
     fontSize: 12,
     color: '#1F2937',
-    marginTop: 2,
-  },
+    marginTop: 2 },
   completedActionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8,
-  },
+    marginTop: 8 },
   editReportBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -961,11 +912,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 5,
     paddingHorizontal: 10,
-    backgroundColor: '#FEF3C7',
-  },
+    backgroundColor: '#FEF3C7' },
   editReportBtnText: {
     fontSize: 12,
     color: '#D97706',
-    fontWeight: '600',
-  },
-});
+    fontWeight: '600' } });

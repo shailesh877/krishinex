@@ -8,9 +8,8 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -57,7 +56,7 @@ function timeAgo(dateStr: string, isHindi: boolean) {
 
 export default function LabourNotificationsScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
@@ -71,16 +70,13 @@ export default function LabourNotificationsScreen() {
       sub: 'आपके खाते से जुड़ी सूचनाएं',
       markAll: 'सभी पढ़ें',
       empty: 'कोई notification नहीं है',
-      emptySub: 'नया जॉब या स्टेटस अपडेट आने पर यहाँ दिखेगा',
-    },
+      emptySub: 'नया जॉब या स्टेटस अपडेट आने पर यहाँ दिखेगा' },
     en: {
       title: 'Notifications',
       sub: 'All updates for your account',
       markAll: 'Mark all read',
       empty: 'No notifications yet',
-      emptySub: 'New job requests and status updates will appear here',
-    },
-  }[lang];
+      emptySub: 'New job requests and status updates will appear here' } }[lang];
 
   const getToken = () => AsyncStorage.getItem('userToken');
 
@@ -190,10 +186,10 @@ export default function LabourNotificationsScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <LinearGradient colors={['#16A34A', '#15803D']} style={[styles.header, { paddingTop: insets.top + 10 }]}>
+      <LinearGradient colors={['#16A34A', '#15803D']} style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -238,15 +234,14 @@ export default function LabourNotificationsScreen() {
           renderItem={renderItem}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
+    backgroundColor: '#F9FAFB' },
   header: {
     paddingHorizontal: 20,
     paddingBottom: 24,
@@ -259,8 +254,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   backBtn: {
     width: 40,
     height: 40,
@@ -268,18 +262,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-  },
+    marginRight: 12 },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#FFFFFF',
-  },
+    color: '#FFFFFF' },
   subtitle: {
     fontSize: 14,
     color: '#E6F4EA',
-    marginTop: 4,
-  },
+    marginTop: 4 },
   badge: {
     backgroundColor: '#EF4444',
     paddingHorizontal: 6,
@@ -287,27 +278,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginLeft: 8,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   badgeText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: 'bold',
-  },
+    fontWeight: 'bold' },
   markAllBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
+    alignItems: 'center' },
   centerBox: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
-  },
+    padding: 24 },
   emptyCircle: {
     width: 100,
     height: 100,
@@ -315,22 +302,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-  },
+    marginBottom: 16 },
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#374151',
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   emptySub: {
     fontSize: 14,
     color: '#6B7280',
-    textAlign: 'center',
-  },
+    textAlign: 'center' },
   listPad: {
-    padding: 16,
-  },
+    padding: 16 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -341,13 +324,11 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
+    shadowRadius: 2 },
   unreadCard: {
     backgroundColor: '#F0FDF4',
     borderWidth: 1,
-    borderColor: '#BBF7D0',
-  },
+    borderColor: '#BBF7D0' },
   iconBox: {
     width: 48,
     height: 48,
@@ -355,8 +336,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    position: 'relative',
-  },
+    position: 'relative' },
   unreadDot: {
     position: 'absolute',
     top: -2,
@@ -366,29 +346,22 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#EF4444',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
+    borderColor: '#FFFFFF' },
   content: {
-    flex: 1,
-  },
+    flex: 1 },
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 4,
-  },
+    marginBottom: 4 },
   unreadTitle: {
     color: '#111827',
-    fontWeight: '700',
-  },
+    fontWeight: '700' },
   cardMsg: {
     fontSize: 14,
     color: '#4B5563',
     lineHeight: 20,
-    marginBottom: 8,
-  },
+    marginBottom: 8 },
   cardTime: {
     fontSize: 12,
-    color: '#9CA3AF',
-  },
-});
+    color: '#9CA3AF' } });

@@ -26,6 +26,19 @@ router.get('/my-bookings', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/rentals/equipment-new-count
+// @desc    Get count of new equipment requests
+// @access  Private
+router.get('/equipment-new-count', protect, async (req, res) => {
+    try {
+        const count = await Rental.countDocuments({ owner: req.user.id, status: 'New' });
+        res.json({ count });
+    } catch (error) {
+        console.error('Fetch new equipment count error:', error);
+        res.status(500).json({ error: 'Failed to fetch count' });
+    }
+});
+
 // @route   GET /api/rentals/equipment
 // @desc    Get all rental requests for the equipment owner
 // @access  Private
