@@ -1,5 +1,5 @@
 // app/(labour-partner)/bookings.tsx
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Alert,
   Modal,
   TextInput,
+  ScrollView,
   Linking } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
@@ -22,6 +23,7 @@ import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}`;
 
 type BookingStatus = 'new' | 'accepted' | 'completed';
+type TabType = 'all' | BookingStatus;
 
 type BookingItem = {
   id: string;
@@ -42,6 +44,7 @@ type BookingItem = {
   toDate?: string;
   paymentMode?: string;
   purpose?: string;
+  createdAt?: string;
 };
 
 const INITIAL_BOOKINGS: BookingItem[] = [
@@ -83,7 +86,8 @@ export default function LabourBookingsScreen() {
   const isHindi = lang === 'hi';
   
 
-  const [tab, setTab] = useState<BookingStatus>('new');
+  const [tab, setTab] = useState<TabType>('all');
+  const [search, setSearch] = useState('');
   // Initialize as empty now
   const [bookings, setBookings] = useState<BookingItem[]>([]);
 
@@ -128,7 +132,8 @@ export default function LabourBookingsScreen() {
           fromDate: b.fromDate,
           toDate: b.toDate,
           paymentMode: b.paymentMode,
-          purpose: b.purpose
+          purpose: b.purpose,
+          createdAt: b.createdAt || b.fromDate || new Date().toISOString()
         }));
         setBookings(mapped);
       }
@@ -145,7 +150,43 @@ export default function LabourBookingsScreen() {
     }, [])
   );
 
-  const filtered = bookings.filter(b => b.status === tab);
+  const headerTabs: TabType[] = ['all', 'new', 'accepted', 'completed'];
+
+  const tabCounts: Record<TabType, number> = useMemo(() => {
+    const base: Record<TabType, number> = {
+      all: bookings.length,
+      new: 0,
+      accepted: 0,
+      completed: 0,
+    };
+    bookings.forEach(b => {
+      if (base[b.status] !== undefined) {
+        base[b.status] += 1;
+      }
+    });
+    return base;
+  }, [bookings]);
+
+  const filtered = useMemo(() => {
+    let list = bookings;
+    if (tab !== 'all') {
+      list = list.filter(b => b.status === tab);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        b =>
+          b.farmerName.toLowerCase().includes(q) ||
+          b.farmerPhone.includes(q) ||
+          b.workType.toLowerCase().includes(q) ||
+          b.village.toLowerCase().includes(q)
+      );
+    }
+    return list.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [tab, search, bookings]);
 
   const updateBookingStatus = async (id: string, status: BookingStatus | 'remove', otp?: string) => {
     try {
@@ -232,9 +273,19 @@ export default function LabourBookingsScreen() {
           <View style={{ flex: 1 }}>
             <View style={styles.nameRow}>
               <Text style={styles.cardTitle}>{item.farmerName}</Text>
-              <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.farmerPhone}`)}>
-                <Text style={[styles.phoneText, { color: '#16A34A', fontWeight: '700', textDecorationLine: 'underline' }]}>
-                  {item.farmerPhone}
+              <TouchableOpacity
+                disabled={item.status === 'new'}
+                onPress={() => Linking.openURL(`tel:${item.farmerPhone}`)}
+              >
+                <Text
+                  style={[
+                    styles.phoneText,
+                    item.status === 'new'
+                      ? { color: '#9CA3AF' }
+                      : { color: '#16A34A', fontWeight: '700', textDecorationLine: 'underline' },
+                  ]}
+                >
+                  {item.status === 'new' ? 'XXXXXXXXXX' : item.farmerPhone}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -366,10 +417,11 @@ export default function LabourBookingsScreen() {
     );
   };
 
-  const tabLabel = (key: BookingStatus) => {
+  const tabLabel = (key: TabType) => {
+    if (key === 'all') return isHindi ? 'सभी' : 'All';
     if (key === 'new') return isHindi ? 'नया' : 'New';
-    if (key === 'accepted') return isHindi ? 'Accepted' : 'Accepted';
-    return isHindi ? 'Completed' : 'Completed';
+    if (key === 'accepted') return isHindi ? 'स्वीकृत' : 'Accepted';
+    return isHindi ? 'पूर्ण' : 'Completed';
   };
 
   return (
@@ -397,30 +449,69 @@ export default function LabourBookingsScreen() {
       </View>
 
       {/* TABS */}
-      <View style={styles.tabsRow}>
-        {(['new', 'accepted', 'completed'] as BookingStatus[]).map(key => {
-          const active = tab === key;
-          return (
-            <TouchableOpacity
-              key={key}
-              style={[
-                styles.tabChip,
-                active && styles.tabChipActive,
-              ]}
-              activeOpacity={0.9}
-              onPress={() => setTab(key)}
-            >
-              <Text
+      <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsRow}
+        >
+          {headerTabs.map(key => {
+            const active = tab === key;
+            return (
+              <TouchableOpacity
+                key={key}
                 style={[
-                  styles.tabText,
-                  active && styles.tabTextActive,
+                  styles.tabChip,
+                  active && styles.tabChipActive,
                 ]}
+                activeOpacity={0.9}
+                onPress={() => setTab(key)}
               >
-                {tabLabel(key)}
-              </Text>
+                <Text
+                  style={[
+                    styles.tabText,
+                    active && styles.tabTextActive,
+                  ]}
+                >
+                  {tabLabel(key)}
+                </Text>
+                {key === 'new' && tabCounts['new'] > 0 && (
+                  <View style={styles.badgeContainer}>
+                    <Text style={styles.badgeText}>{tabCounts['new']}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* SEARCH */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBox}>
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color="#9CA3AF"
+            style={{ marginRight: 6 }}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={
+              isHindi
+                ? 'किसान, काम या गांव से खोजें'
+                : 'Search by farmer, job or village'
+            }
+            placeholderTextColor="#9CA3AF"
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')}>
+              <Ionicons name="close-circle" size={16} color="#9CA3AF" />
             </TouchableOpacity>
-          );
-        })}
+          )}
+        </View>
       </View>
 
       {/* LIST */}
@@ -547,24 +638,66 @@ const styles = StyleSheet.create({
 
   tabsRow: {
     flexDirection: 'row',
-    marginTop: 8,
-    paddingHorizontal: 16,
-    marginBottom: 4 },
+    gap: 8,
+    paddingRight: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
   tabChip: {
-    flex: 1,
-    borderRadius: 999,
-    paddingVertical: 7,
-    marginRight: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
     backgroundColor: '#E5E7EB',
-    alignItems: 'center' },
+  },
   tabChipActive: {
-    backgroundColor: '#16A34A' },
-  tabText: {
+    backgroundColor: '#DCFCE7',
+    shadowColor: '#16A34A40',
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  tabText: { fontSize: 12, color: '#4B5563' },
+  tabTextActive: { fontSize: 12, color: '#15803D', fontWeight: '600' },
+  badgeContainer: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 99,
+    elevation: 10,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+
+  searchContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  searchInput: {
+    flex: 1,
     fontSize: 13,
-    fontWeight: '600',
-    color: '#4B5563' },
-  tabTextActive: {
-    color: '#FFFFFF' },
+    color: '#111827',
+    paddingVertical: 0,
+  },
 
   listContent: {
     paddingHorizontal: 16,

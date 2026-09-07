@@ -12,7 +12,7 @@ import {
   RefreshControl,
   Alert } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -181,7 +181,13 @@ export default function AssignedOrders() {
     }
   }, []);
 
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders();
+      const interval = setInterval(() => fetchOrders(), 5000);
+      return () => clearInterval(interval);
+    }, [fetchOrders])
+  );
   const onRefresh = () => { setRefreshing(true); fetchOrders(); };
 
   const updateStatus = async (id: string, status: AssignedStatus) => {

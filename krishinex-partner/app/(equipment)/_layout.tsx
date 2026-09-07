@@ -1,14 +1,12 @@
 import React from 'react';
+import { View, Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '../../context/I18nContext';
 import { useEquipmentBadge } from '../../hooks/useEquipmentBadge';
 
 function EquipmentTabs() {
   const { lang } = useI18n();
-  const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
   const { newCount } = useEquipmentBadge();
 
@@ -19,8 +17,12 @@ function EquipmentTabs() {
         tabBarActiveTintColor: '#1B9C85',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          height: 55 + Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
-          paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
+          height: 60,
+          paddingBottom: 6,
+          paddingTop: 6,
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E7EB',
         },
       }}
     >

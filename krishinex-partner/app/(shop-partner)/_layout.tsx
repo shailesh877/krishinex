@@ -1,14 +1,11 @@
-import { Platform } from 'react-native';
 // app/(shop-partner)/_layout.tsx
 import React from 'react';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '../../context/I18nContext';
 
 export default function ShopTabsLayout() {
   const { lang } = useI18n();
-  const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
 
   const homeLabel = isHindi ? 'होम' : 'Home';
@@ -24,9 +21,11 @@ export default function ShopTabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: '#16A34A',
         tabBarInactiveTintColor: '#6B7280',
+        safeAreaInsets: { bottom: 0 },
         tabBarStyle: {
-          height: 55 + Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
-          paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
+          height: 60,
+          paddingBottom: 6,
+          paddingTop: 6,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0,
           elevation: 8,

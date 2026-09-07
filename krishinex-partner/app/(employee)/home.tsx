@@ -163,11 +163,6 @@ export default function EmployeeHome() {
             onPress={openNotifications}
           >
             <NotificationIcon size={18} color="#111827" />
-            {unreadCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-              </View>
-            )}
           </TouchableOpacity>
         </View>
       </View>

@@ -1,16 +1,16 @@
-import { Platform } from 'react-native';
 // app/(soil-lab)/_layout.tsx
 import React from 'react';
+import { View, Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '../../context/I18nContext';
 import NotificationIcon from '@/components/NotificationIcon';
+import { useSoilBadge } from '../../hooks/useSoilBadge';
 
 function SoilLabTabs() {
   const { lang } = useI18n();
-  const insets = useSafeAreaInsets();
   const isHindi = lang === 'hi';
+  const { newCount } = useSoilBadge();
 
   return (
     <Tabs
@@ -19,8 +19,12 @@ function SoilLabTabs() {
         tabBarActiveTintColor: '#1B9C85',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          height: 55 + Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
-          paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
+          height: 60,
+          paddingBottom: 6,
+          paddingTop: 6,
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E5E7EB',
         },
       }}
     >
@@ -41,7 +45,29 @@ function SoilLabTabs() {
           title: isHindi ? 'जांच रिक्वेस्ट' : 'Soil requests',
           tabBarLabel: isHindi ? 'रिक्वेस्ट' : 'Requests',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="flask-outline" size={size} color={color} />
+            <View>
+              <Ionicons name="flask-outline" size={size} color={color} />
+              {newCount > 0 && (
+                <View style={{
+                  position: 'absolute',
+                  top: -4,
+                  right: -8,
+                  backgroundColor: '#EF4444',
+                  borderRadius: 10,
+                  minWidth: 16,
+                  paddingHorizontal: 4,
+                  paddingVertical: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
+                  elevation: 5,
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '700' }}>
+                    {newCount > 99 ? '99+' : newCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
@@ -79,21 +105,8 @@ function SoilLabTabs() {
         }}
       />
 
-      {/* future hidden pages: report edit / view etc. */}
-      <Tabs.Screen
-        name="report-edit"
-        options={{ href: null }}
-      />
-      <Tabs.Screen
-        name="report-view"
-        options={{ href: null }}
-      />
       <Tabs.Screen
         name="help"
-        options={{ href: null }}
-      />
-      <Tabs.Screen
-        name="terms"
         options={{ href: null }}
       />
     </Tabs>

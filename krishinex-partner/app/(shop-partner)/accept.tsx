@@ -305,7 +305,7 @@ export default function ShopAccept() {
 
   return (
     <View style={styles.root}>
-     SafeAreaViewatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+     <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HOME जैसा header style, अब green accent */}
       <View style={styles.appHeader}>
@@ -675,7 +675,7 @@ export default function ShopAccept() {
         </KeyboardAvoidingView>
       </Modal>
     </View>
-  );SafeAreaView
+  );
 }
 
 const styles = StyleSheet.create({

@@ -1853,7 +1853,7 @@ router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), asyn
             await sendNotification(labId, {
                 title: 'New Soil Test Assigned',
                 messageEn: `A new soil test request from ${request.farmer ? request.farmer.name : 'a farmer'} has been assigned to you.`,
-                messageHi: `à¤à¤• à¤¨à¤¯à¤¾ à¤®à¤¿à¤Ÿà¥à¤Ÿà¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤…à¤¨à¥à¤°à¥‹à¤§ ${request.farmer ? request.farmer.name : 'à¤à¤• à¤•à¤¿à¤¸à¤¾à¤¨'} à¤¸à¥‡ à¤†à¤ªà¤•à¥‹ à¤¸à¥Œà¤‚à¤ªà¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`,
+                messageHi: `एक नया मिट्टी परीक्षण अनुरोध ${request.farmer ? request.farmer.name : 'एक किसान'} से आपको सौंपा गया है।`,
                 type: 'soil_test',
                 refId: request._id.toString()
             });
@@ -1861,7 +1861,7 @@ router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), asyn
             // Send notification to farmer
             if (request.farmer) {
                 const notifMsgEn = `Your soil test request has been assigned to a lab partner.`;
-                const notifMsgHi = `à¤†à¤ªà¤•à¥‡ à¤®à¤¿à¤Ÿà¥à¤Ÿà¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¥‹ à¤à¤• à¤²à¥ˆà¤¬ à¤ªà¤¾à¤°à¥à¤Ÿà¤¨à¤° à¤•à¥‹ à¤¸à¥Œà¤‚à¤ªà¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`;
+                const notifMsgHi = `आपके मिट्टी परीक्षण अनुरोध को एक लैब पार्टनर को सौंपा गया है।`;
                 await sendNotification(request.farmer, {
                     title: 'Soil Test Update',
                     messageEn: notifMsgEn,
@@ -2282,7 +2282,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), asy
                         const buyer = await User.findById(buyerId);
                         const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
                         const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${order.crop}).`;
-                        const msgHi = `OTP: ${sReq.otp} - à¤‘à¤°à¥à¤¡à¤°: #${order._id.toString().slice(-6)} - à¤†à¤ªà¤•à¥‡ ${order.crop} à¤•à¥‡ à¤¬à¥‡à¤šà¤¨à¥‡ à¤•à¥‡ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¥‡ à¤²à¤¿à¤ à¤µà¥à¤¯à¤¾à¤ªà¤¾à¤°à¥€ ${bName} à¤•à¥‹ à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`;
+                        const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - आपके ${order.crop} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
 
                         const { sendNotification: sNotif } = require('../services/notificationService');
                         const { sendOtp: sOtp } = require('../services/msg91');
@@ -2356,7 +2356,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), asy
                 if (sellReq.farmer) {
                     const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
                     const msgEn = `OTP: ${otp} - ORDER: #${newOrder._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${sellReq.cropName}).`;
-                    const msgHi = `OTP: ${otp} - à¤‘à¤°à¥à¤¡à¤°: #${newOrder._id.toString().slice(-6)} - à¤†à¤ªà¤•à¥‡ ${sellReq.cropName} à¤•à¥‡ à¤¬à¥‡à¤šà¤¨à¥‡ à¤•à¥‡ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¥‡ à¤²à¤¿à¤ à¤µà¥à¤¯à¤¾à¤ªà¤¾à¤°à¥€ ${bName} à¤•à¥‹ à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`;
+                    const msgHi = `OTP: ${otp} - ऑर्डर: #${newOrder._id.toString().slice(-6)} - आपके ${sellReq.cropName} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
 
                     const { sendNotification: sNotif } = require('../services/notificationService');
                     const { sendOtp: sOtp } = require('../services/msg91');

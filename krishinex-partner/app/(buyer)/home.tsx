@@ -242,11 +242,6 @@ export default function BuyerHome() {
           onPress={() => router.push('/(buyer)/notifications' as any)}
         >
           <NotificationIcon size={18} color="#4B5563" />
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-            </View>
-          )}
         </TouchableOpacity>
       </View>
 

@@ -34,6 +34,10 @@ const soilRequestSchema = new mongoose.Schema({
     advisoryText: {
         type: String
     },
+    cancelReason: {
+        type: String,
+        default: ''
+    },
     cropName: {
         type: String,
         default: ''

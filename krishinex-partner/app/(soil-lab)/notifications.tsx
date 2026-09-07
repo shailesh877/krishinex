@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
+import { refreshUnreadCount, setGlobalUnreadCount } from '@/hooks/useNotificationBadge';
 const API_URL = `${BASE_API_URL}/notifications`;
 
 type NotifType = 'order' | 'assigned' | 'status' | 'system' | 'payment' | 'soil_test';
@@ -91,6 +92,10 @@ export default function SoilNotifications() {
             if (res.ok) {
                 const data = await res.json();
                 setItems(prev => JSON.stringify(prev) !== JSON.stringify(data) ? data : prev);
+                if (Array.isArray(data)) {
+                    const unread = data.filter((n: any) => n.unread).length;
+                    setGlobalUnreadCount(unread);
+                }
             }
         } catch (e) {
             console.error('Fetch notifications error:', e);
@@ -110,24 +115,32 @@ export default function SoilNotifications() {
     const onRefresh = () => { setRefreshing(true); fetchNotifications(false); };
 
     const markRead = async (id: string) => {
-        setItems(prev => prev.map(n => n._id === id ? { ...n, unread: false } : n));
+        setItems(prev => {
+            const next = prev.map(n => n._id === id ? { ...n, unread: false } : n);
+            const unread = next.filter((n: any) => n.unread).length;
+            setGlobalUnreadCount(unread);
+            return next;
+        });
         try {
             const token = await getToken();
             await fetch(`${API_URL}/${id}/read`, {
                 method: 'PATCH',
                 headers: { Authorization: `Bearer ${token}` }
             });
+            refreshUnreadCount();
         } catch (e) { }
     };
 
     const markAllRead = async () => {
         setItems(prev => prev.map(n => ({ ...n, unread: false })));
+        setGlobalUnreadCount(0);
         try {
             const token = await getToken();
             await fetch(`${API_URL}/read-all`, {
                 method: 'PATCH',
                 headers: { Authorization: `Bearer ${token}` }
             });
+            refreshUnreadCount();
         } catch (e) { }
     };
 

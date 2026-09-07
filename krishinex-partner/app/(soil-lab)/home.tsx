@@ -20,6 +20,7 @@ import * as Location from 'expo-location';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import NotificationIcon from '@/components/NotificationIcon';
+import { refreshUnreadCount } from '@/hooks/useNotificationBadge';
 const API_URL = `${BASE_API_URL}`;
 
 export default function SoilLabHome() {
@@ -46,7 +47,6 @@ export default function SoilLabHome() {
     lifetime: { totalRequests: 0, totalCompleted: 0 },
     today: { new: 0, accepted: 0, inProgress: 0, completed: 0 }
   };
-  const [unreadCount, setUnreadCount] = React.useState(0);
   const loading = false;
 
   // Weather state
@@ -81,17 +81,7 @@ export default function SoilLabHome() {
     }, [])
   );
   const fetchUnreadCount = async () => {
-    try {
-      const token = await AsyncStorage.getItem('userToken');
-      if (!token) return;
-      const res = await fetch(`${API_URL}/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(data.count || 0);
-      }
-    } catch (e) { }
+    await refreshUnreadCount();
   };
 
   const fetchWeather = async () => {
@@ -164,11 +154,6 @@ export default function SoilLabHome() {
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('./notifications')}>
           <NotificationIcon size={20} color="#4B5563" />
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
-            </View>
-          )}
         </TouchableOpacity>
       </View>
 

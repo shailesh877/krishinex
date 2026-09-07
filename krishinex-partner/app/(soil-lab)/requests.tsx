@@ -10,23 +10,27 @@ import {
   Image,
   TextInput,
   RefreshControl,
-  Linking } from 'react-native';
+  Linking,
+  Modal,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useI18n } from '../../context/I18nContext';
 import { useFocusEffect, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, ActivityIndicator } from 'react-native';
 
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import NotificationIcon from '@/components/NotificationIcon';
 const API_URL = `${BASE_API_URL}/soil`;
 
-type StatusType = 'New' | 'Accepted' | 'InProgress' | 'Completed' | 'Cancelled';
+type StatusType = 'All' | 'New' | 'Accepted' | 'InProgress' | 'Completed' | 'Cancelled';
 
 type RequestItem = {
-  _id: string; // Updated from id to _id
+  _id: string;
   farmer: {
     _id: string;
     name: string;
@@ -39,21 +43,27 @@ type RequestItem = {
   cropName?: string;
   createdAt: string;
   status: StatusType;
+  cancelReason?: string;
   reportUrl?: string;
   advisoryText?: string;
 };
 
-export default function SoilLabRequests() {
+export default function SoilLabRequests() {
   const router = useRouter();
   
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
-  const [activeTab, setActiveTab] = useState<StatusType>('New');
+  const [activeTab, setActiveTab] = useState<StatusType>('All');
   const [search, setSearch] = useState('');
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Cancel modal state
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelId, setCancelId] = useState<string | null>(null);
 
   // upload sheet ke liye
   const [uploadingFor, setUploadingFor] = useState<RequestItem | null>(null);
@@ -62,7 +72,7 @@ export default function SoilLabRequests() {
   const [reportNote, setReportNote] = useState('');
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchRequests();
       const interval = setInterval(() => fetchRequests(), 5000);
       return () => clearInterval(interval);
@@ -99,23 +109,72 @@ export default function SoilLabRequests() {
     : require('../../assets/images/Khetify_use_under_the_app-English.png');
   const logoIconSource = require('../../assets/images/logo.png');
 
-  const filteredRequests = useMemo(
-    () =>
-      requests.filter(r => {
-        if (r.status !== activeTab) return false;
-        if (!search.trim()) return true;
-        const s = search.toLowerCase();
-        return (
+  const headerTabs: StatusType[] = ['All', 'New', 'Accepted', 'InProgress', 'Completed', 'Cancelled'];
+
+  const tabCounts: Record<StatusType, number> = useMemo(() => {
+    const base: Record<StatusType, number> = {
+      All: requests.length,
+      New: 0,
+      Accepted: 0,
+      InProgress: 0,
+      Completed: 0,
+      Cancelled: 0,
+    };
+    requests.forEach(r => {
+      if (base[r.status] !== undefined) {
+        base[r.status] += 1;
+      }
+    });
+    return base;
+  }, [requests]);
+
+  const labelForTab = (tab: StatusType) => {
+    if (tab === 'All') return isHindi ? 'सभी' : 'All';
+    if (tab === 'New') return isHindi ? 'नया' : 'New';
+    if (tab === 'Accepted') return isHindi ? 'स्वीकृत' : 'Accepted';
+    if (tab === 'InProgress') return isHindi ? 'जांच जारी' : 'In Progress';
+    if (tab === 'Completed') return isHindi ? 'पूर्ण' : 'Completed';
+    return isHindi ? 'रद्द' : 'Cancelled';
+  };
+
+  const statusDot = (status: StatusType) => {
+    if (status === 'New')
+      return { color: '#22C55E', label: isHindi ? 'नया' : 'New' };
+    if (status === 'Accepted')
+      return { color: '#EAB308', label: isHindi ? 'स्वीकृत' : 'Accepted' };
+    if (status === 'InProgress')
+      return { color: '#3B82F6', label: isHindi ? 'जांच जारी' : 'In Progress' };
+    if (status === 'Completed')
+      return { color: '#16A34A', label: isHindi ? 'पूर्ण' : 'Completed' };
+    return { color: '#EF4444', label: isHindi ? 'रद्द' : 'Cancelled' };
+  };
+
+  const filteredRequests = useMemo(() => {
+    let list = requests;
+    if (activeTab !== 'All') {
+      list = list.filter(r => r.status === activeTab);
+    }
+    if (search.trim()) {
+      const s = search.toLowerCase();
+      list = list.filter(
+        r =>
           r.farmer?.name?.toLowerCase().includes(s) ||
           r.farmer?.phone?.includes(s) ||
           (r.village && r.village.toLowerCase().includes(s)) ||
+          (r.district && r.district.toLowerCase().includes(s)) ||
+          (r.crop && r.crop.toLowerCase().includes(s)) ||
+          (r.cropName && r.cropName.toLowerCase().includes(s)) ||
           r._id.toLowerCase().includes(s)
-        );
-      }),
-    [activeTab, search, requests],
-  );
+      );
+    }
+    // Sort by latest (descending order of createdAt)
+    return list.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [activeTab, search, requests]);
 
-  const moveStatus = async (item: RequestItem, explicitNext?: StatusType) => {
+  const moveStatus = async (item: RequestItem, explicitNext?: StatusType, cancelReasonStr?: string) => {
     let next: StatusType | null = explicitNext || null;
 
     if (!next) {
@@ -145,6 +204,7 @@ export default function SoilLabRequests() {
 
       const formData = new FormData();
       formData.append('status', next);
+      if (cancelReasonStr) formData.append('cancelReason', cancelReasonStr);
       if (reportNote) formData.append('reportNote', reportNote);
 
       if (uploadedPdfTarget && next === 'Completed') {
@@ -158,27 +218,56 @@ export default function SoilLabRequests() {
       const res = await fetch(`${API_URL}/requests/${item._id}/status`, {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${token}` },
-        body: formData });
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
 
       if (res.ok) {
-        // Optimistic UI update or re-fetch
+        setRequests(prev => prev.map(r =>
+          r._id === item._id ? { ...r, status: next as StatusType, cancelReason: cancelReasonStr || r.cancelReason } : r
+        ));
+        if (next === 'Completed') {
+          setUploadingFor(null);
+          setUploadedPdfTarget(null);
+          setUploadedPdfName(null);
+          setReportNote('');
+        }
+        if (next === 'Cancelled') {
+          setActiveTab('Cancelled');
+        }
         fetchRequests();
       } else {
         const d = await res.json();
-        showAlert('Error', d.error || 'Failed to update request');
+        showAlert(isHindi ? 'त्रुटि' : 'Error', d.error || (isHindi ? 'कुछ गलत हो गया' : 'Failed to update request'));
       }
     } catch (e: any) {
-      showAlert('Error', 'Network error changing status');
+      showAlert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'नेटवर्क समस्या' : 'Network error changing status');
     }
   };
 
-  // ✅ FIXED for new expo-document-picker
+  const openCancelModal = (id: string) => {
+    setCancelId(id);
+    setCancelReason('');
+    setCancelModalVisible(true);
+  };
+
+  const confirmCancel = () => {
+    if (!cancelId) return;
+    const targetItem = requests.find(r => r._id === cancelId);
+    if (!targetItem) return;
+    const reasonText = cancelReason.trim();
+    moveStatus(targetItem, 'Cancelled', reasonText || undefined);
+    setCancelModalVisible(false);
+    setCancelId(null);
+  };
+
   const handlePickPdf = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: 'application/pdf',
       multiple: false,
-      copyToCacheDirectory: true });
+      copyToCacheDirectory: true
+    });
 
     if (result.canceled) {
       return;
@@ -192,7 +281,9 @@ export default function SoilLabRequests() {
   };
 
   const renderRequest = ({ item }: { item: RequestItem }) => {
+    const dot = statusDot(item.status);
     const showPrimary = item.status !== 'Completed' && item.status !== 'Cancelled';
+    const showCancel = item.status === 'New' || item.status === 'Accepted' || item.status === 'InProgress';
     const isInProgress = item.status === 'InProgress';
 
     const addressParts = [item.village, item.district, item.state].filter(p => p && p.trim() !== '');
@@ -232,24 +323,8 @@ export default function SoilLabRequests() {
         {/* top pill row (status + id) */}
         <View style={styles.cardTopRow}>
           <View style={styles.statusRow}>
-            <View style={styles.smallDot} />
-            <Text style={styles.statusText}>
-              {isHindi
-                ? item.status === 'New'
-                  ? 'नया'
-                  : item.status === 'Accepted'
-                    ? 'पेंडिंग'
-                    : item.status === 'InProgress'
-                      ? 'जांच जारी'
-                      : 'पूर्ण'
-                : item.status === 'New'
-                  ? 'New'
-                  : item.status === 'Accepted'
-                    ? 'Pending'
-                    : item.status === 'InProgress'
-                      ? 'In progress'
-                      : 'Completed'}
-            </Text>
+            <View style={[styles.smallDot, { backgroundColor: dot.color }]} />
+            <Text style={styles.statusText}>{dot.label}</Text>
           </View>
 
           <View style={styles.datePill}>
@@ -275,19 +350,17 @@ export default function SoilLabRequests() {
             <Ionicons
               name="call-outline"
               size={14}
-              color={item.status === 'New' ? '#9CA3AF' : '#2563EB'}
+              color={item.status === 'New' ? '#9CA3AF' : '#16A34A'}
               style={{ marginRight: 4 }}
             />
             <Text
               style={[
                 styles.reqMobile,
-                item.status !== 'New' && { color: '#2563EB', textDecorationLine: 'underline' },
+                item.status !== 'New' && { color: '#16A34A', fontWeight: '700', textDecorationLine: 'underline' },
               ]}
             >
               {item.status === 'New'
-                ? isHindi
-                  ? 'स्वीकार करने के बाद दिखेगा'
-                  : 'Hidden until accepted'
+                ? 'XXXXXXXXXX'
                 : item.farmer.phone}
             </Text>
           </TouchableOpacity>
@@ -318,8 +391,8 @@ export default function SoilLabRequests() {
         </View>
 
         {/* bottom actions */}
-        {showPrimary ? (
-          <View style={styles.actionsRow}>
+        <View style={styles.actionsRow}>
+          {showPrimary && (
             <TouchableOpacity
               style={[styles.primaryBtn, { backgroundColor: primaryColor }]}
               onPress={
@@ -341,8 +414,27 @@ export default function SoilLabRequests() {
               />
               <Text style={styles.primaryBtnText}>{primaryLabel}</Text>
             </TouchableOpacity>
-          </View>
-        ) : item.status === 'Completed' ? (
+          )}
+
+          {showCancel && (
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => openCancelModal(item._id)}
+            >
+              <Ionicons
+                name="close-circle-outline"
+                size={14}
+                color="#DC2626"
+                style={{ marginRight: 4 }}
+              />
+              <Text style={styles.cancelBtnText}>
+                {isHindi ? 'Cancel' : 'Cancel'}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {item.status === 'Completed' ? (
           <View style={styles.completedContainer}>
             <View style={styles.completedRow}>
               <Ionicons
@@ -411,19 +503,26 @@ export default function SoilLabRequests() {
               </TouchableOpacity>
             </View>
           </View>
-        ) : (
-          <View style={styles.completedRow}>
-            <Ionicons
-              name="close-circle-outline"
-              size={14}
-              color="#DC2626"
-              style={{ marginRight: 4 }}
-            />
-            <Text style={[styles.completedText, { color: '#DC2626' }]}>
-              {isHindi ? 'रद्द कर दिया गया' : 'Cancelled'}
-            </Text>
+        ) : item.status === 'Cancelled' ? (
+          <View style={styles.cancelledBox}>
+            <View style={styles.completedRow}>
+              <Ionicons
+                name="close-circle-outline"
+                size={14}
+                color="#DC2626"
+                style={{ marginRight: 4 }}
+              />
+              <Text style={[styles.completedText, { color: '#DC2626' }]}>
+                {isHindi ? 'रद्द कर दिया गया' : 'Cancelled'}
+              </Text>
+            </View>
+            {item.cancelReason ? (
+              <Text style={styles.cancelReasonText}>
+                {isHindi ? 'कारण: ' : 'Reason: '}{item.cancelReason}
+              </Text>
+            ) : null}
           </View>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -439,28 +538,18 @@ export default function SoilLabRequests() {
     </View>
   );
 
-  const tabs: { key: StatusType; labelHi: string; labelEn: string }[] = [
-    { key: 'New', labelHi: 'नया', labelEn: 'New' },
-    { key: 'Accepted', labelHi: 'स्वीकृत', labelEn: 'Pending' },
-    { key: 'InProgress', labelHi: 'जारी', labelEn: 'In progress' },
-    { key: 'Completed', labelHi: 'पूर्ण', labelEn: 'Completed' },
-  ];
-
-  const logoText = logoTextSource;
-  const logoIcon = logoIconSource;
-
   return (
     <View style={styles.root}>
-     SafeAreaViewatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* HEADER same style */}
+      {/* HEADER */}
       <View style={styles.appHeader}>
         <TouchableOpacity style={styles.logoIconWrap}>
-          <Image source={logoIcon} style={styles.logoIcon} />
+          <Image source={logoIconSource} style={styles.logoIcon} />
         </TouchableOpacity>
 
         <View style={styles.logoWrap}>
-          <Image source={logoText} style={styles.logoTextImage} />
+          <Image source={logoTextSource} style={styles.logoTextImage} />
         </View>
 
         <TouchableOpacity style={styles.iconCircle} onPress={() => router.push('/(soil-lab)/notifications' as any)}>
@@ -480,50 +569,57 @@ export default function SoilLabRequests() {
             : 'View all new, pending and completed soil requests in one place.'}
         </Text>
 
-        {/* GREEN TABS strip */}
-        <View style={styles.tabStripRow}>
-          {tabs.map(tab => {
-            const active = activeTab === tab.key;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={[styles.tabStripChip, active && styles.tabStripChipActive]}
-                onPress={() => setActiveTab(tab.key)}
-              >
-                <Text
+        {/* TABS ROW */}
+        <View style={{ marginBottom: 10 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsRow}
+          >
+            {headerTabs.map(tab => {
+              const active = activeTab === tab;
+              return (
+                <TouchableOpacity
+                  key={tab}
                   style={[
-                    styles.tabStripText,
-                    active && styles.tabStripTextActive,
+                    styles.tabChip,
+                    active && styles.tabChipActive,
                   ]}
+                  onPress={() => setActiveTab(tab)}
                 >
-                  {isHindi ? tab.labelHi : tab.labelEn}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+                  <Text style={active ? styles.tabTextActive : styles.tabText}>
+                    {labelForTab(tab)}
+                  </Text>
+                  {tab === 'New' && tabCounts['New'] > 0 && (
+                    <View style={styles.badgeContainer}>
+                      <Text style={styles.badgeText}>{tabCounts['New']}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
 
         {/* SEARCH */}
-        <View style={styles.searchRow}>
-          <View style={styles.searchBox}>
-            <Ionicons
-              name="search-outline"
-              size={18}
-              color="#9CA3AF"
-              style={{ marginRight: 6 }}
-            />
-            <TextInput
-              style={styles.searchInput}
-              placeholder={
-                isHindi
-                  ? 'उपकरण, मालिक या गांव से खोजें'
-                  : 'Search by farmer, mobile or village'
-              }
-              placeholderTextColor="#9CA3AF"
-              value={search}
-              onChangeText={setSearch}
-            />
-          </View>
+        <View style={styles.searchBox}>
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color="#6B7280"
+            style={{ marginRight: 6 }}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={
+              isHindi
+                ? 'किसान, मोबाइल या गांव से खोजें'
+                : 'Search by farmer, mobile or village'
+            }
+            placeholderTextColor="#9CA3AF"
+            value={search}
+            onChangeText={setSearch}
+          />
         </View>
 
         {/* Upload sheet (IN_PROGRESS ke liye) */}
@@ -589,7 +685,8 @@ export default function SoilLabRequests() {
                 style={[
                   styles.uploadActionBtn,
                   {
-                    backgroundColor: (uploadedPdfName || (uploadingFor && uploadingFor.reportUrl)) ? '#16A34A' : '#9CA3AF' },
+                    backgroundColor: (uploadedPdfName || (uploadingFor && uploadingFor.reportUrl)) ? '#16A34A' : '#9CA3AF'
+                  },
                 ]}
                 disabled={!uploadedPdfName && !(uploadingFor && uploadingFor.reportUrl)}
                 onPress={() => {
@@ -617,10 +714,10 @@ export default function SoilLabRequests() {
           <ActivityIndicator size="large" color="#16A34A" style={{ marginTop: 40 }} />
         ) : (
           <FlatList
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={false}
+            initialNumToRender={5}
+            maxToRenderPerBatch={5}
+            windowSize={5}
+            removeClippedSubviews={false}
             data={filteredRequests}
             keyExtractor={item => item._id}
             renderItem={renderRequest}
@@ -633,20 +730,72 @@ export default function SoilLabRequests() {
           />
         )}
       </View>
+
+      {/* Cancel reason modal */}
+      <Modal
+        visible={cancelModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setCancelModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>
+              {isHindi ? 'रिक्वेस्ट कैंसल करें' : 'Cancel request'}
+            </Text>
+            <Text style={styles.modalSubtitle}>
+              {isHindi
+                ? 'कारण लिखना वैकल्पिक है (optional).'
+                : 'Adding a reason is optional.'}
+            </Text>
+            <TextInput
+              multiline
+              value={cancelReason}
+              onChangeText={setCancelReason}
+              placeholder={
+                isHindi ? 'कारण लिखें (optional)' : 'Reason (optional)'
+              }
+              placeholderTextColor="#9CA3AF"
+              style={styles.modalInput}
+            />
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity
+                style={styles.modalSecondary}
+                onPress={() => setCancelModalVisible(false)}
+              >
+                <Text style={styles.modalSecondaryText}>
+                  {isHindi ? 'Back' : 'Back'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalPrimary}
+                onPress={confirmCancel}
+              >
+                <Text style={styles.modalPrimaryText}>
+                  {isHindi ? 'Confirm cancel' : 'Confirm cancel'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
-  );SafeAreaView
+  );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  appHeader: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
+  appHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    flexDirection: 'row',
     alignItems: 'center',
-    
-    
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020'},
+    shadowColor: '#00000020'
+  },
   logoIconWrap: {
     width: 34,
     height: 34,
@@ -654,7 +803,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
   logoWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
@@ -663,43 +813,67 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
 
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 10 },
+    paddingTop: 10
+  },
 
   pageTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   pageSubTitle: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
-    marginBottom: 10 },
+    marginBottom: 10
+  },
 
-  // green tabs (strip)
-  tabStripRow: {
+  // tabs row like equipment
+  tabsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8 },
-  tabStripChip: {
-    paddingHorizontal: 16,
+    gap: 8,
+    paddingRight: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  tabChip: {
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: 999,
+    borderRadius: 20,
     backgroundColor: '#E5E7EB',
-    marginRight: 8 },
-  tabStripChipActive: {
-    backgroundColor: '#DCFCE7' },
-  tabStripText: {
-    fontSize: 12,
-    color: '#4B5563',
-    fontWeight: '500' },
-  tabStripTextActive: {
-    color: '#15803D',
-    fontWeight: '700' },
+  },
+  tabChipActive: {
+    backgroundColor: '#DCFCE7',
+    shadowColor: '#16A34A40',
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  tabText: { fontSize: 12, color: '#4B5563' },
+  tabTextActive: { fontSize: 12, color: '#15803D', fontWeight: '600' },
+  badgeContainer: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 99,
+    elevation: 10,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
 
   // search
-  searchRow: { marginBottom: 8 },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -708,18 +882,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB' },
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
+  },
   searchInput: {
     flex: 1,
     fontSize: 13,
     color: '#111827',
-    paddingVertical: 0 },
+    paddingVertical: 0
+  },
 
   listContent: {
     paddingBottom: 20,
-    paddingTop: 0 },
+    paddingTop: 0
+  },
 
-  // big card like equipment
+  // card
   reqCard: {
     borderRadius: 20,
     backgroundColor: '#FFFFFF',
@@ -731,26 +909,30 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 12,
-    elevation: 4 },
+    elevation: 4
+  },
 
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10 },
+    marginBottom: 10
+  },
   statusRow: {
     flexDirection: 'row',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   smallDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#16A34A',
-    marginRight: 6 },
+    marginRight: 6
+  },
   statusText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#111827' },
+    color: '#111827'
+  },
 
   datePill: {
     flexDirection: 'row',
@@ -758,51 +940,83 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
-    backgroundColor: '#EFF6FF' },
+    backgroundColor: '#EFF6FF'
+  },
   datePillText: {
     fontSize: 11,
     color: '#2563EB',
-    fontWeight: '600' },
+    fontWeight: '600'
+  },
 
   reqFarmer: {
     fontSize: 18,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4 },
+    marginBottom: 4
+  },
   infoLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2 },
+    marginTop: 2
+  },
   reqMobile: { fontSize: 13, color: '#4B5563' },
   reqInfoText: { fontSize: 13, color: '#4B5563' },
 
   actionsRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginTop: 12 },
+    alignItems: 'center',
+    marginTop: 12
+  },
   primaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 999,
     paddingHorizontal: 16,
-    paddingVertical: 8 },
+    paddingVertical: 8
+  },
   primaryBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF' },
+    color: '#FFFFFF'
+  },
+  cancelBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    backgroundColor: '#FEF2F2',
+    marginLeft: 8,
+  },
+  cancelBtnText: { fontSize: 12, fontWeight: '600', color: '#DC2626' },
+
+  cancelledBox: {
+    marginTop: 8,
+  },
+  cancelReasonText: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
 
   completedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12 },
+    marginTop: 12
+  },
   completedText: {
     fontSize: 12,
-    color: '#16A34A' },
+    color: '#16A34A'
+  },
 
   emptyWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20 },
+    paddingVertical: 20
+  },
   emptyText: { fontSize: 12, color: '#9CA3AF', marginTop: 6 },
 
   // upload sheet
@@ -816,16 +1030,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
-    elevation: 3 },
+    elevation: 3
+  },
   uploadTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#111827' },
+    color: '#111827'
+  },
   uploadSub: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
-    marginBottom: 8 },
+    marginBottom: 8
+  },
   uploadPdfBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -835,10 +1052,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    marginTop: 4 },
+    marginTop: 4
+  },
   uploadPdfText: {
     fontSize: 13,
-    color: '#1D4ED8' },
+    color: '#1D4ED8'
+  },
   uploadNoteInput: {
     marginTop: 10,
     minHeight: 70,
@@ -850,24 +1069,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#111827',
     textAlignVertical: 'top',
-    backgroundColor: '#F9FAFB' },
+    backgroundColor: '#F9FAFB'
+  },
   uploadActionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 10 },
+    marginTop: 10
+  },
   uploadActionBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    marginLeft: 8 },
+    marginLeft: 8
+  },
   uploadActionText: {
     fontSize: 13,
-    fontWeight: '700' },
+    fontWeight: '700'
+  },
   completedContainer: {
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6' },
+    borderTopColor: '#F3F4F6'
+  },
   viewReportBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -878,30 +1102,36 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginTop: 8,
-    alignSelf: 'flex-start' },
+    alignSelf: 'flex-start'
+  },
   viewReportBtnText: {
     fontSize: 13,
     color: '#2563EB',
-    fontWeight: '600' },
+    fontWeight: '600'
+  },
   advisoryBox: {
     backgroundColor: '#F9FAFB',
     borderRadius: 8,
     padding: 8,
     marginTop: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#9CA3AF' },
+    borderLeftColor: '#9CA3AF'
+  },
   advisoryLabel: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#4B5563' },
+    color: '#4B5563'
+  },
   advisoryText: {
     fontSize: 12,
     color: '#1F2937',
-    marginTop: 2 },
+    marginTop: 2
+  },
   completedActionsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 8 },
+    marginTop: 8
+  },
   editReportBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -910,8 +1140,60 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingVertical: 5,
     paddingHorizontal: 10,
-    backgroundColor: '#FEF3C7' },
+    backgroundColor: '#FEF3C7'
+  },
   editReportBtnText: {
     fontSize: 12,
     color: '#D97706',
-    fontWeight: '600' } });
+    fontWeight: '600'
+  },
+
+  // Modal
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: '#00000066',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBox: {
+    width: '90%',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+  },
+  modalTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
+  modalSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 4 },
+  modalInput: {
+    marginTop: 10,
+    minHeight: 70,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    textAlignVertical: 'top',
+    fontSize: 13,
+    color: '#111827',
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+    gap: 8,
+  },
+  modalSecondary: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  modalSecondaryText: { fontSize: 13, color: '#374151' },
+  modalPrimary: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#DC2626',
+  },
+  modalPrimaryText: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
+});

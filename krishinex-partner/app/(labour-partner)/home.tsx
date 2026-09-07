@@ -178,13 +178,6 @@ export default function LabourPartnerHome() {
             onPress={openNotifications}
           >
             <NotificationIcon size={18} color="#065F46" />
-            {unreadCount > 0 && (
-              <View style={styles.notifDot}>
-                <Text style={{ color: 'white', fontSize: 8, fontWeight: 'bold' }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </Text>
-              </View>
-            )}
           </TouchableOpacity>
 
           {/* CENTER: logo text */}

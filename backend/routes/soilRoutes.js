@@ -79,6 +79,18 @@ router.get('/dashboard', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/soil/new-count
+// @desc    Get count of new requests for this lab
+// @access  Private
+router.get('/new-count', protect, async (req, res) => {
+    try {
+        const count = await SoilRequest.countDocuments({ lab: req.user.id, status: 'New' });
+        res.json({ count });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // @route   GET /api/soil/requests
 // @desc    Get all requests for the soil lab
 // @access  Private
@@ -99,7 +111,7 @@ router.get('/requests', protect, async (req, res) => {
 // @access  Private
 router.patch('/requests/:id/status', protect, upload.single('report'), async (req, res) => {
     try {
-        let { status, reportNote } = req.body;
+        let { status, reportNote, cancelReason } = req.body;
         if (!status) {
             console.log('[SOIL ERROR] Status missing in req.body. Body:', req.body);
             return res.status(400).json({ error: 'status is required in request body' });
@@ -120,6 +132,7 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
         
         request.status = status;
         if (reportNote) request.advisoryText = reportNote;
+        if (cancelReason) request.cancelReason = cancelReason;
 
         if (req.file) {
             const baseUrl = process.env.BASE_URL || `https://demo.ranx24.com`;
@@ -234,6 +247,9 @@ router.patch('/requests/:id/status', protect, upload.single('report'), async (re
         } else if (status === 'Completed') {
             notifMsgHi = `आपकी मिट्टी जांच रिपोर्ट आ गई है!`;
             notifMsgEn = `Your soil test report is ready!`;
+        } else if (status === 'Cancelled') {
+            notifMsgHi = `आपकी मिट्टी जांच रद्द कर दी गई है।${cancelReason ? ' कारण: ' + cancelReason : ''}`;
+            notifMsgEn = `Your soil test request has been cancelled.${cancelReason ? ' Reason: ' + cancelReason : ''}`;
         }
 
         if (notifMsgHi) {

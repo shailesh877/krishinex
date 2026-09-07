@@ -1009,7 +1009,7 @@ export default function LabourProfileSettings() {
           <View style={styles.settingRow}>
             <View style={styles.settingLeft}>
               <View style={[styles.settingIconWrap, { backgroundColor: '#FEF3C7' }]}>
-                <NotificationIcon size={16} color="#D97706" />
+                <Ionicons name="notifications-outline" size={16} color="#D97706" />
               </View>
               <View>
                 <Text style={styles.settingTitle}>
