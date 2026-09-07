@@ -18,16 +18,21 @@ const generateId = (prefix, number) => {
 router.get('/dashboard', protect, checkModule("field_executive"), async (req, res) => {
     try {
         const { startDate, endDate, all } = req.query;
-        const executivesCount = await User.countDocuments({ role: 'field_executive' });
+        const hasFilter = (all !== 'true' && startDate && endDate);
 
+        let start, end;
         let taskQuery = {};
-        if (all !== 'true' && startDate && endDate) {
-            const start = new Date(startDate);
+        let userFilter = { role: 'field_executive' };
+        if (hasFilter) {
+            start = new Date(startDate);
             start.setHours(0, 0, 0, 0);
-            const end = new Date(endDate);
+            end = new Date(endDate);
             end.setHours(23, 59, 59, 999);
             taskQuery.createdAt = { $gte: start, $lte: end };
+            userFilter.createdAt = { $gte: start, $lte: end };
         }
+
+        const executivesCount = await User.countDocuments(userFilter);
 
         const tasks = await FieldTask.find(taskQuery);
 

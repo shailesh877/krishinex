@@ -17,7 +17,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 
@@ -217,7 +216,7 @@ export default function LedgerScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.title}>{isHindi ? 'बही-खाता (Ledger)' : 'Digital Ledger'}</Text>
@@ -574,14 +573,14 @@ export default function LedgerScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  header: { paddingHorizontal: 20, paddingBottom: 15, backgroundColor: '#FFF', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2 },
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#FFF', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', elevation: 2},
   title: { fontSize: 20, fontWeight: '900', color: '#0F172A' },
   content: { flex: 1, padding: 12 },
 

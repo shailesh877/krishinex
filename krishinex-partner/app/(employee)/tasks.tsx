@@ -4,7 +4,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../../context/I18nContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { BASE_API_URL } from '../../constants/api';
@@ -115,7 +114,7 @@ export default function EmployeeTasks() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                     <Ionicons name="arrow-back" size={24} color="#333" />
@@ -148,23 +147,21 @@ export default function EmployeeTasks() {
                     contentContainerStyle={styles.listContainer}
                 />
             )}
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f4f4f4' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    header: {
-        flexDirection: 'row',
+    header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
+        
         paddingVertical: 15,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderColor: '#eee'
-    },
+        borderColor: '#eee'},
     backBtn: { padding: 4 },
     headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
     listContainer: { padding: 15 },

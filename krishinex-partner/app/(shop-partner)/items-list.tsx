@@ -12,7 +12,6 @@ import {
   TextInput,
   ScrollView,
   RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -335,7 +334,7 @@ export default function ItemsListScreen() {
     : 'All items currently available in your shop';
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER with back + title */}
@@ -899,7 +898,7 @@ export default function ItemsListScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -935,15 +934,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#111827' },
 
-  header: {
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between' },
+    justifyContent: 'space-between'},
   backBtn: {
     width: 32,
     height: 32,

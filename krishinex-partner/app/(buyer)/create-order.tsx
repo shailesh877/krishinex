@@ -2,7 +2,6 @@
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   TextInput, StatusBar, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -107,7 +106,7 @@ export default function BuyerCreateOrder() {
   const isDisabled = !crop || !quantity || !location || submitting;
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backWrap} onPress={() => router.push('/(buyer)/home')}>
@@ -168,7 +167,7 @@ export default function BuyerCreateOrder() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 

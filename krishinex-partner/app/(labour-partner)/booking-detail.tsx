@@ -10,7 +10,6 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 type BookingStatus = 'new' | 'accepted' | 'completed';
 
@@ -103,7 +102,7 @@ export default function LabourBookingDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
@@ -397,21 +396,20 @@ export default function LabourBookingDetailScreen() {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 10,
+    
+    
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020' },
+    shadowColor: '#00000020'},
   backBtn: {
     width: 32,
     height: 32,

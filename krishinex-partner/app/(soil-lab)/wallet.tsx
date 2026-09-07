@@ -8,7 +8,6 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -137,7 +136,7 @@ export default function SoilWallet() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor="#16A34A" />
 
       <LinearGradient colors={['#16A34A', '#15803D']} style={styles.topSection}>
@@ -183,7 +182,7 @@ export default function SoilWallet() {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -194,11 +193,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32 },
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20 },
+    marginBottom: 20},
   backBtn: {
     width: 40,
     height: 40,

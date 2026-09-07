@@ -5,7 +5,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../../context/I18nContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BASE_API_URL } from '../../constants/api';
 const API_URL = `${BASE_API_URL}/notifications`;
@@ -95,7 +94,7 @@ export default function EmployeeNotifications() {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>{lang === 'hi' ? 'सूचनाएं' : 'Notifications'}</Text>
                 {notifications.some(n => n.unread) && (
@@ -130,23 +129,21 @@ export default function EmployeeNotifications() {
                     contentContainerStyle={styles.listContainer}
                 />
             )}
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f4f4f4' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    header: {
-        flexDirection: 'row',
+    header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
+        
         paddingVertical: 15,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderColor: '#eee'
-    },
+        borderColor: '#eee'},
     headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
     markReadBtn: { flexDirection: 'row', alignItems: 'center' },
     markReadText: { color: STATUS_GREEN, marginLeft: 5, fontWeight: '600' },

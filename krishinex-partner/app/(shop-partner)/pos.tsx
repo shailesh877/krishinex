@@ -17,7 +17,6 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_API_URL, BASE_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
@@ -350,7 +349,7 @@ export default function POSScreen() {
 
   // --- RENDER ---
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{isHindi ? 'बिक्री (POS)' : 'Point of Sale'}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
@@ -756,13 +755,13 @@ export default function POSScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  header: { padding: 20, backgroundColor: '#FFF', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#FFF', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'},
   title: { fontSize: 22, fontWeight: '800', color: '#111827' },
   resetText: { color: '#EF4444', fontWeight: 'bold' },
   content: { flex: 1, padding: 15 },

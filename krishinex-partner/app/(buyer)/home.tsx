@@ -8,7 +8,6 @@ import {
   Image,
   StatusBar,
   RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import { useUser } from '../../context/UserContext';
@@ -221,7 +220,7 @@ export default function BuyerHome() {
   const goAssignedOrders = () => router.push('/(buyer)/assigned-orders');
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
@@ -405,7 +404,7 @@ export default function BuyerHome() {
         </View>
 
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

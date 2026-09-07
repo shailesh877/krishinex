@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 // app/(shop-partner)/_layout.tsx
 import React from 'react';
 import { Tabs } from 'expo-router';
@@ -24,12 +25,12 @@ export default function ShopTabsLayout() {
         tabBarActiveTintColor: '#16A34A',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
+          height: 55 + Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
+          paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0,
           elevation: 8,
           shadowColor: '#00000020',
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 5,
         },
         tabBarLabelStyle: { fontSize: 9, fontWeight: '700' },
       }}

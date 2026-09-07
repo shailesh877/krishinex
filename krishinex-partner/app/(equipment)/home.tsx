@@ -10,7 +10,6 @@ import {
   Image,
   RefreshControl,
   Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -265,7 +264,7 @@ export default function EquipmentHome() {
   );
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
@@ -418,21 +417,20 @@ export default function EquipmentHome() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
-  appHeader: {
-    flexDirection: 'row',
+  appHeader: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
+    
+    
+    
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020' },
+    shadowColor: '#00000020'},
   logoIconWrap: {
     width: 34,
     height: 34,

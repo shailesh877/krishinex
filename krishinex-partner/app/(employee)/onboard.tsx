@@ -12,7 +12,6 @@ import {
   ScrollView,
   Alert } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import { API_URL } from '../../constants/api';
@@ -389,16 +388,12 @@ export default function OnboardScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    backgroundColor: STATUS_GREEN,
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: STATUS_GREEN,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24 },
+    borderBottomRightRadius: 24},
   backBtn: {
     width: 36,
     height: 36,

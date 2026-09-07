@@ -1203,17 +1203,15 @@ function EditField({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  appHeader: {
-    flexDirection: 'row',
+  appHeader: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 15,
+    
+    
+    
     backgroundColor: '#FFFFFF',
     elevation: 3,
     shadowColor: '#00000020',
-    justifyContent: 'space-between',
-  },
+    justifyContent: 'space-between',},
   headerLeftRow: {
     flexDirection: 'row',
     alignItems: 'center',

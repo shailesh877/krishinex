@@ -8,7 +8,6 @@ import {
   FlatList,
   TouchableOpacity,
   Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
@@ -338,7 +337,7 @@ export default function SoilAssignScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
 
       {/* HEADER */}
@@ -388,19 +387,18 @@ export default function SoilAssignScreen() {
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN },
+    
+    
+    backgroundColor: STATUS_GREEN},
   backBtn: {
     width: 32,
     height: 32,

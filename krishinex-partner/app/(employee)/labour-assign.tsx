@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   FlatList } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -276,7 +275,7 @@ export default function LabourAssignScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor="#6bb313ff" />
 
       <View style={styles.header}>
@@ -337,20 +336,16 @@ export default function LabourAssignScreen() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 15,
-    paddingHorizontal: 16,
-    backgroundColor: '#6bb313ff',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#6bb313ff',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between' },
+    justifyContent: 'space-between'},
   backBtn: {
     width: 32,
     height: 32,

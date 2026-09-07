@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -1114,8 +1114,24 @@
         headers = [['Rental ID', 'Owner', 'Buyer', 'Amount', 'Status', 'Date']];
         rows = data.map(r => [r._id, r.owner?.name || 'N/A', r.buyer?.name || 'N/A', `Rs. ${r.totalAmount}`, r.status, r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'N/A']);
       } else if (module === 'labour') {
-        headers = [['Job ID', 'Labour Name', 'Amount', 'Status', 'Date']];
-        rows = data.map(l => [l._id, l.labour?.name || 'N/A', `Rs. ${l.amount}`, l.status, l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'N/A']);
+        const isLabourerList = data.length > 0 && (data[0].skills !== undefined || data[0].jobsDone !== undefined);
+        if (isLabourerList) {
+          headers = [['Labourer ID', 'Name', 'Phone', 'Location', 'Skills', 'Jobs Done', 'Daily Rate', 'Status', 'Joined Date']];
+          rows = data.map(l => [
+            String(l._id || ''),
+            l.name || l.labour?.name || 'N/A',
+            l.phone || 'N/A',
+            l.location || 'N/A',
+            l.skills || 'General Labour',
+            l.jobsDone !== undefined ? String(l.jobsDone) : '0',
+            `Rs. ${l.dailyRate || l.amount || 0}`,
+            l.status || 'Active',
+            l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : 'N/A'
+          ]);
+        } else {
+          headers = [['Job ID', 'Labour Name', 'Amount', 'Status', 'Date']];
+          rows = data.map(l => [String(l._id || ''), l.labour?.name || l.name || 'N/A', `Rs. ${l.amount || 0}`, l.status || 'N/A', l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : 'N/A']);
+        }
       } else if (module === 'buyer-trading') {
         headers = [['Order ID', 'Farmer', 'Buyer', 'Crop', 'Amount', 'Status', 'Date']];
         rows = data.map(o => [o._id, o.farmerName || 'N/A', o.assignedTo?.name || 'N/A', o.crop, `Rs. ${o.amount}`, o.status, o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'N/A']);

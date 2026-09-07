@@ -2098,7 +2098,7 @@
 
     async function exportLabourers() {
       showToast('Starting download...', 'info');
-      let url = `${API_BASE}/employee/admin/labour/export?token=${AUTH_TOKEN}`;
+      let url = `${API_BASE}/employee/admin/labour/export?token=${AUTH_TOKEN}&_t=${Date.now()}`;
       if (selectedStartDate && selectedEndDate) {
         if (selectedStartDate === 'all' && selectedEndDate === 'all') {
           url += `&all=true`;

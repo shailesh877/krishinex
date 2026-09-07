@@ -2486,52 +2486,23 @@
 
     // Export Logic
     function exportLabs() {
-      if (!allSoilLabs || allSoilLabs.length === 0) {
-        showToast('No data to export', 'warning');
-        return;
-      }
-
-      const searchTerm = (document.getElementById('labSearchInput')?.value || '').toLowerCase();
+      const search = (document.getElementById('labSearchInput')?.value || '').toLowerCase();
       const statusFilter = document.getElementById('labStatusFilter')?.value || 'all';
+      const start = document.getElementById('globalStartDate')?.value || '';
+      const end = document.getElementById('globalEndDate')?.value || '';
 
-      const rowsToExport = allSoilLabs.filter(lab => {
-        const labName = (lab.labName || '').toLowerCase();
-        const location = (`${lab.village || ''} ${lab.state || ''}`).toLowerCase();
-        const labId = (lab._id || '').toLowerCase();
-        const matchesSearch = !searchTerm || labName.includes(searchTerm) || location.includes(searchTerm) || labId.includes(searchTerm);
-        let normalizedStatus = lab.status === 'approved' || lab.status === 'Active' ? 'approved' : 'pending';
-        const matchesStatus = statusFilter === 'all' || normalizedStatus === statusFilter;
-        return matchesSearch && matchesStatus;
-      });
+      let url = `${API_BASE}/employee/admin/soil/export?token=${AUTH_TOKEN}&_t=${Date.now()}`;
+      if (start) url += `&startDate=${start}`;
+      if (end) url += `&endDate=${end}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (statusFilter && statusFilter !== 'all') url += `&status=${encodeURIComponent(statusFilter)}`;
 
-      const headers = ['Lab ID', 'Name', 'Phone', 'Email', 'Location', 'Supported Tests', 'Avg TAT (Days)', 'Tests Performed', 'Status', 'Joined Date'];
-      const csvRows = [headers.join(',')];
-
-      rowsToExport.forEach(lab => {
-        const testTypesStr = (lab.testTypes || []).join(' | ');
-        const locationStr = lab.location || 'N/A';
-        csvRows.push([
-          `SL${lab._id.substring(0, 5).toUpperCase()}`,
-          `"${lab.labName.replace(/"/g, '""')}"`,
-          lab.phone,
-          lab.email || '',
-          `"${locationStr}"`,
-          `"${testTypesStr}"`,
-          lab.tatDays || 3,
-          lab.testsDone || 0,
-          lab.status === 'approved' ? 'Active' : lab.status,
-          new Date(lab.joinedAt).toLocaleDateString('en-GB')
-        ].join(','));
-      });
-
-      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `soil_labs_export_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Exported CSV Successfully', 'success');
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      setTimeout(() => document.body.removeChild(iframe), 5000);
+      showToast('Exporting Soil Labs...', 'info');
     }
 
     // Show Toast

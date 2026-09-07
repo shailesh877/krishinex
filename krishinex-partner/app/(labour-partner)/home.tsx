@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Image,
   RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -166,7 +165,7 @@ export default function LabourPartnerHome() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#ECFDF3" />
 
       {/* PREMIUM HEADER */}
@@ -444,7 +443,7 @@ export default function LabourPartnerHome() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -461,11 +460,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 6 },
-  appHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 8 },
+  appHeader: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
+    alignItems: 'center',},
   notifBtn: {
     width: 32,
     height: 32,

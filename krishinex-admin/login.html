@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -145,6 +145,11 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            if (pendingEmail) {
+                handleVerifyOtp();
+                return;
+            }
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
@@ -198,8 +203,9 @@
             }
         });
 
-        verifyOtpBtn.addEventListener('click', async () => {
-            const otp = document.getElementById('otpCode').value;
+        async function handleVerifyOtp() {
+            if (verifyOtpBtn.disabled) return;
+            const otp = document.getElementById('otpCode').value.trim();
             if (otp.length !== 4) return showError('Please enter 4-digit code.');
 
             verifyOtpBtn.disabled = true;
@@ -228,6 +234,15 @@
                 showError('Network error during verification.');
                 verifyOtpBtn.disabled = false;
                 document.getElementById('otpBtnText').textContent = 'Verify & Login';
+            }
+        }
+
+        verifyOtpBtn.addEventListener('click', handleVerifyOtp);
+
+        document.getElementById('otpCode').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleVerifyOtp();
             }
         });
 

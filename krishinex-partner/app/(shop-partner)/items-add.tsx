@@ -9,7 +9,6 @@ import {
   StatusBar,
   TextInput,
   Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -321,7 +320,7 @@ export default function AddItemScreen() {
   const headerTitle = isHindi ? 'नया आइटम' : 'Add item';
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER with back + title */}
@@ -686,22 +685,19 @@ export default function AddItemScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  header: {
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between' },
+    justifyContent: 'space-between'},
   backBtn: {
     width: 32,
     height: 32,

@@ -1472,16 +1472,14 @@ function ModalInput({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 10,
+    
+    
+    
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020',
-  },
+    shadowColor: '#00000020',},
   backBtn: {
     width: 32,
     height: 32,

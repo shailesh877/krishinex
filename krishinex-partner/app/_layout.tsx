@@ -9,6 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { BASE_API_URL } from '../constants/api';
 import { CustomAlert, customAlertRef } from '../components/CustomAlert';
 import * as SplashScreen from 'expo-splash-screen';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -236,21 +237,23 @@ export default function RootLayout() {
 
   // Do not return early, maintain the same React tree to prevent unmounting AnimatedSplashView
   return (
-    <UserProvider>
-      <I18nProvider>
-        <View style={{ flex: 1 }}>
-          {isReady && (
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                animation: 'none'
-              }}
-            />
-          )}
-          {showSplash && AnimatedSplashView}
-          <CustomAlert ref={customAlertRef} />
-        </View>
-      </I18nProvider>
-    </UserProvider>
+    <SafeAreaProvider>
+      <UserProvider>
+        <I18nProvider>
+          <SafeAreaView style={{ flex: 1, backgroundColor: '#0808082c' }}>
+            {isReady && (
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: 'none'
+                }}
+              />
+            )}
+            {showSplash && AnimatedSplashView}
+            <CustomAlert ref={customAlertRef} />
+          </SafeAreaView>
+        </I18nProvider>
+      </UserProvider>
+    </SafeAreaProvider>
   );
 }

@@ -10,7 +10,6 @@ import {
   Image,
   Platform,
   RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -119,7 +118,7 @@ export default function EmployeeHome() {
   const openNotifications = () => router.push('/(employee)/notifications');
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       {/* GREEN STATUS BAR */}
       <StatusBar
         barStyle="light-content"
@@ -472,7 +471,7 @@ export default function EmployeeHome() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -483,13 +482,12 @@ const styles = StyleSheet.create({
     height: 44,
     backgroundColor: STATUS_GREEN },
 
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    
+    
     backgroundColor: STATUS_GREEN,
-    justifyContent: 'space-between' },
+    justifyContent: 'space-between'},
   avatarWrap: {
     width: 32,
     height: 32,

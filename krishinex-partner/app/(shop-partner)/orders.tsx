@@ -13,7 +13,6 @@ import {
   Linking,
   RefreshControl
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as WebBrowser from 'expo-web-browser';
 import { useI18n } from '../../context/I18nContext';
@@ -255,7 +254,7 @@ export default function ShopOrders() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* GREEN PREMIUM HEADER – accept jaisa look */}
@@ -643,7 +642,7 @@ export default function ShopOrders() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -651,15 +650,14 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
   // GREEN top header – same family as accept
-  appHeader: {
-    flexDirection: 'row',
+  appHeader: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    
+    
     backgroundColor: '#FFFFFF',
     elevation: 3,
     shadowColor: '#00000020',
-    justifyContent: 'space-between' },
+    justifyContent: 'space-between'},
   headerLeftRow: {
     flexDirection: 'row',
     alignItems: 'center',

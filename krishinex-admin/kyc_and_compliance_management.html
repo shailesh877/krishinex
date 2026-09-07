@@ -475,14 +475,24 @@
       <main
         class="flex-1 px-4 md:px-6 py-5 md:py-6 space-y-5 mx-auto w-full max-w-[1800px] pb-8 overflow-y-auto custom-scroll">
 
-        <!-- VERIFICATION BANNER
-        <div class="bg-red-500 text-white p-4 rounded-xl text-center font-black animate-pulse shadow-lg text-lg">
-          🚨 VERIFICATION BANNER: IF YOU CAN READ THIS, YOU ARE ON CODE VERSION 3.0! 🚨
-        </div>
-        -->
-
         <!-- KPI CARDS -->
         <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-3">
+              <div
+                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
+                <i class="fas fa-hourglass-half text-2xl text-sky-600"></i>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">Total</span>
+            </div>
+            <p class="text-3xl font-black text-slate-900 mb-1">...</p>
+            <p class="text-sm text-sky-700 font-bold">Submitted</p>
+            <div class="mt-3 pt-3 border-t-2 border-sky-100">
+              <p class="kpi-filter-subtext text-[10px] text-slate-600 font-semibold">All Time</p>
+            </div>
+          </div>
+          
           <div
             class="rounded-2xl border-2 border-amber-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
             <div class="flex items-center justify-between mb-3">
@@ -495,7 +505,7 @@
             <p class="text-3xl font-black text-slate-900 mb-1">...</p>
             <p class="text-sm text-amber-700 font-bold">Pending KYC</p>
             <div class="mt-3 pt-3 border-t-2 border-amber-100">
-              <p class="text-[10px] text-slate-600 font-semibold">24 high priority</p>
+              <p class="kpi-filter-subtext text-[10px] text-slate-600 font-semibold">All Time</p>
             </div>
           </div>
 
@@ -511,7 +521,7 @@
             <p class="text-3xl font-black text-slate-900 mb-1">...</p>
             <p class="text-sm text-emerald-700 font-bold">Verified</p>
             <div class="mt-3 pt-3 border-t-2 border-emerald-100">
-              <p class="text-[10px] text-slate-600 font-semibold">All time</p>
+              <p class="kpi-filter-subtext text-[10px] text-slate-600 font-semibold">All Time</p>
             </div>
           </div>
 
@@ -527,25 +537,10 @@
             <p class="text-3xl font-black text-slate-900 mb-1">...</p>
             <p class="text-sm text-rose-700 font-bold">Rejected</p>
             <div class="mt-3 pt-3 border-t-2 border-rose-100">
-              <p class="text-[10px] text-slate-600 font-semibold">All time</p>
+              <p class="kpi-filter-subtext text-[10px] text-slate-600 font-semibold">All Time</p>
             </div>
           </div>
 
-          <div
-            class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
-            <div class="flex items-center justify-between mb-3">
-              <div
-                class="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center shadow-sm">
-                <i class="fas fa-hourglass-half text-2xl text-sky-600"></i>
-              </div>
-              <span class="text-[10px] uppercase tracking-wider text-sky-600 font-black">Today</span>
-            </div>
-            <p class="text-3xl font-black text-slate-900 mb-1">...</p>
-            <p class="text-sm text-sky-700 font-bold">Submitted</p>
-            <div class="mt-3 pt-3 border-t-2 border-sky-100">
-              <p class="text-[10px] text-slate-600 font-semibold">New today</p>
-            </div>
-          </div>
         </section>
 
         <!-- KYC QUEUE TABLE -->
@@ -563,7 +558,7 @@
                 </p>
               </div>
               <div class="flex gap-2">
-                <select class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                <select id="kycTypeFilter" onchange="onTypeFilterChange()" class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
                   <option>All Types</option>
                   <option>Farmer</option>
                   <option>Equipment Partner</option>
@@ -574,14 +569,14 @@
                   <option>Soil Testing Partner</option>
                   <option>Field Executive</option>
                 </select>
-                <select class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
+                <select id="kycStatusFilter" onchange="onStatusFilterChange()" class="h-9 rounded-xl border-2 border-slate-200 bg-white px-3 text-xs font-bold">
                   <option>All Status</option>
                   <option>Pending</option>
                   <option>Approved</option>
                   <option>Rejected</option>
                 </select>
                 <input id="kyc-search" type="text" placeholder="🔍 Search name, phone..."
-                  onkeydown="if(event.key === 'Enter') { document.querySelector('tbody')?.closest('.overflow-auto, .overflow-y-auto, div[style*=\\'max-height\\']')?.scrollTo({top: 0}); fetchKYCList(1, false); }"
+                  onkeydown="handleKycSearch(event)"
                   class="h-9 rounded-xl border-2 border-slate-200 bg-white px-4 text-xs font-semibold w-56" />
                 <button onclick="exportKYC()"
                   class="inline-flex items-center h-9 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 text-xs text-white font-black hover:from-amber-600 hover:to-orange-600 shadow-md transition-all">
@@ -835,6 +830,37 @@
       return `${year}-${month}-${day}`;
     }
 
+    function getActiveFilterLabel() {
+      let dateLabel = 'All Time';
+      const activePresetBtn = document.querySelector('.global-preset-btn.bg-white');
+      const start = document.getElementById('globalStartDate')?.value;
+      const end = document.getElementById('globalEndDate')?.value;
+
+      if (activePresetBtn) {
+        dateLabel = activePresetBtn.textContent.trim();
+      } else if (start && end) {
+        dateLabel = (start === end) ? start : `${start} → ${end}`;
+      } else if (start) {
+        dateLabel = `From ${start}`;
+      } else if (end) {
+        dateLabel = `Until ${end}`;
+      }
+
+      const typeSelect = document.getElementById('kycTypeFilter');
+      const typeVal = typeSelect ? typeSelect.value : 'All Types';
+      if (typeVal && typeVal !== 'All Types') {
+        return `${dateLabel} • ${typeVal}`;
+      }
+      return dateLabel;
+    }
+
+    function updateKpiSubtexts(customLabel) {
+      const label = customLabel || getActiveFilterLabel();
+      document.querySelectorAll('.kpi-filter-subtext').forEach(el => {
+        el.textContent = label;
+      });
+    }
+
     function setGlobalDatePreset(preset) {
       document.querySelectorAll('.global-preset-btn').forEach(btn => {
         btn.classList.remove('bg-white', 'text-amber-700', 'shadow-sm');
@@ -877,7 +903,11 @@
       document.getElementById('globalStartDate').value = startDateStr;
       document.getElementById('globalEndDate').value = endDateStr;
 
-      applyGlobalFilter(startDateStr, endDateStr, label);
+      const typeSelect = document.getElementById('kycTypeFilter');
+      const typeVal = typeSelect ? typeSelect.value : 'All Types';
+      const fullLabel = (typeVal && typeVal !== 'All Types') ? `${label} • ${typeVal}` : label;
+
+      applyGlobalFilter(startDateStr, endDateStr, fullLabel);
     }
 
     function onGlobalDateChange() {
@@ -889,13 +919,30 @@
       const start = document.getElementById('globalStartDate').value;
       const end = document.getElementById('globalEndDate').value;
 
-      let label = 'Selected Period';
-      if (!start && !end) label = 'All Time';
+      let label = 'All Time';
+      if (start && end) label = (start === end) ? start : `${start} → ${end}`;
+      else if (start) label = `From ${start}`;
+      else if (end) label = `Until ${end}`;
 
-      applyGlobalFilter(start, end, label);
+      const typeSelect = document.getElementById('kycTypeFilter');
+      const typeVal = typeSelect ? typeSelect.value : 'All Types';
+      const fullLabel = (typeVal && typeVal !== 'All Types') ? `${label} • ${typeVal}` : label;
+
+      applyGlobalFilter(start, end, fullLabel);
+    }
+
+    function onTypeFilterChange() {
+      const start = document.getElementById('globalStartDate')?.value || '';
+      const end = document.getElementById('globalEndDate')?.value || '';
+      applyGlobalFilter(start, end);
+    }
+
+    function onStatusFilterChange() {
+      fetchKYCList();
     }
 
     function applyGlobalFilter(startDate, endDate, label) {
+      updateKpiSubtexts(label);
       fetchStats(startDate, endDate);
       fetchKYCList();
     }
@@ -907,27 +954,42 @@
       // Ensure we have a valid token BEFORE making API calls
       await ensureAuth();
 
-      // Hook up filters
-      document.querySelectorAll('select').forEach(sel => {
-        sel.addEventListener('change', () => {
-          fetchKYCList();
-        });
-      });
-
       // Hook up export
-      document.querySelector('button.bg-gradient-to-r.from-amber-500').onclick = exportKYC;
+      const exportBtn = document.querySelector('button.bg-gradient-to-r.from-amber-500');
+      if (exportBtn) exportBtn.onclick = exportKYC;
 
       // Set default preset
       setGlobalDatePreset('all');
     });
 
-    async function fetchStats(startDate = '', endDate = '') {
+    async function fetchStats(startDate, endDate) {
       try {
+        const start = startDate !== undefined ? startDate : (document.getElementById('globalStartDate')?.value || '');
+        const end = endDate !== undefined ? endDate : (document.getElementById('globalEndDate')?.value || '');
+        const typeSelect = document.getElementById('kycTypeFilter');
+        const typeVal = typeSelect ? typeSelect.value : 'All Types';
+        
+        const map = { 
+          'Farmer': 'farmer', 
+          'Equipment Partner': 'equipment', 
+          'Buyer': 'buyer', 
+          'Labour': 'labour', 
+          'KSP Franchise': 'ksp',
+          'Shop Partner': 'shop',
+          'Soil Testing Partner': 'soil',
+          'Field Executive': 'field_executive'
+        };
+
         let url = `${API_BASE}/employee/admin/kyc/stats`;
         const params = [];
-        if (startDate) params.push(`startDate=${startDate}`);
-        if (endDate) params.push(`endDate=${endDate}`);
+        if (start) params.push(`startDate=${start}`);
+        if (end) params.push(`endDate=${end}`);
+        if (typeVal && typeVal !== 'All Types' && map[typeVal]) {
+          params.push(`role=${map[typeVal]}`);
+        }
         if (params.length) url += `?${params.join('&')}`;
+
+        updateKpiSubtexts();
 
         const res = await fetch(url, { headers: H });
         if (!res.ok) throw new Error('Stats failed');
@@ -935,13 +997,17 @@
 
         // Update UI Cards
         // Pending
-        document.querySelector('.border-amber-100 p.text-3xl').textContent = data.pending || 0;
+        const pendingEl = document.querySelector('.border-amber-100 p.text-3xl');
+        if (pendingEl) pendingEl.textContent = (data.pending || 0).toLocaleString();
         // Approved
-        document.querySelector('.border-emerald-100 p.text-3xl').textContent = (data.approved || 0).toLocaleString();
+        const approvedEl = document.querySelector('.border-emerald-100 p.text-3xl');
+        if (approvedEl) approvedEl.textContent = (data.approved || 0).toLocaleString();
         // Rejected
-        document.querySelector('.border-rose-100 p.text-3xl').textContent = data.rejected || 0;
-        // Total/Today (We use total for the sky card as mock had "submitted today" but backend has "total" aggregate)
-        document.querySelector('.border-sky-100 p.text-3xl').textContent = data.total || 0;
+        const rejectedEl = document.querySelector('.border-rose-100 p.text-3xl');
+        if (rejectedEl) rejectedEl.textContent = (data.rejected || 0).toLocaleString();
+        // Total
+        const totalEl = document.querySelector('.border-sky-100 p.text-3xl');
+        if (totalEl) totalEl.textContent = (data.total || 0).toLocaleString();
 
       } catch (e) {
         console.error('Stats error:', e);
@@ -966,6 +1032,17 @@
       }
     });
 
+    function handleKycSearch(event) {
+      if (event.key === 'Enter') {
+        const tbody = document.querySelector('tbody');
+        const container = tbody ? tbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
+        if (container) {
+          container.scrollTo({ top: 0 });
+        }
+        fetchKYCList(1, false);
+      }
+    }
+
     async function fetchKYCList(page = 1, isAppend = false) {
       if (typeof page !== 'number') page = 1;
       if (kycLoading) return;
@@ -975,8 +1052,8 @@
         kycHasMore = true;
       }
       try {
-        const typeFilter = document.querySelectorAll('select')[0].value;
-        const statusFilter = document.querySelectorAll('select')[1].value;
+        const typeFilter = document.getElementById('kycTypeFilter')?.value || document.querySelectorAll('select')[0]?.value || 'All Types';
+        const statusFilter = document.getElementById('kycStatusFilter')?.value || document.querySelectorAll('select')[1]?.value || 'All Status';
         const start = document.getElementById('globalStartDate').value;
         const end = document.getElementById('globalEndDate').value;
         const searchVal = document.getElementById('kyc-search') ? document.getElementById('kyc-search').value.trim() : '';

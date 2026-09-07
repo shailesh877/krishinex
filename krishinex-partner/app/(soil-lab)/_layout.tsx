@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 // app/(soil-lab)/_layout.tsx
 import React from 'react';
 import { Tabs } from 'expo-router';
@@ -18,8 +19,8 @@ function SoilLabTabs() {
         tabBarActiveTintColor: '#1B9C85',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 5,
+          height: 55 + Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
+          paddingBottom: Math.max(insets.bottom, Platform.OS === 'android' ? 10 : 0),
         },
       }}
     >

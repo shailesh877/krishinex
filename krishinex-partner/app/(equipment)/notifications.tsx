@@ -10,7 +10,6 @@ import {
     RefreshControl,
     Linking,
     Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
@@ -208,7 +207,7 @@ export default function EquipmentNotifications() {
     };
 
     return (
-        <SafeAreaView style={styles.root}>
+        <View style={styles.root}>
             <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
             {/* HEADER */}
@@ -286,19 +285,18 @@ export default function EquipmentNotifications() {
                     </View>
                 </TouchableOpacity>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-    header: {
-        flexDirection: 'row', alignItems: 'center',
-       paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
-        backgroundColor: '#FFFFFF' },
+    header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row', alignItems: 'center',
+       
+    
+    
+        backgroundColor: '#FFFFFF'},
     backBtn: {
         width: 32, height: 32, borderRadius: 16,
         backgroundColor: '#F3F4F6',

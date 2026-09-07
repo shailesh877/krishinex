@@ -12,6 +12,7 @@ const ShopOrder = require('../models/ShopOrder');
 const Transaction = require('../models/Transaction');
 const LabourJob = require('../models/LabourJob');
 const SellRequest = require('../models/SellRequest');
+const Mandi = require('../models/Mandi');
 const FieldTask = require('../models/FieldTask');
 const FranchiseSale = require('../models/FranchiseSale');
 const FieldLead = require('../models/FieldLead');
@@ -44,12 +45,12 @@ const parsePriceInQuintals = (priceStr) => {
 
     const prices = matches.map(m => parseFloat(m));
 
-    // If we have "(₹100 / Quintal)" or similar, prioritize that specific number
-    const qmatch = str.match(/₹?(\d+(\.\d+)?)\s*\/\s*Quintal/i);
+    // If we have "(â‚¹100 / Quintal)" or similar, prioritize that specific number
+    const qmatch = str.match(/â‚¹?(\d+(\.\d+)?)\s*\/\s*Quintal/i);
     if (qmatch) return parseFloat(qmatch[1]) || 0;
 
     // Aggressive heuristic: If "KG" and a higher number is present, it's likely the Quintal rate
-    // e.g., "1 / KG (₹100 / Quintal)" -> 100 is higher than 1.
+    // e.g., "1 / KG (â‚¹100 / Quintal)" -> 100 is higher than 1.
     if (prices.length > 1) {
         return Math.max(...prices);
     }
@@ -447,7 +448,7 @@ router.patch('/soil-tasks/:id/status', protect, async (req, res) => {
 // @access  Private
 router.get('/doctor-chats', protect, async (req, res) => {
     try {
-        // Return all chats — blocked ones will show with Unblock option in UI
+        // Return all chats â€” blocked ones will show with Unblock option in UI
         const chats = await Chat.find({ doctor: req.user.id })
             .populate('farmer', 'name phone address profilePhotoUrl aadhaarNumber location')
             .sort({ lastTime: -1 });
@@ -1075,6 +1076,157 @@ router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => 
 // @route   POST /api/employee/admin/generate-card/:userId
 // @desc    Assign a Nex Card number to a user from inventory
 // @access  Private/Admin
+
+// @desc    Export farmers as CSV
+// @access  Private/Admin
+router.get('/admin/farmers/export', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [{ role: 'farmer' }];
+        const cleanStart = startDate && startDate.trim() !== '' ? startDate.trim() : null;
+        const cleanEnd = endDate && endDate.trim() !== '' ? endDate.trim() : null;
+
+        if (cleanStart || cleanEnd) {
+            let dFilter = {};
+            if (cleanStart && cleanStart !== 'all') dFilter.$gte = new Date(cleanStart);
+            if (cleanEnd && cleanEnd !== 'all') {
+                const end = new Date(cleanEnd);
+                end.setHours(23, 59, 59, 999);
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
+            }
+        }
+        
+        if (status && status !== 'all' && status !== '') {
+            if (status === 'approved') {
+                andConditions.push({ status: { $in: ['approved', 'Active', 'active'] } });
+            } else if (status === 'pending') {
+                andConditions.push({ status: { $nin: ['approved', 'Active', 'active'] } });
+            } else {
+                andConditions.push({ status });
+            }
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { email: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+        
+        let query = { $and: andConditions };
+        const User = require('../models/User');
+        const farmers = await User.find(query).select('_id name phone email address status createdAt kycStatus aadhaarNumber panNumber').lean();
+        
+        const Order = require('../models/Order');
+        const CropSellRequest = require('../models/SellRequest');
+        
+        const result = await Promise.all(farmers.map(async (f) => {
+            const orders = await Order.countDocuments({ buyer: f._id });
+            const sellReqs = await CropSellRequest.countDocuments({ farmer: f._id });
+            const kyc = (f.aadhaarNumber || f.panNumber) ? 'verified' : 'pending';
+            return { ...f, totalOrders: orders + sellReqs, kycStatus: kyc };
+        }));
+
+        const rows = result.map(f => {
+            return [
+                escapeCSV(f.name),
+                escapeCSV(f.phone),
+                escapeCSV(f.email),
+                escapeCSV(f.address),
+                escapeCSV(f.kycStatus),
+                escapeCSV(f.status),
+                f.totalOrders,
+                escapeCSV(new Date(f.createdAt).toLocaleDateString('en-GB'))
+            ].join(',');
+        });
+
+        const csv = '\uFEFF' + 'Name,Phone,Email,Location,KYC Status,Status,Total Orders,Joined\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="farmers_list.csv"');
+        res.send(csv);
+    } catch (e) {
+        console.error('Admin farmers export error:', e);
+        res.status(500).json({ error: 'Failed to export farmers' });
+    }
+});
+
+// @route   GET /api/employee/admin/leads/export
+// @desc    Export loan applications (leads) as CSV
+// @access  Private/Admin
+router.get('/admin/leads/export', protect, async (req, res) => {
+    try {
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [{}];
+        
+        const cleanStart = startDate && startDate.trim() !== '' ? startDate.trim() : null;
+        const cleanEnd = endDate && endDate.trim() !== '' ? endDate.trim() : null;
+
+        if (cleanStart || cleanEnd) {
+            let dFilter = {};
+            if (cleanStart && cleanStart !== 'all') dFilter.$gte = new Date(cleanStart);
+            if (cleanEnd && cleanEnd !== 'all') {
+                const end = new Date(cleanEnd);
+                end.setHours(23, 59, 59, 999);
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
+            }
+        }
+
+        if (status && status !== 'all') {
+            andConditions.push({ status: status });
+        }
+
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            andConditions.push({
+                $or: [
+                    { farmerName: regex },
+                    { mobile: regex },
+                    { aadhaar: regex }
+                ]
+            });
+        }
+
+        let query = { $and: andConditions };
+        const Lead = require('../models/Lead');
+        const leads = await Lead.find(query).sort({ createdAt: -1 }).lean();
+
+        const rows = leads.map(l => {
+            return [
+                escapeCSV(l.farmerName),
+                escapeCSV(l.mobile),
+                escapeCSV(l.loanAmount),
+                escapeCSV(l.loanPurpose),
+                escapeCSV(l.landSize),
+                escapeCSV(l.landType),
+                escapeCSV(l.farmingMonthlyIncome),
+                escapeCSV(l.hasExistingLoan),
+                escapeCSV(l.status),
+                escapeCSV(new Date(l.createdAt).toLocaleDateString('en-GB'))
+            ].join(',');
+        });
+
+        const csv = '\uFEFF' + 'Farmer Name,Mobile,Loan Amount,Purpose,Land Size,Land Type,Farming Income,Existing Loan,Status,Created At\n' + rows.join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="loan_applications.csv"');
+        res.send(csv);
+    } catch (e) {
+        console.error('Admin leads export error:', e);
+        res.status(500).json({ error: 'Failed to export leads' });
+    }
+});
+
 router.post('/admin/generate-card/:userId', protect, async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id);
@@ -1246,22 +1398,110 @@ router.get('/admin/farmers/stats', protect, checkModule('users'), async (req, re
 // @route   GET /api/employee/admin/soil-labs/stats
 // @desc    Get KPI stats for Soil Labs dashboard (Admin)
 // @access  Private/Admin
+
+// @desc    Export soil labs as CSV
+// @access  Private/Admin
+router.get('/admin/soil/export', protect, checkModule('soil'), async (req, res) => {
+    try {
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [{ role: 'soil' }];
+        
+        const cleanStart = startDate && startDate.trim() !== '' ? startDate.trim() : null;
+        const cleanEnd = endDate && endDate.trim() !== '' ? endDate.trim() : null;
+
+        if (cleanStart || cleanEnd) {
+            let dFilter = {};
+            if (cleanStart && cleanStart !== 'all') dFilter.$gte = new Date(cleanStart);
+            if (cleanEnd && cleanEnd !== 'all') {
+                const end = new Date(cleanEnd);
+                end.setHours(23, 59, 59, 999);
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
+            }
+        }
+        
+        if (status && status !== 'all' && status !== '') {
+            andConditions.push({ status });
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { businessName: { $regex: s, $options: 'i' } },
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { email: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+        
+        let query = { $and: andConditions };
+        const User = require('../models/User');
+        const labs = await User.find(query).lean();
+        
+        const SoilRequest = require('../models/SoilRequest');
+        
+        const result = await Promise.all(labs.map(async (lab) => {
+            const testsCount = await SoilRequest.countDocuments({ lab: lab._id });
+            const revenueAgg = await SoilRequest.aggregate([
+                { $match: { lab: lab._id, paymentStatus: 'Completed' } },
+                { $group: { _id: null, total: { $sum: '$amount' } } }
+            ]);
+            return {
+                ...lab,
+                testsConducted: testsCount,
+                revenueGenerated: revenueAgg.length > 0 ? revenueAgg[0].total : 0
+            };
+        }));
+
+        const rows = result.map(l => {
+            return [
+                escapeCSV(l.businessName || l.name),
+                escapeCSV(l.phone),
+                escapeCSV(l.email),
+                escapeCSV(l.address),
+                l.testsConducted,
+                l.revenueGenerated,
+                escapeCSV(l.status),
+                escapeCSV(new Date(l.createdAt).toLocaleDateString('en-GB'))
+            ].join(',');
+        });
+
+        const csv = '\uFEFF' + 'Lab Name,Phone,Email,Location,Tests Conducted,Revenue (Rs),Status,Joined Date\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="soil_labs_export.csv"');
+        res.send(csv);
+    } catch (e) {
+        console.error('Export soil labs error:', e);
+        res.status(500).json({ error: 'Failed to export soil labs' });
+    }
+});
+
 router.get('/admin/soil-labs/stats', protect, checkModule('soil'), async (req, res) => {
     try {
-        const totalLabs = await User.countDocuments({ role: 'soil' });
-        const activeLabs = await User.countDocuments({ role: 'soil', status: 'approved' });
-
         const { startDate, endDate } = req.query;
         let query = {};
-        if (startDate || endDate) {
+        const hasFilter = !!(startDate || endDate);
+        if (hasFilter) {
             query.createdAt = {};
-            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                query.createdAt.$gte = s;
+            }
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
                 query.createdAt.$lte = end;
             }
         }
+
+        const totalLabs = await User.countDocuments(hasFilter ? { role: 'soil', ...query } : { role: 'soil' });
+        const activeLabs = await User.countDocuments(hasFilter ? { role: 'soil', status: 'approved', ...query } : { role: 'soil', status: 'approved' });
 
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
@@ -1270,9 +1510,9 @@ router.get('/admin/soil-labs/stats', protect, checkModule('soil'), async (req, r
         const allRequests = await SoilRequest.find(query);
 
         const totalTests = allRequests.length;
-        const thisMonthTests = allRequests.filter(r => r.createdAt >= startOfMonth).length;
         const totalRevenue = allRequests.reduce((sum, req) => sum + (req.price || 0), 0);
-        const thisMonthRevenue = allRequests
+        const thisMonthTests = hasFilter ? allRequests.length : allRequests.filter(r => r.createdAt >= startOfMonth).length;
+        const thisMonthRevenue = hasFilter ? totalRevenue : allRequests
             .filter(r => r.createdAt >= startOfMonth)
             .reduce((sum, req) => sum + (req.price || 0), 0);
 
@@ -1613,7 +1853,7 @@ router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), asyn
             await sendNotification(labId, {
                 title: 'New Soil Test Assigned',
                 messageEn: `A new soil test request from ${request.farmer ? request.farmer.name : 'a farmer'} has been assigned to you.`,
-                messageHi: `एक नया मिट्टी परीक्षण अनुरोध ${request.farmer ? request.farmer.name : 'एक किसान'} से आपको सौंपा गया है।`,
+                messageHi: `à¤à¤• à¤¨à¤¯à¤¾ à¤®à¤¿à¤Ÿà¥à¤Ÿà¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤…à¤¨à¥à¤°à¥‹à¤§ ${request.farmer ? request.farmer.name : 'à¤à¤• à¤•à¤¿à¤¸à¤¾à¤¨'} à¤¸à¥‡ à¤†à¤ªà¤•à¥‹ à¤¸à¥Œà¤‚à¤ªà¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`,
                 type: 'soil_test',
                 refId: request._id.toString()
             });
@@ -1621,7 +1861,7 @@ router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), asyn
             // Send notification to farmer
             if (request.farmer) {
                 const notifMsgEn = `Your soil test request has been assigned to a lab partner.`;
-                const notifMsgHi = `आपके मिट्टी परीक्षण अनुरोध को एक लैब पार्टनर को सौंपा गया है।`;
+                const notifMsgHi = `à¤†à¤ªà¤•à¥‡ à¤®à¤¿à¤Ÿà¥à¤Ÿà¥€ à¤ªà¤°à¥€à¤•à¥à¤·à¤£ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¥‹ à¤à¤• à¤²à¥ˆà¤¬ à¤ªà¤¾à¤°à¥à¤Ÿà¤¨à¤° à¤•à¥‹ à¤¸à¥Œà¤‚à¤ªà¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`;
                 await sendNotification(request.farmer, {
                     title: 'Soil Test Update',
                     messageEn: notifMsgEn,
@@ -1649,6 +1889,143 @@ router.put('/admin/soil-requests/:id/assign', protect, checkModule('soil'), asyn
 // @route   GET /api/employee/admin/crop-requests/stats
 // @desc    Get KPI stats for crop requests
 // @access  Private/Admin
+
+// @desc    Export crop requests as CSV
+// @access  Private/Admin
+router.get('/admin/crop-requests/export', protect, checkModule('users'), async (req, res) => {
+    try {
+        const { startDate, endDate, search, status, crop } = req.query;
+        let orderQuery = {};
+        let sellQuery = {};
+
+        if (status && status !== 'all' && status !== '') {
+            orderQuery.status = status;
+            sellQuery.status = status;
+        }
+
+        if (crop && crop !== 'all' && crop !== '') {
+            orderQuery.cropName = crop;
+            sellQuery.cropName = crop;
+        }
+
+        if (startDate || endDate) {
+            if (startDate && startDate !== 'all') {
+                const start = new Date(startDate);
+                orderQuery.createdAt = { ...orderQuery.createdAt, $gte: start };
+                sellQuery.createdAt = { ...sellQuery.createdAt, $gte: start };
+            }
+            if (endDate && endDate !== 'all') {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                orderQuery.createdAt = { ...orderQuery.createdAt, $lte: end };
+                sellQuery.createdAt = { ...sellQuery.createdAt, $lte: end };
+            }
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            const matchingUsers = await User.find({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } }
+                ]
+            }).select('_id');
+            const userIds = matchingUsers.map(u => u._id);
+
+            orderQuery.$or = [
+                { cropName: { $regex: s, $options: 'i' } },
+                { orderId: { $regex: s, $options: 'i' } },
+                { buyer: { $in: userIds } }
+            ];
+
+            sellQuery.$or = [
+                { cropName: { $regex: s, $options: 'i' } },
+                { reqId: { $regex: s, $options: 'i' } },
+                { farmer: { $in: userIds } }
+            ];
+        }
+
+        const [orders, sellRequests] = await Promise.all([
+            Order.find(orderQuery)
+                .populate('buyer', 'name phone address')
+                .populate('assignedTo', 'name phone businessName')
+                .populate({
+                    path: 'sellRequestId',
+                    select: 'expectedPrice moisture bagCount notes images'
+                })
+                .sort({ createdAt: -1 })
+                .lean(),
+            SellRequest.find(sellQuery)
+                .populate('farmer', 'name phone address')
+                .populate('mandi', 'name')
+                .populate('assignedTo', 'name phone businessName')
+                .sort({ createdAt: -1 })
+                .lean()
+        ]);
+
+        const orderResult = orders.map(o => ({
+            id: o._id ? o._id.toString() : '',
+            farmerName: o.farmerName || (o.buyer && o.buyer.name) || 'Unknown',
+            farmerPhone: o.farmerMobile || (o.buyer && o.buyer.phone) || '',
+            location: o.village ? `${o.village}, ${o.district}` : (o.location || 'N/A'),
+            crop: o.crop || o.cropName || '',
+            quantity: o.quantity || '',
+            variety: o.variety || '',
+            pricePerQuintal: o.pricePerQuintal ? `₹${o.pricePerQuintal}/Q` : (o.sellRequestId?.expectedPrice || ''),
+            status: o.status || '',
+            assignedBuyer: o.assignedTo ? (o.assignedTo.name || o.assignedTo.businessName || '') : '',
+            payment: o.payment || 'COD',
+            amount: o.amount || 0,
+            date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-GB') : '',
+            createdAt: o.createdAt
+        }));
+
+        const sellResult = sellRequests.map(s => ({
+            id: s._id ? s._id.toString() : '',
+            farmerName: s.farmer ? s.farmer.name : 'Unknown',
+            farmerPhone: s.farmer ? s.farmer.phone : '',
+            location: s.mandi ? s.mandi.name : (s.farmer ? s.farmer.address : 'N/A'),
+            crop: s.cropName || '',
+            quantity: s.quantity || '',
+            variety: s.variety || '',
+            pricePerQuintal: s.expectedPrice || '',
+            status: s.status || '',
+            assignedBuyer: s.assignedTo ? (s.assignedTo.name || s.assignedTo.businessName || '') : '',
+            payment: '—',
+            amount: s.totalAmount || 0,
+            date: s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-GB') : '',
+            createdAt: s.createdAt
+        }));
+
+        const combined = [...orderResult, ...sellResult].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        const rows = combined.map(r => [
+            escapeCSV(r.id),
+            escapeCSV(r.farmerName),
+            escapeCSV(r.farmerPhone),
+            escapeCSV(r.location),
+            escapeCSV(r.crop),
+            escapeCSV(r.variety),
+            escapeCSV(r.quantity),
+            escapeCSV(r.pricePerQuintal),
+            escapeCSV(r.status),
+            escapeCSV(r.assignedBuyer),
+            escapeCSV(r.payment),
+            escapeCSV(r.amount),
+            escapeCSV(r.date)
+        ].join(','));
+
+        const csv = '\uFEFF' + 'Request ID,Farmer,Phone,Location,Crop,Variety,Quantity,Rate / Expected Price,Status,Assigned Buyer,Payment,Amount,Date\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="crop_sell_requests.csv"');
+        res.send(csv);
+    } catch (e) {
+        console.error('Export crop requests error:', e);
+        res.status(500).json({ error: 'Failed to export crop requests' });
+    }
+});
+
 router.get('/admin/crop-requests/stats', protect, checkModule('users'), async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
@@ -1791,7 +2168,7 @@ router.get('/admin/crop-requests', protect, checkModule('users'), async (req, re
             farmerId: (o.buyer && o.buyer._id) ? o.buyer._id : null,
             createdAt: o.createdAt,
             source: 'order',
-            expectedPrice: o.sellRequestId?.expectedPrice || (o.pricePerQuintal ? `₹${o.pricePerQuintal}/Q` : '—'),
+            expectedPrice: o.sellRequestId?.expectedPrice || (o.pricePerQuintal ? `â‚¹${o.pricePerQuintal}/Q` : 'â€”'),
             moisture: o.sellRequestId?.moisture || '',
             bagCount: o.sellRequestId?.bagCount || '',
             payment: o.payment || 'COD',
@@ -1822,15 +2199,15 @@ router.get('/admin/crop-requests', protect, checkModule('users'), async (req, re
             farmerId: s.farmer ? s.farmer._id : null,
             createdAt: s.createdAt,
             source: 'sell-request',
-            expectedPrice: s.expectedPrice || '—',
+            expectedPrice: s.expectedPrice || 'â€”',
             moisture: s.moisture || '',
             bagCount: s.bagCount || '',
-            payment: '—',
+            payment: 'â€”',
             amount: 0,
             cancelReason: '',
             amountReceived: 0,
             farmerAmount: 0,
-            settlement: '—',
+            settlement: 'â€”',
             commission: 0,
             commissionRate: s.commissionRate || 0
         }));
@@ -1905,7 +2282,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), asy
                         const buyer = await User.findById(buyerId);
                         const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
                         const msgEn = `OTP: ${sReq.otp} - ORDER: #${order._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${order.crop}).`;
-                        const msgHi = `OTP: ${sReq.otp} - ऑर्डर: #${order._id.toString().slice(-6)} - आपके ${order.crop} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
+                        const msgHi = `OTP: ${sReq.otp} - à¤‘à¤°à¥à¤¡à¤°: #${order._id.toString().slice(-6)} - à¤†à¤ªà¤•à¥‡ ${order.crop} à¤•à¥‡ à¤¬à¥‡à¤šà¤¨à¥‡ à¤•à¥‡ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¥‡ à¤²à¤¿à¤ à¤µà¥à¤¯à¤¾à¤ªà¤¾à¤°à¥€ ${bName} à¤•à¥‹ à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`;
 
                         const { sendNotification: sNotif } = require('../services/notificationService');
                         const { sendOtp: sOtp } = require('../services/msg91');
@@ -1979,7 +2356,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), asy
                 if (sellReq.farmer) {
                     const bName = buyer ? (buyer.businessName || buyer.name) : 'A trader';
                     const msgEn = `OTP: ${otp} - ORDER: #${newOrder._id.toString().slice(-6)} - Trader ${bName} has been assigned for your sell request (${sellReq.cropName}).`;
-                    const msgHi = `OTP: ${otp} - ऑर्डर: #${newOrder._id.toString().slice(-6)} - आपके ${sellReq.cropName} के बेचने के अनुरोध के लिए व्यापारी ${bName} को नियुक्त किया गया है।`;
+                    const msgHi = `OTP: ${otp} - à¤‘à¤°à¥à¤¡à¤°: #${newOrder._id.toString().slice(-6)} - à¤†à¤ªà¤•à¥‡ ${sellReq.cropName} à¤•à¥‡ à¤¬à¥‡à¤šà¤¨à¥‡ à¤•à¥‡ à¤…à¤¨à¥à¤°à¥‹à¤§ à¤•à¥‡ à¤²à¤¿à¤ à¤µà¥à¤¯à¤¾à¤ªà¤¾à¤°à¥€ ${bName} à¤•à¥‹ à¤¨à¤¿à¤¯à¥à¤•à¥à¤¤ à¤•à¤¿à¤¯à¤¾ à¤—à¤¯à¤¾ à¤¹à¥ˆà¥¤`;
 
                     const { sendNotification: sNotif } = require('../services/notificationService');
                     const { sendOtp: sOtp } = require('../services/msg91');
@@ -2137,9 +2514,15 @@ router.get('/admin/buyer/stats', protect, checkModule('buyer'), async (req, res)
             end.setHours(23, 59, 59, 999);
         }
 
-        const buyerQuery = { role: 'buyer' };
-        const activeBuyerQuery = { role: 'buyer', status: 'approved' };
-        const pendingBuyerQuery = { role: 'buyer', status: 'pending' };
+        const buyerQuery = hasFilter 
+            ? { role: 'buyer', createdAt: { $gte: start, $lte: end } } 
+            : { role: 'buyer' };
+        const activeBuyerQuery = hasFilter 
+            ? { role: 'buyer', status: 'approved', createdAt: { $gte: start, $lte: end } } 
+            : { role: 'buyer', status: 'approved' };
+        const pendingBuyerQuery = hasFilter 
+            ? { role: 'buyer', status: 'pending', createdAt: { $gte: start, $lte: end } } 
+            : { role: 'buyer', status: 'pending' };
 
         const totalBuyers = await User.countDocuments(buyerQuery);
         const activeBuyers = await User.countDocuments(activeBuyerQuery);
@@ -2880,22 +3263,32 @@ router.get('/admin/buyer/export/reconciliation', protect, checkModule("buyer"), 
 // @access  Private/Admin
 router.get('/admin/shop/stats', protect, checkModule('shops'), async (req, res) => {
     try {
-        const [totalShops, activeShops, totalProducts] = await Promise.all([
-            User.countDocuments({ role: 'shop' }),
-            User.countDocuments({ role: 'shop', status: 'approved' }),
-            Item.countDocuments()
-        ]);
-
         const { startDate, endDate } = req.query;
-        let orderQuery = {};
-        if (startDate || endDate) {
-            orderQuery.createdAt = {};
-            if (startDate) orderQuery.createdAt.$gte = new Date(startDate);
+        let dateFilter = {};
+        const hasDateFilter = !!(startDate || endDate);
+        if (hasDateFilter) {
+            dateFilter.createdAt = {};
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                dateFilter.createdAt.$gte = s;
+            }
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
-                orderQuery.createdAt.$lte = end;
+                dateFilter.createdAt.$lte = end;
             }
+        }
+
+        const [totalShops, activeShops, totalProducts] = await Promise.all([
+            User.countDocuments(hasDateFilter ? { role: 'shop', ...dateFilter } : { role: 'shop' }),
+            User.countDocuments(hasDateFilter ? { role: 'shop', status: 'approved', ...dateFilter } : { role: 'shop', status: 'approved' }),
+            Item.countDocuments(hasDateFilter ? dateFilter : {})
+        ]);
+
+        let orderQuery = {};
+        if (hasDateFilter) {
+            orderQuery.createdAt = dateFilter.createdAt;
         } else if (req.query.startDate === undefined && req.query.endDate === undefined) {
             const startOfMonth = new Date();
             startOfMonth.setDate(1);
@@ -3039,6 +3432,107 @@ router.get('/admin/shops', protect, checkModule('shops'), async (req, res) => {
     } catch (e) {
         console.error('Shops fetch error:', e);
         res.status(500).json({ error: 'Failed to fetch shops' });
+    }
+});
+
+// @route   GET /api/employee/admin/shop/export
+// @access  Private/Admin
+router.get('/admin/shop/export', protect, checkModule('shops'), async (req, res) => {
+    try {
+        const { startDate, endDate, search, status } = req.query;
+        let andConditions = [{ role: 'shop' }];
+        
+        if (startDate || endDate) {
+            let dFilter = {};
+            if (startDate && startDate !== 'all') dFilter.$gte = new Date(startDate);
+            if (endDate && endDate !== 'all') {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dFilter.$lte = end;
+            }
+            if (Object.keys(dFilter).length > 0) {
+                andConditions.push({ createdAt: dFilter });
+            }
+        }
+        
+        if (status && status !== 'All' && status !== '') {
+            if (status === 'Active') {
+                andConditions.push({ status: { $in: ['approved', 'Active'] } });
+            } else if (status === 'Pending') {
+                andConditions.push({ status: 'pending' });
+            } else {
+                andConditions.push({ status });
+            }
+        }
+
+        if (search && search.trim() !== '') {
+            const s = search.trim();
+            andConditions.push({
+                $or: [
+                    { name: { $regex: s, $options: 'i' } },
+                    { phone: { $regex: s, $options: 'i' } },
+                    { businessName: { $regex: s, $options: 'i' } },
+                    { address: { $regex: s, $options: 'i' } }
+                ]
+            });
+        }
+
+        const User = require('../models/User');
+        const Item = require('../models/Item');
+        const ShopOrder = require('../models/ShopOrder');
+
+        let query = { $and: andConditions };
+        const shops = await User.find(query).sort({ createdAt: -1 }).lean();
+
+        function escapeCSV(val) {
+            if (val === null || val === undefined) return '';
+            return '"' + String(val).replace(/"/g, '""') + '"';
+        }
+
+        const enriched = await Promise.all(shops.map(async (s) => {
+            const [items, totalOrdersDocs] = await Promise.all([
+                Item.find({ owner: s._id }).select('category').lean(),
+                ShopOrder.find({ owner: s._id }).select('status').lean()
+            ]);
+            const categories = [...new Set(items.map(i => i.category || 'General'))];
+            return {
+                businessName: s.businessName || s.name,
+                name: s.name,
+                phone: s.phone,
+                email: s.email,
+                address: s.address,
+                status: s.status,
+                joinedAt: s.createdAt,
+                totalProducts: items.length,
+                categories: categories.join('; '),
+                totalOrders: totalOrdersDocs.length,
+                fulfilledOrders: totalOrdersDocs.filter(o => o.status === 'DELIVERED').length
+            };
+        }));
+
+        const rows = enriched.map(s => {
+            return [
+                escapeCSV(s.businessName),
+                escapeCSV(s.name),
+                escapeCSV(s.phone),
+                escapeCSV(s.email),
+                escapeCSV(s.address),
+                s.totalProducts,
+                escapeCSV(s.categories),
+                s.totalOrders,
+                s.fulfilledOrders,
+                escapeCSV(s.status),
+                escapeCSV(new Date(s.joinedAt).toLocaleDateString('en-GB'))
+            ].join(',');
+        });
+
+        const csv = '\uFEFF' + 'Business Name,Owner Name,Phone,Email,Location,Total Products,Categories,Total Orders,Fulfilled,Status,Joined\n' + rows.join('\n');
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="shop_partners.csv"');
+        res.send(csv);
+    } catch (e) {
+        console.error('Shops export error:', e);
+        res.status(500).json({ error: 'Failed to export shops' });
     }
 });
 
@@ -3890,9 +4384,14 @@ router.get('/admin/rental/stats', protect, checkModule('equipment'), async (req,
     try {
         const { startDate, endDate } = req.query;
         const filter = {};
-        if (startDate || endDate) {
+        const hasDateFilter = !!(startDate || endDate);
+        if (hasDateFilter) {
             filter.createdAt = {};
-            if (startDate) filter.createdAt.$gte = new Date(startDate);
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                filter.createdAt.$gte = s;
+            }
             if (endDate) {
                 const end = new Date(endDate);
                 end.setHours(23, 59, 59, 999);
@@ -3921,9 +4420,9 @@ router.get('/admin/rental/stats', protect, checkModule('equipment'), async (req,
         const cashCollected = await Rental.countDocuments({ ...filter, cashCollected: true });
         const cashPending = await Rental.countDocuments({ ...filter, status: 'Completed', cashCollected: false });
 
-        // Total active machines & equipment providers
-        const totalMachines = await Machine.countDocuments();
-        const totalProviders = await User.countDocuments({ role: 'equipment' });
+        // Total active machines & equipment providers (date filtered if preset/range provided)
+        const totalMachines = await Machine.countDocuments(hasDateFilter ? { createdAt: filter.createdAt } : {});
+        const totalProviders = await User.countDocuments(hasDateFilter ? { role: 'equipment', createdAt: filter.createdAt } : { role: 'equipment' });
 
         res.json({
             totalBookings, activeBookings, completedBookings, cancelledBookings,
@@ -4573,10 +5072,16 @@ router.get('/admin/rental/partners/:id/bookings', protect, checkModule('equipmen
 // @access  Private/Admin
 router.get('/admin/kyc/stats', protect, checkModule('kyc'), async (req, res) => {
     try {
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate, role, type } = req.query;
         const roles = ['ksp', 'shop', 'soil', 'equipment', 'labour', 'field_executive', 'farmer', 'buyer'];
         
-        let matchQuery = { role: { $in: roles } };
+        let matchQuery = {};
+        const selectedRole = role || type;
+        if (selectedRole && selectedRole !== 'All Types' && selectedRole !== 'all') {
+            matchQuery.role = selectedRole;
+        } else {
+            matchQuery.role = { $in: roles };
+        }
         if (startDate || endDate) {
             matchQuery.createdAt = {};
             if (startDate) matchQuery.createdAt.$gte = new Date(startDate);
@@ -5175,7 +5680,7 @@ router.put('/admin/ksp/approve-wallet/:id', protect, checkModule("ksp_franchise"
         user.walletRechargeStatus = 'NONE';
 
         await user.save();
-        res.json({ message: `Success! ₹${amount.toLocaleString('en-IN')} added to wallet.`, balance: user.walletBalance });
+        res.json({ message: `Success! â‚¹${amount.toLocaleString('en-IN')} added to wallet.`, balance: user.walletBalance });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: 'Failed to approve recharge' });
@@ -6060,12 +6565,44 @@ router.get('/admin/analytics/report/:module', protect, checkModule('analytics'),
                 csv += `${r._id},"${r.owner?.name || 'N/A'}","${r.buyer?.name || 'N/A'}",${r.totalAmount},${r.status},${date}\n`;
             });
         } else if (module === 'labour') {
-            data = await LabourJob.find(query).populate('labour', 'name').sort({ createdAt: -1 }).lean();
-            csv += 'Job ID,Labour Name,Amount,Status,Date\n';
-            data.forEach(l => {
-                const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'N/A';
-                csv += `${l._id},"${l.labour?.name || 'N/A'}",${l.amount},${l.status},${date}\n`;
-            });
+            const jobs = await LabourJob.find(query).populate('labour', 'name').sort({ createdAt: -1 }).lean();
+            if (jobs && jobs.length > 0) {
+                data = jobs;
+                csv += 'Job ID,Labour Name,Amount,Status,Date\n';
+                data.forEach(l => {
+                    const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : 'N/A';
+                    csv += `${l._id},"${(l.labour?.name || 'N/A').replace(/"/g, '""')}",${l.amount || 0},"${(l.status || 'N/A').replace(/"/g, '""')}",${date}\n`;
+                });
+            } else {
+                let labourQuery = { role: 'labour' };
+                if (all !== 'true' && startDate && endDate) {
+                    const start = new Date(startDate);
+                    start.setHours(0, 0, 0, 0);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    labourQuery.createdAt = { $gte: start, $lte: end };
+                }
+                const labourers = await User.find(labourQuery).sort({ createdAt: -1 }).lean();
+                data = labourers.map(l => ({
+                    _id: l._id,
+                    name: l.businessName || l.name || 'N/A',
+                    phone: l.phone || 'N/A',
+                    location: l.address || l.city || 'N/A',
+                    skills: (l.labourDetails?.skills || []).join('; ') || 'General Labour',
+                    availability: l.labourDetails?.availability || 'active',
+                    jobsDone: l.labourDetails?.jobsCompleted || 0,
+                    dailyRate: l.labourDetails?.dailyRate || 0,
+                    amount: l.labourDetails?.dailyRate || 0,
+                    status: l.status || 'Active',
+                    labour: { name: l.businessName || l.name || 'N/A', phone: l.phone || 'N/A' },
+                    createdAt: l.createdAt
+                }));
+                csv += 'Labourer ID,Labour Name,Phone,Location,Skills,Availability,Jobs Done,Daily Rate,Status,Joined Date\n';
+                data.forEach(l => {
+                    const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString('en-IN') : 'N/A';
+                    csv += `${l._id},"${(l.name || '').replace(/"/g, '""')}","${(l.phone || '').replace(/"/g, '""')}","${(l.location || '').replace(/"/g, '""')}","${(l.skills || '').replace(/"/g, '""')}","${l.availability}",${l.jobsDone},${l.dailyRate},"${l.status}",${date}\n`;
+                });
+            }
         } else if (module === 'buyer-trading') {
             data = await Order.find(query).populate('assignedTo', 'name').sort({ createdAt: -1 }).lean();
             csv += 'Order ID,Farmer,Buyer,Crop,Amount,Status,Date\n';
@@ -6229,9 +6766,9 @@ router.get('/admin/dashboard-stats', protect, async (req, res) => {
             SoilRequest.countDocuments({ createdAt: { $gte: hasFilter ? start : startOfMonth, $lte: end } }),
 
             // 6. Farmers
-            User.countDocuments(hasFilter ? { role: 'buyer', createdAt: { $gte: start, $lte: end } } : { role: 'buyer' }),
-            User.countDocuments(hasFilter ? { role: 'buyer', status: 'approved', createdAt: { $gte: start, $lte: end } } : { role: 'buyer', status: 'approved' }),
-            User.aggregate(hasFilter ? [{ $match: { role: 'buyer', walletBalance: { $gte: -1000000, $lte: 100000000 }, createdAt: { $gte: start, $lte: end } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }] : [{ $match: { role: 'buyer', walletBalance: { $gte: -1000000, $lte: 100000000 } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }]),
+            User.countDocuments(hasFilter ? { role: 'farmer', createdAt: { $gte: start, $lte: end } } : { role: 'farmer' }),
+            User.countDocuments(hasFilter ? { role: 'farmer', status: 'approved', createdAt: { $gte: start, $lte: end } } : { role: 'farmer', status: 'approved' }),
+            User.aggregate(hasFilter ? [{ $match: { role: 'farmer', walletBalance: { $gte: -1000000, $lte: 100000000 }, createdAt: { $gte: start, $lte: end } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }] : [{ $match: { role: 'farmer', walletBalance: { $gte: -1000000, $lte: 100000000 } } }, { $group: { _id: null, total: { $sum: '$walletBalance' } } }]),
 
             // 7. Internal
             User.countDocuments(hasFilter ? { role: { $in: ['employee', 'admin', 'field_executive'] }, createdAt: { $gte: start, $lte: end } } : { role: { $in: ['employee', 'admin', 'field_executive'] } }),
@@ -7094,7 +7631,7 @@ router.put('/admin/franchise/approve-wallet/:id', protect, checkModule("ksp_fran
             note: 'Franchise Wallet Recharge Approved by Admin'
         });
 
-        res.json({ message: `Recharge of ₹${amount} approved successfully` });
+        res.json({ message: `Recharge of â‚¹${amount} approved successfully` });
     } catch (e) {
         res.status(500).json({ error: 'Failed' });
     }
@@ -7180,7 +7717,7 @@ router.get('/admin/leads', protect, checkModule("leads"), async (req, res) => {
 router.get('/admin/all-nex-cards', protect, checkModule("nexcard"), async (req, res) => {
     try {
         const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
-        const { search, role } = req.query;
+        const { search, role, startDate, endDate } = req.query;
         let andConditions = [
             {
                 $or: [
@@ -7194,6 +7731,21 @@ router.get('/admin/all-nex-cards', protect, checkModule("nexcard"), async (req, 
             andConditions.push({ role });
         } else {
             andConditions.push({ role: { $in: eligibleRoles } });
+        }
+
+        if (startDate || endDate) {
+            let dFilter = {};
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                dFilter.$gte = s;
+            }
+            if (endDate) {
+                const e = new Date(endDate);
+                e.setHours(23, 59, 59, 999);
+                dFilter.$lte = e;
+            }
+            andConditions.push({ createdAt: dFilter });
         }
 
         if (search && search.trim() !== '') {
@@ -7279,6 +7831,61 @@ router.get('/admin/all-nex-cards', protect, checkModule("nexcard"), async (req, 
     }
 });
 
+
+// @route   GET /api/employee/admin/nexcard/stats
+// @desc    Get KPI stats for NexCard Hub (Live Stock, Assigned, Active, Total)
+router.get('/admin/nexcard/stats', protect, checkModule("nexcard"), async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        let dateQuery = {};
+        const hasDateFilter = !!(startDate || endDate);
+        if (hasDateFilter) {
+            dateQuery.createdAt = {};
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                dateQuery.createdAt.$gte = s;
+            }
+            if (endDate) {
+                const e = new Date(endDate);
+                e.setHours(23, 59, 59, 999);
+                dateQuery.createdAt.$lte = e;
+            }
+        }
+
+        const NexCard = require('../models/NexCard');
+        const eligibleRoles = ['farmer', 'ksp', 'shop', 'equipment', 'soil', 'buyer'];
+        const userCardFilter = {
+            $and: [
+                {
+                    $or: [
+                        { cardNumber: { $exists: true, $ne: '' } },
+                        { walletNumber: { $exists: true, $ne: '' } }
+                    ]
+                },
+                { role: { $in: eligibleRoles } },
+                ...(hasDateFilter ? [{ createdAt: dateQuery.createdAt }] : [])
+            ]
+        };
+
+        const [totalAssigned, liveStock, totalActive, totalDistributed] = await Promise.all([
+            User.countDocuments(userCardFilter),
+            NexCard.countDocuments(hasDateFilter ? { status: 'available', createdAt: dateQuery.createdAt } : { status: 'available' }),
+            User.countDocuments({ ...userCardFilter, status: 'approved' }),
+            NexCard.countDocuments(hasDateFilter ? { status: 'assigned', createdAt: dateQuery.createdAt } : { status: 'assigned' })
+        ]);
+
+        res.json({
+            totalAssigned,
+            liveStock,
+            totalActive,
+            totalDistributed: totalDistributed || totalAssigned
+        });
+    } catch (e) {
+        console.error('NexCard stats error:', e);
+        res.status(500).json({ error: 'Failed to fetch NexCard stats' });
+    }
+});
 
 // @route   GET /api/employee/admin/export-nex-cards
 // @desc    Export all Nex Card users to CSV

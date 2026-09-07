@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -168,6 +168,7 @@
 
             <div id="forgotStep1" class="space-y-4">
                 <input type="email" id="forgotEmail"
+                    onkeydown="if(event.key === 'Enter') handleForgotStep1()"
                     class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
                     placeholder="Registered Email">
                 <button onclick="handleForgotStep1()" id="forgotBtn1"
@@ -182,6 +183,7 @@
                     OTP aapke email pe bhej diya gaya hai.
                 </div>
                 <input type="text" id="forgotOtp"
+                    onkeydown="if(event.key === 'Enter') handleForgotStep2()"
                     class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all text-center tracking-[0.5em]"
                     placeholder="000000" maxlength="6">
                 <button onclick="handleForgotStep2()" id="forgotBtn2"
@@ -195,6 +197,7 @@
                     class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
                     placeholder="New Password">
                 <input type="password" id="confPassword"
+                    onkeydown="if(event.key === 'Enter') handleForgotStep3()"
                     class="block w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-blue-500 transition-all"
                     placeholder="Confirm New Password">
                 <button onclick="handleForgotStep3()" id="forgotBtn3"

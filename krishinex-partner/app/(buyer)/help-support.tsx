@@ -287,10 +287,7 @@ export default function HelpSupport() {
 const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-    header: {
-        flexDirection: 'row', alignItems: 'center',
-        paddingTop: 16, paddingBottom: 14, paddingHorizontal: 16,
-    },
+    header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row', alignItems: 'center',},
     backWrap: {
         width: 36, height: 36, borderRadius: 18,
         justifyContent: 'center', alignItems: 'center',

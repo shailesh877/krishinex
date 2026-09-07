@@ -15,7 +15,6 @@ import {
   Image,
   ActivityIndicator,
   ToastAndroid } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -420,7 +419,7 @@ export default function DoctorChatScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeRoot}>
+    <View style={styles.safeRoot}>
       <KeyboardAvoidingView
         style={styles.root}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -540,7 +539,7 @@ export default function DoctorChatScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -548,12 +547,11 @@ const styles = StyleSheet.create({
   safeRoot: { flex: 1, backgroundColor: '#E5E7EB' },
   root: { flex: 1 },
 
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN },
+    
+    
+    backgroundColor: STATUS_GREEN},
   backBtn: {
     width: 32,
     height: 32,

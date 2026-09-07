@@ -10,7 +10,6 @@ import {
     RefreshControl,
     Linking,
     Modal } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -193,7 +192,7 @@ export default function SoilNotifications() {
     };
 
     return (
-        <SafeAreaView style={styles.root}>
+        <View style={styles.root}>
             <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
             <LinearGradient colors={['#16A34A', '#15803D']} style={styles.header}>
@@ -269,7 +268,7 @@ export default function SoilNotifications() {
                     </View>
                 </TouchableOpacity>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -277,17 +276,13 @@ const styles = StyleSheet.create({
     root: {
         flex: 1,
         backgroundColor: '#F9FAFB' },
-    header: {
-        paddingHorizontal: 20,
-
-        paddingBottom: 24,
-        flexDirection: 'row',
+    header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
         alignItems: 'flex-start',
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,
         elevation: 8,
         shadowColor: '#16A34A',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 4},
         shadowOpacity: 0.2,
         shadowRadius: 8,
         marginBottom: 8 },

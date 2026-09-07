@@ -362,21 +362,63 @@
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-14 -mt-1">Inventory & Management</p>
           </div>
           
-          <div class="flex items-center gap-3">
-            <div class="hidden lg:flex gap-2 mr-4 border-r pr-4 border-slate-200">
+          <div class="flex items-center gap-3 flex-nowrap">
+            <!-- Premium Date Filter Dropdown in Header -->
+            <div class="relative inline-block text-left shrink-0" id="dateFilterContainer">
+              <button onclick="toggleDateDropdown()" id="dateFilterBtn"
+                class="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-3.5 text-xs text-slate-700 font-bold hover:bg-slate-50 hover:border-emerald-300 transition-all shadow-sm cursor-pointer shrink-0">
+                <i class="far fa-calendar mr-2 text-emerald-600"></i>
+                <span id="dateFilterLabel">All Time</span>
+                <i class="fas fa-chevron-down ml-2 text-[10px] text-slate-400"></i>
+              </button>
+
+              <!-- Dropdown Panel -->
+              <div id="dateFilterDropdown"
+                class="hidden absolute right-0 mt-2 w-72 origin-top-right rounded-2xl bg-white border border-slate-200 shadow-2xl ring-1 ring-black/5 focus:outline-none z-50 transition-all duration-200">
+                <div class="p-4 space-y-3">
+                  <div>
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block mb-2">Quick Presets</span>
+                    <div class="grid grid-cols-2 gap-2">
+                      <button onclick="setDatePreset('today')" id="preset-today"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Today</button>
+                      <button onclick="setDatePreset('yesterday')" id="preset-yesterday"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">Yesterday</button>
+                      <button onclick="setDatePreset('month')" id="preset-month"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all">This Month</button>
+                      <button onclick="setDatePreset('all')" id="preset-all"
+                        class="preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all">All Time</button>
+                    </div>
+                  </div>
+                  <div class="border-t border-slate-100 pt-2 space-y-2">
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Custom Date Range</span>
+                    <div>
+                      <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">From Date</label>
+                      <input type="date" id="filterStartDate" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                    <div>
+                      <label class="text-[8px] font-black text-slate-500 uppercase block mb-1">To Date</label>
+                      <input type="date" id="filterEndDate" class="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                    <button onclick="applyCustomDateFilter()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-black py-2 rounded-xl hover:brightness-105 transition-all">Apply Filter</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden lg:flex gap-2 mr-2 border-r pr-4 border-slate-200">
                 <div class="text-right">
                     <p class="text-[10px] text-slate-400 font-black uppercase">Live Stock</p>
                     <p id="totalStockHeader" class="text-sm font-black text-emerald-600">--</p>
                 </div>
             </div>
-            <button onclick="openAddModal()" class="group relative flex items-center h-10 px-5 rounded-xl bg-slate-900 text-white text-[11px] font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 overflow-hidden">
+            <button onclick="openAddModal()" class="group relative flex items-center h-10 px-4 rounded-xl bg-slate-900 text-white text-[11px] font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 overflow-hidden shrink-0">
                 <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-sky-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500"></div>
-                <i class="fas fa-plus mr-2 text-emerald-400"></i> Single Card
+                <i class="fas fa-plus mr-1.5 text-emerald-400"></i> Single Card
             </button>
-            <button onclick="openBulkModal()" class="flex items-center h-10 px-5 rounded-xl bg-white border-2 border-slate-100 text-slate-700 text-[11px] font-black hover:border-emerald-200 hover:text-emerald-600 transition-all shadow-sm">
-                <i class="fas fa-file-excel mr-2 text-sky-500"></i> Bulk Upload
+            <button onclick="openBulkModal()" class="flex items-center h-10 px-4 rounded-xl bg-white border-2 border-slate-100 text-slate-700 text-[11px] font-black hover:border-emerald-200 hover:text-emerald-600 transition-all shadow-sm shrink-0">
+                <i class="fas fa-file-excel mr-1.5 text-sky-500"></i> Bulk Upload
             </button>
-            <button onclick="exportCards()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border-2 border-slate-100 text-slate-400 hover:text-slate-900 transition-all shadow-sm">
+            <button onclick="exportCards()" class="h-10 w-10 flex items-center justify-center rounded-xl bg-white border-2 border-slate-100 text-slate-400 hover:text-slate-900 transition-all shadow-sm shrink-0" title="Export Cards">
                 <i class="fas fa-download text-xs"></i>
             </button>
           </div>
@@ -385,6 +427,57 @@
 
       <main class="flex-1 px-6 py-6 space-y-6 mx-auto w-full max-w-[1800px] pb-12 overflow-y-auto custom-scroll">
         
+        <!-- KPI SUMMARY CARDS -->
+        <section class="grid gap-4 grid-cols-2 sm:grid-cols-4">
+          <!-- Total Assigned -->
+          <div class="rounded-2xl border-2 border-emerald-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center">
+                <i class="fas fa-id-card text-emerald-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-emerald-600 font-black">Assigned</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-total-assigned">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Cards Issued</p>
+          </div>
+
+          <!-- Live Stock -->
+          <div class="rounded-2xl border-2 border-sky-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-100 to-sky-50 flex items-center justify-center">
+                <i class="fas fa-boxes-stacked text-sky-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-sky-600 font-black">Inventory</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-live-stock">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Available Stock</p>
+          </div>
+
+          <!-- Active Cards -->
+          <div class="rounded-2xl border-2 border-teal-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-100 to-teal-50 flex items-center justify-center">
+                <i class="fas fa-user-check text-teal-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-teal-600 font-black">Active</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-active-cards">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Verified Users</p>
+          </div>
+
+          <!-- Total Distributed -->
+          <div class="rounded-2xl border-2 border-purple-100 bg-white shadow-md p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center">
+                <i class="fas fa-share-nodes text-purple-600"></i>
+              </div>
+              <span class="text-[9px] uppercase tracking-wider text-purple-600 font-black">Distributed</span>
+            </div>
+            <p class="text-2xl font-black text-slate-900" id="kpi-total-distributed">---</p>
+            <p class="text-xs text-slate-600 font-semibold mt-1">Total Operations</p>
+          </div>
+        </section>
+
         <!-- TOP ACTIONS BAR -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
             <!-- TABS (Glassmorphic) -->
@@ -422,12 +515,14 @@
 
                 <div id="statusFilterContainer" class="hidden">
                     <select id="statusFilter" onchange="filterData()" 
-                        class="h-12 px-5 rounded-2xl border-2 border-white bg-white/60 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-slate-600 focus:bg-white focus:border-emerald-200 outline-none transition-all shadow-sm">
+                        class="h-12 px-5 rounded-2xl border-2 border-white bg-white/60 backdrop-blur-md text-[11px] font-black uppercase tracking-wider text-slate-600 focus:bg-white focus:border-emerald-200 outline-none transition-all shadow-sm cursor-pointer">
                         <option value="all">Any Status</option>
                         <option value="available">Available</option>
                         <option value="assigned">Assigned</option>
                     </select>
                 </div>
+
+                
 
                 <div class="h-12 px-6 flex items-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-200">
                     <p class="text-[10px] font-black uppercase tracking-widest opacity-60 mr-3">Count</p>
@@ -547,7 +642,135 @@
     let inventoryCards = [];
     let selectedFile = null;
 
+    let selectedStartDate = '';
+    let selectedEndDate = '';
+
+    function formatLocalDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function toggleDateDropdown() {
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (!dropdown) return;
+      dropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', (e) => {
+      const container = document.getElementById('dateFilterContainer');
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (container && dropdown && !container.contains(e.target) && !dropdown.classList.contains('hidden')) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    function setDatePreset(preset) {
+      const today = new Date();
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all';
+      });
+      const activeBtn = document.getElementById(`preset-${preset}`);
+      if (activeBtn) {
+        activeBtn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/60 shadow-sm transition-all';
+      }
+
+      if (preset === 'today') {
+        const str = formatLocalDate(today);
+        selectedStartDate = str;
+        selectedEndDate = str;
+        document.getElementById('dateFilterLabel').textContent = 'Today';
+        const sInput = document.getElementById('filterStartDate');
+        const eInput = document.getElementById('filterEndDate');
+        if (sInput) sInput.value = str;
+        if (eInput) eInput.value = str;
+      } else if (preset === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        const str = formatLocalDate(yesterday);
+        selectedStartDate = str;
+        selectedEndDate = str;
+        document.getElementById('dateFilterLabel').textContent = 'Yesterday';
+        const sInput = document.getElementById('filterStartDate');
+        const eInput = document.getElementById('filterEndDate');
+        if (sInput) sInput.value = str;
+        if (eInput) eInput.value = str;
+      } else if (preset === 'month') {
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        selectedStartDate = formatLocalDate(startOfMonth);
+        selectedEndDate = formatLocalDate(today);
+        document.getElementById('dateFilterLabel').textContent = 'This Month';
+        const sInput = document.getElementById('filterStartDate');
+        const eInput = document.getElementById('filterEndDate');
+        if (sInput) sInput.value = selectedStartDate;
+        if (eInput) eInput.value = selectedEndDate;
+      } else {
+        selectedStartDate = '';
+        selectedEndDate = '';
+        document.getElementById('dateFilterLabel').textContent = 'All Time';
+        const sInput = document.getElementById('filterStartDate');
+        const eInput = document.getElementById('filterEndDate');
+        if (sInput) sInput.value = '';
+        if (eInput) eInput.value = '';
+      }
+
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+
+      refreshAllData();
+    }
+
+    function applyCustomDateFilter() {
+      const start = document.getElementById('filterStartDate').value;
+      const end = document.getElementById('filterEndDate').value;
+      if (!start || !end) return;
+      selectedStartDate = start;
+      selectedEndDate = end;
+      document.getElementById('dateFilterLabel').textContent = `${start} - ${end}`;
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.className = 'preset-btn px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100 hover:text-slate-700 transition-all';
+      });
+      const dropdown = document.getElementById('dateFilterDropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+
+      refreshAllData();
+    }
+
+    function refreshAllData() {
+      fetchNexCardStats();
+      if (currentTab === 'assigned') {
+        fetchAssignedCards(1, false);
+      } else {
+        fetchInventory();
+      }
+    }
+
+    async function fetchNexCardStats() {
+      try {
+        const token = localStorage.getItem('employeeToken');
+        let url = `${window.API_BASE}/employee/admin/nexcard/stats`;
+        const params = [];
+        if (selectedStartDate) params.push(`startDate=${selectedStartDate}`);
+        if (selectedEndDate) params.push(`endDate=${selectedEndDate}`);
+        if (params.length) url += `?${params.join('&')}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) return;
+        const d = await res.json();
+        const setT = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v ?? 0; };
+        setT('kpi-total-assigned', d.totalAssigned);
+        setT('kpi-live-stock', d.liveStock);
+        setT('kpi-active-cards', d.totalActive);
+        setT('kpi-total-distributed', d.totalDistributed);
+        setT('totalStockHeader', d.liveStock);
+      } catch (err) {
+        console.error('NexCard stats error:', err);
+      }
+    }
+
     async function fetchData() {
+        fetchNexCardStats();
         if (currentTab === 'assigned') {
             await fetchAssignedCards();
         } else {
@@ -643,7 +866,10 @@
         const token = localStorage.getItem('employeeToken');
         const search = document.getElementById('searchInput')?.value || '';
         const role = document.getElementById('roleFilter')?.value || 'all';
-        const response = await fetch(`${window.API_BASE}/employee/admin/all-nex-cards?search=${encodeURIComponent(search)}&role=${encodeURIComponent(role)}&page=${page}&limit=25`, {
+        let url = `${window.API_BASE}/employee/admin/all-nex-cards?search=${encodeURIComponent(search)}&role=${encodeURIComponent(role)}&page=${page}&limit=25`;
+        if (selectedStartDate) url += `&startDate=${selectedStartDate}`;
+        if (selectedEndDate) url += `&endDate=${selectedEndDate}`;
+        const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Failed to fetch');
@@ -683,7 +909,10 @@
             const token = localStorage.getItem('employeeToken');
             const search = document.getElementById('searchInput')?.value || '';
             const status = document.getElementById('statusFilter')?.value || 'all';
-            const response = await fetch(`${window.API_BASE}/nex-cards/inventory?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`, {
+            let url = `${window.API_BASE}/nex-cards/inventory?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`;
+            if (selectedStartDate) url += `&startDate=${selectedStartDate}`;
+            if (selectedEndDate) url += `&endDate=${selectedEndDate}`;
+            const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error('Failed to fetch');
@@ -698,30 +927,18 @@
     }
 
     function exportCards() {
-        const dataToExport = currentTab === 'assigned' ? assignedCards : inventoryCards;
-        if (!dataToExport || dataToExport.length === 0) {
-            alert('No card data available to export.');
-            return;
-        }
-        let csvContent = "data:text/csv;charset=utf-8,";
-        if (currentTab === 'assigned') {
-            csvContent += "Name,Phone,Role,CardNumber,AllottedBy,JoinedAt\n";
-            dataToExport.forEach(c => {
-                csvContent += `"${c.name || ''}","${c.phone || ''}","${c.role || ''}","${c.cardNumber || c.walletNumber || ''}","${c.allottedBy || ''}","${c.joinedAt || ''}"\n`;
-            });
-        } else {
-            csvContent += "CardNumber,Status,AssignedTo,CreatedAt\n";
-            dataToExport.forEach(c => {
-                csvContent += `"${c.cardNumber || ''}","${c.status || ''}","${c.assignedTo || ''}","${c.createdAt || ''}"\n`;
-            });
-        }
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `nex_cards_${currentTab}_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const search = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        let url = `${API_BASE}/employee/admin/export-nex-cards?token=${AUTH_TOKEN}&tab=${currentTab}`;
+        if (selectedStartDate) url += `&startDate=${selectedStartDate}`;
+        if (selectedEndDate) url += `&endDate=${selectedEndDate}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        setTimeout(() => document.body.removeChild(iframe), 5000);
+        showToast('Exporting Cards...', 'info');
     }
 
     function renderHeaders() {
@@ -1035,7 +1252,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      fetchData();
+      setDatePreset('all');
       const cardsTbody = document.getElementById('dataTbody');
       const cardsContainer = cardsTbody ? cardsTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
       if (cardsContainer) {

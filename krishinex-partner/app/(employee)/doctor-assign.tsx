@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Image,
   Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -188,7 +187,7 @@ export default function DoctorAssignScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
 
       {/* HEADER */}
@@ -241,19 +240,18 @@ export default function DoctorAssignScreen() {
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#FFFFFF' },
 
-  header: {
-    flexDirection: 'row',
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    backgroundColor: STATUS_GREEN },
+    
+    
+    backgroundColor: STATUS_GREEN},
   backBtn: {
     width: 32,
     height: 32,

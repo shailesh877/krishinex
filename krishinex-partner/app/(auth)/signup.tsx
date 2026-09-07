@@ -252,7 +252,7 @@ export default function SignupScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.gradient}
     >
-      <SafeAreaView style={styles.root}>
+      <View style={styles.root}>
         <StatusBar barStyle="light-content" />
 
         <Image
@@ -439,7 +439,7 @@ export default function SignupScreen() {
             </ScrollView>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     </LinearGradient>
   );
 }

@@ -2151,17 +2151,23 @@
     }
 
     function exportShops() {
-      if (allShops.length === 0) return showToast('No data', 'info');
-      let csv = 'Shop ID,Shop Name,Phone,Email,Orders,Status\n';
-      allShops.forEach(s => {
-        csv += `${s._id},"${s.businessName}","${s.phone}","${s.email || ''}",${s.totalOrders || 0},${s.status}\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'shops_export.csv';
-      a.click();
+      const search = (document.getElementById('shopSearchInput')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('shopStatusFilter')?.value || 'all';
+      const start = document.getElementById('globalStartDate')?.value || '';
+      const end = document.getElementById('globalEndDate')?.value || '';
+
+      let url = `${API_BASE}/employee/admin/shop/export?token=${AUTH_TOKEN}&_t=${Date.now()}`;
+      if (start) url += `&startDate=${start}`;
+      if (end) url += `&endDate=${end}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (statusFilter && statusFilter !== 'all') url += `&status=${encodeURIComponent(statusFilter)}`;
+
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+      setTimeout(() => document.body.removeChild(iframe), 5000);
+      showToast('Exporting Shops...', 'info');
     }
 
     function showToast(message, type = 'info') {

@@ -1924,47 +1924,85 @@
       fetchFarmers(1, false);
     }
 
-    function exportCropRequests() {
-      if (!allCropRequests.length) { showToast('No data to export', 'warning'); return; }
+    async function exportCropRequests() {
       const cropVal = document.getElementById('cropFilter')?.value || 'all';
       const statusVal = document.getElementById('cropStatusFilter')?.value || 'all';
-      const rows = allCropRequests.filter(r =>
-        (cropVal === 'all' || r.crop === cropVal) &&
-        (statusVal === 'all' || r.status === statusVal)
-      );
-      const headers = ['Farmer', 'Phone', 'Location', 'Crop', 'Quantity (Q)', 'Rate (₹/Q)', 'Status', 'Assigned Buyer', 'Date'];
-      const csvRows = [headers.join(',')];
-      rows.forEach(r => {
-        csvRows.push([
-          `"${r.farmerName}"`, r.farmerPhone, `"${r.location}"`, r.crop, r.quantity, r.pricePerQuintal,
-          r.status, r.assignedBuyer ? `"${r.assignedBuyer.name}"` : '',
-          new Date(r.createdAt).toLocaleDateString('en-GB')
-        ].join(','));
-      });
-      downloadCSV(csvRows.join('\n'), 'crop_sell_requests.csv');
+      const start = document.getElementById('globalStartDate')?.value || '';
+      const end = document.getElementById('globalEndDate')?.value || '';
+      const search = document.getElementById('cropSearchInput')?.value || '';
+
+      let url = `${API_BASE}/employee/admin/crop-requests/export?token=${AUTH_TOKEN}&_t=${Date.now()}`;
+      if (start) url += `&startDate=${start}`;
+      if (end) url += `&endDate=${end}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (statusVal && statusVal !== 'all') url += `&status=${encodeURIComponent(statusVal)}`;
+      if (cropVal && cropVal !== 'all') url += `&crop=${encodeURIComponent(cropVal)}`;
+
+      try {
+        showToast('Exporting Crop Requests...', 'info');
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.error || 'Failed to export crop requests', 'warning');
+          return;
+        }
+        const blob = await res.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Crop_Requests_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+        showToast('Crop Requests exported successfully!', 'success');
+      } catch (e) {
+        showToast('Export failed: ' + e.message, 'warning');
+      }
     }
 
-    function exportFarmers() {
-      if (!allFarmers.length) { showToast('No data to export', 'warning'); return; }
-      const headers = ['Name', 'Phone', 'Email', 'Location', 'KYC Status', 'Status', 'Total Orders', 'Joined'];
-      const csvRows = [headers.join(',')];
-      allFarmers.forEach(f => {
-        csvRows.push([
-          `"${f.name}"`, f.phone, f.email, `"${f.location}"`,
-          f.kycStatus, f.status, f.totalOrders,
-          new Date(f.joinedAt).toLocaleDateString('en-GB')
-        ].join(','));
-      });
-      downloadCSV(csvRows.join('\n'), 'farmers_list.csv');
+    async function exportFarmers() {
+      const start = document.getElementById('globalStartDate')?.value || '';
+      const end = document.getElementById('globalEndDate')?.value || '';
+      const search = document.getElementById('searchInput')?.value || '';
+      const statusVal = document.getElementById('farmerStatusFilter')?.value || 'all';
+
+      let url = `${API_BASE}/employee/admin/farmers/export?token=${AUTH_TOKEN}&_t=${Date.now()}`;
+      if (start) url += `&startDate=${start}`;
+      if (end) url += `&endDate=${end}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (statusVal && statusVal !== 'all') url += `&status=${encodeURIComponent(statusVal)}`;
+
+      try {
+        showToast('Exporting Farmers...', 'info');
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          showToast(err.error || 'Failed to export farmers', 'warning');
+          return;
+        }
+        const blob = await res.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Farmers_Export_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+        showToast('Farmers exported successfully!', 'success');
+      } catch (e) {
+        showToast('Export failed: ' + e.message, 'warning');
+      }
     }
 
+    // Unused frontend download method removed
     function downloadCSV(content, filename) {
-      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-      showToast(`Exported ${filename}`, 'success');
+      // Replaced by backend exports
     }
 
 

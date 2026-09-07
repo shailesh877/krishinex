@@ -13,7 +13,6 @@ import {
   Alert,
   Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -329,14 +328,10 @@ function Input({ label, value, onChange, placeholder, keyboardType = 'default', 
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: {
-    paddingTop: 16,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    backgroundColor: STATUS_GREEN,
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: STATUS_GREEN,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between' },
+    justifyContent: 'space-between'},
   backBtn: {
     width: 36,
     height: 36,
