@@ -17,6 +17,7 @@ import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
 import * as Location from 'expo-location';
+import { useWeather } from '../../hooks/useWeather';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import NotificationIcon from '@/components/NotificationIcon';
@@ -49,11 +50,8 @@ export default function SoilLabHome() {
   };
   const loading = false;
 
-  // Weather state
-  const [weatherCity, setWeatherCity] = React.useState('');
-  const [weatherTemp, setWeatherTemp] = React.useState<number | null>(null);
-  const [weatherCode, setWeatherCode] = React.useState<number>(0);
-  const [weatherHumidity, setWeatherHumidity] = React.useState<number | null>(null);
+  // Weather state from custom hook
+  const { weatherCity, weatherTemp, weatherCode, weatherHumidity, fetchWeather } = useWeather();
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -64,7 +62,7 @@ export default function SoilLabHome() {
         refreshUser(),
         refetchStats(),
         fetchUnreadCount(),
-        fetchWeather(),
+        fetchWeather(true),
       ]);
     } catch (e) {
       console.error('Refresh error:', e);
@@ -77,55 +75,13 @@ export default function SoilLabHome() {
     useCallback(() => {
       // SWR handles stats and user context handles profile.
       fetchUnreadCount();
-      fetchWeather();
     }, [])
   );
   const fetchUnreadCount = async () => {
     await refreshUnreadCount();
   };
 
-  const fetchWeather = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
 
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude, longitude } = loc.coords;
-
-      try {
-        const geo = await Location.reverseGeocodeAsync({ latitude, longitude });
-        if (geo && geo.length > 0) {
-          const g = geo[0];
-          const city = g.city || g.subregion || g.district || g.region || '';
-          const region = g.region || '';
-          setWeatherCity([city, region].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', '));
-        }
-      } catch (geoErr) {
-        console.warn('[Weather] Soil Lab Geocode failed:', geoErr);
-      }
-
-      const weatherRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weather_code&hourly=precipitation_probability&wind_speed_unit=kmh&timezone=auto`
-      );
-      const contentType = weatherRes.headers.get('content-type') || '';
-      if (!weatherRes.ok || !contentType.includes('application/json')) {
-        console.warn(`[Weather] API status ${weatherRes.status} (${contentType}), skipping weather parse.`);
-        return;
-      }
-      const weatherData = await weatherRes.json();
-      const c = weatherData?.current;
-      // Prob is not used in the UI here yet, but the fetch is now correct
-
-
-      if (c) {
-        setWeatherTemp(c.temperature_2m !== undefined ? Math.round(c.temperature_2m) : null);
-        setWeatherHumidity(c.relative_humidity_2m !== undefined ? c.relative_humidity_2m : null);
-        setWeatherCode(c.weather_code !== undefined ? c.weather_code : 0);
-      }
-    } catch (e) {
-      console.error('Soil Lab Weather fetch error:', e);
-    }
-  };
 
   const logoTextSource = isHindi
     ? require('../../assets/images/Khetify_use_under_the_app-Hindi.png')

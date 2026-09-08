@@ -16,6 +16,7 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
@@ -35,6 +36,7 @@ export default function BuyerProfile() {
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
+  const { profile, refreshUser } = useUser();
 
   const t = {
     hi: {
@@ -134,6 +136,8 @@ export default function BuyerProfile() {
   const [bankName, setBankName] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [ifscCode, setIfscCode] = useState('');
+  const [bankDocName, setBankDocName] = useState<string | null>(null);
+  const [bankDocUrl, setBankDocUrl] = useState<string | null>(null);
 
   // temp state for modal (discarded on Cancel)
   const [tempName, setTempName] = useState('');
@@ -150,6 +154,13 @@ export default function BuyerProfile() {
 
   const [editVisible, setEditVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProfile();
+    setRefreshing(false);
+  };
 
   // Sync profile data to local state
   useEffect(() => {
@@ -171,6 +182,8 @@ export default function BuyerProfile() {
           setBankName(profile.bankDetails.bankName || '');
           setAccountNumber(profile.bankDetails.accountNumber || '');
           setIfscCode(profile.bankDetails.ifscCode || '');
+          setBankDocName(profile.bankDetails.bankDocUrl ? (isHindi ? 'अपलोड किया गया' : 'Uploaded') : null);
+          setBankDocUrl(profile.bankDetails.bankDocUrl || null);
       }
       if (profile.avatarUri) {
         const photoUrl = profile.avatarUri.startsWith('http')
@@ -392,19 +405,27 @@ export default function BuyerProfile() {
     const docName = isBack ? aadhaarBackDocName : aadhaarDocName;
 
     if (docName) {
+      const buttons: any[] = [
+        { text: lang === 'hi' ? 'देखें' : 'View', onPress: () => viewAadhaar(side) }
+      ];
+      if (status !== 'approved') {
+        buttons.push({ text: lang === 'hi' ? 'नया अपलोड करें' : 'Re-upload', onPress: () => pickAndUploadAadhaar(side) });
+      }
+      buttons.push({ text: lang === 'hi' ? 'Cancel' : 'Cancel', style: 'cancel' });
+
       showAlert(
         lang === 'hi' 
           ? (isBack ? 'आधार डॉक्यूमेंट (Back)' : 'आधार डॉक्यूमेंट (Front)') 
           : (isBack ? 'Aadhaar Document (Back)' : 'Aadhaar Document (Front)'),
         lang === 'hi' ? 'क्या करना है?' : 'What would you like to do?',
-        [
-          { text: lang === 'hi' ? 'देखें' : 'View', onPress: () => viewAadhaar(side) },
-          { text: lang === 'hi' ? 'नया अपलोड करें' : 'Re-upload', onPress: () => pickAndUploadAadhaar(side) },
-          { text: lang === 'hi' ? 'Cancel' : 'Cancel', style: 'cancel' },
-        ]
+        buttons
       );
     } else {
-      pickAndUploadAadhaar(side);
+      if (status !== 'approved') {
+        pickAndUploadAadhaar(side);
+      } else {
+        showAlert(lang === 'hi' ? 'जानकारी' : 'Info', lang === 'hi' ? 'वेरिफाइड प्रोफाइल में नया डॉक्यूमेंट नहीं जोड़ सकते।' : 'Cannot add new document to verified profile.');
+      }
     }
   };
 
@@ -479,6 +500,92 @@ export default function BuyerProfile() {
     }
   };
 
+  const openBankDocUpload = async () => {
+    if (bankDocName) {
+      const buttons: any[] = [
+        { text: lang === 'hi' ? 'देखें' : 'View', onPress: viewBankDoc }
+      ];
+      if (status !== 'approved') {
+        buttons.push({ text: lang === 'hi' ? 'नया अपलोड करें' : 'Re-upload', onPress: pickAndUploadBankDoc });
+      }
+      buttons.push({ text: lang === 'hi' ? 'Cancel' : 'Cancel', style: 'cancel' });
+
+      showAlert(
+        lang === 'hi' ? 'बैंक पासबुक / चेक' : 'Bank Passbook / Check',
+        lang === 'hi' ? 'क्या करना है?' : 'What would you like to do?',
+        buttons
+      );
+    } else {
+      if (status !== 'approved') {
+        pickAndUploadBankDoc();
+      } else {
+        showAlert(lang === 'hi' ? 'जानकारी' : 'Info', lang === 'hi' ? 'वेरिफाइड प्रोफाइल में नया डॉक्यूमेंट नहीं जोड़ सकते।' : 'Cannot add new document to verified profile.');
+      }
+    }
+  };
+
+  const viewBankDoc = () => {
+    if (bankDocUrl) {
+      const formattedUrl = bankDocUrl.startsWith('http')
+        ? bankDocUrl
+        : `${FILES_BASE_URL}/${bankDocUrl.replace(/\\/g, '/')}`;
+
+      Linking.openURL(formattedUrl).catch(() =>
+        showAlert('Error', 'Cannot open document URL')
+      );
+    } else {
+      showAlert(lang === 'hi' ? 'डॉक्यूमेंट नहीं मिला' : 'No document found', lang === 'hi' ? 'पहले अपलोड करें' : 'Please upload first');
+    }
+  };
+
+  const pickAndUploadBankDoc = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const asset = result.assets[0];
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) return;
+
+      const formData = new FormData();
+      formData.append('bankDoc', {
+        uri: asset.uri,
+        type: asset.mimeType || 'application/octet-stream',
+        name: asset.name || `bank_${Date.now()}`,
+      } as any);
+
+      showAlert(lang === 'hi' ? 'अपलोड हो रहा है...' : 'Uploading...', lang === 'hi' ? 'कृपया प्रतीक्षा करें' : 'Please wait');
+
+      const res = await fetch(`${API_URL}/upload-bank-doc`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setBankDocName(isHindi ? 'अपलोड किया गया' : 'Uploaded');
+        setBankDocUrl(data.url);
+        showAlert(
+          lang === 'hi' ? 'सफल!' : 'Success!',
+          lang === 'hi' ? 'बैंक डॉक्यूमेंट अपलोड हो गया' : 'Bank document uploaded successfully'
+        );
+      } else {
+        showAlert('Error', data.error || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Bank doc upload error:', error);
+      showAlert('Error', 'Failed to upload document');
+    }
+  };
+
   if (loading) {
     return (
       <View style={[styles.root, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -506,6 +613,9 @@ export default function BuyerProfile() {
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />
+        }
       >
         {/* PROFILE CARD */}
         <View style={styles.profileCardOuter}>
@@ -630,7 +740,9 @@ export default function BuyerProfile() {
                 </View>
               </View>
               <Text style={styles.aadhaarDocAction}>
-                {lang === 'hi' ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front'}
+                {status === 'approved'
+                  ? (lang === 'hi' ? 'फ्रंट देखें' : 'View Front')
+                  : (lang === 'hi' ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front')}
               </Text>
             </TouchableOpacity>
 
@@ -658,7 +770,9 @@ export default function BuyerProfile() {
                 </View>
               </View>
               <Text style={styles.aadhaarDocAction}>
-                {lang === 'hi' ? 'बैक देखें / अपलोड करें' : 'View / Upload Back'}
+                {status === 'approved'
+                  ? (lang === 'hi' ? 'बैक देखें' : 'View Back')
+                  : (lang === 'hi' ? 'बैक देखें / अपलोड करें' : 'View / Upload Back')}
               </Text>
             </TouchableOpacity>
 
@@ -681,6 +795,35 @@ export default function BuyerProfile() {
                     <Text style={styles.bankLabel}>{t.ifscCode}:</Text>
                     <Text style={styles.bankValue}>{ifscCode || '——'}</Text>
                 </View>
+                {/* Bank Doc row */}
+                <TouchableOpacity
+                  style={[styles.aadhaarDocRow, { borderTopWidth: 1, borderTopColor: '#E5E7EB', marginTop: 8, paddingTop: 8 }]}
+                  activeOpacity={0.85}
+                  onPress={openBankDocUpload}
+                >
+                  <View style={styles.aadhaarDocLeft}>
+                    <View style={styles.aadhaarDocIconWrap}>
+                      <Ionicons
+                        name="document-text-outline"
+                        size={16}
+                        color="#166534"
+                      />
+                    </View>
+                    <View>
+                      <Text style={styles.aadhaarDocTitle}>{t.bankDoc}</Text>
+                      <Text style={styles.aadhaarDocSub} numberOfLines={1}>
+                        {bankDocName
+                          ? bankDocName
+                          : (lang === 'hi' ? 'अपलोड नहीं किया गया' : 'Not uploaded yet')}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={styles.aadhaarDocAction}>
+                    {status === 'approved'
+                      ? (lang === 'hi' ? 'देखें' : 'View')
+                      : (lang === 'hi' ? 'देखें / अपलोड करें' : 'View / Upload')}
+                  </Text>
+                </TouchableOpacity>
             </View>
 
             {status === 'approved' ? (

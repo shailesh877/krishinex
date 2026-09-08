@@ -1,5 +1,5 @@
 // app/(equipment)/home.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,9 @@ import { useI18n } from '../../context/I18nContext';
 import { useUser } from '../../context/UserContext';
 import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCallback } from 'react';
 import { useNotificationBadge } from '../../hooks/useNotificationBadge';
 import LocationService from '../../services/LocationService';
+import { useWeather } from '../../hooks/useWeather';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
@@ -106,14 +106,8 @@ export default function EquipmentHome() {
   const totalBookings = statsData?.totalBookings || 0;
   const todayBookings = statsData?.todayBookings || 0;
 
-  // Weather state
-  const [weatherCity, setWeatherCity] = useState('');
-  const [weatherTemp, setWeatherTemp] = useState<number | null>(null);
-  const [weatherCode, setWeatherCode] = useState<number>(0);
-  const [weatherHumidity, setWeatherHumidity] = useState<number | null>(null);
-  const [weatherRain, setWeatherRain] = useState<number | null>(null);
-  const [weatherWind, setWeatherWind] = useState<number | null>(null);
-  const [weatherFeels, setWeatherFeels] = useState<number | null>(null);
+  // Weather state from custom hook
+  const { weatherCity, weatherTemp, weatherCode, weatherHumidity, weatherRain, weatherWind, weatherFeels, weatherLoading, fetchWeather } = useWeather();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -123,7 +117,7 @@ export default function EquipmentHome() {
       await Promise.all([
         refreshUser(),
         fetchUnreadCount(true),
-        fetchWeather(),
+        fetchWeather(true),
         refetchStats(),
       ]);
     } catch (e) {
@@ -137,63 +131,6 @@ export default function EquipmentHome() {
     ? require('../../assets/images/Khetify_use_under_the_app-Hindi.png')
     : require('../../assets/images/Khetify_use_under_the_app-English.png');
 
-  useFocusEffect(
-    useCallback(() => {
-      // SWR background fetch for stats, and UserContext handles profile.
-      const abortController = new AbortController();
-      fetchWeather(abortController.signal);
-      return () => abortController.abort();
-    }, [])
-  );
-
-  const fetchWeather = async (signal?: AbortSignal) => {
-    try {
-      const loc = await LocationService.getLocation();
-      if (!loc) return;
-      
-      const { latitude, longitude } = loc.coords;
-
-      try {
-        const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-        if (geo.ok) {
-          const g = await geo.json();
-          const address = g.address || {};
-          const city = address.city || address.county || address.state_district || '';
-          const region = address.state || '';
-          setWeatherCity([city, region].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', '));
-        }
-      } catch (geoErr) {
-        console.warn('[Weather] Equipment Geocode failed:', geoErr);
-      }
-
-      const weatherRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weather_code&hourly=precipitation_probability&wind_speed_unit=kmh&timezone=auto`,
-        { signal }
-      );
-      const contentType = weatherRes.headers.get('content-type') || '';
-      if (!weatherRes.ok || !contentType.includes('application/json')) {
-        console.warn(`[Weather] API status ${weatherRes.status} (${contentType}), skipping weather parse.`);
-        return;
-      }
-      const weatherData = await weatherRes.json();
-      const c = weatherData.current;
-      const prob = weatherData.hourly?.precipitation_probability?.[0] || 0;
-
-
-      if (c) {
-        setWeatherTemp(c.temperature_2m !== undefined ? Math.round(c.temperature_2m) : null);
-        setWeatherFeels(c.apparent_temperature !== undefined ? Math.round(c.apparent_temperature) : null);
-        setWeatherHumidity(c.relative_humidity_2m !== undefined ? c.relative_humidity_2m : null);
-        setWeatherRain(prob);
-        setWeatherWind(c.wind_speed_10m !== undefined ? Math.round(c.wind_speed_10m) : null);
-        setWeatherCode(c.weather_code !== undefined ? c.weather_code : 0);
-      }
-    } catch (e: any) {
-      if (e.name !== 'AbortError') {
-        console.error('Weather fetch error:', e);
-      }
-    }
-  };
 
   const weatherInfo = getWeatherInfo(weatherCode, isHindi);
 
@@ -304,13 +241,13 @@ export default function EquipmentHome() {
             {/* Greeting + language toggle */}
             <View style={styles.greetRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.greetTitle}>
+                <Text style={styles.greetText}>
                   {isHindi ? 'नमस्ते' : 'Hello'}, {profile?.name || 'Partner'}! 👋
                 </Text>
                 <Text style={styles.greetSub}>
                   <Ionicons name="location" size={14} color="#D1D5DB" /> {profile?.address || (isHindi ? 'पता उपलब्ध नहीं' : 'Address not available')}
                 </Text>
-                <Text style={styles.greetHint}>
+                <Text style={styles.smallHint}>
                   {isHindi ? 'आज की बुकिंग्स और मौसम की जानकारी।' : 'Today\'s bookings and weather.'}
                 </Text>
               </View>

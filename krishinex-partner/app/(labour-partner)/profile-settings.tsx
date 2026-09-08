@@ -13,6 +13,7 @@ import {
   Alert,
   Image,
   Linking,
+  RefreshControl,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
@@ -120,6 +121,13 @@ export default function LabourProfileSettings() {
       setLoading(false);
     }
   };
+
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await fetchProfile();
+    setRefreshing(false);
+  }, []);
 
   const texts = {
     title: isHindi ? 'मेरा प्रोफाइल' : 'My profile',
@@ -658,6 +666,7 @@ export default function LabourProfileSettings() {
         style={styles.body}
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />}
       >
         {/* PROFILE CARD with photo + edit */}
         <View style={styles.avatarCard}>
@@ -736,7 +745,9 @@ export default function LabourProfileSettings() {
               </View>
             </View>
             <Text style={styles.aadhaarDocAction}>
-              {isHindi ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front'}
+              {status === 'approved'
+                ? (isHindi ? 'फ्रंट देखें' : 'View Front')
+                : (isHindi ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front')}
             </Text>
           </TouchableOpacity>
 
@@ -769,7 +780,9 @@ export default function LabourProfileSettings() {
               </View>
             </View>
             <Text style={styles.aadhaarDocAction}>
-              {isHindi ? 'बैक देखें / अपलोड करें' : 'View / Upload Back'}
+              {status === 'approved'
+                ? (isHindi ? 'बैक देखें' : 'View Back')
+                : (isHindi ? 'बैक देखें / अपलोड करें' : 'View / Upload Back')}
             </Text>
           </TouchableOpacity>
         </View>

@@ -12,7 +12,7 @@ export function setGlobalUnreadCount(count: number) {
   AsyncStorage.setItem('cached_unread', count.toString()).catch(() => {});
 }
 
-export async function refreshUnreadCount() {
+export async function refreshUnreadCount(force?: boolean) {
   try {
     const token = await AsyncStorage.getItem('userToken');
     if (!token) return;

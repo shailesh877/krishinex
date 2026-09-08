@@ -17,6 +17,7 @@ import { useCachedFetch } from '../../hooks/useCachedFetch';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
+import { useWeather } from '../../hooks/useWeather';
 
 import { BASE_API_URL, BASE_URL } from '../../constants/api';
 import NotificationIcon from '@/components/NotificationIcon';
@@ -57,10 +58,8 @@ export default function LabourPartnerHome() {
     totalRequests: statsData.totalRequests || 0,
     completed: statsData.completed || 0 } : { totalRequests: 0, completed: 0 };
 
-  // Weather state
-  const [weatherCity, setWeatherCity] = useState('');
-  const [weatherTemp, setWeatherTemp] = useState<number | null>(null);
-  const [weatherCode, setWeatherCode] = useState<number>(0);
+  // Weather state from custom hook
+  const { weatherCity, weatherTemp, weatherCode, fetchWeather } = useWeather();
 
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -73,7 +72,7 @@ export default function LabourPartnerHome() {
         refreshUser(),
         refetchStats(),
         fetchUnreadCount(),
-        fetchWeather(),
+        fetchWeather(true),
       ]);
     } catch (e) {
       console.error('Refresh error:', e);
@@ -96,51 +95,12 @@ export default function LabourPartnerHome() {
     } catch (e) { }
   };
 
-  const fetchWeather = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
 
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude, longitude } = loc.coords;
-
-      try {
-        const geo = await Location.reverseGeocodeAsync({ latitude, longitude });
-        if (geo && geo.length > 0) {
-          const g = geo[0];
-          const city = g.city || g.subregion || g.district || g.region || '';
-          const region = g.region || '';
-          setWeatherCity([city, region].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', '));
-        }
-      } catch (geoErr) {
-        console.warn('[Weather] Labour Geocode failed:', geoErr);
-      }
-
-      const weatherRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`
-      );
-      const contentType = weatherRes.headers.get('content-type') || '';
-      if (!weatherRes.ok || !contentType.includes('application/json')) {
-        console.warn(`[Weather] API status ${weatherRes.status} (${contentType}), skipping weather parse.`);
-        return;
-      }
-      const weatherData = await weatherRes.json();
-      const c = weatherData.current;
-
-      if (c) {
-        setWeatherTemp(c.temperature_2m !== undefined ? Math.round(c.temperature_2m) : null);
-        setWeatherCode(c.weather_code !== undefined ? c.weather_code : 0);
-      }
-    } catch (e) {
-      console.error('Weather fetch error:', e);
-    }
-  };
 
   useFocusEffect(
     useCallback(() => {
       // SWR handles stats, context handles profile
       fetchUnreadCount();
-      fetchWeather();
     }, [])
   );
 

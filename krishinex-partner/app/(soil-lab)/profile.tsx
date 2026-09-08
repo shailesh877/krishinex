@@ -595,9 +595,11 @@ export default function SoilLabProfile() {
                   </Text>
                 </View>
               </View>
-              <Text style={styles.aadhaarDocAction}>
-                {isHindi ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front'}
-              </Text>
+                <Text style={styles.aadhaarDocAction}>
+                  {isVerified 
+                    ? (isHindi ? 'फ्रंट देखें' : 'View Front') 
+                    : (isHindi ? 'फ्रंट देखें / अपलोड करें' : 'View / Upload Front')}
+                </Text>
             </TouchableOpacity>
 
             {/* Aadhaar document row (Back) */}
@@ -623,9 +625,11 @@ export default function SoilLabProfile() {
                   </Text>
                 </View>
               </View>
-              <Text style={styles.aadhaarDocAction}>
-                {isHindi ? 'बैक देखें / अपलोड करें' : 'View / Upload Back'}
-              </Text>
+                <Text style={styles.aadhaarDocAction}>
+                  {isVerified 
+                    ? (isHindi ? 'बैक देखें' : 'View Back') 
+                    : (isHindi ? 'बैक देखें / अपलोड करें' : 'View / Upload Back')}
+                </Text>
             </TouchableOpacity>
 
             {/* ── BANK DETAILS ── */}

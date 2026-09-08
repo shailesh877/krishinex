@@ -12,6 +12,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import { useUser } from '../../context/UserContext';
 import { useCachedFetch } from '../../hooks/useCachedFetch';
+import { useWeather } from '../../hooks/useWeather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -45,15 +46,8 @@ export default function BuyerHome() {
   const userAddress = profile?.address || '';
   const avatarUri = profile?.avatarUri || null;
 
-  // Weather state
-  const [weatherCity, setWeatherCity] = useState('');
-  const [weatherTemp, setWeatherTemp] = useState<number | null>(null);
-  const [weatherCode, setWeatherCode] = useState<number>(0);
-  const [weatherHumidity, setWeatherHumidity] = useState<number | null>(null);
-  const [weatherRain, setWeatherRain] = useState<number | null>(null);
-  const [weatherWind, setWeatherWind] = useState<number | null>(null);
-  const [weatherFeels, setWeatherFeels] = useState<number | null>(null);
-  const [weatherLoading, setWeatherLoading] = useState(true);
+  // Weather state from custom hook
+  const { weatherCity, weatherTemp, weatherCode, weatherHumidity, weatherRain, weatherWind, weatherFeels, weatherLoading, fetchWeather } = useWeather();
 
   // SWR Cached Fetches
   const { data: statsData, refetch: refetchStats } = useCachedFetch('buyer-dashboard-stats', async () => {
@@ -76,7 +70,7 @@ export default function BuyerHome() {
     try {
       await Promise.all([
         refreshUser(),
-        fetchWeather(),
+        fetchWeather(true),
         refetchStats(),
         fetchUnreadCount(),
       ]);
@@ -91,7 +85,6 @@ export default function BuyerHome() {
     useCallback(() => {
       // SWR handles stats, UserContext handles profile
       fetchUnreadCount();
-      fetchWeather();
     }, [])
   );
 
@@ -109,56 +102,7 @@ export default function BuyerHome() {
     } catch (e) { }
   };
 
-  const fetchWeather = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setWeatherLoading(false);
-        return;
-      }
 
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      const { latitude, longitude } = loc.coords;
-
-      try {
-        // Reverse geocode for city name
-        const geo = await Location.reverseGeocodeAsync({ latitude, longitude });
-        if (geo && geo.length > 0) {
-          const g = geo[0];
-          const city = g.city || g.subregion || g.region || '';
-          const region = g.region || '';
-          setWeatherCity([city, region].filter(Boolean).join(', '));
-        }
-      } catch (geoErr) {
-        console.warn('[Weather] Buyer Geocode failed:', geoErr);
-      }
-
-      // Open-Meteo — free, no API key needed
-      const weatherRes = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability,wind_speed_10m,weather_code&wind_speed_unit=kmh&timezone=auto`
-      );
-      const contentType = weatherRes.headers.get('content-type') || '';
-      if (!weatherRes.ok || !contentType.includes('application/json')) {
-        console.warn(`[Weather] API status ${weatherRes.status} (${contentType}), skipping weather parse.`);
-        return;
-      }
-      const weatherData = await weatherRes.json();
-      const c = weatherData.current;
-
-      if (c) {
-        setWeatherTemp(c.temperature_2m !== undefined ? Math.round(c.temperature_2m) : null);
-        setWeatherFeels(c.apparent_temperature !== undefined ? Math.round(c.apparent_temperature) : null);
-        setWeatherHumidity(c.relative_humidity_2m !== undefined ? c.relative_humidity_2m : null);
-        setWeatherRain(c.precipitation_probability !== undefined ? c.precipitation_probability : null);
-        setWeatherWind(c.wind_speed_10m !== undefined ? Math.round(c.wind_speed_10m) : null);
-        setWeatherCode(c.weather_code !== undefined ? c.weather_code : 0);
-      }
-    } catch (e) {
-      console.error('Weather fetch error:', e);
-    } finally {
-      setWeatherLoading(false);
-    }
-  };
 
   const displayName = userName
     ? (isHindi ? `${userName} जी` : userName)

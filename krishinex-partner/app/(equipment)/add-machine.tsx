@@ -122,15 +122,19 @@ export default function AddMachineScreen() {
           text: isHindi ? 'गैलरी' : 'Gallery',
           onPress: () => askPermissionAndPick(false) },
         { text: isHindi ? 'Cancel' : 'Cancel', style: 'cancel' },
-      ],
-      { cancelable: true }
+      ]
     );
   };
 
   const pickSubMachineryImage = async (index: number) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showAlert(isHindi ? 'अनुमति ज़रूरी' : 'Permission needed');
+      showAlert(
+        isHindi ? 'अनुमति ज़रूरी' : 'Permission needed',
+        isHindi
+          ? 'गैलरी use करने की अनुमति दें.'
+          : 'Please allow gallery access.'
+      );
       return;
     }
 

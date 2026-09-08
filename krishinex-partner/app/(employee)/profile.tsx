@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  Alert } from 'react-native';
+  Alert,
+  RefreshControl
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -41,6 +43,13 @@ export default function EmployeeProfileScreen() {
   const isHindi = lang === 'hi';
 
   const [activeProfile, setActiveProfile] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await fetchProfileFromAPI();
+    setRefreshing(false);
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -169,6 +178,7 @@ export default function EmployeeProfileScreen() {
         style={styles.body}
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />}
       >
         {/* TOP CARD – avatar + name */}
         <View style={styles.topCard}>
