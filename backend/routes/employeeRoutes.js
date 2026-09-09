@@ -2140,7 +2140,7 @@ router.get('/admin/crop-requests', protect, checkModule('users'), async (req, re
                 })
                 .sort({ createdAt: -1 })
                 .lean(),
-            SellRequest.find(sellQuery)
+            SellRequest.find({ ...sellQuery, assignedTo: null })
                 .populate('farmer', 'name phone address')
                 .populate('mandi', 'name')
                 .populate('assignedTo', 'name phone businessName')
@@ -2159,6 +2159,8 @@ router.get('/admin/crop-requests', protect, checkModule('users'), async (req, re
             quantity: o.quantity,
             variety: o.variety || '',
             pricePerQuintal: o.pricePerQuintal || 0,
+            adminPrice: o.adminPrice || 0,
+            finalPrice: o.pricePerQuintal > 0 ? o.pricePerQuintal : (o.adminPrice || 0),
             status: o.status,
             imageUrl: o.imageUrl || '',
             images: o.imageUrl ? [o.imageUrl] : [],
@@ -2190,6 +2192,8 @@ router.get('/admin/crop-requests', protect, checkModule('users'), async (req, re
             quantity: s.quantity,
             variety: s.variety || '',
             pricePerQuintal: 0,
+            adminPrice: s.adminPrice || 0,
+            finalPrice: s.adminPrice || 0,
             status: s.status,
             imageUrl: (s.images && s.images.length > 0) ? s.images[0] : '',
             images: s.images || [],
@@ -2212,9 +2216,22 @@ router.get('/admin/crop-requests', protect, checkModule('users'), async (req, re
             commissionRate: s.commissionRate || 0
         }));
 
+        // Deduplicate: if a SellRequest already has a corresponding Order (via sellRequestId), skip the SellRequest
+        const linkedSellIds = new Set(
+            orders
+                .map(o => {
+                    if (!o.sellRequestId) return null;
+                    // After populate, sellRequestId is an object with ._id
+                    const id = o.sellRequestId._id || o.sellRequestId;
+                    return id ? id.toString() : null;
+                })
+                .filter(Boolean)
+        );
+        const filteredSellResult = sellResult.filter(s => !linkedSellIds.has(s._id.toString()));
+
         // Combine and sort by date
-        const combined = [...orderResult, ...sellResult].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        const total = totalOrdersCount + totalSellCount;
+        const combined = [...orderResult, ...filteredSellResult].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const total = combined.length;
 
         if (isPaginated) {
             const pageData = combined.slice(skip, skip + limit);
@@ -2312,7 +2329,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), asy
             if (!buyer) return res.status(404).json({ error: 'Buyer not found' });
 
             const otp = Math.floor(1000 + Math.random() * 9000).toString();
-            const finalPrice = newPrice || parsePriceInQuintals(sellReq.expectedPrice);
+            const finalPrice = newPrice || sellReq.adminPrice || parsePriceInQuintals(sellReq.expectedPrice);
 
             const settings = await Settings.getSettings();
             const bCommissionRate = sellReq.commissionRate || settings.commissions.buyerTrading || 0;
@@ -2334,6 +2351,7 @@ router.put('/admin/crop-requests/:id/assign', protect, checkModule('users'), asy
                 variety: sellReq.variety || '',
                 pricePerQuintal: finalPrice,
                 pricePerKg: finalPrice / 100,
+                adminPrice: finalPrice,
                 amount: cropPrice,
                 commission: commissionAmount,
                 commissionRate: bCommissionRate,
@@ -2402,6 +2420,8 @@ router.put('/admin/crop-requests/:id/update-price', protect, checkModule('users'
         if (order) {
             order.pricePerQuintal = finalPrice;
             order.pricePerKg = finalPrice / 100;
+            // Preserve admin's set price separately (buyer may later change pricePerQuintal/pricePerKg)
+            order.adminPrice = finalPrice;
 
             // Recalculate amount and commission
             const qty = parseQuantityInQuintals(order.quantity);

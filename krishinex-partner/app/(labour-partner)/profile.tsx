@@ -14,9 +14,11 @@ import {
   Image,
   Linking,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useI18n } from '../../context/I18nContext';
 import { useUser } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -662,10 +664,12 @@ export default function LabourProfileSettings() {
         </View>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={styles.body}
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />}
       >
         {/* PROFILE CARD with photo + edit */}
@@ -1101,7 +1105,7 @@ export default function LabourProfileSettings() {
             onPress={handleLogout}
           />
         </View>
-      </ScrollView>
+        </KeyboardAwareScrollView>
 
       {/* PROFILE EDIT MODAL */}
       <EditModal

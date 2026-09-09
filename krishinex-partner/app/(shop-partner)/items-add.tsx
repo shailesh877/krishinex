@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   StatusBar,
   TextInput,
-  Image } from 'react-native';
+  Image,
+  Platform } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useI18n } from '../../context/I18nContext';
 import * as ImagePicker from 'expo-image-picker';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
@@ -336,10 +338,12 @@ export default function AddItemScreen() {
         <View style={{ width: 22 }} />
       </View>
 
-      <ScrollView
-        style={styles.body}
-        contentContainerStyle={{ paddingBottom: 24 }}
+      <KeyboardAwareScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
       >
         {/* IMAGE UPLOAD */}
         <Text style={styles.sectionLabel}>
@@ -684,7 +688,7 @@ export default function AddItemScreen() {
             </>
           )}
         </TouchableOpacity>
-      </ScrollView>
+        </KeyboardAwareScrollView>
     </View>
   );
 }

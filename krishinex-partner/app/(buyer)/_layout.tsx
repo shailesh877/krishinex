@@ -1,12 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { I18nProvider, useI18n } from '../../context/I18nContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_API_URL } from '../../constants/api';
 
 function BuyerTabs() {
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPendingCount = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) return;
+        const res = await fetch(`${BASE_API_URL}/orders/assigned`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          const count = data.filter((o: any) => o.assignedStatus === 'new').length;
+          setPendingCount(count);
+        }
+      } catch (e) {}
+    };
+
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <Tabs
@@ -40,6 +68,7 @@ function BuyerTabs() {
         options={{
           title: isHindi ? 'ऑर्डर' : 'Orders',
           tabBarLabel: isHindi ? 'ऑर्डर' : 'Orders',
+          tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list-outline" size={size} color={color} />
           ),

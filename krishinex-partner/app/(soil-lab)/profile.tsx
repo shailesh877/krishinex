@@ -12,9 +12,11 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Linking from 'expo-linking';
@@ -510,18 +512,20 @@ export default function SoilLabProfile() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />
         }
-        showsVerticalScrollIndicator={false}
       >
-        {/* profile hero card */}
-        <View style={styles.profileCard}>
-          <View style={styles.profileTop}>
-            <View style={styles.avatarOuter}>
+          {/* profile hero card */}
+          <View style={styles.profileCard}>
+            <View style={styles.profileTop}>
+              <View style={styles.avatarOuter}>
               <View style={styles.avatarBorder}>
                 <View style={styles.avatarWrap}>
                   <Image source={{ uri: avatar }} style={styles.avatar} />
@@ -910,7 +914,7 @@ export default function SoilLabProfile() {
             </View>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </KeyboardAwareScrollView>
 
       {/* edit modal */}
       <Modal

@@ -13,9 +13,11 @@ import {
   Image,
   Linking,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useUser } from '../../context/UserContext';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -604,15 +606,17 @@ export default function ShopProfile() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={styles.body}
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
         refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#16A34A"]} tintColor="#16A34A" />
         }
       >
-        {/* PROFILE PIC + NAME + EDIT BUTTON */}
+          {/* PROFILE PIC + NAME + EDIT BUTTON */}
         <View style={styles.profileCard}>
           <View style={styles.avatarWrap}>
             <View style={styles.avatarCircle}>
@@ -990,7 +994,7 @@ export default function ShopProfile() {
             <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        </KeyboardAwareScrollView>
 
       {/* EDIT PROFILE MODAL WITH PROFILE PIC */}
       <Modal

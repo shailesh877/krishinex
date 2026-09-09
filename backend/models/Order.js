@@ -21,6 +21,7 @@ const orderSchema = new mongoose.Schema({
     // Pricing
     pricePerQuintal: { type: Number, default: 0 },
     pricePerKg: { type: Number, default: 0 },
+    adminPrice: { type: Number, default: 0 }, // Admin's set price (preserved even after buyer edits)
     amount: { type: Number, default: 0 },
     // Crop image
     imageUrl: { type: String, default: '' },

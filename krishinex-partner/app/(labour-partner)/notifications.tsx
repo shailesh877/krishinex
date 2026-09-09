@@ -8,7 +8,8 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  Alert } from 'react-native';
+  Alert,
+  Modal } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -62,6 +63,7 @@ export default function LabourNotificationsScreen() {
   const [items, setItems] = useState<NotifItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedNotif, setSelectedNotif] = useState<NotifItem | null>(null);
 
   const t = {
     hi: {
@@ -166,7 +168,10 @@ export default function LabourNotificationsScreen() {
       <TouchableOpacity
         style={[styles.card, item.unread && styles.unreadCard]}
         activeOpacity={0.7}
-        onPress={() => markRead(item._id, item.refId)}
+        onPress={() => {
+          markRead(item._id, item.refId);
+          setSelectedNotif(item);
+        }}
         onLongPress={() => deleteNotif(item._id)}
       >
         <View style={[styles.iconBox, { backgroundColor: bg }]}>
@@ -233,6 +238,32 @@ export default function LabourNotificationsScreen() {
           renderItem={renderItem}
         />
       )}
+
+      {/* Notification Details Modal */}
+      <Modal
+        visible={!!selectedNotif}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedNotif(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.notifModalContainer}>
+            <View style={styles.notifModalHeader}>
+              <Ionicons name={selectedNotif ? typeIcon(selectedNotif.type).name as any : 'notifications'} size={28} color={selectedNotif ? typeIcon(selectedNotif.type).color : '#16A34A'} />
+              <Text style={styles.notifModalTitle}>{selectedNotif?.title}</Text>
+            </View>
+            <Text style={styles.notifModalMsg}>
+              {selectedNotif && (isHindi ? selectedNotif.messageHi : selectedNotif.messageEn)}
+            </Text>
+            <TouchableOpacity
+              style={styles.notifModalBtn}
+              onPress={() => setSelectedNotif(null)}
+            >
+              <Text style={styles.notifModalBtnText}>Okay</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -360,4 +391,48 @@ const styles = StyleSheet.create({
     marginBottom: 8 },
   cardTime: {
     fontSize: 12,
-    color: '#9CA3AF' } });
+    color: '#9CA3AF' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20 },
+  notifModalContainer: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10 },
+  notifModalHeader: {
+    alignItems: 'center',
+    marginBottom: 16 },
+  notifModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 12,
+    textAlign: 'center' },
+  notifModalMsg: {
+    fontSize: 15,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24 },
+  notifModalBtn: {
+    backgroundColor: '#16A34A',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 999,
+    width: '100%',
+    alignItems: 'center' },
+  notifModalBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700' }
+});

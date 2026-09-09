@@ -111,20 +111,6 @@ router.get('/public', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/labour/:id
-// @desc    Get detailed labour profile
-// @access  Private
-router.get('/:id', protect, async (req, res) => {
-    try {
-        const user = await User.findById(req.params.id).select('-password -loginOtp -searchOtp');
-        if (!user || user.role !== 'labour') {
-            return res.status(404).json({ error: 'Labour profile not found' });
-        }
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch labour profile' });
-    }
-});
 
 // @route   POST /api/labour/book
 // @desc    Book a labourer
@@ -248,6 +234,19 @@ router.get('/check-availability', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/labour/new-count
+// @desc    Get count of new (pending) bookings
+// @access  Private
+router.get('/new-count', protect, async (req, res) => {
+    try {
+        const count = await LabourJob.countDocuments({ labour: req.user.id, status: 'Pending' });
+        res.json({ count });
+    } catch (error) {
+        console.error('Fetch labour new count error:', error);
+        res.status(500).json({ error: 'Failed to fetch count' });
+    }
+});
+
 // Get Dashboard Stats for Labour Partner
 router.get('/dashboard', protect, async (req, res) => {
     try {
@@ -274,7 +273,8 @@ router.get('/bookings', protect, async (req, res) => {
         // Map LabourJob to shape Partner App expects (Order shape)
         const mappedBookings = jobs.map(j => {
             let assignedStatus = 'new';
-            if (j.status === 'Accepted' || j.status === 'In Progress') assignedStatus = 'ok';
+            if (j.status === 'Accepted') assignedStatus = 'ok';
+            else if (j.status === 'In Progress') assignedStatus = 'in-progress';
             else if (j.status === 'Completed') assignedStatus = 'completed';
             else if (j.status === 'Cancelled') assignedStatus = 'cancelled';
 
@@ -468,6 +468,21 @@ router.get('/wallet', protect, async (req, res) => {
     } catch (error) {
         console.error('Fetch Labour Wallet error:', error);
         res.status(500).json({ error: 'Failed to fetch wallet info' });
+    }
+});
+
+// @route   GET /api/labour/:id
+// @desc    Get detailed labour profile
+// @access  Private
+router.get('/:id', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password -loginOtp -searchOtp');
+        if (!user || user.role !== 'labour') {
+            return res.status(404).json({ error: 'Labour profile not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch labour profile' });
     }
 });
 

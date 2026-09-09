@@ -47,7 +47,7 @@ export default function LabourPartnerHome() {
   const { data: statsData, refetch: refetchStats } = useCachedFetch('labour-dashboard-stats', async () => {
     const token = await AsyncStorage.getItem('userToken');
     if (!token) throw new Error('No token');
-    const res = await fetch(`${API_URL}/labour/dashboard`, {
+    const res = await fetch(`${BASE_API_URL}/labour/dashboard`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -113,15 +113,15 @@ export default function LabourPartnerHome() {
     : require('../../assets/images/Khetify_use_under_the_app-English.png');
 
   const goProfile = () => {
-    router.push('/(labour-partner)/profile-settings');
+    router.push('/(labour-partner)/profile' as any);
   };
 
   const goBookings = () => {
-    router.push('/(labour-partner)/bookings');
+    router.push('/(labour-partner)/bookings' as any);
   };
 
   const openNotifications = () => {
-    router.push('/(labour-partner)/notifications');
+    router.push('/(labour-partner)/notifications' as any);
   };
 
   return (
@@ -380,7 +380,7 @@ export default function LabourPartnerHome() {
           <TouchableOpacity
             style={[styles.actionCard, styles.cardShadowSoft, { marginRight: 0 }]}
             activeOpacity={0.9}
-            onPress={() => router.push('/(labour-partner)/wallet')}
+            onPress={() => router.push('/(labour-partner)/wallet' as any)}
           >
             <View style={[styles.actionIconWrap, { backgroundColor: '#FEF3C7' }]}>
               <Ionicons name="wallet-outline" size={18} color="#D97706" />
@@ -450,6 +450,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
     justifyContent: 'center' },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
+  },
   logoIcon: { width: 28, height: 28, resizeMode: 'contain' },
 
   topInfoCard: {

@@ -202,12 +202,20 @@ router.patch('/:id/assigned-status', protect, async (req, res) => {
             return res.status(404).json({ error: 'Order not found or not assigned to you' });
         }
 
+        const buyerUser = await User.findById(req.user.id);
+        if (!buyerUser) {
+            return res.status(404).json({ error: 'Buyer not found' });
+        }
+
         // 1. Handle Quantity/Price Modifications (Partner adjustment)
         if (quantity || pricePerQuintal) {
             if (quantity) order.quantity = quantity;
             if (pricePerQuintal) {
-                order.pricePerQuintal = parseFloat(pricePerQuintal);
-                order.pricePerKg = order.pricePerQuintal / 100;
+                const buyerPricePerQ = parseFloat(pricePerQuintal);
+                order.pricePerQuintal = buyerPricePerQ;
+                order.pricePerKg = buyerPricePerQ / 100;
+                // Client requirement: Override admin price with buyer's price
+                order.adminPrice = buyerPricePerQ;
             }
             
             // Recalculate amount and commission immediately
@@ -223,15 +231,32 @@ router.patch('/:id/assigned-status', protect, async (req, res) => {
             // IMMEDIATE SYNC: Sync these values to the linked SellRequest so Admin/Farmer see them
             if (order.sellRequestId) {
                 const sReqUpdate = {
-                    adminPrice: order.pricePerQuintal,
                     quantity: order.quantity,
                     totalAmount: order.amount
                 };
+                if (pricePerQuintal) {
+                    sReqUpdate.adminPrice = order.adminPrice;
+                }
                 await SellRequest.findByIdAndUpdate(order.sellRequestId._id, sReqUpdate);
                 console.log(`[ORDER-SYNC-DEBUG] Synced SellRequest #${order.sellRequestId._id} with Qty=${order.quantity}, Price=${order.pricePerQuintal}, Amt=${order.amount}`);
             }
 
             console.log(`[ORDER-EDIT-DEBUG] Applied: Qty=${order.quantity}, Price=${order.pricePerQuintal}, Amt=${order.amount}`);
+        }
+
+        // Wallet Balance Check for 'ok' and 'delivered'
+        if (assignedStatus === 'ok' || assignedStatus === 'delivered') {
+            const settings = await Settings.getSettings();
+            const rate = order.commissionRate || (settings.commissions?.buyerTrading || 0);
+            const qtlValue = parseQuantityInQuintals(order.quantity);
+            const price = order.pricePerQuintal || 0;
+            const baseAmt = qtlValue * price;
+            const commAmt = (baseAmt * rate) / 100;
+            const requiredBalance = baseAmt + commAmt;
+
+            if ((buyerUser.walletBalance || 0) < requiredBalance) {
+                return res.status(400).json({ error: `Insufficient wallet balance. You need at least ₹${requiredBalance} but have ₹${buyerUser.walletBalance || 0}. Please recharge.` });
+            }
         }
 
         // 2. Handle Status Specific Logic

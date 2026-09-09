@@ -9,9 +9,11 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
-  Alert } from 'react-native';
+  Alert,
+  Platform } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { BASE_API_URL, MACHINES_API_URL } from '../../constants/api';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -336,10 +338,12 @@ export default function AddMachineScreen() {
         <View style={styles.rightPlaceHolder} />
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        extraScrollHeight={20}
       >
         <View style={styles.appNameRow}>
           <Image source={logoIconSource} style={styles.appLogoIcon} />
@@ -539,7 +543,7 @@ export default function AddMachineScreen() {
             {loading ? (isHindi ? 'सेव हो रहा है...' : 'Saving...') : (isHindi ? 'मशीन सेव करें' : 'Save machine')}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+        </KeyboardAwareScrollView>
     </View>
   );
 }

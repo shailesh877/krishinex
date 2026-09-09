@@ -158,20 +158,32 @@ export default function AssignedOrders() {
       });
       if (res.ok) {
         const data = await res.json();
-        console.log('[ASSIGNED-ORDERS] Fetched:', data.length, 'orders');
-        setOrders(data);
         
-        // Populate edit states
-        const q: Record<string, string> = {};
-        const p: Record<string, string> = {};
-        data.forEach((o: AssignedOrder) => {
-          // Pre-populate for ALL orders so they are ready in memory
-          q[o._id] = getKgValue(o.quantity);
-          // Prioritize pricePerKg if available, else derive from pricePerQuintal
-          p[o._id] = (o.pricePerKg || (o.pricePerQuintal ? o.pricePerQuintal / 100 : 0)).toString();
+        setOrders(prev => {
+          if (JSON.stringify(prev) === JSON.stringify(data)) {
+            return prev;
+          }
+          
+          setEditQty(prevQ => {
+            const next = { ...prevQ };
+            data.forEach((o: AssignedOrder) => {
+              if (next[o._id] === undefined) next[o._id] = getKgValue(o.quantity);
+            });
+            return next;
+          });
+          
+          setEditPrice(prevP => {
+            const next = { ...prevP };
+            data.forEach((o: AssignedOrder) => {
+              if (next[o._id] === undefined) {
+                next[o._id] = (o.pricePerKg || (o.pricePerQuintal ? o.pricePerQuintal / 100 : 0)).toString();
+              }
+            });
+            return next;
+          });
+
+          return data;
         });
-        setEditQty(prev => ({ ...prev, ...q }));
-        setEditPrice(prev => ({ ...prev, ...p }));
       }
     } catch (e) {
       console.error('Fetch assigned error:', e);
@@ -533,11 +545,6 @@ export default function AssignedOrders() {
           <Text style={[styles.tabText, activeTab === 'completed' && styles.activeTabText]}>
             {t.tabCompleted}
           </Text>
-          {orders.filter(o => o.assignedStatus === 'delivered' || o.assignedStatus === 'cancelled').length > 0 && (
-            <View style={[styles.tabBadge, { backgroundColor: '#7C3AED' }]}>
-              <Text style={styles.tabBadgeText}>{orders.filter(o => o.assignedStatus === 'delivered' || o.assignedStatus === 'cancelled').length}</Text>
-            </View>
-          )}
         </TouchableOpacity>
       </View>
 

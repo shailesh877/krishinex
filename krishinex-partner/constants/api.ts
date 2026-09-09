@@ -1,7 +1,7 @@
 // constants/api.ts
 
 // export const BASE_URL = 'https://demo.ranx24.com';
-export const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || 'http://127.0.0.1:5500';
+export const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || 'https://demo.ranx24.com';
 export const FILES_BASE_URL = process.env.EXPO_PUBLIC_FILES_URL || BASE_URL;
 
 export const BASE_API_URL = `${BASE_URL}/api`;
