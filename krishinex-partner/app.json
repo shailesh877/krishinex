@@ -2,7 +2,7 @@
   "expo": {
     "name": "krishinex-partner",
     "slug": "krishinex-partner",
-    "version": "1.47.0",
+    "version": "1.51.0",
     "orientation": "portrait",
     "icon": "./assets/images/partner-icon-foreground.png",
     "scheme": "krishinexpartner",
@@ -14,7 +14,7 @@
     "android": {
       "package": "com.pasiwaresocial.partner",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 47,
+      "versionCode": 51,
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
