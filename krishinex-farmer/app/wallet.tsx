@@ -19,6 +19,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import RazorpayCheckout from 'react-native-razorpay';
 import { useI18n } from '@/context/I18nContext';
 import { authApi } from '../services/api';
 import { showAlert } from '@/components/CustomAlert';
@@ -66,6 +67,9 @@ export default function WalletScreen() {
   const [userName, setUserName] = useState('');
   const [unifiedList, setUnifiedList] = useState<UnifiedTxn[]>([]);
   const [selectedTxn, setSelectedTxn] = useState<any>(null);
+  const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
+  const [rechargeAmount, setRechargeAmount] = useState('');
+  const [isRecharging, setIsRecharging] = useState(false);
 
   const t = {
     title: hi ? 'वॉलेट' : 'Wallet',
@@ -96,6 +100,74 @@ export default function WalletScreen() {
   };
 
   const cardHolderDisplay = userName || (hi ? 'किसान' : 'Farmer');
+
+  
+  const handleRecharge = async () => {
+    const amount = Number(rechargeAmount);
+    if (!amount || amount < 10) {
+      showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'कृपया कम से कम 10 रुपये दर्ज करें' : 'Please enter at least ₹10');
+      return;
+    }
+    
+    setIsRecharging(true);
+    try {
+      // 1. Create order
+      const { data } = await authApi.createRechargeOrder(amount);
+      if (!data.success || !data.order) {
+        throw new Error('Failed to create order');
+      }
+
+      // 2. Open Razorpay
+      var options = {
+        description: 'Wallet Recharge',
+        currency: 'INR',
+        key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RMXAUXty6nvaXm',
+        amount: data.order.amount,
+        name: 'KrishiNex',
+        order_id: data.order.id,
+        prefill: {
+          name: userName || 'Farmer',
+        },
+        theme: {color: KHETIFY_GREEN_DARK}
+      };
+      
+      RazorpayCheckout.open(options).then(async (razorData: any) => {
+        try {
+          console.log('[RAZORPAY] razorData received:', JSON.stringify(razorData));
+          const payload = {
+            razorpay_payment_id: razorData.razorpay_payment_id || razorData.paymentId,
+            razorpay_order_id: razorData.razorpay_order_id || razorData.order_id,
+            razorpay_signature: razorData.razorpay_signature || razorData.signature,
+            amount: amount
+          };
+          console.log('[RAZORPAY] Sending to verify:', JSON.stringify(payload));
+          const verifyRes = await authApi.verifyRechargePayment(payload);
+          console.log('[RAZORPAY] Verify response:', JSON.stringify(verifyRes.data));
+          if (verifyRes.data.success) {
+            showAlert(hi ? 'सफल' : 'Success', hi ? 'वॉलेट रिचार्ज सफल रहा' : 'Wallet recharge successful');
+            setRechargeModalVisible(false);
+            setRechargeAmount('');
+            fetchWalletData();
+          } else {
+            showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed');
+          }
+        } catch (verErr: any) {
+          console.log('[RAZORPAY] Verify error status:', verErr?.response?.status);
+          console.log('[RAZORPAY] Verify error detail:', JSON.stringify(verErr?.response?.data || verErr?.message || verErr));
+          showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed');
+        }
+      }).catch((error: any) => {
+        console.log('Razorpay Error:', error);
+        showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान रद्द किया गया या विफल रहा' : 'Payment cancelled or failed');
+      });
+      
+    } catch (error) {
+      console.log('Recharge error:', error);
+      showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'रिचार्ज शुरू करने में विफल' : 'Failed to initiate recharge');
+    } finally {
+      setIsRecharging(false);
+    }
+  };
 
   const fetchWalletData = async () => {
     try {
@@ -321,6 +393,12 @@ export default function WalletScreen() {
             />
             <Text style={styles.infoTextSoft}>{t.withdrawNote}</Text>
           </View>
+
+          <TouchableOpacity style={styles.rechargeBtn} onPress={() => setRechargeModalVisible(true)} activeOpacity={0.8}>
+            <Ionicons name="add-circle-outline" size={20} color="#FFFFFF" />
+            <Text style={styles.rechargeBtnText}>{hi ? 'वॉलेट रिचार्ज करें' : 'Recharge Wallet'}</Text>
+          </TouchableOpacity>
+
         </View>
 
         {/* FILTER PILLS */}
@@ -500,6 +578,46 @@ export default function WalletScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* RECHARGE MODAL */}
+      <Modal visible={rechargeModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{hi ? 'रिचार्ज राशि दर्ज करें' : 'Enter Recharge Amount'}</Text>
+            
+            <TextInput
+              style={styles.amountInput}
+              placeholder="₹ 0"
+              keyboardType="numeric"
+              value={rechargeAmount}
+              onChangeText={setRechargeAmount}
+              maxLength={6}
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={styles.modalCancelBtn} 
+                onPress={() => setRechargeModalVisible(false)}
+                disabled={isRecharging}
+              >
+                <Text style={styles.modalCancelText}>{hi ? 'रद्द करें' : 'Cancel'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalSubmitBtn, isRecharging && { opacity: 0.7 }]} 
+                onPress={handleRecharge}
+                disabled={isRecharging}
+              >
+                {isRecharging ? (
+                   <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                   <Text style={styles.modalSubmitText}>{hi ? 'रिचार्ज करें' : 'Recharge'}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -531,6 +649,87 @@ function FilterChip({ label, active, onPress }: FilterChipProps) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F9FAFB' },
+
+  rechargeBtn: {
+    backgroundColor: KHETIFY_GREEN_DARK,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 16,
+  },
+  rechargeBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 15,
+    marginLeft: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    borderRadius: 16,
+    padding: 24,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  amountInput: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: KHETIFY_GREEN_DARK,
+    marginBottom: 24,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    color: '#4B5563',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  modalSubmitBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: KHETIFY_GREEN_DARK,
+    alignItems: 'center',
+  },
+  modalSubmitText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+
 
   header: {
     flexDirection: 'row',

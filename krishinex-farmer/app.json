@@ -7,7 +7,7 @@
     "icon": "./assets/images/Krishinex App logo PNG.png",
     "scheme": "krishinex",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true
     },

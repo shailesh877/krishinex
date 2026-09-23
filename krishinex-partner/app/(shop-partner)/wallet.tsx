@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,11 @@ import {
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
-  RefreshControl } from 'react-native';
+  RefreshControl,
+  Modal,
+  TextInput,
+  Alert,
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -16,6 +20,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { BASE_API_URL } from '../../constants/api';
 const API_URL = `${BASE_API_URL}/shop`;
+const WALLET_RECHARGE_URL = `${BASE_API_URL}/wallet`;
+
+import RazorpayCheckout from 'react-native-razorpay';
+const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RMXAUXty6nvaXm';
+const GREEN = '#16A34A';
 
 type Transaction = {
   _id: string;
@@ -31,14 +40,20 @@ type Transaction = {
 
 export default function ShopWallet() {
   const router = useRouter();
-  
   const { lang } = useI18n();
-  const isHindi = lang === 'hi';
 
   const [balance, setBalance] = useState(0);
+  const [userName, setUserName] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Recharge modal state
+  const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
+  const [rechargeAmount, setRechargeAmount] = useState('');
+  const [isRecharging, setIsRecharging] = useState(false);
+
+  const hi = lang === 'hi';
 
   const t = {
     hi: {
@@ -47,24 +62,21 @@ export default function ShopWallet() {
       transactionsLabel: 'हाल के लेन-देन',
       payout: 'पेआउट (क्रेडिट)',
       collection: 'कलेक्शन (डेबिट)',
-      status: {
-        Pending: 'प्रतीक्षारत',
-        Completed: 'सफल',
-        Failed: 'विफल'
-      },
-      empty: 'अभी तक कोई लेन-देन नहीं है' },
+      recharge: 'वॉलेट रिचार्ज करें',
+      status: { Pending: 'प्रतीक्षारत', Completed: 'सफल', Failed: 'विफल' },
+      empty: 'अभी तक कोई लेन-देन नहीं है',
+    },
     en: {
       title: 'Wallet & Earnings',
       balanceLabel: 'Total Balance',
       transactionsLabel: 'Recent Transactions',
       payout: 'Payout (Credit)',
       collection: 'Collection (Debit)',
-      status: {
-        Pending: 'Pending',
-        Completed: 'Completed',
-        Failed: 'Failed'
-      },
-      empty: 'No transactions yet' } }[lang];
+      recharge: 'Recharge Wallet',
+      status: { Pending: 'Pending', Completed: 'Completed', Failed: 'Failed' },
+      empty: 'No transactions yet',
+    },
+  }[lang];
 
   const fetchWallet = useCallback(async (silent = false) => {
     try {
@@ -72,11 +84,12 @@ export default function ShopWallet() {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
       const res = await fetch(`${API_URL}/wallet`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
         setBalance(data.balance);
+        setUserName(data.name || '');
         setTransactions(prev => {
           if (JSON.stringify(prev) !== JSON.stringify(data.transactions)) return data.transactions;
           return prev;
@@ -100,6 +113,76 @@ export default function ShopWallet() {
 
   const onRefresh = () => { setRefreshing(true); fetchWallet(false); };
 
+  const handleRecharge = async () => {
+    const amount = Number(rechargeAmount);
+    if (!amount || amount < 10) {
+      Alert.alert(
+        hi ? 'त्रुटि' : 'Error',
+        hi ? 'कृपया कम से कम ₹10 दर्ज करें' : 'Please enter at least ₹10'
+      );
+      return;
+    }
+
+    setIsRecharging(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) throw new Error('Not authenticated');
+
+      const orderRes = await fetch(`${WALLET_RECHARGE_URL}/recharge/create-order`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderData.success || !orderData.order) throw new Error('Failed to create order');
+
+      const options = {
+        description: 'Wallet Recharge',
+        currency: 'INR',
+        key: RAZORPAY_KEY_ID,
+        amount: orderData.order.amount,
+        name: 'KrishiNex',
+        order_id: orderData.order.id,
+        prefill: { name: userName || 'Partner' },
+        theme: { color: GREEN },
+      };
+
+      RazorpayCheckout.open(options).then(async (razorData: any) => {
+        try {
+          const payload = {
+            razorpay_payment_id: razorData.razorpay_payment_id || razorData.paymentId,
+            razorpay_order_id: razorData.razorpay_order_id || razorData.order_id,
+            razorpay_signature: razorData.razorpay_signature || razorData.signature,
+            amount,
+          };
+          const verifyRes = await fetch(`${WALLET_RECHARGE_URL}/recharge/verify`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            Alert.alert(hi ? 'सफल' : 'Success', hi ? 'वॉलेट रिचार्ज सफल रहा' : 'Wallet recharge successful');
+            setRechargeModalVisible(false);
+            setRechargeAmount('');
+            fetchWallet(false);
+          } else {
+            Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed');
+          }
+        } catch (verErr) {
+          Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed');
+        }
+      }).catch(() => {
+        Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान रद्द किया गया' : 'Payment cancelled or failed');
+      });
+    } catch (error) {
+      console.log('Recharge error:', error);
+      Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'रिचार्ज शुरू करने में विफल' : 'Failed to initiate recharge');
+    } finally {
+      setIsRecharging(false);
+    }
+  };
+
   const formatDate = (d: string) => {
     const date = new Date(d);
     const dateStr = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -113,10 +196,10 @@ export default function ShopWallet() {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={[styles.iconWrap, { backgroundColor: isPayout ? '#F0FDF4' : '#FFF7ED' }]}>
-            <Ionicons 
-                name={isPayout ? "arrow-down-circle-outline" : "arrow-up-circle-outline"} 
-                size={24} 
-                color={isPayout ? "#16A34A" : "#F97316"} 
+            <Ionicons
+              name={isPayout ? 'arrow-down-circle-outline' : 'arrow-up-circle-outline'}
+              size={24}
+              color={isPayout ? '#16A34A' : '#F97316'}
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -142,37 +225,46 @@ export default function ShopWallet() {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor="#16A34A" />
+      <StatusBar barStyle="light-content" backgroundColor={GREEN} />
 
       <LinearGradient colors={['#16A34A', '#15803D']} style={styles.topSection}>
         <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t.title}</Text>
-            <View style={{ width: 40 }} />
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t.title}</Text>
+          <View style={{ width: 40 }} />
         </View>
 
         <View style={styles.balanceCard}>
-            <Text style={styles.balanceSub}>{t.balanceLabel}</Text>
-            <Text style={styles.balanceValue}>₹ {balance.toLocaleString('en-IN')}</Text>
+          <Text style={styles.balanceSub}>{t.balanceLabel}</Text>
+          <Text style={styles.balanceValue}>₹ {balance.toLocaleString('en-IN')}</Text>
         </View>
+
+        <TouchableOpacity
+          style={styles.rechargeBtn}
+          onPress={() => setRechargeModalVisible(true)}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add-circle-outline" size={18} color="#16A34A" />
+          <Text style={styles.rechargeBtnText}>{t.recharge}</Text>
+        </TouchableOpacity>
       </LinearGradient>
 
       <Text style={styles.sectionTitle}>{t.transactionsLabel}</Text>
 
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#16A34A" /></View>
+        <View style={styles.center}><ActivityIndicator size="large" color={GREEN} /></View>
       ) : (
         <FlatList
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={5}
-        removeClippedSubviews={false}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={false}
           data={transactions}
           keyExtractor={item => item._id}
           renderItem={renderItem}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#16A34A']} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[GREEN]} />}
           contentContainerStyle={
             transactions.length === 0
               ? { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }
@@ -187,103 +279,80 @@ export default function ShopWallet() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      {/* RECHARGE MODAL */}
+      <Modal visible={rechargeModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{hi ? 'रिचार्ज राशि दर्ज करें' : 'Enter Recharge Amount'}</Text>
+            <TextInput
+              style={styles.amountInput}
+              placeholder="₹ 0"
+              keyboardType="numeric"
+              value={rechargeAmount}
+              onChangeText={setRechargeAmount}
+              maxLength={6}
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => setRechargeModalVisible(false)}
+                disabled={isRecharging}
+              >
+                <Text style={styles.modalCancelText}>{hi ? 'रद्द करें' : 'Cancel'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalSubmitBtn, isRecharging && { opacity: 0.7 }]}
+                onPress={handleRecharge}
+                disabled={isRecharging}
+              >
+                {isRecharging
+                  ? <ActivityIndicator color="#FFFFFF" size="small" />
+                  : <Text style={styles.modalSubmitText}>{hi ? 'रिचार्ज करें' : 'Recharge'}</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F9FAFB' },
-  topSection: {
-    paddingBottom: 30,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32 },
-  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20},
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center' },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF' },
-  balanceCard: {
-    alignItems: 'center' },
-  balanceSub: {
-    fontSize: 14,
-    color: '#D1FAE5',
-    marginBottom: 4 },
-  balanceValue: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#FFFFFF' },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#374151',
-    marginHorizontal: 16,
-    marginTop: 20,
-    marginBottom: 10 },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2 },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center' },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12 },
-  typeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#111827' },
-  idText: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 2 },
-  dateText: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    marginTop: 1 },
-  amountWrap: {
-    alignItems: 'flex-end' },
-  amountText: {
-    fontSize: 16,
-    fontWeight: '700' },
-  statusBadge: {
-    marginTop: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8 },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '700' },
-  noteText: {
-    marginTop: 10,
-    fontSize: 11,
-    color: '#6B7280',
-    fontStyle: 'italic',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6' },
+  topSection: { paddingBottom: 24, paddingHorizontal: 16, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
+  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
+  balanceCard: { alignItems: 'center', marginBottom: 16 },
+  balanceSub: { fontSize: 14, color: '#D1FAE5', marginBottom: 4 },
+  balanceValue: { fontSize: 36, fontWeight: '800', color: '#FFFFFF' },
+  rechargeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 10, gap: 6, marginTop: 4 },
+  rechargeBtnText: { color: '#16A34A', fontWeight: '700', fontSize: 14 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#374151', marginHorizontal: 16, marginTop: 20, marginBottom: 10 },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F3F4F6', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center' },
+  iconWrap: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  typeText: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  idText: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  dateText: { fontSize: 11, color: '#9CA3AF', marginTop: 1 },
+  amountWrap: { alignItems: 'flex-end' },
+  amountText: { fontSize: 16, fontWeight: '700' },
+  statusBadge: { marginTop: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+  statusText: { fontSize: 10, fontWeight: '700' },
+  noteText: { marginTop: 10, fontSize: 11, color: '#6B7280', fontStyle: 'italic', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { alignItems: 'center' },
-  emptyText: { fontSize: 14, color: '#9CA3AF', marginTop: 10 } });
+  emptyText: { fontSize: 14, color: '#9CA3AF', marginTop: 10 },
+  // Recharge Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: '#FFFFFF', width: '100%', borderRadius: 16, padding: 24, elevation: 10 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 16, textAlign: 'center' },
+  amountInput: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 12, padding: 16, fontSize: 24, fontWeight: '700', textAlign: 'center', color: '#16A34A', marginBottom: 24 },
+  modalActions: { flexDirection: 'row', gap: 12 },
+  modalCancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#F3F4F6', alignItems: 'center' },
+  modalCancelText: { color: '#4B5563', fontWeight: '700', fontSize: 15 },
+  modalSubmitBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#16A34A', alignItems: 'center' },
+  modalSubmitText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
+});

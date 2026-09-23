@@ -234,6 +234,8 @@ export const authApi = {
     },
     getMyConsultations: () => api.get('/doctor/my-consultations'),
     getWalletConfig: () => api.get('/shop/wallet-config'),
+    createRechargeOrder: (amount: number) => api.post('/wallet/recharge/create-order', { amount }),
+    verifyRechargePayment: (data: any) => api.post('/wallet/recharge/verify', data),
     getWeather: (lat: number, lon: number) => api.get('/weather', { params: { lat, lon } }),
     getCreditData: () => api.get('/user/credit-data'),
 };

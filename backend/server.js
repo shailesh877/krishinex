@@ -131,6 +131,7 @@ app.use('/api/locations', require('./routes/locationRoutes'));
 app.use('/api/videos', require('./routes/videoRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
 app.use('/api/nex-cards', require('./routes/nexCardRoutes'));
+app.use('/api/wallet', require('./routes/walletRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {
