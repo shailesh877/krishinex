@@ -158,7 +158,8 @@ export default function WalletScreen() {
         }
       }).catch((error: any) => {
         console.log('Razorpay Error:', error);
-        showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान रद्द किया गया या विफल रहा' : 'Payment cancelled or failed');
+        const errorMsg = error?.description || error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+        showAlert(hi ? 'त्रुटि' : 'Error', hi ? `भुगतान विफल या रद्द किया गया: ${errorMsg}` : `Payment failed or cancelled: ${errorMsg}`);
       });
       
     } catch (error) {

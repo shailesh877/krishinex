@@ -10,8 +10,8 @@ import {
   RefreshControl,
   Modal,
   TextInput,
-  Alert,
 } from 'react-native';
+import { showAlert } from '../../components/CustomAlert';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -122,7 +122,7 @@ export default function EquipmentWallet() {
   const handleRecharge = async () => {
     const amount = Number(rechargeAmount);
     if (!amount || amount < 10) {
-      Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'कृपया कम से कम ₹10 दर्ज करें' : 'Please enter at least ₹10');
+      showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'कृपया कम से कम ₹10 दर्ज करें' : 'Please enter at least ₹10');
       return;
     }
     setIsRecharging(true);
@@ -143,12 +143,15 @@ export default function EquipmentWallet() {
           const payload = { razorpay_payment_id: razorData.razorpay_payment_id || razorData.paymentId, razorpay_order_id: razorData.razorpay_order_id || razorData.order_id, razorpay_signature: razorData.razorpay_signature || razorData.signature, amount };
           const verifyRes = await fetch(`${WALLET_RECHARGE_URL}/recharge/verify`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           const verifyData = await verifyRes.json();
-          if (verifyData.success) { Alert.alert(hi ? 'सफल' : 'Success', hi ? 'वॉलेट रिचार्ज सफल रहा' : 'Wallet recharge successful'); setRechargeModalVisible(false); setRechargeAmount(''); fetchWallet(); }
-          else { Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed'); }
-        } catch { Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Verification failed'); }
-      }).catch(() => Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान रद्द किया गया' : 'Payment cancelled'));
+          if (verifyData.success) { showAlert(hi ? 'सफल' : 'Success', hi ? 'वॉलेट रिचार्ज सफल रहा' : 'Wallet recharge successful'); setRechargeModalVisible(false); setRechargeAmount(''); fetchWallet(); }
+          else { showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed'); }
+        } catch { showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Verification failed'); }
+      }).catch((error: any) => {
+        const errorMsg = error?.description || error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+        showAlert(hi ? 'त्रुटि' : 'Error', hi ? `भुगतान विफल या रद्द किया गया: ${errorMsg}` : `Payment failed or cancelled: ${errorMsg}`);
+      });
     } catch (error) {
-      Alert.alert(hi ? 'त्रुटि' : 'Error', hi ? 'रिचार्ज शुरू करने में विफल' : 'Failed to initiate recharge');
+      showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'रिचार्ज शुरू करने में विफल' : 'Failed to initiate recharge');
     } finally { setIsRecharging(false); }
   };
 
