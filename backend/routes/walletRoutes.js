@@ -70,14 +70,17 @@ router.post('/recharge/verify', protect, async (req, res) => {
                 return res.status(404).json({ error: 'User not found' });
             }
 
-            // Update user wallet balance
-            user.walletBalance = (user.walletBalance || 0) + Number(amount);
-            await user.save();
+            // Update user wallet balance safely without triggering full document validation
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user.id,
+                { $inc: { walletBalance: Number(amount) } },
+                { new: true }
+            );
 
             // Create Transaction record
             await Transaction.create({
                 transactionId: razorpay_payment_id,
-                recipient: user._id,
+                recipient: updatedUser._id,
                 module: 'Platform',
                 amount: Number(amount),
                 type: 'Credit',
@@ -86,15 +89,19 @@ router.post('/recharge/verify', protect, async (req, res) => {
                 note: 'Razorpay Wallet Recharge'
             });
 
-            return res.json({ success: true, message: 'Payment verified and wallet updated', balance: user.walletBalance });
+            return res.json({ success: true, message: 'Payment verified and wallet updated', balance: updatedUser.walletBalance });
         } else {
             return res.status(400).json({ error: 'Invalid signature' });
         }
     } catch (error) {
         console.error('Verify Payment Error:', error?.message || error);
-        console.error('Error stack:', error?.stack);
-        console.error('KEY_SECRET present:', !!process.env.RAZORPAY_KEY_SECRET);
-        res.status(500).json({ error: 'Verification failed', detail: error?.message });
+        if (error?.errors) {
+            console.error('Mongoose Validation Errors:', error.errors);
+        }
+        try {
+            require('fs').appendFileSync('wallet_error.txt', `[${new Date().toISOString()}] VERIFY ERROR: ${error?.message || error}\nStack: ${error?.stack}\n`);
+        } catch (e) {}
+        res.status(500).json({ error: 'Verification failed. Please try again.' });
     }
 });
 

@@ -40,6 +40,7 @@ router.post('/register', upload.single('aadhaarDoc'), async (req, res) => {
         // Check if user with this phone already exists for the specific role
         const existingPhoneUser = await User.findOne({ phone, role });
         if (existingPhoneUser) {
+            require('fs').appendFileSync('register_error.txt', `[${new Date().toISOString()}] Phone exists: ${phone} for role: ${role}\n`);
             return res.status(400).json({ error: 'An account with this phone number already exists for this role.' });
         }
 
@@ -47,6 +48,7 @@ router.post('/register', upload.single('aadhaarDoc'), async (req, res) => {
         if (email) {
             const existingEmailUser = await User.findOne({ email, role });
             if (existingEmailUser) {
+                require('fs').appendFileSync('register_error.txt', `[${new Date().toISOString()}] Email exists: ${email} for role: ${role}\n`);
                 return res.status(400).json({ error: 'An account with this email address already exists for this role.' });
             }
         }
@@ -82,6 +84,7 @@ router.post('/register', upload.single('aadhaarDoc'), async (req, res) => {
 
     } catch (error) {
         console.error('Registration error details:', error);
+        try { require('fs').appendFileSync('register_error.txt', `[${new Date().toISOString()}] CATCH ERROR: ${error.message}\nStack: ${error.stack}\n`); } catch(e){}
         res.status(500).json({ error: 'Internal server error during registration.', details: error.message, stack: error.stack });
     }
 });

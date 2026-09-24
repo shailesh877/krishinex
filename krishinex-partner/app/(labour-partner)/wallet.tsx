@@ -13,7 +13,7 @@ import { BASE_API_URL } from '../../constants/api';
 const API_URL = `${BASE_API_URL}/labour`;
 const WALLET_RECHARGE_URL = `${BASE_API_URL}/wallet`;
 import RazorpayCheckout from 'react-native-razorpay';
-const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RMXAUXty6nvaXm';
+const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string;
 
 type Transaction = {
   _id: string;
@@ -127,7 +127,7 @@ export default function LabourWallet() {
           const verifyRes = await fetch(`${WALLET_RECHARGE_URL}/recharge/verify`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
           const verifyData = await verifyRes.json();
           if (verifyData.success) { showAlert(hi ? 'सफल' : 'Success', hi ? 'वॉलेट रिचार्ज सफल रहा' : 'Wallet recharge successful'); setRechargeModalVisible(false); setRechargeAmount(''); fetchWallet(false); }
-          else { showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed'); }
+          else { showAlert(hi ? 'त्रुटि' : 'Error', verifyData.error || (hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed')); }
         } catch { showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Verification failed'); }
       }).catch((error: any) => {
         const errorMsg = error?.description || error?.message || (typeof error === 'string' ? error : JSON.stringify(error));

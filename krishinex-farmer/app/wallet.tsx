@@ -121,7 +121,7 @@ export default function WalletScreen() {
       var options = {
         description: 'Wallet Recharge',
         currency: 'INR',
-        key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RMXAUXty6nvaXm',
+        key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string,
         amount: data.order.amount,
         name: 'KrishiNex',
         order_id: data.order.id,

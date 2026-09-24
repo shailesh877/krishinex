@@ -23,7 +23,7 @@ const API_URL = `${BASE_API_URL}/rentals`;
 const WALLET_RECHARGE_URL = `${BASE_API_URL}/wallet`;
 
 import RazorpayCheckout from 'react-native-razorpay';
-const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RMXAUXty6nvaXm';
+const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string;
 
 type Transaction = {
   _id: string;

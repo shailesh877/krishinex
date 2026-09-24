@@ -23,6 +23,7 @@ import { OTPWidget } from '@msg91comm/sendotp-react-native';
 import { useI18n } from '../../context/I18nContext';
 import { API_URL, BASE_API_URL } from '../../constants/api';
 import { registerTokenWithBackend } from '../../utils/notificationHelper';
+import { showAlert } from '../../components/CustomAlert';
 
 const { height } = Dimensions.get('window');
 
@@ -126,7 +127,10 @@ export default function LoginScreen() {
 
   useEffect(() => {
     // Initialize MSG91 Widget headless
-    OTPWidget.initializeWidget("366361727571383132303632", "497379TbOp9la7qwjr69a483dbP1");
+    OTPWidget.initializeWidget(
+      process.env.EXPO_PUBLIC_MSG91_WIDGET_ID as string,
+      process.env.EXPO_PUBLIC_MSG91_AUTH_KEY as string
+    );
 
     Animated.spring(logoAnim, {
       toValue: 1,
@@ -157,7 +161,7 @@ export default function LoginScreen() {
 
   const handleSendOtp = async () => {
     if (!phone.trim() || phone.length < 10) {
-      alert(lang === 'hi' ? 'सही मोबाइल नंबर डालें' : 'Enter valid mobile number');
+      showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', lang === 'hi' ? 'सही मोबाइल नंबर डालें' : 'Enter valid mobile number');
       return;
     }
 
@@ -204,7 +208,7 @@ export default function LoginScreen() {
             : 'Failed to send OTP. Please try again.';
         }
 
-        alert(friendlyMsg);
+        showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', friendlyMsg);
         // Stay on phone-input step so user can retry
       }
     } catch (error: any) {
@@ -226,7 +230,7 @@ export default function LoginScreen() {
           ? 'OTP सेवा में समस्या आई। कृपया दोबारा कोशिश करें।'
           : 'OTP service error. Please try again.';
       }
-      alert(errMsg);
+      showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', errMsg);
     } finally {
       setLoading(false);
     }
@@ -260,17 +264,17 @@ export default function LoginScreen() {
 
             router.replace('/(employee)/home');
           } else {
-            alert(empData.error || 'Login failed');
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', empData.error || 'Login failed');
           }
         } catch (e: any) {
           clearTimeout(timeout);
-          alert(e?.name === 'AbortError' ? 'Server timeout. Check backend.' : `Error: ${e?.message}`);
+          showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', e?.name === 'AbortError' ? 'Server timeout. Check backend.' : `Error: ${e?.message}`);
         }
       } else {
         // Google Play Store Dummy Account Bypass
         if (phone === '9519519519') {
           if (otp !== '9519') {
-            alert(lang === 'hi' ? 'गलत OTP' : 'Invalid OTP');
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', lang === 'hi' ? 'गलत OTP' : 'Invalid OTP');
             setLoading(false);
             return;
           }
@@ -285,12 +289,12 @@ export default function LoginScreen() {
             console.log('[AUTH] Widget Verify Response:', verifyRes);
 
             if (verifyRes.type !== 'success' && verifyRes.message !== 'OTP verified successfully') {
-              alert(verifyRes.message || 'Invalid OTP. Please try again.');
+              showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', verifyRes.message || 'Invalid OTP. Please try again.');
               setLoading(false);
               return;
             }
           } catch (widgetError: any) {
-            alert('Error validating OTP. Please try again.');
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', 'Error validating OTP. Please try again.');
             setLoading(false);
             return;
           }
@@ -328,19 +332,19 @@ export default function LoginScreen() {
           } else {
             // Show Hindi error if available
             const errMsg = partnerData.errorHi || partnerData.error || 'Login failed. Please try again.';
-            alert(errMsg);
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', errMsg);
           }
         } catch (serverError: any) {
           if (serverError?.name === 'AbortError') {
-            alert('Server timeout. Please check your internet or try again later.');
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', 'Server timeout. Please check your internet or try again later.');
           } else {
-            alert(`Network Error: ${serverError?.message || 'Cannot reach server'}`);
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', `Network Error: ${serverError?.message || 'Cannot reach server'}`);
           }
         }
       }
     } catch (error: any) {
       console.error('Verify error:', error);
-      alert('Error validating OTP. Please try again.');
+      showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', 'Error validating OTP. Please try again.');
     } finally {
       setLoading(false);
     }

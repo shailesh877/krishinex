@@ -42,7 +42,10 @@ export default function GenerateCardScreen() {
 
   useEffect(() => {
     // Initialize MSG91 Widget headless
-    OTPWidget.initializeWidget("366361727571383132303632", "497379TbOp9la7qwjr69a483dbP1");
+    OTPWidget.initializeWidget(
+      process.env.EXPO_PUBLIC_MSG91_WIDGET_ID as string,
+      process.env.EXPO_PUBLIC_MSG91_AUTH_KEY as string
+    );
   }, []);
 
   const handleSearch = async () => {

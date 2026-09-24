@@ -23,7 +23,7 @@ const API_URL = `${BASE_API_URL}/shop`;
 const WALLET_RECHARGE_URL = `${BASE_API_URL}/wallet`;
 
 import RazorpayCheckout from 'react-native-razorpay';
-const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_RMXAUXty6nvaXm';
+const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string;
 const GREEN = '#16A34A';
 
 type Transaction = {
