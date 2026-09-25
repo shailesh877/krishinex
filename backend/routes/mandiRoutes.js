@@ -82,7 +82,9 @@ router.post('/bulk-update', protect, async (req, res) => {
 // @access  Private
 router.post('/create', protect, async (req, res) => {
     try {
-        const { name, location } = req.body;
+        let { name, location } = req.body;
+        name = name ? name.trim() : name;
+        location = location ? location.trim() : location;
         // Find max order to place new mandi at the end
         const maxOrderMandi = await Mandi.findOne().sort({ order: -1 });
         const newOrder = maxOrderMandi && maxOrderMandi.order !== undefined ? maxOrderMandi.order + 1 : 0;
@@ -135,7 +137,10 @@ router.get('/crops', async (req, res) => {
 // @access  Private
 router.post('/crops', protect, async (req, res) => {
     try {
-        const { name, hindiName, icon } = req.body;
+        let { name, hindiName, icon } = req.body;
+        name = name ? name.trim() : name;
+        hindiName = hindiName ? hindiName.trim() : hindiName;
+        icon = icon ? icon.trim() : icon;
         // Find max order to place new crop at the end
         const maxOrderCrop = await Crop.findOne().sort({ order: -1 });
         const newOrder = maxOrderCrop && maxOrderCrop.order !== undefined ? maxOrderCrop.order + 1 : 0;
@@ -215,7 +220,9 @@ router.delete('/:id', protect, async (req, res) => {
 // @access  Private
 router.put('/:id', protect, async (req, res) => {
     try {
-        const { name, location } = req.body;
+        let { name, location } = req.body;
+        name = name ? name.trim() : name;
+        location = location ? location.trim() : location;
         const mandi = await Mandi.findByIdAndUpdate(req.params.id, { name, location }, { new: true });
         if (!mandi) return res.status(404).json({ error: 'Mandi not found' });
         res.json(mandi);
@@ -230,7 +237,10 @@ router.put('/:id', protect, async (req, res) => {
 // @access  Private
 router.put('/crops/:id', protect, async (req, res) => {
     try {
-        const { name, hindiName, icon } = req.body;
+        let { name, hindiName, icon } = req.body;
+        name = name ? name.trim() : name;
+        hindiName = hindiName ? hindiName.trim() : hindiName;
+        icon = icon ? icon.trim() : icon;
         const crop = await Crop.findByIdAndUpdate(req.params.id, { name, hindiName, icon }, { new: true });
         if (!crop) return res.status(404).json({ error: 'Crop not found' });
         res.json(crop);

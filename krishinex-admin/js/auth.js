@@ -248,20 +248,30 @@ console.log('[DEBUG] Admin API Base Initialized:', window.API_BASE);
                 const userName = userData.name || 'Admin';
                 const firstName = userName.split(' ')[0];
 
-                // Update Sidebar Name
-                const sidebarName = document.getElementById('sidebarUserName');
-                if (sidebarName) {
-                    sidebarName.textContent = userName;
-                } else {
-                    // Fallback: search for <p> with class truncate containing "Super Admin"
-                    const ps = document.getElementsByTagName('p');
-                    for (let p of ps) {
-                        if (p.classList.contains('truncate') && p.textContent.trim() === 'Super Admin') {
-                            p.id = 'sidebarUserName';
-                            p.textContent = userName;
-                            break;
-                        }
+                // Standardize Sidebar Footer across all pages
+                const sidebarEl = document.getElementById('sidebar');
+                if (sidebarEl) {
+                    let footerEl = sidebarEl.querySelector('.sticky.bottom-0.z-10');
+                    if (!footerEl) {
+                        footerEl = document.createElement('div');
+                        footerEl.className = 'px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10';
+                        sidebarEl.appendChild(footerEl);
                     }
+                    footerEl.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">${userName}</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>`;
                 }
 
                 // Update Header Initial/Name

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 
 <head>
@@ -383,7 +383,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-[10px] text-slate-500 font-bold uppercase">Super Admin</p>
-                        <p class="text-xs font-black text-slate-900 truncate">Khetify Admin</p>
+                        <p class="text-xs font-black text-slate-900 truncate">KrishiNex Admin</p>
                     </div>
                 </div>
             </div>
@@ -754,9 +754,9 @@
         }
 
         async function saveCrop() {
-            const name = document.getElementById('newCropName').value;
-            const hindiName = document.getElementById('newCropHindi').value;
-            const icon = document.getElementById('newCropIcon').value;
+            const name = document.getElementById('newCropName').value.trim();
+            const hindiName = document.getElementById('newCropHindi').value.trim();
+            const icon = document.getElementById('newCropIcon').value.trim();
 
             if (!name || !hindiName) return showToast('Names are required', 'error');
 
@@ -953,7 +953,7 @@
             list.innerHTML = '<div class="flex justify-center p-12"><div class="h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>';
 
             try {
-                const res = await fetch(`${API_BASE}/mandi/prices?mandiId=${currentMandiId}&cropName=${currentCrop}`);
+                const res = await fetch(`${API_BASE}/mandi/prices?mandiId=${currentMandiId}&cropName=${encodeURIComponent(currentCrop)}`);
                 existingPrices = await res.json();
                 renderPriceEntries();
             } catch (err) {
