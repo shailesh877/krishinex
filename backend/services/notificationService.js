@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const { getMessaging } = require('firebase-admin/messaging');
 const path = require('path');
 const fs = require('fs');
 const Notification = require('../models/Notification');
@@ -51,7 +52,7 @@ if (FIREBASE_CONFIG) {
         }
 
         firebaseApp = admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
+            credential: (admin.credential?.cert || admin.cert)(serviceAccount)
         });
         const hasNewlines = serviceAccount.private_key && serviceAccount.private_key.includes('\n');
         console.log('[FIREBASE] ✅ Firebase Admin SDK initialized from Environment Variable.');
@@ -66,7 +67,7 @@ if (FIREBASE_CONFIG) {
     try {
         const serviceAccount = require(serviceAccountPath);
         firebaseApp = admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
+            credential: (admin.credential?.cert || admin.cert)(serviceAccount)
         });
         console.log('[FIREBASE] Firebase Admin SDK initialized from serviceAccountKey.json.');
     } catch (error) {
@@ -132,7 +133,8 @@ const sendNotification = async (userId, { title, messageEn, messageHi, type, ref
                 token: user.fcmToken
             };
 
-            await admin.messaging().send(message)
+            const messaging = admin.messaging ? admin.messaging() : getMessaging(firebaseApp);
+            await messaging.send(message)
                 .then((response) => {
                     console.log('[FIREBASE] ✅ Push sent successfully:', response);
                 })

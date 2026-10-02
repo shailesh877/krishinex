@@ -157,9 +157,25 @@ export default function WalletScreen() {
           showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'भुगतान सत्यापन विफल' : 'Payment verification failed');
         }
       }).catch((error: any) => {
-        console.log('Razorpay Error:', error);
-        const errorMsg = error?.description || error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
-        showAlert(hi ? 'त्रुटि' : 'Error', hi ? `भुगतान विफल या रद्द किया गया: ${errorMsg}` : `Payment failed or cancelled: ${errorMsg}`);
+        console.log('Razorpay Error/Cancelled:', error);
+        const desc = (error?.description || error?.message || (typeof error === 'string' ? error : '')).toLowerCase();
+        const isCancelled = error?.code === 0 || desc.includes('cancel') || desc.includes('dismiss');
+
+        if (isCancelled) {
+          showAlert(
+            hi ? 'भुगतान रद्द' : 'Payment Cancelled',
+            hi
+              ? 'आपने भुगतान प्रक्रिया रद्द कर दी है। आपके खाते से कोई पैसे नहीं कटे हैं।'
+              : 'You cancelled the payment process. No money was deducted from your account.'
+          );
+        } else {
+          showAlert(
+            hi ? 'भुगतान विफल' : 'Payment Failed',
+            hi
+              ? 'भुगतान पूरा नहीं हो सका। कृपया अपने बैंक/UPI ऐप की जांच करें या पुनः प्रयास करें।'
+              : 'Payment could not be completed. Please check your bank/UPI app or try again.'
+          );
+        }
       });
       
     } catch (error) {

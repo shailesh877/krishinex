@@ -9,12 +9,14 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  RefreshControl } from 'react-native';
+  RefreshControl
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../../context/UserContext';
+import { useI18n } from '../../context/I18nContext';
 import { useCachedFetch } from '../../hooks/useCachedFetch';
 
 import { BASE_URL, BASE_API_URL } from '../../constants/api';
@@ -30,12 +32,13 @@ type EmployeeAccessConfig = {
 };
 
 const DUMMY_ACCESS: EmployeeAccessConfig = {
-  modules: ['labour', 'equipment', 'soil', 'doctor'] };
+  modules: ['labour', 'equipment', 'soil', 'doctor']
+};
 
 export default function EmployeeHome() {
   const router = useRouter();
   const { lang, toggleLang } = useI18n();
-  
+
   const isHindi = lang === 'hi';
 
   const { profile, refreshUser } = useUser();
@@ -58,12 +61,14 @@ export default function EmployeeHome() {
   const overviewStats = statsData?.overviewStats || {
     totalAssigned: 0,
     totalPending: 0,
-    totalCompleted: 0 };
+    totalCompleted: 0
+  };
 
   const todayStats = statsData?.todayStats || {
     todayNew: 0,
     todayPending: 0,
-    todayCompleted: 0 };
+    todayCompleted: 0
+  };
   const [unreadCount, setUnreadCount] = React.useState(0);
 
   const modules = statsData?.access?.modules || ['labour', 'equipment', 'soil', 'doctor'];
@@ -475,14 +480,17 @@ const styles = StyleSheet.create({
 
   statusBg: {
     height: 44,
-    backgroundColor: STATUS_GREEN },
+    backgroundColor: STATUS_GREEN
+  },
 
-  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
+  header: {
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    
-    
+
+
     backgroundColor: STATUS_GREEN,
-    justifyContent: 'space-between'},
+    justifyContent: 'space-between'
+  },
   avatarWrap: {
     width: 32,
     height: 32,
@@ -490,15 +498,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5F4FF',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   avatarImg: {
     width: 28,
     height: 28,
-    resizeMode: 'contain' },
+    resizeMode: 'contain'
+  },
 
   headerRight: {
     flexDirection: 'row',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   langPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -508,18 +519,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    marginRight: 8 },
+    marginRight: 8
+  },
   langPillText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#047857' },
+    color: '#047857'
+  },
   iconCircle: {
     width: 30,
     height: 30,
     borderRadius: 15,
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   bellDot: {
     position: 'absolute',
     top: 5,
@@ -527,35 +541,42 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#F97316' },
+    backgroundColor: '#F97316'
+  },
 
   body: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: 10 },
+    paddingTop: 10
+  },
 
   nameBlock: {
-    marginBottom: 10 },
+    marginBottom: 10
+  },
 
   nameText: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#111827' },
+    color: '#111827'
+  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4 },
+    marginTop: 4
+  },
   villageText: {
     fontSize: 12,
     color: '#6B7280',
-    marginLeft: 4 },
+    marginLeft: 4
+  },
 
   sectionTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginTop: 6,
-    marginBottom: 6 },
+    marginBottom: 6
+  },
 
   overviewCard: {
     borderRadius: 18,
@@ -568,68 +589,83 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
     shadowRadius: 10,
-    elevation: 4 },
+    elevation: 4
+  },
   overviewTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   overviewTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827' },
+    color: '#111827'
+  },
   overviewSub: {
     fontSize: 11,
     color: '#6B7280',
     marginTop: 2,
-    maxWidth: '90%' },
+    maxWidth: '90%'
+  },
   overviewIconWrap: {
     width: 30,
     height: 30,
     borderRadius: 15,
     backgroundColor: '#EFF6FF',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   overviewMainRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
-    alignItems: 'center' },
+    alignItems: 'center'
+  },
   overviewBigNumber: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#111827' },
+    color: '#111827'
+  },
   overviewBigLabel: {
     fontSize: 12,
     color: '#4B5563',
-    marginTop: 2 },
+    marginTop: 2
+  },
   overviewRightCol: {
-    alignItems: 'flex-start' },
+    alignItems: 'flex-start'
+  },
   overviewSmallRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 3 },
+    marginTop: 3
+  },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 4 },
+    marginRight: 4
+  },
   overviewSmallLabel: {
     fontSize: 11,
     color: '#6B7280',
-    marginRight: 4 },
+    marginRight: 4
+  },
   overviewSmallValue: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#111827' },
+    color: '#111827'
+  },
   overviewFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10 },
+    marginTop: 10
+  },
   overviewFooterText: {
     fontSize: 11,
     color: '#4B5563',
     marginLeft: 4,
-    flex: 1 },
+    flex: 1
+  },
 
   todayCard: {
     borderRadius: 16,
@@ -637,11 +673,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB' },
+    borderColor: '#E5E7EB'
+  },
   todayHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6 },
+    marginBottom: 6
+  },
   todayIconWrap: {
     width: 26,
     height: 26,
@@ -649,32 +687,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCFCE7',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 6 },
+    marginRight: 6
+  },
   todayTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#111827' },
+    color: '#111827'
+  },
   todayRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4 },
+    marginTop: 4
+  },
   todayLabel: {
     fontSize: 12,
-    color: '#6B7280' },
+    color: '#6B7280'
+  },
   todayValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#111827' },
+    color: '#111827'
+  },
 
   actionsRow: {
     flexDirection: 'row',
-    marginTop: 10 },
+    marginTop: 10
+  },
   actionCard: {
     flex: 1,
     borderRadius: 18,
     paddingHorizontal: 10,
     paddingVertical: 10,
-    marginRight: 10 },
+    marginRight: 10
+  },
   actionIconWrap: {
     width: 30,
     height: 30,
@@ -682,15 +727,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6 },
+    marginBottom: 6
+  },
   actionTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF' },
+    color: '#FFFFFF'
+  },
   actionSub: {
     fontSize: 11,
     color: '#F9FAFB',
-    marginTop: 2 },
+    marginTop: 2
+  },
   badge: {
     position: 'absolute',
     top: -2,
@@ -702,8 +750,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF' },
+    borderColor: '#FFFFFF'
+  },
   badgeText: {
     color: '#FFFFFF',
     fontSize: 8,
-    fontWeight: 'bold' } });
+    fontWeight: 'bold'
+  }
+});
