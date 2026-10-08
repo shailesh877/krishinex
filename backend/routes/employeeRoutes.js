@@ -87,6 +87,15 @@ const leadPhotoStorage = multer.diskStorage({
 });
 const uploadLeadPhoto = multer({ storage: leadPhotoStorage });
 
+const adminDocStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, path.join(__dirname, '../uploads')),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        cb(null, `admin_upload_${Date.now()}${ext}`);
+    }
+});
+const uploadAdminDoc = multer({ storage: adminDocStorage });
+
 // @route   GET /api/employee/dashboard
 // @desc    Get dashboard statistics for specific Employee
 // @access  Private
@@ -1649,6 +1658,57 @@ router.get('/admin/soil-labs', protect, checkModule('soil'), async (req, res) =>
     }
 });
 
+
+// @route   PUT /api/employee/admin/users/:id/upload-doc
+// @desc    Upload document for users from admin panel
+// @access  Private/Admin
+router.put('/admin/users/:id/upload-doc', protect, uploadAdminDoc.single('document'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        
+        const { docKey } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User/Partner not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const fileUrl = 'uploads/' + req.file.filename;
+
+        if (docKey === 'aadhaarFront') {
+            user.aadhaarDocUrl = fileUrl;
+            user.aadhaarFrontUrl = fileUrl;
+            user.aadhaarFront = fileUrl;
+        } else if (docKey === 'aadhaarBack') {
+            user.aadhaarBackDocUrl = fileUrl;
+            user.aadhaarBackUrl = fileUrl;
+            user.aadhaarBack = fileUrl;
+        } else if (docKey === 'panCard') {
+            user.panDocUrl = fileUrl;
+            user.panCardUrl = fileUrl;
+            user.panDoc = fileUrl;
+        } else if (docKey === 'passbook') {
+            user.passbookDocUrl = fileUrl;
+            user.passbookUrl = fileUrl;
+            if (!user.bankDetails) user.bankDetails = {};
+            user.bankDetails.passbookUrl = fileUrl;
+            user.bankDetails.bankDocUrl = fileUrl;
+        } else if (docKey === 'profilePhoto') {
+            user.profilePhotoUrl = fileUrl;
+            user.photoUrl = fileUrl;
+            user.photo = fileUrl;
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Document uploaded successfully', url: fileUrl });
+    } catch (e) {
+        console.error('Document upload error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
+    }
+});
+
 // @route   GET /api/employee/admin/users/:id
 // @desc    Get full user profile for admin (bank details, docs etc)
 // @access  Private/Admin
@@ -2596,6 +2656,57 @@ router.get('/admin/buyer/stats', protect, checkModule('buyer'), async (req, res)
     }
 });
 
+
+// @route   PUT /api/employee/admin/buyer/:id/upload-doc
+// @desc    Upload document for buyer from admin panel
+// @access  Private/Admin
+router.put('/admin/buyer/:id/upload-doc', protect, uploadAdminDoc.single('document'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        
+        const { docKey } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User/Partner not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const fileUrl = 'uploads/' + req.file.filename;
+
+        if (docKey === 'aadhaarFront') {
+            user.aadhaarDocUrl = fileUrl;
+            user.aadhaarFrontUrl = fileUrl;
+            user.aadhaarFront = fileUrl;
+        } else if (docKey === 'aadhaarBack') {
+            user.aadhaarBackDocUrl = fileUrl;
+            user.aadhaarBackUrl = fileUrl;
+            user.aadhaarBack = fileUrl;
+        } else if (docKey === 'panCard') {
+            user.panDocUrl = fileUrl;
+            user.panCardUrl = fileUrl;
+            user.panDoc = fileUrl;
+        } else if (docKey === 'passbook') {
+            user.passbookDocUrl = fileUrl;
+            user.passbookUrl = fileUrl;
+            if (!user.bankDetails) user.bankDetails = {};
+            user.bankDetails.passbookUrl = fileUrl;
+            user.bankDetails.bankDocUrl = fileUrl;
+        } else if (docKey === 'profilePhoto') {
+            user.profilePhotoUrl = fileUrl;
+            user.photoUrl = fileUrl;
+            user.photo = fileUrl;
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Document uploaded successfully', url: fileUrl });
+    } catch (e) {
+        console.error('Document upload error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
+    }
+});
+
 // @route   GET /api/employee/admin/buyers
 // @desc    All buyer profiles with their order stats
 // @access  Private/Admin
@@ -3343,6 +3454,61 @@ router.get('/admin/shop/stats', protect, checkModule('shops'), async (req, res) 
     } catch (e) {
         console.error('Shop stats error:', e);
         res.status(500).json({ error: 'Failed to fetch shop stats' });
+    }
+});
+
+
+// @route   PUT /api/employee/admin/shop/:id/upload-doc
+// @desc    Upload document for shop from admin panel
+// @access  Private/Admin
+router.put('/admin/shop/:id/upload-doc', protect, uploadAdminDoc.single('document'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        
+        const { docKey } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User/Partner not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const fileUrl = 'uploads/' + req.file.filename;
+
+        if (docKey === 'aadhaarFront') {
+            user.aadhaarDocUrl = fileUrl;
+            user.aadhaarFrontUrl = fileUrl;
+            user.aadhaarFront = fileUrl;
+        } else if (docKey === 'aadhaarBack') {
+            user.aadhaarBackDocUrl = fileUrl;
+            user.aadhaarBackUrl = fileUrl;
+            user.aadhaarBack = fileUrl;
+        } else if (docKey === 'panCard') {
+            user.panDocUrl = fileUrl;
+            user.panCardUrl = fileUrl;
+            user.panDoc = fileUrl;
+        } else if (docKey === 'licenseDoc') {
+            user.businessLicenseUrl = fileUrl;
+            user.gstDocUrl = fileUrl;
+            user.licenseDocUrl = fileUrl;
+        } else if (docKey === 'passbook') {
+            user.passbookDocUrl = fileUrl;
+            user.passbookUrl = fileUrl;
+            if (!user.bankDetails) user.bankDetails = {};
+            user.bankDetails.passbookUrl = fileUrl;
+            user.bankDetails.bankDocUrl = fileUrl;
+        } else if (docKey === 'profilePhoto') {
+            user.profilePhotoUrl = fileUrl;
+            user.photoUrl = fileUrl;
+            user.photo = fileUrl;
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Document uploaded successfully', url: fileUrl });
+    } catch (e) {
+        console.error('Document upload error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
     }
 });
 
@@ -4361,6 +4527,7 @@ router.put('/admin/labour/:id/reject-doc', protect, checkModule('labour'), async
             if (labour.bankDetails) {
                 labour.bankDetails.passbookUrl = '';
                 labour.bankDetails.passbookDoc = '';
+                labour.bankDetails.bankDocUrl = '';
             }
         } else if (docKey === 'profilePhoto') {
             labour.profilePhotoUrl = '';
@@ -4376,6 +4543,116 @@ router.put('/admin/labour/:id/reject-doc', protect, checkModule('labour'), async
     } catch (e) {
         console.error('Document rejection error:', e);
         res.status(500).json({ error: 'Failed to reject document' });
+    }
+});
+
+// @route   PUT /api/employee/admin/user/:id/reject-doc
+// @desc    Reject a specific uploaded document for any user
+// @access  Private/Admin
+router.put('/admin/user/:id/reject-doc', protect, async (req, res) => {
+    try {
+        const { docKey, reason } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const docTitleMap = {
+            aadhaarFront: 'Aadhaar Card (Front)',
+            aadhaarBack: 'Aadhaar Card (Back)',
+            panCard: 'PAN Card / ID Proof',
+            passbook: 'Bank Passbook / Cheque',
+            profilePhoto: 'Profile Photo'
+        };
+
+        if (docKey === 'aadhaarFront') {
+            user.aadhaarDocUrl = '';
+            user.aadhaarFrontUrl = '';
+            user.aadhaarFront = '';
+        } else if (docKey === 'aadhaarBack') {
+            user.aadhaarBackDocUrl = '';
+            user.aadhaarBackUrl = '';
+            user.aadhaarBack = '';
+        } else if (docKey === 'panCard') {
+            user.panDocUrl = '';
+            user.panCardUrl = '';
+            user.panDoc = '';
+        } else if (docKey === 'licenseDoc') {
+            user.businessLicenseUrl = '';
+            user.gstDocUrl = '';
+            user.licenseDocUrl = '';
+        } else if (docKey === 'passbook') {
+            user.passbookDocUrl = '';
+            user.passbookUrl = '';
+            if (user.bankDetails) {
+                user.bankDetails.passbookUrl = '';
+                user.bankDetails.passbookDoc = '';
+                user.bankDetails.bankDocUrl = '';
+            }
+        } else if (docKey === 'profilePhoto') {
+            user.profilePhotoUrl = '';
+            user.photoUrl = '';
+            user.photo = '';
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        user.status = 'pending';
+        user.markModified('bankDetails');
+
+        await user.save();
+        res.json({ message: `${docTitleMap[docKey] || 'Document'} rejected successfully. User can now re-upload.` });
+    } catch (e) {
+        console.error('Document rejection error:', e);
+        res.status(500).json({ error: 'Failed to reject document' });
+    }
+});
+
+// @route   PUT /api/employee/admin/labour/:id/upload-doc
+// @desc    Upload document for a labourer from admin panel
+// @access  Private/Admin
+
+
+router.put('/admin/labour/:id/upload-doc', protect, checkModule('labour'), uploadAdminDoc.single('document'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        
+        const { docKey } = req.body;
+        const labour = await User.findById(req.params.id);
+        if (!labour) return res.status(404).json({ error: 'Labourer not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const fileUrl = `uploads/${req.file.filename}`;
+
+        if (docKey === 'aadhaarFront') {
+            labour.aadhaarDocUrl = fileUrl;
+            labour.aadhaarFrontUrl = fileUrl;
+        } else if (docKey === 'aadhaarBack') {
+            labour.aadhaarBackDocUrl = fileUrl;
+            labour.aadhaarBackUrl = fileUrl;
+        } else if (docKey === 'panCard') {
+            labour.panDocUrl = fileUrl;
+            labour.panCardUrl = fileUrl;
+        } else if (docKey === 'passbook') {
+            labour.passbookDocUrl = fileUrl;
+            labour.passbookUrl = fileUrl;
+            if (!labour.bankDetails) labour.bankDetails = {};
+            labour.bankDetails.passbookUrl = fileUrl;
+            labour.bankDetails.bankDocUrl = fileUrl;
+        } else if (docKey === 'profilePhoto') {
+            labour.profilePhotoUrl = fileUrl;
+            labour.photoUrl = fileUrl;
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        labour.markModified('bankDetails');
+        await labour.save();
+        res.json({ message: 'Document uploaded successfully', url: fileUrl });
+    } catch (e) {
+        console.error('Document upload error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
     }
 });
 
@@ -4693,6 +4970,113 @@ router.get('/admin/rental/cash-collections', protect, checkModule('equipment'), 
 // @route   GET /api/employee/admin/rental/export
 // @desc    Export all rental bookings as CSV
 // @access  Private/Admin
+
+
+// @route   PUT /api/employee/admin/soil/:id/upload-doc
+// @desc    Upload document for soil partner from admin panel
+// @access  Private/Admin
+router.put('/admin/soil/:id/upload-doc', protect, uploadAdminDoc.single('document'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        
+        const { docKey } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User/Partner not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const fileUrl = 'uploads/' + req.file.filename;
+
+        if (docKey === 'aadhaarFront') {
+            user.aadhaarDocUrl = fileUrl;
+            user.aadhaarFrontUrl = fileUrl;
+            user.aadhaarFront = fileUrl;
+        } else if (docKey === 'aadhaarBack') {
+            user.aadhaarBackDocUrl = fileUrl;
+            user.aadhaarBackUrl = fileUrl;
+            user.aadhaarBack = fileUrl;
+        } else if (docKey === 'panCard') {
+            user.panDocUrl = fileUrl;
+            user.panCardUrl = fileUrl;
+            user.panDoc = fileUrl;
+        } else if (docKey === 'licenseDoc') {
+            user.businessLicenseUrl = fileUrl;
+            user.certDocUrl = fileUrl;
+            user.licenseDocUrl = fileUrl;
+        } else if (docKey === 'passbook') {
+            user.passbookDocUrl = fileUrl;
+            user.passbookUrl = fileUrl;
+            if (!user.bankDetails) user.bankDetails = {};
+            user.bankDetails.passbookUrl = fileUrl;
+            user.bankDetails.bankDocUrl = fileUrl;
+            user.bankDetails.passbookDoc = fileUrl;
+        } else if (docKey === 'profilePhoto') {
+            user.profilePhotoUrl = fileUrl;
+            user.photoUrl = fileUrl;
+            user.photo = fileUrl;
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Document uploaded successfully', url: fileUrl });
+    } catch (e) {
+        console.error('Document upload error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
+    }
+});
+
+
+// @route   PUT /api/employee/admin/machine-partner/:id/upload-doc
+// @desc    Upload document for machine-partner from admin panel
+// @access  Private/Admin
+router.put('/admin/machine-partner/:id/upload-doc', protect, uploadAdminDoc.single('document'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        
+        const { docKey } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User/Partner not found' });
+
+        if (!docKey) return res.status(400).json({ error: 'docKey is required' });
+
+        const fileUrl = 'uploads/' + req.file.filename;
+
+        if (docKey === 'aadhaarFront') {
+            user.aadhaarDocUrl = fileUrl;
+            user.aadhaarFrontUrl = fileUrl;
+            user.aadhaarFront = fileUrl;
+        } else if (docKey === 'aadhaarBack') {
+            user.aadhaarBackDocUrl = fileUrl;
+            user.aadhaarBackUrl = fileUrl;
+            user.aadhaarBack = fileUrl;
+        } else if (docKey === 'panCard') {
+            user.panDocUrl = fileUrl;
+            user.panCardUrl = fileUrl;
+            user.panDoc = fileUrl;
+        } else if (docKey === 'passbook') {
+            user.passbookDocUrl = fileUrl;
+            user.passbookUrl = fileUrl;
+            if (!user.bankDetails) user.bankDetails = {};
+            user.bankDetails.passbookUrl = fileUrl;
+            user.bankDetails.bankDocUrl = fileUrl;
+        } else if (docKey === 'profilePhoto') {
+            user.profilePhotoUrl = fileUrl;
+            user.photoUrl = fileUrl;
+            user.photo = fileUrl;
+        } else {
+            return res.status(400).json({ error: 'Invalid docKey' });
+        }
+
+        user.markModified('bankDetails');
+        await user.save();
+        res.json({ message: 'Document uploaded successfully', url: fileUrl });
+    } catch (e) {
+        console.error('Document upload error:', e);
+        res.status(500).json({ error: 'Failed to upload document' });
+    }
+});
 
 // @route   GET /api/employee/admin/rental/partners
 // @desc    Get all equipment partners with their machine counts and booking stats

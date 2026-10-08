@@ -1271,6 +1271,7 @@
     let allShops = [];
     let allOrders = [];
     let currentShopData = null; // Stores 360 data
+    let currentEditingShopId = null;
 
     async function fetchShopStats(startDate = document.getElementById('globalStartDate')?.value || '', endDate = document.getElementById('globalEndDate')?.value || '') {
       try {
@@ -1663,9 +1664,10 @@
                     <i class="fas fa-trash-alt mr-1"></i> Reject
                   </button>
                 ` : `
-                  <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
-                    No Document Attached
-                  </button>
+                  <label class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold py-2 rounded-xl cursor-pointer flex items-center justify-center gap-1 transition-all border border-emerald-200">
+                        <i class="fas fa-upload"></i> Upload Document
+                        <input type="file" class="hidden" accept="image/*" onchange="uploadDoc(event, '${s._id}', '${d.key}')">
+                      </label>
                 `}
               </div>
             </div>
@@ -2179,15 +2181,54 @@
       setTimeout(() => toast.classList.add('hidden'), 3500);
     }
     let currentDocKeyForViewer = null;
+    let docViewerZoom = 1;
+    let docViewerRotation = 0;
+    let docViewerPanX = 0;
+    let docViewerPanY = 0;
+    let isDocDragging = false;
+    let docDragStartX = 0;
+    let docDragStartY = 0;
+
+    function updateDocTransform() {
+      const img = document.getElementById('docViewerImage');
+      if (!img) return;
+      img.style.transform = `translate(${docViewerPanX}px, ${docViewerPanY}px) scale(${docViewerZoom}) rotate(${docViewerRotation}deg)`;
+      const zoomText = document.getElementById('docZoomLevel');
+      if (zoomText) zoomText.textContent = `${Math.round(docViewerZoom * 100)}%`;
+    }
+
+    function zoomDocViewer(delta) {
+      docViewerZoom = Math.max(0.4, Math.min(6.0, +(docViewerZoom + delta).toFixed(2)));
+      updateDocTransform();
+    }
+
+    function resetDocViewerZoom() {
+      docViewerZoom = 1;
+      docViewerRotation = 0;
+      docViewerPanX = 0;
+      docViewerPanY = 0;
+      updateDocTransform();
+    }
+
+    function rotateDocViewer() {
+      docViewerRotation = (docViewerRotation + 90) % 360;
+      updateDocTransform();
+    }
 
     function openDocViewer(title, url, docKey) {
       if (!url) return showToast('Document URL not available', 'warning');
       currentDocKeyForViewer = docKey || null;
+
       document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
-      document.getElementById('docViewerDownloadBtn').href = url;
+      const dlBtn = document.getElementById('docViewerDownloadBtn');
+      if (dlBtn) dlBtn.href = url;
+      const newTabBtn = document.getElementById('docViewerOpenNewTabBtn');
+      if (newTabBtn) newTabBtn.href = url;
 
       const img = document.getElementById('docViewerImage');
       const errState = document.getElementById('docViewerErrorState');
+
+      resetDocViewerZoom();
 
       if (img && errState) {
         img.classList.remove('hidden');
@@ -2196,9 +2237,10 @@
       }
 
       const rejectBtn = document.getElementById('docViewerRejectBtn');
+      const activeShopId = typeof currentEditingShopId !== 'undefined' ? currentEditingShopId : null;
       if (rejectBtn) {
-        if (docKey && currentEditingShopId) {
-          rejectBtn.onclick = () => rejectPartnerDocument(currentEditingShopId, docKey, title);
+        if (docKey && activeShopId) {
+          rejectBtn.onclick = () => rejectPartnerDocument(activeShopId, docKey, title);
           rejectBtn.classList.remove('hidden');
         } else {
           rejectBtn.classList.add('hidden');
@@ -2207,8 +2249,8 @@
 
       const modal = document.getElementById('docViewerModal');
       if (modal) {
+        modal.style.display = 'flex';
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
       }
     }
 
@@ -2224,9 +2266,10 @@
     function closeDocViewer() {
       const modal = document.getElementById('docViewerModal');
       if (modal) {
+        modal.style.display = 'none';
         modal.classList.add('hidden');
-        modal.classList.remove('flex');
       }
+      resetDocViewerZoom();
     }
 
     async function rejectPartnerDocument(userId, docKey, docTitle) {
@@ -2244,6 +2287,21 @@
         if (res.ok) {
           showToast(data.message || 'Document rejected successfully', 'success');
           closeDocViewer();
+          let f = allShops.find(f => f._id === userId);
+          if (f) {
+            if (docKey === 'aadhaarFront') { f.aadhaarDocUrl = null; f.aadhaarFront = null; f.documentUrl = null; f.aadhaarFrontUrl = null; }
+            if (docKey === 'aadhaarBack') { f.aadhaarBackDocUrl = null; f.aadhaarBack = null; f.aadhaarBackUrl = null; }
+            if (docKey === 'licenseDoc') { f.businessLicenseUrl = null; f.certDocUrl = null; f.licenseDocUrl = null; }
+            if (docKey === 'passbook') {
+                f.passbookDocUrl = null;
+                if (f.bankDetails) {
+                    f.bankDetails.passbookUrl = null;
+                    f.bankDetails.bankDocUrl = null;
+                    f.bankDetails.passbookDoc = null;
+                }
+            }
+            if (docKey === 'profilePhoto') { f.profilePhotoUrl = null; f.photo = null; }
+          }
           viewShop(userId);
           fetchShops();
         } else {
@@ -2256,6 +2314,61 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       setGlobalDatePreset('all');
+
+      // Document Viewer Zoom / Pan handlers
+      const docContainer = document.getElementById('docViewerContainer');
+      const docImg = document.getElementById('docViewerImage');
+      if (docContainer && docImg) {
+        docContainer.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const delta = e.deltaY < 0 ? 0.2 : -0.2;
+          zoomDocViewer(delta);
+        }, { passive: false });
+
+        docImg.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          if (docViewerZoom > 1.1) {
+            resetDocViewerZoom();
+          } else {
+            docViewerZoom = 2.0;
+            updateDocTransform();
+          }
+        });
+
+        docContainer.addEventListener('mousedown', (e) => {
+          if (e.target === docContainer || e.target === docImg) {
+            isDocDragging = true;
+            docDragStartX = e.clientX - docViewerPanX;
+            docDragStartY = e.clientY - docViewerPanY;
+            docContainer.style.cursor = 'grabbing';
+            docImg.style.cursor = 'grabbing';
+          }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDocDragging) return;
+          docViewerPanX = e.clientX - docDragStartX;
+          docViewerPanY = e.clientY - docDragStartY;
+          updateDocTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (isDocDragging) {
+            isDocDragging = false;
+            if (docContainer) docContainer.style.cursor = 'grab';
+            if (docImg) docImg.style.cursor = 'grab';
+          }
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('docViewerModal');
+          if (modal && (modal.style.display === 'flex' || !modal.classList.contains('hidden'))) {
+            closeDocViewer();
+          }
+        }
+      });
 
       const shopsTbody = document.getElementById('shops-table-body') || document.getElementById('shopsTbody');
       const shopsContainer = shopsTbody ? shopsTbody.closest('.overflow-auto, .overflow-y-auto, div[style*="max-height"]') : null;
@@ -2272,44 +2385,156 @@
     });
   </script>
 
-  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
-  <div id="docViewerModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]" onclick="if(event.target === this) closeDocViewer()">
-    <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
-      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
-            <i class="fas fa-file-image text-lg"></i>
+  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL (EXPANSIVE HIGH RESOLUTION) -->
+  <div id="docViewerModal"
+    class="fixed inset-0 items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/85 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]"
+    style="z-index: 99999 !important; display: none;"
+    onclick="if(event.target === this) closeDocViewer()">
+    <div class="bg-slate-900 rounded-3xl shadow-2xl max-w-6xl w-full h-[92vh] max-h-[92vh] overflow-hidden flex flex-col border border-slate-700/80">
+      
+      <!-- Modal Header Toolbar -->
+      <div class="px-5 py-3.5 bg-slate-900/95 border-b border-slate-800 text-white flex flex-wrap gap-3 justify-between items-center shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="h-10 w-10 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 shrink-0">
+            <i class="fas fa-store text-lg"></i>
           </div>
-          <div>
-            <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
-            <p class="text-[10px] text-purple-300 font-medium">Official Identification & Verification Document</p>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h3 id="docViewerTitle" class="text-sm md:text-base font-black text-white truncate">Document Viewer</h3>
+              <span class="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-300 border border-teal-500/20">Official KYC</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Shop Partner Verification & Compliance</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
-            <i class="fas fa-trash-alt"></i> Reject Document
-          </button>
-          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
-            <i class="fas fa-download"></i> Download / Open
+
+        <!-- Controls Toolbar -->
+        <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+          <!-- Zoom & Rotate Controls -->
+          <div class="flex items-center bg-slate-800/80 rounded-xl p-1 border border-slate-700/60 shadow-inner">
+            <button type="button" onclick="zoomDocViewer(-0.25)" class="h-7 w-7 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Zoom Out (–)">
+              <i class="fas fa-search-minus text-xs"></i>
+            </button>
+            <button type="button" onclick="resetDocViewerZoom()" class="h-7 px-2 rounded-lg hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-mono font-bold flex items-center justify-center transition-all cursor-pointer" title="Reset Zoom (100%)">
+              <span id="docZoomLevel">100%</span>
+            </button>
+            <button type="button" onclick="zoomDocViewer(0.25)" class="h-7 w-7 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Zoom In (+)">
+              <i class="fas fa-search-plus text-xs"></i>
+            </button>
+            <div class="w-px h-4 bg-slate-700 mx-1"></div>
+            <button type="button" onclick="rotateDocViewer()" class="h-7 w-7 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Rotate 90°">
+              <i class="fas fa-redo text-xs"></i>
+            </button>
+          </div>
+
+          <!-- Open in Full Tab -->
+          <a id="docViewerOpenNewTabBtn" href="#" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700/80 transition-all cursor-pointer" title="Open Full Size in New Tab">
+            <i class="fas fa-external-link-alt text-xs"></i>
+            <span class="hidden md:inline">Open Full</span>
           </a>
-          <button onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
-            <i class="fas fa-times"></i>
+
+          <!-- Download -->
+          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700/80 transition-all cursor-pointer" title="Download Document">
+            <i class="fas fa-download text-xs"></i>
+            <span class="hidden md:inline">Download</span>
+          </a>
+
+          <!-- Reject Document -->
+          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <i class="fas fa-trash-alt text-xs"></i> Reject
+          </button>
+
+          <!-- Close Modal -->
+          <button type="button" onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-700/80 ml-1" title="Close (Esc)">
+            <i class="fas fa-times text-base"></i>
           </button>
         </div>
       </div>
 
-      <div id="docViewerContainer" class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
-        <img id="docViewerImage" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+      <!-- Main Viewer Area -->
+      <div id="docViewerContainer" class="p-4 md:p-8 bg-slate-950 flex-1 overflow-hidden flex items-center justify-center relative select-none cursor-grab">
+        <img id="docViewerImage" src="" class="max-w-[94%] max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-slate-800 transition-transform duration-75 origin-center will-change-transform" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        
+        <!-- Error State -->
         <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
-          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
-          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
-          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+          <div class="h-16 w-16 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+            <i class="fas fa-exclamation-triangle text-3xl"></i>
+          </div>
+          <p class="text-base font-bold text-slate-100">Document File Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">The document file could not be loaded directly from storage. Try opening it directly in a new browser tab.</p>
+        </div>
+
+        <!-- Floating Helpful Guide -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none bg-slate-900/80 backdrop-blur border border-slate-800/80 text-slate-400 text-[10px] font-medium px-3.5 py-1.5 rounded-full shadow-lg hidden sm:flex items-center gap-2">
+          <span><i class="fas fa-mouse text-teal-400 mr-1"></i> Scroll to Zoom</span>
+          <span class="text-slate-600">•</span>
+          <span><i class="fas fa-hand-pointer text-teal-400 mr-1"></i> Drag to Pan</span>
+          <span class="text-slate-600">•</span>
+          <span><i class="fas fa-expand text-teal-400 mr-1"></i> Double-click to Toggle</span>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="js/sidebar-guard.js"></script>
+  <script src="js/sidebar-guard.js">
+    
+  </script>
+
+  <script>
+    async function uploadDoc(event, itemId, docKey) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!confirm(`Are you sure you want to upload this document as ${docKey}?`)) {
+        event.target.value = '';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('document', file);
+      formData.append('docKey', docKey);
+
+      try {
+        if(typeof showToast !== 'undefined') showToast('Uploading document...', 'info');
+        const res = await fetch(`${API_BASE}/employee/admin/shop/${itemId}/upload-doc`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN },
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if(typeof showToast !== 'undefined') showToast('Document uploaded successfully!', 'success');
+          
+          if (currentShopData && currentShopData.profile && currentShopData.profile._id === itemId) {
+            let s = currentShopData.profile;
+            if (docKey === 'aadhaarFront') { s.aadhaarDocUrl = data.url; s.aadhaarFront = data.url; s.documentUrl = data.url; s.aadhaarFrontUrl = data.url; }
+            if (docKey === 'aadhaarBack') { s.aadhaarBackDocUrl = data.url; s.aadhaarBack = data.url; s.aadhaarBackUrl = data.url; }
+            if (docKey === 'panCard') { s.panDocUrl = data.url; s.panDoc = data.url; s.panCardUrl = data.url; }
+            if (docKey === 'licenseDoc') { s.businessLicenseUrl = data.url; s.gstDocUrl = data.url; s.licenseDocUrl = data.url; }
+            if (docKey === 'passbook') {
+                s.passbookDocUrl = data.url;
+                if (!s.bankDetails) s.bankDetails = {};
+                s.bankDetails.passbookUrl = data.url;
+                s.bankDetails.bankDocUrl = data.url;
+                s.bankDetails.passbookDoc = data.url;
+            }
+            if (docKey === 'profilePhoto') { s.profilePhotoUrl = data.url; s.photo = data.url; }
+            
+            populateShopModal(currentShopData);
+          }
+          
+          if (typeof fetchShops === 'function') fetchShops();
+          
+        } else {
+          if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');
+        }
+      } catch (err) {
+        console.error(err);
+        if(typeof showToast !== 'undefined') showToast('Upload failed due to network error', 'warning');
+      } finally {
+        event.target.value = '';
+      }
+    }
+  </script>
 </body>
 
 </html>

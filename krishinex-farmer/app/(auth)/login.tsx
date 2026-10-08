@@ -91,11 +91,14 @@ export default function LoginScreen() {
     setLanguage(prev => (prev === 'hi' ? 'en' : 'hi'));
   };
 
+  const MSG91_WIDGET_ID = process.env.EXPO_PUBLIC_MSG91_WIDGET_ID || '366361727571383132303632';
+  const MSG91_AUTH_KEY = process.env.EXPO_PUBLIC_MSG91_AUTH_KEY || '497379TbOp9la7qwjr69a483dbP1';
+
   React.useEffect(() => {
     // Initialize MSG91 Widget headless
     OTPWidget.initializeWidget(
-      process.env.EXPO_PUBLIC_MSG91_WIDGET_ID as string,
-      process.env.EXPO_PUBLIC_MSG91_AUTH_KEY as string
+      MSG91_WIDGET_ID,
+      MSG91_AUTH_KEY
     );
   }, []);
 
@@ -244,9 +247,21 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
-      let errMsg = hi ? 'गलत OTP। कृपया पुन: प्रयास करें।' : 'Invalid OTP. Please try again.';
-      if (error?.message?.includes('TIMEOUT')) {
-        errMsg = hi ? 'नेटवर्क धीमा होने के कारण OTP भेजने में समय लग रहा है। कृपया कुछ देर प्रतीक्षा करें या नेटवर्क क्षेत्र में आकर पुनः प्रयास करें।' : 'Network is slow. OTP delivery is taking longer than expected. Please check your connection and try again.';
+      const isTimeout = error?.message?.includes('TIMEOUT') || error?.message?.includes('timeout');
+      const isNetwork = error?.message?.toLowerCase().includes('network') || error?.message?.toLowerCase().includes('fetch');
+      let errMsg: string;
+      if (isTimeout) {
+        errMsg = hi
+          ? 'सर्वर से जवाब मिलने में समय लग रहा है। कृपया अपना इंटरनेट कनेक्शन जाँचें।'
+          : 'Server timeout. Please check your internet connection.';
+      } else if (isNetwork) {
+        errMsg = hi
+          ? 'नेटवर्क समस्या: सर्वर से संपर्क नहीं हो सका। कृपया इंटरनेट जाँचें।'
+          : 'Network error: Cannot reach server. Please check your connection.';
+      } else if (error?.response?.data?.error) {
+        errMsg = error.response.data.error;
+      } else {
+        errMsg = hi ? 'गलत OTP या सर्वर समस्या। कृपया पुन: प्रयास करें।' : 'Invalid OTP or server issue. Please try again.';
       }
       showAlert(
         hi ? 'त्रुटि' : 'Error',

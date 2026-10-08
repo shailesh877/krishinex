@@ -1541,14 +1541,53 @@
       if (tabName === 'docs' && currentLabour) loadLabourDocs(currentLabour);
     }
 
+    let docViewerZoom = 1;
+    let docViewerRotation = 0;
+    let docViewerPanX = 0;
+    let docViewerPanY = 0;
+    let isDocDragging = false;
+    let docDragStartX = 0;
+    let docDragStartY = 0;
+
+    function updateDocTransform() {
+      const img = document.getElementById('docViewerImage');
+      if (!img) return;
+      img.style.transform = `translate(${docViewerPanX}px, ${docViewerPanY}px) scale(${docViewerZoom}) rotate(${docViewerRotation}deg)`;
+      const zoomText = document.getElementById('docZoomLevel');
+      if (zoomText) zoomText.textContent = `${Math.round(docViewerZoom * 100)}%`;
+    }
+
+    function zoomDocViewer(delta) {
+      docViewerZoom = Math.max(0.4, Math.min(6.0, +(docViewerZoom + delta).toFixed(2)));
+      updateDocTransform();
+    }
+
+    function resetDocViewerZoom() {
+      docViewerZoom = 1;
+      docViewerRotation = 0;
+      docViewerPanX = 0;
+      docViewerPanY = 0;
+      updateDocTransform();
+    }
+
+    function rotateDocViewer() {
+      docViewerRotation = (docViewerRotation + 90) % 360;
+      updateDocTransform();
+    }
+
     function openDocViewer(title, url, docKey) {
       if (!url) return showToast('Document URL not available', 'warning');
 
       document.getElementById('docViewerTitle').textContent = title || 'Document Preview';
-      document.getElementById('docViewerDownloadBtn').href = url;
+      const dlBtn = document.getElementById('docViewerDownloadBtn');
+      if (dlBtn) dlBtn.href = url;
+      const newTabBtn = document.getElementById('docViewerOpenNewTabBtn');
+      if (newTabBtn) newTabBtn.href = url;
 
       const img = document.getElementById('docViewerImage');
       const errState = document.getElementById('docViewerErrorState');
+
+      resetDocViewerZoom();
 
       if (img && errState) {
         img.classList.remove('hidden');
@@ -1568,8 +1607,8 @@
 
       const modal = document.getElementById('docViewerModal');
       if (modal) {
+        modal.style.display = 'flex';
         modal.classList.remove('hidden');
-        modal.classList.add('flex');
       }
     }
 
@@ -1585,9 +1624,11 @@
     function closeDocViewer() {
       const modal = document.getElementById('docViewerModal');
       if (modal) {
+        modal.style.display = 'none';
         modal.classList.add('hidden');
         modal.classList.remove('flex');
       }
+      resetDocViewerZoom();
     }
 
     async function rejectDocument(labourId, docKey, docTitle) {
@@ -1607,14 +1648,18 @@
           closeDocViewer();
 
           if (currentLabour && currentLabour._id === labourId) {
-            if (docKey === 'aadhaarFront') currentLabour.aadhaarDocUrl = '';
-            if (docKey === 'aadhaarBack') currentLabour.aadhaarBackDocUrl = '';
-            if (docKey === 'panCard') currentLabour.panDocUrl = '';
+            if (docKey === 'aadhaarFront') { currentLabour.aadhaarDocUrl = null; currentLabour.aadhaarFront = null; currentLabour.aadhaarFrontUrl = null; currentLabour.documentUrl = null; }
+            if (docKey === 'aadhaarBack') { currentLabour.aadhaarBackDocUrl = null; currentLabour.aadhaarBack = null; currentLabour.aadhaarBackUrl = null; }
+            if (docKey === 'panCard') { currentLabour.panDocUrl = null; currentLabour.panDoc = null; currentLabour.panCardUrl = null; }
             if (docKey === 'passbook') {
-              currentLabour.passbookDocUrl = '';
-              if (currentLabour.bankDetails) currentLabour.bankDetails.passbookUrl = '';
+              currentLabour.passbookDocUrl = null;
+              if (currentLabour.bankDetails) {
+                  currentLabour.bankDetails.passbookUrl = null;
+                  currentLabour.bankDetails.bankDocUrl = null;
+                  currentLabour.bankDetails.passbookDoc = null;
+              }
             }
-            if (docKey === 'profilePhoto') currentLabour.profilePhotoUrl = '';
+            if (docKey === 'profilePhoto') { currentLabour.profilePhotoUrl = null; currentLabour.photo = null; }
             currentLabour.status = 'pending';
             loadLabourDocs(currentLabour);
           }
@@ -1650,7 +1695,7 @@
           type: 'Aadhaar Front',
           icon: 'fas fa-address-card text-purple-600',
           number: labour.aadhaarNumber ? `Aadhaar: ${labour.aadhaarNumber}` : 'Not Provided',
-          url: fixUrl(labour.aadhaarDocUrl || labour.aadhaarFrontUrl || labour.aadhaarFront)
+          url: fixUrl(labour.aadhaarDocUrl || labour.aadhaarFrontUrl || labour.aadhaarFront || labour.documentUrl)
         },
         {
           key: 'aadhaarBack',
@@ -1674,7 +1719,7 @@
           type: 'Bank Passbook',
           icon: 'fas fa-university text-emerald-600',
           number: bank.accountNumber ? `A/C: ${bank.accountNumber} (${bank.bankName || 'Bank'})` : 'Not Provided',
-          url: fixUrl(labour.passbookDocUrl || labour.passbookUrl || bank.passbookUrl || bank.passbookDoc)
+          url: fixUrl(labour.passbookDocUrl || labour.passbookUrl || bank.passbookUrl || bank.passbookDoc || bank.bankDocUrl)
         },
         {
           key: 'profilePhoto',
@@ -1733,10 +1778,15 @@
                         </div>
                       </div>
                     ` : `
-                      <div class="h-40 w-full rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3">
+                      <div class="h-40 w-full rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 mb-3 relative overflow-hidden group">
                         <i class="fas fa-file-circle-xmark text-3xl mb-1.5 text-slate-300"></i>
                         <span class="text-[11px] font-bold text-slate-500">Document Not Uploaded</span>
-                        <span class="text-[9px] text-slate-400">Partner has not provided this document yet</span>
+                        <span class="text-[9px] text-slate-400 text-center px-2">Partner has not provided this document yet</span>
+                        <label class="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer backdrop-blur-sm">
+                           <i class="fas fa-cloud-upload-alt text-2xl mb-1"></i>
+                           <span class="text-[10px] font-black uppercase">Click to Upload</span>
+                           <input type="file" class="hidden" accept="image/*" onchange="uploadLabourDoc(event, '${labour._id}', '${d.key}')">
+                        </label>
                       </div>
                     `}
                   </div>
@@ -1753,9 +1803,10 @@
                         <i class="fas fa-external-link-alt"></i>
                       </a>
                     ` : `
-                      <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
-                        No Document Attached
-                      </button>
+                      <label class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold py-2 rounded-xl cursor-pointer flex items-center justify-center gap-1 transition-all border border-emerald-200">
+                        <i class="fas fa-upload"></i> Upload Document
+                        <input type="file" class="hidden" accept="image/*" onchange="uploadLabourDoc(event, '${labour._id}', '${d.key}')">
+                      </label>
                     `}
                   </div>
                 </div>
@@ -1765,6 +1816,56 @@
         </div>
       `;
     }
+
+    async function uploadLabourDoc(event, labourId, docKey) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!confirm(`Are you sure you want to upload this document as ${docKey}?`)) {
+        event.target.value = '';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('document', file);
+      formData.append('docKey', docKey);
+
+      try {
+        showToast('Uploading document...', 'info');
+        const res = await fetch(`${API_BASE}/employee/admin/labour/${labourId}/upload-doc`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Document uploaded successfully!', 'success');
+          // Refresh user docs logic
+          if (currentLabour && currentLabour._id === labourId) {
+            if (docKey === 'aadhaarFront') { currentLabour.aadhaarDocUrl = data.url; currentLabour.aadhaarFront = data.url; }
+            if (docKey === 'aadhaarBack') { currentLabour.aadhaarBackDocUrl = data.url; currentLabour.aadhaarBack = data.url; }
+            if (docKey === 'panCard') { currentLabour.panDocUrl = data.url; currentLabour.panDoc = data.url; }
+            if (docKey === 'passbook') {
+                currentLabour.passbookDocUrl = data.url;
+                if (!currentLabour.bankDetails) currentLabour.bankDetails = {};
+                currentLabour.bankDetails.passbookUrl = data.url;
+            }
+            if (docKey === 'profilePhoto') { currentLabour.profilePhotoUrl = data.url; currentLabour.photo = data.url; }
+            loadLabourDocs(currentLabour);
+          }
+          fetchLabourers();
+          fetchLabourStats();
+        } else {
+          showToast(data.error || 'Upload failed', 'warning');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Upload failed due to network error', 'warning');
+      } finally {
+        event.target.value = '';
+      }
+    }
+
 
     async function loadLabourJobs(id) {
       const body = document.getElementById('labourSpecificJobsBody');
@@ -2199,54 +2300,151 @@
       window.location.href = 'login.html';
     }
   </script>
-  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL -->
+  <!-- GLOBAL DOCUMENT LIGHTBOX VIEWER MODAL (EXPANSIVE HIGH RESOLUTION) -->
   <div id="docViewerModal"
-    class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4 md:p-8 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]"
+    class="fixed inset-0 items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/85 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]"
+    style="z-index: 99999 !important; display: none;"
     onclick="if(event.target === this) closeDocViewer()">
-    <div
-      class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh] border-2 border-slate-200">
-      <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center">
-        <div class="flex items-center gap-3">
-          <div
-            class="h-9 w-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-400">
-            <i class="fas fa-file-image text-lg"></i>
+    <div class="bg-slate-900 rounded-3xl shadow-2xl max-w-6xl w-full h-[92vh] max-h-[92vh] overflow-hidden flex flex-col border border-slate-700/80">
+      
+      <!-- Modal Header Toolbar -->
+      <div class="px-5 py-3.5 bg-slate-900/95 border-b border-slate-800 text-white flex flex-wrap gap-3 justify-between items-center shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="h-10 w-10 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+            <i class="fas fa-id-card text-lg"></i>
           </div>
-          <div>
-            <h3 id="docViewerTitle" class="text-sm font-black text-white">Document Viewer</h3>
-            <p class="text-[10px] text-purple-300 font-medium">Official Identification & Verification Document</p>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <h3 id="docViewerTitle" class="text-sm md:text-base font-black text-white truncate">Document Viewer</h3>
+              <span class="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-300 border border-purple-500/20">Official KYC</span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate">Labour Partner Verification & Compliance</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="docViewerRejectBtn" type="button"
-            class="hidden h-9 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
-            <i class="fas fa-trash-alt"></i> Reject Document
-          </button>
-          <a id="docViewerDownloadBtn" href="#" download target="_blank"
-            class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition-all">
-            <i class="fas fa-download"></i> Download / Open
+
+        <!-- Controls Toolbar -->
+        <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+          <!-- Zoom & Rotate Controls -->
+          <div class="flex items-center bg-slate-800/80 rounded-xl p-1 border border-slate-700/60 shadow-inner">
+            <button type="button" onclick="zoomDocViewer(-0.25)" class="h-7 w-7 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Zoom Out (–)">
+              <i class="fas fa-search-minus text-xs"></i>
+            </button>
+            <button type="button" onclick="resetDocViewerZoom()" class="h-7 px-2 rounded-lg hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-mono font-bold flex items-center justify-center transition-all cursor-pointer" title="Reset Zoom (100%)">
+              <span id="docZoomLevel">100%</span>
+            </button>
+            <button type="button" onclick="zoomDocViewer(0.25)" class="h-7 w-7 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Zoom In (+)">
+              <i class="fas fa-search-plus text-xs"></i>
+            </button>
+            <div class="w-px h-4 bg-slate-700 mx-1"></div>
+            <button type="button" onclick="rotateDocViewer()" class="h-7 w-7 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Rotate 90°">
+              <i class="fas fa-redo text-xs"></i>
+            </button>
+          </div>
+
+          <!-- Open in Full Tab -->
+          <a id="docViewerOpenNewTabBtn" href="#" target="_blank" rel="noopener noreferrer" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700/80 transition-all cursor-pointer" title="Open Full Size in New Tab">
+            <i class="fas fa-external-link-alt text-xs"></i>
+            <span class="hidden md:inline">Open Full</span>
           </a>
-          <button onclick="closeDocViewer()"
-            class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer">
-            <i class="fas fa-times"></i>
+
+          <!-- Download -->
+          <a id="docViewerDownloadBtn" href="#" download target="_blank" class="h-9 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-slate-700/80 transition-all cursor-pointer" title="Download Document">
+            <i class="fas fa-download text-xs"></i>
+            <span class="hidden md:inline">Download</span>
+          </a>
+
+          <!-- Reject Document -->
+          <button id="docViewerRejectBtn" type="button" class="hidden h-9 px-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <i class="fas fa-trash-alt text-xs"></i> Reject
+          </button>
+
+          <!-- Close Modal -->
+          <button type="button" onclick="closeDocViewer()" class="h-9 w-9 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer border border-slate-700/80 ml-1" title="Close (Esc)">
+            <i class="fas fa-times text-base"></i>
           </button>
         </div>
       </div>
 
-      <div id="docViewerContainer"
-        class="p-6 bg-slate-950 flex-1 overflow-auto flex items-center justify-center min-h-[380px] relative">
-        <img id="docViewerImage" src=""
-          class="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl border border-slate-800"
-          alt="Document Preview" onerror="handleDocViewerImageError(this)">
+      <!-- Main Viewer Area -->
+      <div id="docViewerContainer" class="p-4 md:p-8 bg-slate-950 flex-1 overflow-hidden flex items-center justify-center relative select-none cursor-grab">
+        <img id="docViewerImage" src="" class="max-w-[94%] max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-slate-800 transition-transform duration-75 origin-center will-change-transform" alt="Document Preview" onerror="handleDocViewerImageError(this)">
+        
+        <!-- Error State -->
         <div id="docViewerErrorState" class="hidden text-center p-8 text-slate-400">
-          <i class="fas fa-exclamation-triangle text-4xl text-amber-500 mb-3"></i>
-          <p class="text-sm font-bold text-slate-200">Document File Not Found / Unavailable</p>
-          <p class="text-xs text-slate-400 mt-1">The image file could not be retrieved from server storage.</p>
+          <div class="h-16 w-16 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
+            <i class="fas fa-exclamation-triangle text-3xl"></i>
+          </div>
+          <p class="text-base font-bold text-slate-100">Document File Unavailable</p>
+          <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">The document file could not be loaded directly from storage. Try opening it directly in a new browser tab.</p>
+        </div>
+
+        <!-- Floating Helpful Guide -->
+        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none bg-slate-900/80 backdrop-blur border border-slate-800/80 text-slate-400 text-[10px] font-medium px-3.5 py-1.5 rounded-full shadow-lg hidden sm:flex items-center gap-2">
+          <span><i class="fas fa-mouse text-purple-400 mr-1"></i> Scroll to Zoom</span>
+          <span class="text-slate-600">•</span>
+          <span><i class="fas fa-hand-pointer text-purple-400 mr-1"></i> Drag to Pan</span>
+          <span class="text-slate-600">•</span>
+          <span><i class="fas fa-expand text-purple-400 mr-1"></i> Double-click to Toggle</span>
         </div>
       </div>
     </div>
   </div>
 
   <script src="js/sidebar-guard.js"></script>
+
+  <script>
+    async function uploadDoc(event, itemId, docKey) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (!confirm(`Are you sure you want to upload this document as ${docKey}?`)) {
+        event.target.value = '';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('document', file);
+      formData.append('docKey', docKey);
+
+      try {
+        if(typeof showToast !== 'undefined') showToast('Uploading document...', 'info');
+        const res = await fetch(`${API_BASE}/employee/admin/labour/${itemId}/upload-doc`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN },
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          if(typeof showToast !== 'undefined') showToast('Document uploaded successfully!', 'success');
+          
+          if (typeof currentLabour !== 'undefined' && currentLabour && currentLabour._id === itemId) {
+            if (docKey === 'aadhaarFront') { currentLabour.aadhaarDocUrl = data.url; currentLabour.aadhaarFront = data.url; currentLabour.documentUrl = data.url; currentLabour.aadhaarFrontUrl = data.url; }
+            if (docKey === 'aadhaarBack') { currentLabour.aadhaarBackDocUrl = data.url; currentLabour.aadhaarBack = data.url; currentLabour.aadhaarBackUrl = data.url; }
+            if (docKey === 'panCard') { currentLabour.panDocUrl = data.url; currentLabour.panDoc = data.url; currentLabour.panCardUrl = data.url; }
+            if (docKey === 'passbook') {
+                currentLabour.passbookDocUrl = data.url;
+                if (!currentLabour.bankDetails) currentLabour.bankDetails = {};
+                currentLabour.bankDetails.passbookUrl = data.url;
+                currentLabour.bankDetails.bankDocUrl = data.url;
+                currentLabour.bankDetails.passbookDoc = data.url;
+            }
+            if (docKey === 'profilePhoto') { currentLabour.profilePhotoUrl = data.url; currentLabour.photo = data.url; }
+            if (typeof loadLabourDocs === 'function') loadLabourDocs(currentLabour);
+          }
+          
+          if (typeof fetchLabours === 'function') fetchLabours();
+          
+        } else {
+          if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');
+        }
+      } catch (err) {
+        console.error(err);
+        if(typeof showToast !== 'undefined') showToast('Upload failed due to network error', 'warning');
+      } finally {
+        event.target.value = '';
+      }
+    }
+  </script>
 </body>
 
 </html>

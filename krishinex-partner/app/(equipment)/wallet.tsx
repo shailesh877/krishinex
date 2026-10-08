@@ -23,7 +23,7 @@ const API_URL = `${BASE_API_URL}/rentals`;
 const WALLET_RECHARGE_URL = `${BASE_API_URL}/wallet`;
 
 import RazorpayCheckout from 'react-native-razorpay';
-const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string;
+const RAZORPAY_KEY_ID = (process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_Tj1DcreDse1Rkh') as string;
 
 type Transaction = {
   _id: string;
@@ -46,6 +46,8 @@ export default function EquipmentWallet() {
 
   const [balance, setBalance] = useState(0);
   const [userName, setUserName] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -90,6 +92,8 @@ export default function EquipmentWallet() {
         const data = await res.json();
         setBalance(data.balance);
         setUserName(data.name || '');
+        if (data.phone) setUserPhone(data.phone);
+        if (data.email) setUserEmail(data.email);
         setTransactions(data.transactions);
       }
     } catch (e: any) {
@@ -137,7 +141,20 @@ export default function EquipmentWallet() {
       const orderData = await orderRes.json();
       if (!orderData.success || !orderData.order) throw new Error('Failed to create order');
 
-      const options = { description: 'Wallet Recharge', currency: 'INR', key: RAZORPAY_KEY_ID, amount: orderData.order.amount, name: 'KrishiNex', order_id: orderData.order.id, prefill: { name: userName || 'Partner' }, theme: { color: '#16A34A' } };
+      const options = {
+        description: 'Wallet Recharge',
+        currency: 'INR',
+        key: RAZORPAY_KEY_ID,
+        amount: orderData.order.amount,
+        name: 'KrishiNex',
+        order_id: orderData.order.id,
+        prefill: {
+          name: userName || 'Partner',
+          contact: userPhone || '',
+          email: userEmail || '',
+        },
+        theme: { color: '#16A34A' }
+      };
       RazorpayCheckout.open(options).then(async (razorData: any) => {
         try {
           const payload = { razorpay_payment_id: razorData.razorpay_payment_id || razorData.paymentId, razorpay_order_id: razorData.razorpay_order_id || razorData.order_id, razorpay_signature: razorData.razorpay_signature || razorData.signature, amount };

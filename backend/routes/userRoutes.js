@@ -17,7 +17,7 @@ const sharp = require('sharp');
 // @access  Private
 router.get('/wallet', protect, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('walletBalance walletNumber cardNumber name');
+        const user = await User.findById(req.user.id).select('walletBalance walletNumber cardNumber name phone email');
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         const transactions = await Transaction.find({ recipient: req.user.id })
@@ -29,6 +29,8 @@ router.get('/wallet', protect, async (req, res) => {
             walletNumber: user.walletNumber || '',
             cardNumber: user.cardNumber || '',
             name: user.name || '',
+            phone: user.phone || '',
+            email: user.email || '',
             transactions
         });
     } catch (error) {
@@ -42,18 +44,24 @@ router.get('/wallet', protect, async (req, res) => {
 // @access  Private
 router.get('/credit-data', protect, async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('creditLimit creditUsed name cardNumber phone address');
+        const user = await User.findById(req.user.id).select('creditLimit creditUsed name cardNumber phone address walletBalance');
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         // Ledger entries where farmerId is this user
         const transactions = await Ledger.find({ farmerId: req.user.id })
             .populate('shopId', 'name businessName phone address')
+            .populate('orderId', 'totalAmount items status createdAt')
             .sort({ createdAt: -1 })
             .limit(50);
 
+        const limit = Number(user.creditLimit || 0);
+        const used = Number(user.creditUsed || 0);
+
         res.json({
-            creditLimit: user.creditLimit || 0,
-            creditUsed: user.creditUsed || 0,
+            creditLimit: limit,
+            creditUsed: used,
+            availableCredit: Math.max(0, limit - used),
+            walletBalance: Number(user.walletBalance || 0),
             name: user.name,
             cardNumber: user.cardNumber || '',
             phone: user.phone,
@@ -63,6 +71,47 @@ router.get('/credit-data', protect, async (req, res) => {
     } catch (error) {
         console.error('Fetch credit data error:', error);
         res.status(500).json({ error: 'Network issue. Please try again later.' });
+    }
+});
+
+// @route   POST /api/user/credit-repay
+// @desc    Repay outstanding credit from wallet balance
+// @access  Private
+router.post('/credit-repay', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const creditUsed = Number(user.creditUsed || 0);
+        if (creditUsed <= 0) {
+            return res.status(400).json({ error: 'कोई बकाया क्रेडिट नहीं है।' });
+        }
+
+        const walletBalance = Number(user.walletBalance || 0);
+        if (walletBalance <= 0) {
+            return res.status(400).json({ 
+                error: `आपके वॉलेट में ₹0 बैलेंस है। कृपया पहले वॉलेट में पैसे जोड़ें।`,
+                insufficientWallet: true
+            });
+        }
+
+        const { processAutoRepayment } = require('../services/repaymentService');
+        const { repayAmount } = await processAutoRepayment(user._id, 'DIRECT_REPAY');
+
+        const updatedUser = await User.findById(req.user.id).select('walletBalance creditLimit creditUsed');
+
+        res.json({
+            success: true,
+            repayAmount,
+            message: `₹${repayAmount} का बकाया क्रेडिट सफलतापूर्वक चुका दिया गया है।`,
+            creditLimit: updatedUser.creditLimit || 0,
+            creditUsed: updatedUser.creditUsed || 0,
+            availableCredit: Math.max(0, (updatedUser.creditLimit || 0) - (updatedUser.creditUsed || 0)),
+            walletBalance: updatedUser.walletBalance || 0
+        });
+    } catch (error) {
+        console.error('Credit repay error:', error);
+        res.status(500).json({ error: 'Repayment failed' });
     }
 });
 

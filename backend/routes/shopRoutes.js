@@ -520,7 +520,7 @@ router.post('/orders/:id/verify-delivery-otp', protect, async (req, res) => {
             const payoutAmount = totalAmount - commissionAmount;
 
             if (owner) {
-                if (freshOrder.paymentMode === 'WALLET') {
+                if (freshOrder.paymentMode === 'WALLET' || freshOrder.paymentMode === 'CREDIT') {
                     owner.walletBalance = (owner.walletBalance || 0) + payoutAmount;
                     await owner.save();
                     await Transaction.create({
@@ -695,8 +695,8 @@ router.patch('/orders/:id/status', protect, async (req, res) => {
             const payoutAmount = totalAmount - commissionAmount;
 
             if (owner) {
-                if (order.paymentMode === 'WALLET') {
-                    // Admin already has the money from user's wallet, credit net payout to owner
+                if (order.paymentMode === 'WALLET' || order.paymentMode === 'CREDIT') {
+                    // Admin already has the money from user's wallet or credit facility, credit net payout to owner
                     owner.walletBalance = (owner.walletBalance || 0) + payoutAmount;
                     await owner.save();
 
@@ -824,6 +824,19 @@ router.post('/checkout', protect, async (req, res) => {
             return res.status(400).json({ error: 'Cart is empty' });
         }
 
+        // Validate available credit upfront if paying via Nex Credit
+        if (paymentMethod === 'credit') {
+            const user = await User.findById(req.user.id);
+            if (!user) return res.status(404).json({ error: 'User not found' });
+            const totalRaw = items.reduce((sum, it) => sum + (it.price * it.qty), 0);
+            const availableCredit = (user.creditLimit || 0) - (user.creditUsed || 0);
+            if (totalRaw > availableCredit) {
+                return res.status(400).json({
+                    error: `अपर्याप्त नेक्स क्रेडिट सीमा! आपकी उपलब्ध क्रेडिट सीमा ₹${availableCredit > 0 ? availableCredit : 0} है, जबकि ऑर्डर ₹${totalRaw} का है।`
+                });
+            }
+        }
+
         // Group items by owner (Shop Partner)
         const groupedItems = items.reduce((groups, item) => {
             let owner = item.owner || 'admin';
@@ -903,7 +916,7 @@ router.post('/checkout', protect, async (req, res) => {
                 discountApplied,
                 discountPercentage,
                 deliveryAddress,
-                paymentMode: paymentMethod === 'cod' ? 'CASH' : 'WALLET',
+                paymentMode: paymentMethod === 'cod' ? 'CASH' : (paymentMethod === 'credit' ? 'CREDIT' : 'WALLET'),
                 status: 'NEW'
             };
 
@@ -930,6 +943,34 @@ router.post('/checkout', protect, async (req, res) => {
                     status: 'Completed',
                     referenceId: order._id,
                     note: `Payment for Shop Order (Discount: ₹${discountApplied})`
+                });
+            } else if (paymentMethod === 'credit') {
+                const user = await User.findById(req.user.id);
+                user.creditUsed = (user.creditUsed || 0) + finalAmount;
+                await user.save();
+
+                // Create Transaction record for user
+                await Transaction.create({
+                    transactionId: `SHOP-CREDIT-${Date.now()}-${order._id.toString().slice(-4)}`,
+                    recipient: req.user.id,
+                    module: 'Shop',
+                    amount: finalAmount,
+                    type: 'Debit',
+                    paymentMode: 'Nex Credit',
+                    status: 'Completed',
+                    referenceId: order._id,
+                    note: `Payment for Shop Order via Nex Credit #${order._id.toString().slice(-6)}`
+                });
+
+                // Create Ledger record (Bahi-Khata / Udhar record for farmer & shop)
+                await Ledger.create({
+                    shopId: resolvedOwnerId,
+                    farmerId: req.user.id,
+                    orderId: order._id,
+                    amount: finalAmount,
+                    type: 'DUE',
+                    method: 'DUE',
+                    note: `Online Shop Nex Credit Purchase #${order._id.toString().slice(-6)}`
                 });
             }
 
@@ -1140,7 +1181,7 @@ router.get('/orders/:id/invoice', protect, async (req, res) => {
         res.setHeader('Content-Type', 'text/html');
 
         // Payment Method Display Logic (Bhai, Udhaar wala system yahan handle kar rahe hain)
-        let paymentMethodDisplay = order.paymentMode === 'WALLET' ? 'NexCard Wallet' : 'Cash on Delivery';
+        let paymentMethodDisplay = order.paymentMode === 'WALLET' ? 'NexCard Wallet' : (order.paymentMode === 'CREDIT' ? 'Nex Credit' : 'Cash on Delivery');
         if (order.orderType === 'POS') {
             const methods = [];
             const { cash, wallet, due } = order.paymentBreakdown || {};
@@ -1319,7 +1360,7 @@ router.get('/orders/:id/shipping-label', protect, async (req, res) => {
         const weight = (totalQty * 0.5 < 1 ? 1 : totalQty * 0.5).toFixed(1) + ' KG';
 
         const collectableAmount = order.paymentMode === 'CASH' ? `₹ ${order.totalAmount.toFixed(2)}` : '₹ 0.00';
-        const paymentType = order.paymentMode === 'CASH' ? 'CASH ON DELIVERY (COD)' : 'PREPAID';
+        const paymentType = order.paymentMode === 'CASH' ? 'CASH ON DELIVERY (COD)' : (order.paymentMode === 'CREDIT' ? 'NEX CREDIT (PREPAID)' : 'PREPAID');
 
         // Embed Logo as Base64 for reliability
         let logoBase64 = '';
@@ -1449,7 +1490,7 @@ router.get('/orders/:id/shipping-label', protect, async (req, res) => {
         </div>
 
         <div class="black-banner">
-            ${order.paymentMode === 'CASH' ? 'CASH ON DELIVERY' : 'PREPAID - DO NOT COLLECT'}
+            ${order.paymentMode === 'CASH' ? 'CASH ON DELIVERY' : (order.paymentMode === 'CREDIT' ? 'NEX CREDIT - DO NOT COLLECT' : 'PREPAID - DO NOT COLLECT')}
         </div>
         
         <script>window.onload = () => { setTimeout(() => window.print(), 500); }</script>

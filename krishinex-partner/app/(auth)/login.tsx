@@ -21,7 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OTPWidget } from '@msg91comm/sendotp-react-native';
 import { useI18n } from '../../context/I18nContext';
-import { API_URL, BASE_API_URL } from '../../constants/api';
+import { API_URL, BASE_API_URL, MSG91_WIDGET_ID, MSG91_AUTH_KEY } from '../../constants/api';
 import { registerTokenWithBackend } from '../../utils/notificationHelper';
 import { showAlert } from '../../components/CustomAlert';
 
@@ -128,8 +128,8 @@ export default function LoginScreen() {
   useEffect(() => {
     // Initialize MSG91 Widget headless
     OTPWidget.initializeWidget(
-      process.env.EXPO_PUBLIC_MSG91_WIDGET_ID as string,
-      process.env.EXPO_PUBLIC_MSG91_AUTH_KEY as string
+      MSG91_WIDGET_ID,
+      MSG91_AUTH_KEY
     );
 
     Animated.spring(logoAnim, {
@@ -244,7 +244,7 @@ export default function LoginScreen() {
       if (role === 'employee' || role === 'field_executive') {
         // ... (employee login logic unchanged)
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10000);
+        const timeout = setTimeout(() => controller.abort(), 25000);
         try {
           const response = await fetch(`${API_URL}/login-employee`, {
             method: 'POST',
@@ -268,7 +268,8 @@ export default function LoginScreen() {
           }
         } catch (e: any) {
           clearTimeout(timeout);
-          showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', e?.name === 'AbortError' ? 'Server timeout. Check backend.' : `Error: ${e?.message}`);
+          const isTimeout = controller.signal.aborted || e?.name === 'AbortError' || e?.message?.includes('aborted');
+          showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', isTimeout ? (lang === 'hi' ? 'सर्वर से जवाब नहीं मिला। इंटरनेट जाँचें।' : 'Server timeout. Check backend.') : (lang === 'hi' ? 'नेटवर्क समस्या। कृपया पुनः प्रयास करें।' : `Error: ${e?.message || 'Network error'}`));
         }
       } else {
         // Google Play Store Dummy Account Bypass
@@ -301,10 +302,9 @@ export default function LoginScreen() {
         }
 
         // OTP is verified (or bypassed), now proceed to get session from backend
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
         try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 10000);
-
           const res = await fetch(`${API_URL}/login-partner-success`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -335,10 +335,12 @@ export default function LoginScreen() {
             showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', errMsg);
           }
         } catch (serverError: any) {
-          if (serverError?.name === 'AbortError') {
-            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', 'Server timeout. Please check your internet or try again later.');
+          clearTimeout(timeout);
+          const isTimeout = controller.signal.aborted || serverError?.name === 'AbortError' || serverError?.message?.includes('aborted');
+          if (isTimeout) {
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', lang === 'hi' ? 'सर्वर से जवाब मिलने में समय लग रहा है। कृपया अपना इंटरनेट कनेक्शन जाँचें और दोबारा कोशिश करें।' : 'Server timeout. Please check your internet connection or try again later.');
           } else {
-            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', `Network Error: ${serverError?.message || 'Cannot reach server'}`);
+            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', lang === 'hi' ? 'नेटवर्क समस्या: सर्वर से संपर्क नहीं हो सका। कृपया इंटरनेट कनेक्शन जाँचें।' : `Network Error: ${serverError?.message || 'Cannot reach server'}`);
           }
         }
       }

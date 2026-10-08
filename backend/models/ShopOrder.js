@@ -50,7 +50,7 @@ const shopOrderSchema = new mongoose.Schema({
     },
     paymentMode: {
         type: String,
-        enum: ['CASH', 'WALLET'],
+        enum: ['CASH', 'WALLET', 'CREDIT'],
         default: 'CASH'
     },
     discountApplied: {

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Fallback to production if env variables are not set
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://demo.ranx24.com/api';
-export const IMAGE_BASE_URL = process.env.EXPO_PUBLIC_IMAGE_URL || 'https://demo.ranx24.com';
+// Production API & Image URLs
+export const BASE_URL = 'https://demo.ranx24.com/api';
+export const IMAGE_BASE_URL = 'https://demo.ranx24.com';
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -18,9 +18,10 @@ export const setOnUnauthorized = (cb: () => void) => {
     onUnauthorized = cb;
 };
 
-// Interceptor to add auth token
+// Interceptor to add auth token and ensure live server URL
 api.interceptors.request.use(
     async (config) => {
+
         const token = await AsyncStorage.getItem('userToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -238,6 +239,7 @@ export const authApi = {
     verifyRechargePayment: (data: any) => api.post('/wallet/recharge/verify', data),
     getWeather: (lat: number, lon: number) => api.get('/weather', { params: { lat, lon } }),
     getCreditData: () => api.get('/user/credit-data'),
+    repayCredit: (amount?: number) => api.post('/user/credit-repay', { amount }),
 };
 
 export default api;

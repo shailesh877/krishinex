@@ -27,7 +27,7 @@ const transactionSchema = new mongoose.Schema({
     },
     paymentMode: {
         type: String,
-        enum: ['Bank Transfer', 'NexCard Wallet', 'UPI', 'Cash', 'Pending', 'Razorpay'],
+        enum: ['Bank Transfer', 'NexCard Wallet', 'UPI', 'Cash', 'Pending', 'Razorpay', 'Nex Credit'],
         default: 'Pending'
     },
     status: {

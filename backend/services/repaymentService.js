@@ -112,6 +112,18 @@ const processAutoRepayment = async (userId, sourceReferenceId = null) => {
                         console.log(`[REPAYMENT] Platform Recovery: ₹${recoveryForThisShop} for farmer ${farmer.name}. (Ledger entry created)`);
                     }
                 }
+
+                if (remainingRepay > 0) {
+                    await Ledger.create({
+                        shopId: adminUser._id,
+                        farmerId: farmer._id,
+                        amount: remainingRepay,
+                        type: 'PAYMENT',
+                        method: 'RECOVERY',
+                        note: `Auto-repayment for Agri-Credit (Nex Credit)`
+                    });
+                    console.log(`[REPAYMENT] Remaining Recovery: ₹${remainingRepay} recorded under Admin.`);
+                }
             } catch (ledgerErr) {
                 console.error('[REPAYMENT] Ledger sync error (non-blocking):', ledgerErr);
             }

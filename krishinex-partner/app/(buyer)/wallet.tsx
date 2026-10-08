@@ -23,7 +23,7 @@ const API_URL = `${BASE_API_URL}/user`;
 const WALLET_RECHARGE_URL = `${BASE_API_URL}/wallet`;
 
 import RazorpayCheckout from 'react-native-razorpay';
-const RAZORPAY_KEY_ID = process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string;
+const RAZORPAY_KEY_ID = (process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_Tj1DcreDse1Rkh') as string;
 const GREEN = '#16A34A';
 
 type Transaction = {
@@ -44,6 +44,8 @@ export default function BuyerWallet() {
 
   const [balance, setBalance] = useState(0);
   const [userName, setUserName] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -90,6 +92,8 @@ export default function BuyerWallet() {
         const data = await res.json();
         setBalance(data.balance);
         setUserName(data.name || '');
+        if (data.phone) setUserPhone(data.phone);
+        if (data.email) setUserEmail(data.email);
         setTransactions(prev => {
           if (JSON.stringify(prev) !== JSON.stringify(data.transactions)) return data.transactions;
           return prev;
@@ -143,7 +147,11 @@ export default function BuyerWallet() {
         amount: orderData.order.amount,
         name: 'KrishiNex',
         order_id: orderData.order.id,
-        prefill: { name: userName || 'Buyer' },
+        prefill: {
+          name: userName || 'Buyer',
+          contact: userPhone || '',
+          email: userEmail || '',
+        },
         theme: { color: GREEN },
       };
 

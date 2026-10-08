@@ -89,7 +89,24 @@ router.post('/recharge/verify', protect, async (req, res) => {
                 note: 'Razorpay Wallet Recharge'
             });
 
-            return res.json({ success: true, message: 'Payment verified and wallet updated', balance: updatedUser.walletBalance });
+            // Auto-repay outstanding Nex Credit debt if any
+            try {
+                const { processAutoRepayment } = require('../services/repaymentService');
+                await processAutoRepayment(updatedUser._id, razorpay_payment_id);
+            } catch (autoErr) {
+                console.error('Auto repayment error on recharge:', autoErr);
+            }
+
+            const finalUser = await User.findById(req.user.id).select('walletBalance creditLimit creditUsed');
+
+            return res.json({ 
+                success: true, 
+                message: 'Payment verified and wallet updated', 
+                balance: finalUser.walletBalance,
+                creditLimit: finalUser.creditLimit,
+                creditUsed: finalUser.creditUsed,
+                availableCredit: Math.max(0, (finalUser.creditLimit || 0) - (finalUser.creditUsed || 0))
+            });
         } else {
             return res.status(400).json({ error: 'Invalid signature' });
         }

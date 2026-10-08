@@ -65,6 +65,8 @@ export default function WalletScreen() {
   const [currentBalance, setCurrentBalance] = useState(0);
   const [cardNumber, setCardNumber] = useState('');
   const [userName, setUserName] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [unifiedList, setUnifiedList] = useState<UnifiedTxn[]>([]);
   const [selectedTxn, setSelectedTxn] = useState<any>(null);
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
@@ -121,12 +123,14 @@ export default function WalletScreen() {
       var options = {
         description: 'Wallet Recharge',
         currency: 'INR',
-        key: process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID as string,
+        key: (process.env.EXPO_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_Tj1DcreDse1Rkh') as string,
         amount: data.order.amount,
         name: 'KrishiNex',
         order_id: data.order.id,
         prefill: {
           name: userName || 'Farmer',
+          contact: userPhone || '',
+          email: userEmail || '',
         },
         theme: {color: KHETIFY_GREEN_DARK}
       };
@@ -192,6 +196,17 @@ export default function WalletScreen() {
       setCurrentBalance(data.balance);
       setCardNumber(data.cardNumber || '');
       setUserName(data.name || '');
+      if (data.phone) setUserPhone(data.phone);
+      if (data.email) setUserEmail(data.email);
+
+      // Fallback fetch profile if phone is not in wallet response
+      if (!data.phone) {
+        authApi.getProfile().then(pRes => {
+          if (pRes?.data?.phone) setUserPhone(pRes.data.phone);
+          if (pRes?.data?.email) setUserEmail(pRes.data.email);
+          if (pRes?.data?.name && !data.name) setUserName(pRes.data.name);
+        }).catch(() => {});
+      }
 
       const mapped: UnifiedTxn[] = (data.transactions || []).map((t: any) => {
         const isWithdrawn = t.type === 'Payout' || t.type === 'Debit' || t.type === 'Payment';

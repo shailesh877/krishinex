@@ -1811,7 +1811,7 @@
                     url: aadhaarBack
                 },
                 {
-                    key: 'bankDocUrl',
+                    key: 'passbook',
                     title: 'Bank Passbook / Cheque',
                     icon: 'fas fa-file-invoice-dollar text-emerald-600',
                     number: b.bankDetails?.accountNumber ? `A/C: ${b.bankDetails.accountNumber}` : 'Not Provided',
@@ -1864,9 +1864,10 @@
                                     <i class="fas fa-trash-alt mr-1"></i> Reject
                                 </button>
                             ` : `
-                                <button disabled class="w-full bg-slate-100 text-slate-400 text-[10px] font-bold py-2 rounded-xl cursor-not-allowed">
-                                    No Document Attached
-                                </button>
+                                <label class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold py-2 rounded-xl cursor-pointer flex items-center justify-center gap-1 transition-all border border-emerald-200">
+                                    <i class="fas fa-upload"></i> Upload Document
+                                    <input type="file" class="hidden" accept="image/*" onchange="uploadDoc(event, '${b._id}', '${d.key}')">
+                                </label>
                             `}
                         </div>
                     </div>
@@ -1939,14 +1940,85 @@
                 const data = await res.json();
                 if (res.ok) {
                     showToast(data.message || 'Document rejected successfully', 'success');
+                    
+                    const buyer = allBuyers.find(b => b._id === userId);
+                    if (buyer) {
+                        if (docKey === 'aadhaarFront') { buyer.aadhaarDocUrl = null; buyer.aadhaarFront = null; buyer.aadhaarFrontUrl = null; buyer.documentUrl = null; }
+                        if (docKey === 'aadhaarBack') { buyer.aadhaarBackDocUrl = null; buyer.aadhaarBack = null; buyer.aadhaarBackUrl = null; }
+                        if (docKey === 'panCard') { buyer.panDocUrl = null; buyer.panDoc = null; buyer.panCardUrl = null; }
+                        if (docKey === 'passbook') {
+                            buyer.passbookDocUrl = null;
+                            if (buyer.bankDetails) {
+                                buyer.bankDetails.passbookUrl = null;
+                                buyer.bankDetails.bankDocUrl = null;
+                                buyer.bankDetails.passbookDoc = null;
+                            }
+                        }
+                        if (docKey === 'profilePhoto') { buyer.profilePhotoUrl = null; buyer.photo = null; }
+                        
+                        renderBuyerKycDocs(buyer);
+                    }
+
                     closeDocViewer();
-                    viewBuyerDetails(userId);
-                    fetchBuyers();
+                    if (typeof fetchBuyers === 'function') fetchBuyers();
                 } else {
                     showToast(data.error || 'Failed to reject document', 'warning');
                 }
             } catch (e) {
                 showToast('Network error: ' + e.message, 'warning');
+            }
+        }
+
+        async function uploadDoc(event, itemId, docKey) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm(`Are you sure you want to upload this document as ${docKey}?`)) {
+                event.target.value = '';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('document', file);
+            formData.append('docKey', docKey);
+
+            try {
+                if(typeof showToast !== 'undefined') showToast('Uploading document...', 'info');
+                const res = await fetch(`${API_BASE}/employee/admin/buyer/${itemId}/upload-doc`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN },
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    if(typeof showToast !== 'undefined') showToast('Document uploaded successfully!', 'success');
+                    
+                    const buyer = allBuyers.find(b => b._id === itemId);
+                    if (buyer) {
+                        if (docKey === 'aadhaarFront') { buyer.aadhaarDocUrl = data.url; buyer.aadhaarFront = data.url; buyer.documentUrl = data.url; buyer.aadhaarFrontUrl = data.url; }
+                        if (docKey === 'aadhaarBack') { buyer.aadhaarBackDocUrl = data.url; buyer.aadhaarBack = data.url; buyer.aadhaarBackUrl = data.url; }
+                        if (docKey === 'panCard') { buyer.panDocUrl = data.url; buyer.panDoc = data.url; buyer.panCardUrl = data.url; }
+                        if (docKey === 'passbook') {
+                            buyer.passbookDocUrl = data.url;
+                            if (!buyer.bankDetails) buyer.bankDetails = {};
+                            buyer.bankDetails.passbookUrl = data.url;
+                            buyer.bankDetails.bankDocUrl = data.url;
+                            buyer.bankDetails.passbookDoc = data.url;
+                        }
+                        if (docKey === 'profilePhoto') { buyer.profilePhotoUrl = data.url; buyer.photo = data.url; }
+                        
+                        renderBuyerKycDocs(buyer);
+                    }
+                    
+                    if (typeof fetchBuyers === 'function') fetchBuyers();
+                } else {
+                    if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');
+                }
+            } catch (err) {
+                console.error(err);
+                if(typeof showToast !== 'undefined') showToast('Upload failed due to network error', 'warning');
+            } finally {
+                event.target.value = '';
             }
         }
 

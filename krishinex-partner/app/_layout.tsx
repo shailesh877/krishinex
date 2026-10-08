@@ -13,18 +13,6 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 SplashScreen.preventAutoHideAsync();
 
-// Intercept fetch to redirect all file uploads (FormData) to the live server
-const originalFetch = global.fetch;
-global.fetch = async (url, options) => {
-  if (options && options.body && options.body instanceof FormData && typeof url === 'string') {
-    if (url.includes('127.0.0.1') || url.includes('localhost') || url.includes('10.0.2.2')) {
-      const newUrl = url.replace(/http:\/\/(127\.0\.0\.1|localhost|10\.0\.2\.2):\d+/, 'https://demo.ranx24.com');
-      console.log(`[UPLOAD REDIRECT] Redirecting local upload to live server: ${newUrl}`);
-      return originalFetch(newUrl, options);
-    }
-  }
-  return originalFetch(url, options);
-};
 
 export default function RootLayout() {
   const router = useRouter();

@@ -21,7 +21,7 @@ import { showAlert } from '@/components/CustomAlert';
 const SHADOW_COLOR = '#00000020';
 const KHETIFY_GREEN_DARK = '#467804ff';
 
-type PaymentMethod = 'cod' | 'upi' | 'card' | 'wallet';
+type PaymentMethod = 'cod' | 'wallet' | 'credit';
 
 const INITIAL_ADDRESSES = [
   {
@@ -59,12 +59,14 @@ export default function CheckoutScreen() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [loading, setLoading] = useState(false);
   const [walletInfo, setWalletInfo] = useState({ balance: 0, discount: 0 });
+  const [creditInfo, setCreditInfo] = useState({ creditLimit: 0, creditUsed: 0, availableCredit: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [userStatus, setUserStatus] = useState('pending');
 
   React.useEffect(() => {
     fetchWalletConfig();
     fetchProfile();
+    fetchCreditConfig();
   }, []);
 
   const fetchProfile = async () => {
@@ -98,6 +100,23 @@ export default function CheckoutScreen() {
     }
   };
 
+  const fetchCreditConfig = async () => {
+    try {
+      const res = await authApi.getCreditData();
+      if (res.data) {
+        const limit = Number(res.data.creditLimit) || 0;
+        const used = Number(res.data.creditUsed) || 0;
+        setCreditInfo({
+          creditLimit: limit,
+          creditUsed: used,
+          availableCredit: Math.max(0, limit - used),
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to fetch credit data for checkout:', e);
+    }
+  };
+
   // Form for editing
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -115,6 +134,7 @@ export default function CheckoutScreen() {
 
   const toPay: number = itemTotal + delivery - discountAmount;
   const insufficientWallet = paymentMethod === 'wallet' && walletInfo.balance < toPay;
+  const insufficientCredit = paymentMethod === 'credit' && creditInfo.availableCredit < toPay;
 
   const t = {
     title: hi ? 'ऑर्डर की पुष्टि करें' : 'Confirm your order',
@@ -128,8 +148,6 @@ export default function CheckoutScreen() {
     itemsTitle: hi ? 'आपका ऑर्डर' : 'Your items',
     paymentTitle: hi ? 'भुगतान तरीका' : 'Payment method',
     cod: hi ? 'कैश ऑन डिलीवरी' : 'Cash on delivery',
-    upi: hi ? 'UPI / Wallet' : 'UPI / Wallet',
-    card: hi ? 'कार्ड से भुगतान' : 'Card payment',
     priceDetails: hi ? 'मूल्य विवरण' : 'Price details',
     itemTotal: hi ? 'आइटम कुल' : 'Item total',
     deliveryLabel: hi ? 'डिलीवरी शुल्क' : 'Delivery charges',
@@ -138,18 +156,15 @@ export default function CheckoutScreen() {
     paySecurely: hi ? 'सुरक्षित भुगतान द्वारा' : 'Securely pay with',
     placeOrder: hi ? 'ऑर्डर प्लेस करें' : 'Place order',
     payingCod: hi ? 'डिलीवरी पर नकद' : 'Cash at delivery',
-    payingUpi: hi ? 'UPI / Wallet' : 'UPI / Wallet',
-    payingCard: hi ? 'डेबिट / क्रेडिट कार्ड' : 'Debit / credit card',
+    payingCredit: hi ? 'नेक्स क्रेडिट' : 'Nex Credit',
   };
 
   const paymentLabel =
     paymentMethod === 'cod'
       ? t.payingCod
-      : paymentMethod === 'upi'
-        ? t.payingUpi
-        : paymentMethod === 'wallet'
-          ? (hi ? 'NexCard वॉलेट' : 'NexCard Wallet')
-          : t.payingCard;
+      : paymentMethod === 'wallet'
+        ? (hi ? 'NexCard वॉलेट' : 'NexCard Wallet')
+        : t.payingCredit;
 
   const selectedAddress = addresses.find(
     a => a.id === selectedAddressId,
@@ -183,6 +198,16 @@ export default function CheckoutScreen() {
           { text: hi ? 'रद्द' : 'Cancel', style: 'cancel' },
           { text: hi ? 'प्रोफाइल पर जाएँ' : 'Go to Profile', onPress: () => router.push('/(tabs)/profile') }
         ]
+      );
+      return;
+    }
+
+    if (paymentMethod === 'credit' && creditInfo.availableCredit < toPay) {
+      showAlert(
+        hi ? 'अपर्याप्त क्रेडिट' : 'Insufficient Credit',
+        hi
+          ? `आपके पास केवल ₹${creditInfo.availableCredit.toLocaleString('en-IN')} की क्रेडिट सीमा उपलब्ध है, जबकि ऑर्डर ₹${toPay.toLocaleString('en-IN')} का है।`
+          : `Your available credit limit is ₹${creditInfo.availableCredit.toLocaleString('en-IN')}, but order total is ₹${toPay.toLocaleString('en-IN')}.`
       );
       return;
     }
@@ -460,11 +485,24 @@ export default function CheckoutScreen() {
             >
               <PaymentPill
                 value="wallet"
-                label={hi ? 'वॉलिट' : 'Wallet'}
+                label={hi ? 'वॉलेट' : 'Wallet'}
                 icon="wallet-outline"
               />
             </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => setPaymentMethod('credit')}
+              activeOpacity={0.8}
+              style={{ flex: 1 }}
+            >
+              <PaymentPill
+                value="credit"
+                label={hi ? 'नेक्स क्रेडिट' : 'Nex Credit'}
+                icon="card-outline"
+              />
+            </TouchableOpacity>
           </View>
+
+          {/* Wallet Info Box */}
           {paymentMethod === 'wallet' && (
             <View style={{ marginTop: 10, padding: 10, backgroundColor: '#ECFDF5', borderRadius: 12, borderWidth: 1, borderColor: '#10B981' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -479,6 +517,39 @@ export default function CheckoutScreen() {
               {insufficientWallet && (
                 <Text style={{ fontSize: 11, fontWeight: '700', color: '#DC2626', marginTop: 6 }}>
                   {hi ? '⚠️ वॉलेट में अपर्याप्त बैलेंस है!' : '⚠️ Insufficient wallet balance!'}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* Nex Credit Info Box */}
+          {paymentMethod === 'credit' && (
+            <View style={{ marginTop: 10, padding: 12, backgroundColor: '#EFF6FF', borderRadius: 12, borderWidth: 1, borderColor: '#3B82F6' }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1E3A8A' }}>
+                  {hi ? 'उपलब्ध नेक्स क्रेडिट:' : 'Available Nex Credit:'}
+                </Text>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: '#1D4ED8' }}>
+                  ₹ {creditInfo.availableCredit.toLocaleString('en-IN')}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#4B5563' }}>
+                  {hi ? `कुल सीमा: ₹${creditInfo.creditLimit.toLocaleString('en-IN')}` : `Total Limit: ₹${creditInfo.creditLimit.toLocaleString('en-IN')}`}
+                </Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#DC2626' }}>
+                  {hi ? `उपयोग: ₹${creditInfo.creditUsed.toLocaleString('en-IN')}` : `Used: ₹${creditInfo.creditUsed.toLocaleString('en-IN')}`}
+                </Text>
+              </View>
+              {insufficientCredit ? (
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#DC2626', marginTop: 6 }}>
+                  {creditInfo.creditLimit === 0
+                    ? (hi ? '⚠️ आपको अभी कोई क्रेडिट सीमा नहीं मिली है। कृपया एडमिन से संपर्क करें।' : '⚠️ You do not have an approved credit limit yet.')
+                    : (hi ? `⚠️ अपर्याप्त क्रेडिट सीमा! आपको ₹${toPay.toLocaleString('en-IN')} की आवश्यकता है, लेकिन केवल ₹${creditInfo.availableCredit.toLocaleString('en-IN')} उपलब्ध है।` : `⚠️ Insufficient credit! Order requires ₹${toPay.toLocaleString('en-IN')}, available is ₹${creditInfo.availableCredit.toLocaleString('en-IN')}.`)}
+                </Text>
+              ) : (
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#1E40AF', marginTop: 6 }}>
+                  {hi ? '✨ यह ऑर्डर आपकी स्वीकृत नेक्स क्रेडिट (उधारी) से प्रोसेस होगा।' : '✨ This order will be charged to your approved Nex Credit facility.'}
                 </Text>
               )}
             </View>
@@ -537,8 +608,8 @@ export default function CheckoutScreen() {
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handlePlaceOrder}
-          disabled={loading || insufficientWallet}
-          style={[styles.bottomBtn, (loading || insufficientWallet) && { opacity: 0.6 }]}
+          disabled={loading || insufficientWallet || insufficientCredit}
+          style={[styles.bottomBtn, (loading || insufficientWallet || insufficientCredit) && { opacity: 0.6 }]}
         >
           {loading ? (
             <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
@@ -732,17 +803,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
+    gap: 6,
   },
   paymentPill: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 999,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     paddingVertical: 7,
-    paddingHorizontal: 10,
-    marginRight: 6,
+    paddingHorizontal: 6,
     backgroundColor: '#FFFFFF',
   },
   paymentPillActive: {

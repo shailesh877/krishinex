@@ -33,6 +33,7 @@ type LedgerTxn = {
     method: 'CASH' | 'WALLET' | 'DUE' | 'RECOVERY' | 'SHOP_DUE';
     note: string;
     createdAt: string;
+    orderId?: any;
     shopId?: {
         name: string;
         businessName: string;
@@ -51,6 +52,8 @@ export default function NexCreditScreen() {
 
   const [creditLimit, setCreditLimit] = useState(0);
   const [creditUsed, setCreditUsed] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [isRepaying, setIsRepaying] = useState(false);
   const [cardNumber, setCardNumber] = useState('');
   const [userName, setUserName] = useState('');
   const [transactions, setTransactions] = useState<LedgerTxn[]>([]);
@@ -61,7 +64,7 @@ export default function NexCreditScreen() {
     title: hi ? 'नेक्स क्रेडिट / शॉप क्रेडिट' : 'Nex Credit / Shop Credit',
     availableCredit: hi ? 'उपलब्ध क्रेडिट' : 'Available Credit',
     totalLimit: hi ? 'कुल सीमा' : 'Total Limit',
-    totalUsed: hi ? 'उपयोग किया गया' : 'Used Credit',
+    totalUsed: hi ? 'उपयोग किया गया (बकाया)' : 'Used Credit (Due)',
     infoLine: hi
       ? 'यह क्रेडिट केवल कृषि सामग्री खरीदने के लिए मान्य है।'
       : 'This credit is valid only for purchasing agricultural inputs.',
@@ -78,18 +81,86 @@ export default function NexCreditScreen() {
   const fetchCreditData = async () => {
     try {
       const { data } = await authApi.getCreditData();
-      setCreditLimit(data.creditLimit);
-      setCreditUsed(data.creditUsed);
+      setCreditLimit(Number(data.creditLimit) || 0);
+      setCreditUsed(Number(data.creditUsed) || 0);
+      setWalletBalance(Number(data.walletBalance) || 0);
       setCardNumber(data.cardNumber || '');
       setUserName(data.name || '');
       setTransactions(data.transactions || []);
     } catch (error) {
       console.error('Fetch credit error:', error);
-      showAlert(hi ? 'त्रुटi' : 'Error', hi ? 'क्रेडिट डेटा लोड करने में विफल' : 'Failed to load credit data');
+      showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'क्रेडिट डेटा लोड करने में विफल' : 'Failed to load credit data');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
+  };
+
+  const handleRepay = () => {
+    if (creditUsed <= 0) {
+      showAlert(hi ? 'सूचना' : 'Info', hi ? 'आपका कोई बकाया क्रेडिट नहीं है।' : 'You have no outstanding credit due.');
+      return;
+    }
+
+    if (walletBalance <= 0) {
+      Alert.alert(
+        hi ? 'वॉलेट में बैलेंस नहीं है' : 'Insufficient Wallet Balance',
+        hi
+          ? `आपके वॉलेट में ₹0 बैलेंस है। बकाया ₹${creditUsed.toLocaleString('en-IN')} चुकाने के लिए कृपया पहले वॉलेट में पैसे जोड़ें।`
+          : `Your wallet balance is ₹0. To settle due of ₹${creditUsed.toLocaleString('en-IN')}, please recharge your wallet first.`,
+        [
+          { text: hi ? 'रद्द करें' : 'Cancel', style: 'cancel' },
+          {
+            text: hi ? 'वॉलेट में पैसे जोड़ें' : 'Recharge Wallet',
+            onPress: () => router.push('/wallet'),
+          },
+        ]
+      );
+      return;
+    }
+
+    const willRepay = Math.min(walletBalance, creditUsed);
+    const isPartial = walletBalance < creditUsed;
+
+    Alert.alert(
+      hi ? 'बकाया भुगतान की पुष्टि' : 'Confirm Repayment',
+      isPartial
+        ? (hi
+            ? `आपके वॉलेट में ₹${walletBalance.toLocaleString('en-IN')} है। क्या आप ₹${willRepay.toLocaleString('en-IN')} का बकाया चुकाना चाहते हैं? (शेष बकाया: ₹${(creditUsed - willRepay).toLocaleString('en-IN')})`
+            : `You have ₹${walletBalance.toLocaleString('en-IN')} in wallet. Do you want to repay ₹${willRepay.toLocaleString('en-IN')}? (Remaining due: ₹${(creditUsed - willRepay).toLocaleString('en-IN')})`)
+        : (hi
+            ? `क्या आप अपने वॉलेट बैलेंस (₹${walletBalance.toLocaleString('en-IN')}) से पूरा बकाया ₹${creditUsed.toLocaleString('en-IN')} चुकाना चाहते हैं?`
+            : `Do you want to repay full due amount ₹${creditUsed.toLocaleString('en-IN')} from your wallet balance (₹${walletBalance.toLocaleString('en-IN')})?`),
+      [
+        { text: hi ? 'रद्द करें' : 'Cancel', style: 'cancel' },
+        {
+          text: hi ? 'हाँ, भुगतान करें' : 'Yes, Pay Now',
+          onPress: async () => {
+            try {
+              setIsRepaying(true);
+              const res = await authApi.repayCredit();
+              if (res.data?.success) {
+                showAlert(
+                  hi ? 'सफल भुगतान' : 'Payment Successful',
+                  res.data.message || (hi ? 'बकाया सफलतापूर्वक चुका दिया गया है।' : 'Due repaid successfully.')
+                );
+                fetchCreditData();
+              } else {
+                showAlert(hi ? 'त्रुटि' : 'Error', res.data?.error || (hi ? 'भुगतान विफल' : 'Repayment failed'));
+              }
+            } catch (err: any) {
+              console.error('Repayment error:', err);
+              showAlert(
+                hi ? 'त्रुटि' : 'Error',
+                err?.response?.data?.error || (hi ? 'भुगतान करने में असमर्थ' : 'Failed to process repayment')
+              );
+            } finally {
+              setIsRepaying(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   useFocusEffect(
@@ -174,11 +245,11 @@ export default function NexCreditScreen() {
               <View>
                 <Text style={styles.summaryLabel}>{t.availableCredit}</Text>
                 <Text style={styles.summaryAmount}>
-                  ₹ {(creditLimit - creditUsed).toLocaleString('en-IN')}
+                  ₹ {Math.max(0, creditLimit - creditUsed).toLocaleString('en-IN')}
                 </Text>
               </View>
               <View style={styles.limitIconWrap}>
-                <Ionicons name="infinite-outline" size={32} color={NEX_BLUE} />
+                <Ionicons name="card-outline" size={30} color={NEX_BLUE} />
               </View>
             </View>
 
@@ -191,9 +262,56 @@ export default function NexCreditScreen() {
               </View>
               <View style={styles.statCol}>
                 <Text style={styles.statLabel}>{t.totalUsed}</Text>
-                <Text style={[styles.statValue, { color: '#DC2626' }]}>₹ {creditUsed.toLocaleString('en-IN')}</Text>
+                <Text style={[styles.statValue, { color: creditUsed > 0 ? '#DC2626' : '#111827' }]}>
+                  ₹ {creditUsed.toLocaleString('en-IN')}
+                </Text>
               </View>
             </View>
+
+            {/* REPAY ACTION BOX (When credit is used) */}
+            {creditUsed > 0 && (
+              <View style={styles.repaySection}>
+                <View style={styles.repayHeaderRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.repayAlertTitle}>
+                      {hi ? 'बकाया भुगतान देय है' : 'Outstanding Due Payment'}
+                    </Text>
+                    <Text style={styles.repayWalletText}>
+                      {hi ? `वॉलेट बैलेंस: ₹${walletBalance.toLocaleString('en-IN')}` : `Wallet Balance: ₹${walletBalance.toLocaleString('en-IN')}`}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.repayActionBtn, isRepaying && { opacity: 0.6 }]}
+                    onPress={handleRepay}
+                    disabled={isRepaying}
+                    activeOpacity={0.85}
+                  >
+                    {isRepaying ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <>
+                        <Ionicons name="shield-checkmark" size={16} color="#FFF" />
+                        <Text style={styles.repayActionBtnText}>
+                          {hi ? 'बकाया चुकाएं' : 'Repay Now'}
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {walletBalance < creditUsed && (
+                  <TouchableOpacity 
+                    style={styles.rechargeHintRow}
+                    activeOpacity={0.8}
+                    onPress={() => router.push('/wallet')}
+                  >
+                    <Ionicons name="add-circle-outline" size={14} color="#2563EB" />
+                    <Text style={styles.rechargeHintText}>
+                      {hi ? 'वॉलेट में पैसे कम हैं? यहाँ क्लिक करके जोड़ें' : 'Low wallet balance? Tap to recharge'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
 
             <View style={styles.infoBox}>
               <Ionicons name="information-circle-outline" size={16} color="#4B5563" />
@@ -212,7 +330,7 @@ export default function NexCreditScreen() {
             ) : (
                 transactions
                     .filter(item => {
-                        const isNexRecovery = item.method === 'RECOVERY' && item.note?.toLowerCase().includes('nex credit');
+                        const isNexRecovery = item.method === 'RECOVERY' && (item.note?.toLowerCase().includes('nex credit') || item.note?.toLowerCase().includes('agri-credit'));
                         
                         if (activeTab === 'NEX') {
                             return item.method === 'DUE' || isNexRecovery;
@@ -228,7 +346,7 @@ export default function NexCreditScreen() {
                 ) : (
                 transactions
                     .filter(item => {
-                        const isNexRecovery = item.method === 'RECOVERY' && item.note?.toLowerCase().includes('nex credit');
+                        const isNexRecovery = item.method === 'RECOVERY' && (item.note?.toLowerCase().includes('nex credit') || item.note?.toLowerCase().includes('agri-credit'));
                         
                         if (activeTab === 'NEX') {
                             return item.method === 'DUE' || isNexRecovery;
@@ -237,15 +355,30 @@ export default function NexCreditScreen() {
                         }
                     })
                     .map((item) => {
-                    const icon = getTxnIcon(item.method);
                     const isRecovery = item.method === 'RECOVERY';
                     const isShopTab = activeTab === 'SHOP';
+                    const isOnlineShopOrder = item.note?.toLowerCase().includes('online shop') || !!item.orderId;
                     
+                    let icon = getTxnIcon(item.method);
+                    if (isOnlineShopOrder) {
+                        icon = { name: 'bag-handle-outline', color: '#1E40AF', bg: '#DBEAFE' };
+                    }
+
                     // Display labels for Shop Credit specifically
                     let displayTitle = getMethodLabel(item.method);
+                    let displaySub = item.shopId?.businessName || item.shopId?.name || (hi ? 'कृषि केंद्र' : 'Agri Center');
+
                     if (isShopTab) {
                         if (item.method === 'SHOP_DUE') displayTitle = t.dueLabel;
                         if (item.method === 'RECOVERY') displayTitle = t.dueClearLabel;
+                    } else {
+                        if (isOnlineShopOrder) {
+                            displayTitle = hi ? 'ऑनलाइन शॉप खरीदारी' : 'Online Shop Order';
+                            displaySub = item.note || (item.shopId?.businessName || (hi ? 'कृषि केंद्र' : 'Agri Center'));
+                        } else if (isRecovery) {
+                            displayTitle = hi ? 'क्रेडिट बकाया भुगतान' : 'Credit Due Repaid';
+                            displaySub = hi ? 'वॉलेट द्वारा चुकाया गया' : 'Settled from Wallet';
+                        }
                     }
 
                     return (
@@ -263,7 +396,7 @@ export default function NexCreditScreen() {
                             {displayTitle}
                         </Text>
                         <Text style={styles.txnSub} numberOfLines={1}>
-                            {item.shopId?.businessName || item.shopId?.name || (hi ? 'कृषि केंद्र' : 'Agri Center')}
+                            {displaySub}
                         </Text>
                         <Text style={styles.txnDate}>
                             {new Date(item.createdAt).toLocaleDateString(hi ? 'hi-IN' : 'en-IN', {
@@ -307,9 +440,18 @@ export default function NexCreditScreen() {
                 </View>
 
                 <View style={styles.modalBody}>
-                    <DetailRow label={hi ? 'प्रकार' : 'Type'} value={getMethodLabel(selectedTxn.method)} />
-                    <DetailRow label={hi ? 'स्थान' : 'Location'} value={selectedTxn.shopId?.businessName || selectedTxn.shopId?.name || '—'} />
-                    <DetailRow label={hi ? 'तारीख' : 'Date'} value={new Date(selectedTxn.createdAt).toLocaleString()} />
+                    <DetailRow 
+                        label={hi ? 'प्रकार' : 'Type'} 
+                        value={
+                            selectedTxn.note?.toLowerCase().includes('online shop') || selectedTxn.orderId
+                                ? (hi ? 'ऑनलाइन शॉप खरीदारी (नेक्स क्रेडिट)' : 'Online Shop Order (Nex Credit)')
+                                : (selectedTxn.method === 'RECOVERY' && (selectedTxn.note?.toLowerCase().includes('nex credit') || selectedTxn.note?.toLowerCase().includes('agri-credit'))
+                                    ? (hi ? 'क्रेडिट बकाया भुगतान' : 'Credit Due Repaid')
+                                    : getMethodLabel(selectedTxn.method))
+                        } 
+                    />
+                    <DetailRow label={hi ? 'स्थान / विवरण' : 'Shop / Details'} value={selectedTxn.shopId?.businessName || selectedTxn.shopId?.name || (selectedTxn.orderId ? 'KrishiNex Shop' : '—')} />
+                    <DetailRow label={hi ? 'तारीख' : 'Date'} value={new Date(selectedTxn.createdAt).toLocaleString(hi ? 'hi-IN' : 'en-IN')} />
                     <DetailRow label={hi ? 'नोट' : 'Note'} value={selectedTxn.note || (hi ? 'कोई टिप्पणी नहीं' : 'No remarks')} />
                     {selectedTxn.shopId?.phone && (
                         <DetailRow label={hi ? 'संपर्क' : 'Contact'} value={selectedTxn.shopId.phone} />
@@ -434,6 +576,67 @@ const styles = StyleSheet.create({
   statCol: { flex: 1 },
   statLabel: { fontSize: 11, color: '#6B7280', fontWeight: '600' },
   statValue: { fontSize: 16, fontWeight: '800', color: '#111827', marginTop: 2 },
+  
+  // REPAY
+  repaySection: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  repayHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  repayAlertTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#991B1B',
+  },
+  repayWalletText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#B91C1C',
+    marginTop: 2,
+  },
+  repayActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#16A34A',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+    elevation: 2,
+    shadowColor: '#16A34A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  repayActionBtnText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  rechargeHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#FEE2E2',
+    gap: 4,
+  },
+  rechargeHintText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+
   infoBox: { marginTop: 16, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', padding: 8, borderRadius: 8 },
   infoText: { fontSize: 11, color: '#4B5563', marginLeft: 6, fontWeight: '500' },
 
