@@ -1423,11 +1423,27 @@
     function renderShopsTable(shops) {
       const tbody = document.getElementById('shops-table-body');
       if (!tbody) return;
+      const scrollContainer = tbody.closest('.overflow-y-auto, .overflow-auto, div[style*="max-height"]');
+      const mainContainer = document.querySelector('main');
+      const currentScroll = scrollContainer ? scrollContainer.scrollTop : 0;
+      const mainScroll = mainContainer ? mainContainer.scrollTop : 0;
+      const windowScroll = window.scrollY || document.documentElement.scrollTop;
+
+      const containerToLock = scrollContainer || tbody.closest('table') || tbody;
+      const prevHeight = containerToLock.offsetHeight;
+      containerToLock.style.minHeight = prevHeight + 'px';
+
       if (!shops || shops.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-10 text-slate-400 font-bold">No partners found.</td></tr>';
-        return;
+      } else {
+        tbody.innerHTML = shops.map(createShopRow).join('');
       }
-      tbody.innerHTML = shops.map(createShopRow).join('');
+
+      if (scrollContainer) scrollContainer.scrollTop = currentScroll;
+      if (mainContainer) mainContainer.scrollTop = mainScroll;
+      window.scrollTo(0, windowScroll);
+      
+      setTimeout(() => { containerToLock.style.minHeight = ''; }, 50);
     }
 
     function renderOrdersTable(orders) {
@@ -1619,6 +1635,11 @@
 
       const grid = document.getElementById('shopKycDocsGrid');
       if (grid) {
+        const modalScroll = grid.closest('.overflow-y-auto, .overflow-auto');
+        const currentScroll = modalScroll ? modalScroll.scrollTop : 0;
+        const prevHeight = grid.offsetHeight;
+        grid.style.minHeight = prevHeight + 'px';
+
         grid.innerHTML = docs.map(d => {
           const hasUrl = !!d.url;
           return `
@@ -1673,6 +1694,9 @@
             </div>
           `;
         }).join('');
+
+        if (modalScroll) modalScroll.scrollTop = currentScroll;
+        setTimeout(() => { grid.style.minHeight = ''; }, 50);
       }
 
       // Bank
@@ -1914,7 +1938,13 @@
         });
         if (res.ok) {
           showToast(`${shopName} approved!`, 'success');
-          fetchShops();
+          const sIdx = allShops.findIndex(s => s._id === shopId);
+          if (sIdx !== -1) {
+             allShops[sIdx].status = 'approved';
+             renderShopsTable(allShops);
+          } else {
+             fetchShops();
+          }
           viewShop(shopId);
         } else showToast('Failed to approve', 'error');
       } catch (e) { showToast('Network error', 'error'); }
@@ -1929,7 +1959,13 @@
         });
         if (res.ok) {
           showToast(`${shopName} blocked!`, 'success');
-          fetchShops();
+          const sIdx = allShops.findIndex(s => s._id === shopId);
+          if (sIdx !== -1) {
+             allShops[sIdx].status = 'blocked';
+             renderShopsTable(allShops);
+          } else {
+             fetchShops();
+          }
           viewShop(shopId);
         } else showToast('Failed to block', 'error');
       } catch (e) { showToast('Network error', 'error'); }
@@ -2303,7 +2339,7 @@
             if (docKey === 'profilePhoto') { f.profilePhotoUrl = null; f.photo = null; }
           }
           viewShop(userId);
-          fetchShops();
+          if (typeof renderShopsTable === 'function') renderShopsTable(allShops);
         } else {
           showToast(data.error || 'Failed to reject document', 'error');
         }
@@ -2522,7 +2558,7 @@
             populateShopModal(currentShopData);
           }
           
-          if (typeof fetchShops === 'function') fetchShops();
+          if (typeof renderShopsTable === 'function') renderShopsTable(allShops);
           
         } else {
           if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');

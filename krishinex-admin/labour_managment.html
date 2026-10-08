@@ -1449,11 +1449,27 @@
     function renderLabourTable(labourers) {
       const tbody = document.getElementById('labourTableBody');
       if (!tbody) return;
+      const scrollContainer = tbody.closest('.overflow-y-auto, .overflow-auto, div[style*="max-height"]');
+      const mainContainer = document.querySelector('main');
+      const currentScroll = scrollContainer ? scrollContainer.scrollTop : 0;
+      const mainScroll = mainContainer ? mainContainer.scrollTop : 0;
+      const windowScroll = window.scrollY || document.documentElement.scrollTop;
+
+      const containerToLock = scrollContainer || tbody.closest('table') || tbody;
+      const prevHeight = containerToLock.offsetHeight;
+      containerToLock.style.minHeight = prevHeight + 'px';
+
       if (!labourers || labourers.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-6 text-slate-500 font-bold">No labourers found.</td></tr>';
-        return;
+      } else {
+        tbody.innerHTML = labourers.map(createLabourRow).join('');
       }
-      tbody.innerHTML = labourers.map(createLabourRow).join('');
+
+      if (scrollContainer) scrollContainer.scrollTop = currentScroll;
+      if (mainContainer) mainContainer.scrollTop = mainScroll;
+      window.scrollTo(0, windowScroll);
+      
+      setTimeout(() => { containerToLock.style.minHeight = ''; }, 50);
     }
 
     async function fetchLabourJobs() {
@@ -1661,9 +1677,10 @@
             }
             if (docKey === 'profilePhoto') { currentLabour.profilePhotoUrl = null; currentLabour.photo = null; }
             currentLabour.status = 'pending';
-            loadLabourDocs(currentLabour);
+            if (typeof loadLabourDocs === 'function') {
+              loadLabourDocs(currentLabour);
+            }
           }
-          fetchLabourers();
           fetchLabourStats();
         } else {
           showToast(data.error || 'Failed to reject document', 'warning');
@@ -1676,6 +1693,11 @@
     function loadLabourDocs(labour) {
       const container = document.getElementById('lcontent-docs');
       if (!container || !labour) return;
+
+      const modalScroll = container.closest('.overflow-y-auto, .overflow-auto');
+      const currentScroll = modalScroll ? modalScroll.scrollTop : 0;
+      const prevHeight = container.offsetHeight;
+      container.style.minHeight = prevHeight + 'px';
 
       const fixUrl = (u) => {
         if (!u || typeof u !== 'string') return null;
@@ -1815,6 +1837,12 @@
           </div>
         </div>
       `;
+
+      if (modalScroll) {
+          modalScroll.scrollTop = currentScroll;
+          requestAnimationFrame(() => { modalScroll.scrollTop = currentScroll; });
+      }
+      setTimeout(() => { container.style.minHeight = ''; }, 50);
     }
 
     async function uploadLabourDoc(event, labourId, docKey) {
@@ -1853,8 +1881,6 @@
             if (docKey === 'profilePhoto') { currentLabour.profilePhotoUrl = data.url; currentLabour.photo = data.url; }
             loadLabourDocs(currentLabour);
           }
-          fetchLabourers();
-          fetchLabourStats();
         } else {
           showToast(data.error || 'Upload failed', 'warning');
         }
@@ -2119,7 +2145,17 @@
           method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
         const data = await res.json();
-        if (res.ok) { showToast(data.message || 'Labourer approved', 'success'); fetchLabourers(); fetchLabourStats(); }
+        if (res.ok) { 
+          showToast(data.message || 'Labourer approved', 'success'); 
+          const lIdx = allLabourers.findIndex(l => l._id === id);
+          if (lIdx !== -1) {
+             allLabourers[lIdx].status = 'approved';
+             renderLabourTable(allLabourers);
+          } else {
+             fetchLabourers();
+          }
+          fetchLabourStats(); 
+        }
         else showToast(data.error || 'Failed to approve', 'warning');
       } catch (e) { showToast('Network error: ' + e.message, 'warning'); }
     }
@@ -2129,12 +2165,25 @@
         const res = await fetch(`${API_BASE}/employee/admin/labour/reject/${id}`, {
           method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
         });
-        if (res.ok) { showToast('Labourer suspended', 'success'); fetchLabourers(); fetchLabourStats(); }
+        if (res.ok) { 
+          showToast('Labourer suspended', 'success'); 
+          const lIdx = allLabourers.findIndex(l => l._id === id);
+          if (lIdx !== -1) {
+             allLabourers[lIdx].status = 'suspended';
+             renderLabourTable(allLabourers);
+          } else {
+             fetchLabourers();
+          }
+          fetchLabourStats(); 
+        }
         else showToast('Failed to suspend', 'warning');
       } catch (e) { showToast('Network error', 'warning'); }
     }
 
-    function closeLabourProfile() { document.getElementById('labourProfileModal').classList.add('hidden'); }
+    function closeLabourProfile() { 
+      document.getElementById('labourProfileModal').classList.add('hidden'); 
+      if (typeof renderLabourTable === 'function') renderLabourTable(allLabourers);
+    }
 
     function openEditLabour() {
       if (!currentLabour) return;
@@ -2431,8 +2480,6 @@
             if (docKey === 'profilePhoto') { currentLabour.profilePhotoUrl = data.url; currentLabour.photo = data.url; }
             if (typeof loadLabourDocs === 'function') loadLabourDocs(currentLabour);
           }
-          
-          if (typeof fetchLabours === 'function') fetchLabours();
           
         } else {
           if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');

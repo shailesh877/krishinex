@@ -1828,7 +1828,13 @@
         const data = await res.json().catch(() => ({}));
         if (res.ok) {
           showToast(`${userName} blocked`, 'info');
-          fetchFarmers();
+          const idx = allFarmers.findIndex(f => f._id === userId);
+          if (idx !== -1) {
+            allFarmers[idx].status = 'blocked';
+            renderFarmersTable(allFarmers);
+          } else {
+            fetchFarmers();
+          }
         } else {
           showToast(data.error || 'Access Denied: You are not eligible for this action', 'warning');
         }
@@ -2152,11 +2158,27 @@
 
       const tbody = document.getElementById('usersTableBody');
       if (!tbody) return;
+      const scrollContainer = tbody.closest('.overflow-y-auto, .overflow-auto, div[style*="max-height"]');
+      const mainContainer = document.querySelector('main');
+      const currentScroll = scrollContainer ? scrollContainer.scrollTop : 0;
+      const mainScroll = mainContainer ? mainContainer.scrollTop : 0;
+      const windowScroll = window.scrollY || document.documentElement.scrollTop;
+
+      const containerToLock = scrollContainer || tbody.closest('table') || tbody;
+      const prevHeight = containerToLock.offsetHeight;
+      containerToLock.style.minHeight = prevHeight + 'px';
+
       if (!farmers || farmers.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold">${emptyMsg}</td></tr>`;
-        return;
+      } else {
+        tbody.innerHTML = farmers.map(createFarmerRow).join('');
       }
-      tbody.innerHTML = farmers.map(createFarmerRow).join('');
+
+      if (scrollContainer) scrollContainer.scrollTop = currentScroll;
+      if (mainContainer) mainContainer.scrollTop = mainScroll;
+      window.scrollTo(0, windowScroll);
+      
+      setTimeout(() => { containerToLock.style.minHeight = ''; }, 50);
     }
 
     async function approveUser(userId, name) {
@@ -2169,7 +2191,14 @@
         const data = await res.json().catch(() => ({}));
         if (res.ok) {
           showToast(`${name} approved successfully`, 'success');
-          fetchFarmers();
+          const idx = allFarmers.findIndex(f => f._id === userId);
+          if (idx !== -1) {
+            allFarmers[idx].status = 'approved';
+            allFarmers[idx].kycStatus = 'verified';
+            renderFarmersTable(allFarmers);
+          } else {
+            fetchFarmers();
+          }
         } else {
           showToast(data.error || 'Access Denied: You are not eligible for this action', 'warning');
         }
@@ -2194,9 +2223,13 @@
         if (res.ok) {
           showToast(`Credit limit updated successfully`, 'success');
           // Update local state and UI
-          const farmer = allFarmers.find(f => f._id === currentProfileUserId);
-          if (farmer) farmer.creditLimit = parseFloat(newLimit);
-          fetchFarmers(); // Refresh table
+          const farmerIdx = allFarmers.findIndex(f => f._id === currentProfileUserId);
+          if (farmerIdx !== -1) {
+             allFarmers[farmerIdx].creditLimit = parseFloat(newLimit);
+             renderFarmersTable(allFarmers);
+          } else {
+             fetchFarmers();
+          }
         } else {
           showToast(data.error || 'Access Denied: You are not eligible for this action', 'warning');
         }
@@ -2215,7 +2248,13 @@
         const data = await res.json().catch(() => ({}));
         if (res.ok) {
           showToast(`${name} unblocked`, 'success');
-          fetchFarmers();
+          const idx = allFarmers.findIndex(f => f._id === userId);
+          if (idx !== -1) {
+            allFarmers[idx].status = 'approved';
+            renderFarmersTable(allFarmers);
+          } else {
+            fetchFarmers();
+          }
         } else {
           showToast(data.error || 'Access Denied: You are not eligible for this action', 'warning');
         }
@@ -3094,7 +3133,7 @@
             if (docKey === 'profilePhoto') { f.profilePhotoUrl = null; f.photo = null; }
           }
           viewUserProfileV360(userId);
-          fetchFarmers();
+          if (typeof renderFarmersTable === 'function') renderFarmersTable(allFarmers);
         } else {
           showToast(data.error || 'Failed to reject document', 'warning');
         }
@@ -3325,9 +3364,7 @@
             if (docKey === 'profilePhoto') { f.profilePhotoUrl = data.url; f.photo = data.url; }
             if (typeof viewUserProfileV360 === 'function') viewUserProfileV360(itemId);
           }
-          
-          if (typeof fetchFarmers === 'function') fetchFarmers();
-          
+          if (typeof renderFarmersTable === 'function') renderFarmersTable(allFarmers);
         } else {
           if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');
         }

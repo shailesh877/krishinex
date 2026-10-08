@@ -939,6 +939,16 @@ CASH COLLECTIONS TABLE
 
     function renderPartnerTable(partners) {
       const tbody = document.getElementById('partnerTableBody');
+      const scrollContainer = tbody.closest('.overflow-y-auto, .overflow-auto, div[style*="max-height"]');
+      const mainContainer = document.querySelector('main');
+      const currentScroll = scrollContainer ? scrollContainer.scrollTop : 0;
+      const mainScroll = mainContainer ? mainContainer.scrollTop : 0;
+      const windowScroll = window.scrollY || document.documentElement.scrollTop;
+      
+      const containerToLock = scrollContainer || tbody.closest('table') || tbody;
+      const prevHeight = containerToLock.offsetHeight;
+      containerToLock.style.minHeight = prevHeight + 'px';
+
       if (!partners.length) { tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400 font-semibold">No partners found.</td></tr>`; return; }
       tbody.innerHTML = '';
       partners.forEach(p => {
@@ -989,6 +999,11 @@ CASH COLLECTIONS TABLE
         `;
         tbody.appendChild(tr);
       });
+      if (scrollContainer) scrollContainer.scrollTop = currentScroll;
+      if (mainContainer) mainContainer.scrollTop = mainScroll;
+      window.scrollTo(0, windowScroll);
+      
+      setTimeout(() => { containerToLock.style.minHeight = ''; }, 50);
     }
 
     async function updatePartnerStatus(id, status) {
@@ -1002,7 +1017,13 @@ CASH COLLECTIONS TABLE
         const d = await r.json();
         if (r.ok) {
           toast(`Partner ${status} successfully`, 'success');
-          fetchPartners();
+          const pIdx = allPartners.findIndex(p => p._id === id);
+          if (pIdx !== -1) {
+             allPartners[pIdx].status = status;
+             renderPartnerTable(allPartners);
+          } else {
+             fetchPartners();
+          }
           fetchStats();
         } else {
           toast(d.error || 'Failed', 'error');
@@ -1056,6 +1077,11 @@ CASH COLLECTIONS TABLE
       };
 
         const hasDocs = !!(aadhaarFrontPic || aadhaarBackPic || bank.bankDocUrl);
+
+        const modalScroll = overviewContainer.closest('.overflow-y-auto, .overflow-auto');
+        const currentScroll = modalScroll ? modalScroll.scrollTop : 0;
+        const prevHeight = overviewContainer.offsetHeight;
+        overviewContainer.style.minHeight = prevHeight + 'px';
 
         overviewContainer.innerHTML = `
         <div class="space-y-6">
@@ -1215,6 +1241,9 @@ CASH COLLECTIONS TABLE
           </div>
         </div>
       `;
+
+      if (modalScroll) modalScroll.scrollTop = currentScroll;
+      setTimeout(() => { overviewContainer.style.minHeight = ''; }, 50);
 
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -2103,7 +2132,7 @@ CASH COLLECTIONS TABLE
           }
 
           closeDocViewer();
-          fetchPartners();
+          if (typeof renderPartnerTable === 'function') renderPartnerTable(allPartners);
         } else {
           toast(data.error || 'Failed to reject document', 'error');
         }
@@ -2318,7 +2347,7 @@ CASH COLLECTIONS TABLE
             openPartnerModal(itemId);
           }
           
-          if (typeof fetchPartners === 'function') fetchPartners();
+          if (typeof renderPartnerTable === 'function') renderPartnerTable(allPartners);
           
         } else {
           if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');

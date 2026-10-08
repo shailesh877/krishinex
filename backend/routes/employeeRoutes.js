@@ -1053,7 +1053,7 @@ router.get('/admin/farmers', protect, checkModule('users'), async (req, res) => 
                 panDocUrl: f.panDocUrl || '',
                 bankDetails: f.bankDetails || {},
                 profilePhotoUrl: f.profilePhotoUrl || '',
-                kycStatus: (f.aadhaarNumber || f.panNumber) ? 'verified' : 'pending',
+                kycStatus: (f.status === 'approved' || f.status === 'Active' || f.status === 'active' || f.aadhaarNumber || f.panNumber) ? 'verified' : 'pending',
                 walletBalance: f.walletBalance || 0,
                 walletNumber: f.walletNumber || '',
                 cardNumber: f.cardNumber || '',
@@ -1140,7 +1140,7 @@ router.get('/admin/farmers/export', protect, checkModule('users'), async (req, r
         const result = await Promise.all(farmers.map(async (f) => {
             const orders = await Order.countDocuments({ buyer: f._id });
             const sellReqs = await CropSellRequest.countDocuments({ farmer: f._id });
-            const kyc = (f.aadhaarNumber || f.panNumber) ? 'verified' : 'pending';
+            const kyc = (f.status === 'approved' || f.status === 'Active' || f.status === 'active' || f.aadhaarNumber || f.panNumber) ? 'verified' : 'pending';
             return { ...f, totalOrders: orders + sellReqs, kycStatus: kyc };
         }));
 
@@ -2565,6 +2565,7 @@ router.put('/admin/approve/:id', protect, checkModule('users'), async (req, res)
         }
 
         user.status = 'approved';
+        user.kycStatus = 'verified';
         await user.save();
         res.json({ message: `${user.name} approved successfully` });
     } catch (e) {

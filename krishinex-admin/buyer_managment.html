@@ -1300,11 +1300,27 @@
         function renderBuyersTable(buyers) {
             const tbody = document.getElementById('buyersTbody');
             if (!tbody) return;
+            const scrollContainer = tbody.closest('.overflow-y-auto, .overflow-auto, div[style*="max-height"]');
+            const mainContainer = document.querySelector('main');
+            const currentScroll = scrollContainer ? scrollContainer.scrollTop : 0;
+            const mainScroll = mainContainer ? mainContainer.scrollTop : 0;
+            const windowScroll = window.scrollY || document.documentElement.scrollTop;
+
+            const containerToLock = scrollContainer || tbody.closest('table') || tbody;
+            const prevHeight = containerToLock.offsetHeight;
+            containerToLock.style.minHeight = prevHeight + 'px';
+
             if (!buyers || buyers.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-sm text-slate-400">No buyers found.</td></tr>';
-                return;
+            } else {
+                tbody.innerHTML = buyers.map(createBuyerRow).join('');
             }
-            tbody.innerHTML = buyers.map(createBuyerRow).join('');
+
+            if (scrollContainer) scrollContainer.scrollTop = currentScroll;
+            if (mainContainer) mainContainer.scrollTop = mainScroll;
+            window.scrollTo(0, windowScroll);
+            
+            setTimeout(() => { containerToLock.style.minHeight = ''; }, 50);
         }
 
 
@@ -1463,7 +1479,17 @@
             try {
                 const res = await fetch(`${API_BASE}/employee/admin/buyer/approve/${buyerId}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
                 const data = await res.json();
-                if (res.ok) { showToast(data.message, 'success'); fetchBuyers(); fetchBuyerStats(); }
+                if (res.ok) { 
+                    showToast(data.message, 'success'); 
+                    const bIdx = allBuyers.findIndex(b => b._id === buyerId);
+                    if (bIdx !== -1) {
+                        allBuyers[bIdx].status = 'approved';
+                        renderBuyersTable(allBuyers);
+                    } else {
+                        fetchBuyers(); 
+                    }
+                    fetchBuyerStats(); 
+                }
                 else showToast(data.error || 'Failed', 'warning');
             } catch (e) { showToast('Network error', 'warning'); }
         }
@@ -1472,7 +1498,17 @@
             try {
                 const res = await fetch(`${API_BASE}/employee/admin/buyer/reject/${buyerId}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` } });
                 const data = await res.json();
-                if (res.ok) { showToast(data.message, 'success'); fetchBuyers(); fetchBuyerStats(); }
+                if (res.ok) { 
+                    showToast(data.message, 'success'); 
+                    const bIdx = allBuyers.findIndex(b => b._id === buyerId);
+                    if (bIdx !== -1) {
+                        allBuyers[bIdx].status = 'suspended'; // or pending/rejected based on what the backend does
+                        renderBuyersTable(allBuyers);
+                    } else {
+                        fetchBuyers(); 
+                    }
+                    fetchBuyerStats(); 
+                }
                 else showToast(data.error || 'Failed', 'warning');
             } catch (e) { showToast('Network error', 'warning'); }
         }
@@ -1791,6 +1827,11 @@
             const container = document.getElementById('buyerKycDocsGrid');
             if (!container) return;
 
+            const modalScroll = container.closest('.overflow-y-auto, .overflow-auto');
+            const currentScroll = modalScroll ? modalScroll.scrollTop : 0;
+            const prevHeight = container.offsetHeight;
+            container.style.minHeight = prevHeight + 'px';
+
             const aadhaarFront = fixImageUrl(b.aadhaarDocUrl || b.documentUrl);
             const aadhaarBack = fixImageUrl(b.aadhaarBackDocUrl);
             const bankDoc = fixImageUrl(b.bankDetails?.bankDocUrl);
@@ -1873,6 +1914,9 @@
                     </div>
                 `;
             }).join('');
+
+            if (modalScroll) modalScroll.scrollTop = currentScroll;
+            setTimeout(() => { container.style.minHeight = ''; }, 50);
         }
 
         let currentDocKeyForViewer = null;
@@ -1960,7 +2004,7 @@
                     }
 
                     closeDocViewer();
-                    if (typeof fetchBuyers === 'function') fetchBuyers();
+                    if (typeof renderBuyersTable === 'function') renderBuyersTable(allBuyers);
                 } else {
                     showToast(data.error || 'Failed to reject document', 'warning');
                 }
@@ -2010,7 +2054,7 @@
                         renderBuyerKycDocs(buyer);
                     }
                     
-                    if (typeof fetchBuyers === 'function') fetchBuyers();
+                    if (typeof renderBuyersTable === 'function') renderBuyersTable(allBuyers);
                 } else {
                     if(typeof showToast !== 'undefined') showToast(data.error || 'Upload failed', 'warning');
                 }
