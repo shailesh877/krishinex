@@ -42,8 +42,8 @@ export default function EmployeeHome() {
   const isHindi = lang === 'hi';
 
   const { profile, refreshUser } = useUser();
-  const employeeName = profile?.name || 'Loading...';
-  const villageText = profile?.address || 'Loading...';
+  const employeeName = profile?.name || (isHindi ? 'फील्ड एग्जीक्यूटिव' : 'Field Executive');
+  const villageText = profile?.address || profile?.assignedArea || (isHindi ? 'कृषि नेक्स' : 'KrishiNex');
   const avatarUri = profile?.avatarUri || null;
   const userRole = profile?.role || null;
 
@@ -90,11 +90,15 @@ export default function EmployeeHome() {
     }
   }, [refreshUser, refetchStats]);
 
+  React.useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
+
   useFocusEffect(
     React.useCallback(() => {
-      // SWR handles stats, Context handles profile
+      refreshUser();
       fetchUnreadCount();
-    }, [])
+    }, [refreshUser])
   );
 
   const fetchUnreadCount = async () => {

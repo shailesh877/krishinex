@@ -7,15 +7,15 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Image,
-  ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useRouter } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { authApi } from '../../services/api';
@@ -144,9 +144,25 @@ export default function SignupScreen() {
         router.replace('/(auth)/login' as any);
       }
     } catch (error: any) {
-      console.error('Signup error:', error);
-      const errMsg = error.response?.data?.error || (hi ? 'पंजीकरण विफल' : 'Registration failed');
-      showAlert(hi ? 'त्रुटि' : 'Error', errMsg);
+      console.log('Signup error caught:', error?.message);
+      const errRaw = String(error.response?.data?.error || error.response?.data?.errorHi || error?.message || '');
+      const isAlreadyExists = errRaw.toLowerCase().includes('already exists') || errRaw.toLowerCase().includes('phone number');
+
+      if (isAlreadyExists) {
+        showAlert(
+          hi ? 'सूचना' : 'Notice',
+          hi
+            ? 'इस मोबाइल नंबर से पहले से ही अकाउंट बना हुआ है। कृपया लॉगिन करें।'
+            : 'An account with this phone number already exists. Please login.',
+          [
+            { text: hi ? 'लॉगिन करें' : 'Login', onPress: goToLogin },
+            { text: 'OK' }
+          ]
+        );
+      } else {
+        const errMsg = (hi ? error.response?.data?.errorHi : error.response?.data?.error) || error.response?.data?.error || (hi ? 'पंजीकरण विफल रहा। कृपया पुनः प्रयास करें।' : 'Registration failed. Please try again.');
+        showAlert(hi ? 'सूचना' : 'Notice', errMsg);
+      }
     } finally {
       setLoading(false);
     }
@@ -157,7 +173,7 @@ export default function SignupScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
 
       <LinearGradient
@@ -195,10 +211,16 @@ export default function SignupScreen() {
         </View>
 
         {/* FORM CARD */}
-        <ScrollView
+        <KeyboardAwareScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.cardScrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          enableAutomaticScroll={true}
+          extraScrollHeight={Platform.OS === 'android' ? 120 : 40}
+          extraHeight={Platform.OS === 'android' ? 120 : 40}
+          keyboardOpeningTime={0}
         >
           <View style={styles.card}>
             <View style={styles.cardHeaderRow}>
@@ -433,7 +455,7 @@ export default function SignupScreen() {
           </View>
 
           <Text style={styles.termsText}>{t.termsLine}</Text>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </View>
     </SafeAreaView>
   );

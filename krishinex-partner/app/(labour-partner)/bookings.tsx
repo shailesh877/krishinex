@@ -232,8 +232,7 @@ export default function LabourBookingsScreen() {
         console.error('Failed to update status on server:', resData);
       }
     } catch (e) {
-      console.error('Status update error', e);
-      showAlert(isHindi ? 'त्रुटi' : 'Error', isHindi ? 'सर्वर कनेक्शन विफल' : 'Server connection failed');
+      showAlert(isHindi ? 'सूचना' : 'Notice', isHindi ? 'कृपया कुछ समय बाद पुनः प्रयास करें।' : 'Please try again in a moment.');
     }
   };
 

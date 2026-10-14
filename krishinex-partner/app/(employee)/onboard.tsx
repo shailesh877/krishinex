@@ -178,8 +178,8 @@ export default function OnboardScreen() {
     } catch (err) {
       console.error('FE Onboarding Error:', err);
       showAlert(
-        isHindi ? 'त्रुटि' : 'Error',
-        isHindi ? 'सर्वर से कनेक्ट होने में समस्या आई' : 'Could not connect to server'
+        isHindi ? 'सूचना' : 'Notice',
+        isHindi ? 'कृपया कुछ समय बाद पुनः प्रयास करें।' : 'Please try again in a moment.'
       );
     } finally {
       setLoading(false);

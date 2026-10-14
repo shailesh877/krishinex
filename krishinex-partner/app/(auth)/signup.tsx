@@ -7,17 +7,17 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Image,
-  ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as DocumentPicker from 'expo-document-picker';
 import { useI18n } from '../../context/I18nContext';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { API_URL } from '../../constants/api';
 import * as Location from 'expo-location';
 import { showAlert } from '../../components/CustomAlert';
@@ -213,17 +213,10 @@ export default function SignupScreen() {
       }
     } catch (error: any) {
       console.error('Registration error:', error);
-      if (error?.name === 'AbortError') {
-        showAlert(
-          hi ? 'त्रुटि' : 'Error',
-          hi ? 'सर्वर से कनेक्ट होने में समस्या आई (Timeout)' : 'Could not connect to server (Timeout)'
-        );
-      } else {
-        showAlert(
-          hi ? 'त्रुटि' : 'Error',
-          hi ? 'सर्वर से कनेक्ट होने में समस्या आई' : 'Could not connect to server'
-        );
-      }
+      showAlert(
+        hi ? 'सूचना' : 'Notice',
+        hi ? 'कृपया कुछ समय बाद पुनः प्रयास करें।' : 'Please try again in a moment.'
+      );
     } finally {
       setLoading(false);
     }
@@ -252,16 +245,16 @@ export default function SignupScreen() {
       end={{ x: 1, y: 1 }}
       style={styles.gradient}
     >
-      <View style={styles.root}>
-        <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" />
 
-        <Image
-          source={logo}
-          style={styles.bgLogo}
-          resizeMode="contain"
-          blurRadius={6}
-        />
+      <Image
+        source={logo}
+        style={styles.bgLogo}
+        resizeMode="contain"
+        blurRadius={6}
+      />
 
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <View style={styles.container}>
           {/* HEADER */}
           <View style={styles.headerRow}>
@@ -280,10 +273,16 @@ export default function SignupScreen() {
 
           {/* CARD */}
           <View style={styles.card}>
-            <ScrollView
+            <KeyboardAwareScrollView
               style={{ flex: 1 }}
               contentContainerStyle={styles.formContent}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              enableOnAndroid={true}
+              enableAutomaticScroll={true}
+              extraScrollHeight={Platform.OS === 'android' ? 120 : 40}
+              extraHeight={Platform.OS === 'android' ? 120 : 40}
+              keyboardOpeningTime={0}
             >
               {/* Name */}
               <View style={styles.fieldBlock}>
@@ -436,10 +435,10 @@ export default function SignupScreen() {
               >
                 <Text style={styles.backText}>{texts.backToLogin}</Text>
               </TouchableOpacity>
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
@@ -499,7 +498,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(248, 250, 252, 0.96)',
     borderRadius: 22,
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 14,
     shadowColor: '#00000033',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
@@ -507,7 +506,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   formContent: {
-    paddingBottom: 26,
+    paddingBottom: 24,
   },
   fieldBlock: {
     marginTop: 12,

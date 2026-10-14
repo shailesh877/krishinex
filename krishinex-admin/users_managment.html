@@ -663,9 +663,9 @@
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Location</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Crop & Qty</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Rates</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Description</th>
-                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Photos</th>
                   <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200">Status</th>
+                  <th class="text-left font-black px-5 py-4 border-b-2 border-slate-200 whitespace-nowrap">
+                    Date & Time</th>
                   <th class="text-right font-black px-5 py-4 border-b-2 border-slate-200">Actions</th>
                 </tr>
               </thead>
@@ -757,9 +757,14 @@
       <div class="px-6 py-5 space-y-5">
         <!-- Farmer Details -->
         <div class="rounded-xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-4">
-          <p class="text-xs uppercase tracking-wide text-emerald-700 font-black mb-3 flex items-center gap-2">
-            <i class="fas fa-user-check"></i> Farmer Request
-          </p>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs uppercase tracking-wide text-emerald-700 font-black flex items-center gap-2">
+              <i class="fas fa-user-check"></i> Farmer Request
+            </p>
+            <span id="modalRequestDate" class="text-[11px] font-bold text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-sm flex items-center gap-1.5">
+              <i class="far fa-calendar-alt text-emerald-600"></i> -
+            </span>
+          </div>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div>
               <p class="text-[10px] text-slate-600 font-semibold mb-1">Farmer</p>
@@ -799,6 +804,26 @@
                   class="h-[46px] px-6 rounded-xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-700 shadow-md transition-all flex items-center justify-center gap-2">
                   <i class="fas fa-save"></i> Save
                 </button>
+              </div>
+            </div>
+
+            <!-- Description / Notes -->
+            <div id="modalNotesContainer" class="col-span-2 md:col-span-3 pt-2.5 border-t border-emerald-100">
+              <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <i class="fas fa-comment-dots text-emerald-600"></i> Farmer's Description / Notes
+              </p>
+              <p id="modalNotes" class="text-xs font-semibold text-slate-700 bg-white/80 p-2.5 rounded-xl border border-emerald-100 italic leading-relaxed">
+                No notes provided by farmer.
+              </p>
+            </div>
+
+            <!-- Crop Quality Photos -->
+            <div id="modalPhotosContainer" class="col-span-2 md:col-span-3 pt-1">
+              <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <i class="fas fa-camera text-emerald-600"></i> Crop Photos
+              </p>
+              <div id="modalPhotosList" class="flex gap-2 flex-wrap">
+                <!-- Populated dynamically -->
               </div>
             </div>
           </div>
@@ -1284,8 +1309,15 @@
 
         <!-- Crop Photos Gallery -->
         <div id="detailPhotosCard" class="rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-sm space-y-3">
-          <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider">Crop Quality Photos</h3>
-          <div id="detailPhotosList" class="flex gap-2.5 flex-wrap">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <i class="fas fa-camera text-emerald-500"></i> Crop Photos & Samples
+            </h3>
+            <span id="detailPhotoCountBadge" class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+              0 Photos
+            </span>
+          </div>
+          <div id="detailPhotosList" class="flex gap-3 flex-wrap">
             <!-- Thumbnails populated dynamically -->
           </div>
         </div>
@@ -1328,11 +1360,17 @@
      */
     function fixImageUrl(url) {
       if (!url || url === 'undefined' || url === 'null' || url === 'none') return '';
+      if (typeof url !== 'string') return '';
       const imgHost = window.IMAGE_BASE || 'https://demo.ranx24.com';
       if (url.startsWith('http://') || url.startsWith('https://')) {
         try {
-          const targetHost = new URL(imgHost).host;
-          return url.replace(/^(https?:\/\/)[^\/]+/, `$1${targetHost}`);
+          const u = new URL(url);
+          // Only rewrite if it points to localhost or private/local IP address
+          if (u.hostname === 'localhost' || u.hostname === '127.0.0.1' || u.hostname.startsWith('192.168.') || u.hostname.startsWith('10.') || u.hostname.startsWith('172.')) {
+            const targetHost = new URL(imgHost).host;
+            return url.replace(/^(https?:\/\/)[^\/]+/, `$1${targetHost}`);
+          }
+          return url;
         } catch (e) {
           return url;
         }
@@ -1375,6 +1413,12 @@
       currentRequestId = orderId;
       selectedBuyerId = null;
 
+      const dt = formatCropRequestDate(req);
+      const reqDateEl = document.getElementById('modalRequestDate');
+      if (reqDateEl) {
+        reqDateEl.innerHTML = `<i class="far fa-calendar-alt text-emerald-600"></i> ${dt.fullStr || 'N/A'}`;
+      }
+
       document.getElementById('modalFarmerName').textContent = req.farmerName || 'Unknown';
       document.getElementById('modalLocation').textContent = req.location || 'N/A';
       document.getElementById('modalCrop').textContent = req.crop || '---';
@@ -1384,6 +1428,62 @@
       document.getElementById('modalEditPrice').value = req.adminPrice || req.pricePerQuintal || '';
 
       document.getElementById('modalDistance').textContent = Math.floor(Math.random() * 15) + 5;
+
+      // Populate Description / Notes in Assign Modal
+      let note = req.note || '';
+      if (note.toLowerCase() === 'na' || note.trim() === '') note = '';
+      const notesEl = document.getElementById('modalNotes');
+      if (notesEl) {
+        notesEl.textContent = note ? note : 'No notes provided by farmer.';
+      }
+
+      // Populate Photos Gallery in Assign Modal
+      const photosContainer = document.getElementById('modalPhotosContainer');
+      const photosList = document.getElementById('modalPhotosList');
+      if (photosContainer && photosList) {
+        photosList.innerHTML = '';
+        let assignImages = [];
+        if (Array.isArray(req.images)) {
+          assignImages = req.images.filter(Boolean);
+        } else if (typeof req.images === 'string' && req.images.trim()) {
+          try {
+            const parsed = JSON.parse(req.images);
+            if (Array.isArray(parsed)) assignImages = parsed.filter(Boolean);
+            else assignImages = [req.images.trim()];
+          } catch (e) {
+            assignImages = req.images.split(',').map(s => s.trim()).filter(Boolean);
+          }
+        }
+        if (assignImages.length === 0 && req.imageUrl) {
+          if (Array.isArray(req.imageUrl)) assignImages = req.imageUrl.filter(Boolean);
+          else if (typeof req.imageUrl === 'string' && req.imageUrl.trim()) assignImages = [req.imageUrl.trim()];
+        }
+        if (assignImages.length === 0 && req.photos) {
+          if (Array.isArray(req.photos)) assignImages = req.photos.filter(Boolean);
+          else if (typeof req.photos === 'string' && req.photos.trim()) assignImages = [req.photos.trim()];
+        }
+
+        if (assignImages.length === 0) {
+          photosList.innerHTML = `
+            <div class="w-full flex items-center gap-2 p-3 bg-white/70 rounded-xl border border-dashed border-emerald-200 text-slate-400 text-xs italic">
+              <i class="fas fa-image text-slate-300"></i> No crop photos uploaded by farmer.
+            </div>`;
+        } else {
+          assignImages.forEach((img, idx) => {
+            const fixed = fixImageUrl(img);
+            const galleryJson = JSON.stringify(assignImages.map(i => fixImageUrl(i))).replace(/"/g, '&quot;');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'relative h-16 w-16 rounded-xl bg-slate-100 hover:scale-105 border-2 border-slate-200 flex items-center justify-center transition-all overflow-hidden shadow-sm';
+            btn.onclick = () => viewPhoto(fixed, JSON.parse(galleryJson.replace(/&quot;/g, '"')), idx);
+            btn.innerHTML = `
+              <img src="${fixed}" class="h-full w-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300?text=Error';">
+              <i class="fas fa-image text-slate-400 text-base hidden"></i>
+            `;
+            photosList.appendChild(btn);
+          });
+        }
+      }
 
       const buyerInfo = document.getElementById('selectedBuyerInfo');
       const assignBtn = document.getElementById('assignBtn');
@@ -1435,8 +1535,8 @@
         : 'mt-1 inline-flex items-center rounded-lg px-2.5 py-0.5 text-[10px] font-black uppercase bg-sky-50 text-sky-700 border border-sky-200';
 
       // Date
-      const dateStr = req.createdAt ? new Date(req.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
-      document.getElementById('detailCreatedDate').textContent = dateStr;
+      const dt = formatCropRequestDate(req);
+      document.getElementById('detailCreatedDate').textContent = dt.fullStr || 'N/A';
 
       // Payment Mode
       document.getElementById('detailPaymentMode').textContent = req.payment || 'COD';
@@ -1520,26 +1620,61 @@
       }
       document.getElementById('detailNotes').textContent = displayNote;
 
+      // Robust images extraction
+      let images = [];
+      if (Array.isArray(req.images)) {
+        images = req.images.filter(Boolean);
+      } else if (typeof req.images === 'string' && req.images.trim()) {
+        try {
+          const parsed = JSON.parse(req.images);
+          if (Array.isArray(parsed)) images = parsed.filter(Boolean);
+          else images = [req.images.trim()];
+        } catch (e) {
+          images = req.images.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      if (images.length === 0 && req.imageUrl) {
+        if (Array.isArray(req.imageUrl)) images = req.imageUrl.filter(Boolean);
+        else if (typeof req.imageUrl === 'string' && req.imageUrl.trim()) images = [req.imageUrl.trim()];
+      }
+      if (images.length === 0 && req.photos) {
+        if (Array.isArray(req.photos)) images = req.photos.filter(Boolean);
+        else if (typeof req.photos === 'string' && req.photos.trim()) images = [req.photos.trim()];
+      }
+
       // Photo Gallery
       const photoCard = document.getElementById('detailPhotosCard');
       const photoList = document.getElementById('detailPhotosList');
+      const countBadge = document.getElementById('detailPhotoCountBadge');
       photoList.innerHTML = '';
-      const images = (req.images && req.images.length > 0) ? req.images : (req.imageUrl ? [req.imageUrl] : []);
+      if (countBadge) {
+        countBadge.textContent = `${images.length} Photo${images.length === 1 ? '' : 's'}`;
+      }
+
+      photoCard.classList.remove('hidden');
+
       if (images.length === 0) {
-        photoCard.classList.add('hidden');
+        photoList.innerHTML = `
+          <div class="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400 text-xs font-semibold">
+            <i class="fas fa-image text-slate-300 text-2xl"></i>
+            <span>No crop photos uploaded by farmer for this request.</span>
+          </div>`;
       } else {
-        photoCard.classList.remove('hidden');
         images.forEach((img, idx) => {
           const fixed = fixImageUrl(img);
           const galleryJson = JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;');
-          const btn = document.createElement('button');
-          btn.className = 'relative h-16 w-16 rounded-xl bg-slate-100 hover:scale-105 border-2 border-slate-200 flex items-center justify-center transition-all overflow-hidden shadow-sm';
-          btn.onclick = () => viewPhoto(fixed, JSON.parse(galleryJson.replace(/&quot;/g, '"')), idx);
-          btn.innerHTML = `
-              <img src="${fixed}" class="h-full w-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden')">
-              <i class="fas fa-image text-slate-400 text-lg hidden"></i>
-            `;
-          photoList.appendChild(btn);
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'group relative rounded-2xl border-2 border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all bg-slate-100 flex flex-col';
+          itemDiv.innerHTML = `
+            <div class="relative w-28 h-28 sm:w-32 sm:h-32 cursor-pointer overflow-hidden" onclick="viewPhoto('${fixed}', ${galleryJson}, ${idx})">
+              <img src="${fixed}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" onerror="this.onerror=null; this.src='https://placehold.co/300x300?text=Photo+Unavailable';">
+              <div class="absolute inset-0 bg-slate-900/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 font-bold text-xs">
+                <i class="fas fa-search-plus text-base"></i> View
+              </div>
+              <span class="absolute top-1.5 left-1.5 bg-slate-900/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded backdrop-blur-sm">#${idx + 1}</span>
+            </div>
+          `;
+          photoList.appendChild(itemDiv);
         });
       }
 
@@ -2422,6 +2557,47 @@
       }
     }
 
+    function formatCropRequestDate(req) {
+      let reqDate = null;
+      if (req && req.createdAt) {
+        const d = new Date(req.createdAt);
+        if (!isNaN(d.getTime())) reqDate = d;
+      }
+      if (!reqDate && req && req._id && typeof req._id === 'string' && req._id.length === 24) {
+        try {
+          const ts = parseInt(req._id.substring(0, 8), 16) * 1000;
+          const d = new Date(ts);
+          if (!isNaN(d.getTime())) reqDate = d;
+        } catch (e) {}
+      }
+      if (!reqDate) {
+        return { date: '—', time: '', relativeBadge: '', fullStr: '—' };
+      }
+
+      const date = reqDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const time = reqDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+      const now = new Date();
+      const isToday = reqDate.toDateString() === now.toDateString();
+      const yesterday = new Date();
+      yesterday.setDate(now.getDate() - 1);
+      const isYesterday = reqDate.toDateString() === yesterday.toDateString();
+
+      let relativeBadge = '';
+      if (isToday) {
+        relativeBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-100 text-emerald-800 ml-1 border border-emerald-200">Today</span>`;
+      } else if (isYesterday) {
+        relativeBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-slate-100 text-slate-700 ml-1 border border-slate-200">Yesterday</span>`;
+      }
+
+      return {
+        date,
+        time,
+        relativeBadge,
+        fullStr: `${date}, ${time}`
+      };
+    }
+
     function createCropRequestRow(req) {
       const statusBadge = req.status === 'pending'
         ? `<span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black text-amber-700 border-2 border-amber-200"><i class="fas fa-circle-dot mr-1 text-[8px]"></i> New</span>`
@@ -2433,47 +2609,52 @@
               ? `<div><span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1.5 text-[10px] font-black text-rose-700 border-2 border-rose-200"><i class="fas fa-times-circle mr-1 text-[8px]"></i> Cancelled</span>${req.cancelReason ? `<div class="text-[9px] text-rose-500 mt-1 font-bold italic max-w-[140px]">Reason: ${req.cancelReason}</div>` : ''}</div>`
               : `<span class="inline-flex items-center rounded-full bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-600 border-2 border-slate-200">${req.status}</span>`;
 
-      const actionBtn = req.status === 'pending'
-        ? `<button onclick="openAssignModal('${req._id}')" class="inline-flex items-center rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:from-emerald-600 hover:to-emerald-700 px-4 py-2 text-[11px] font-black transition-all"><i class="fas fa-link mr-1.5"></i> Assign</button>`
-        : `<button onclick="openCropDetailsModal('${req._id}')" class="inline-flex items-center rounded-xl border-2 border-slate-300 bg-white text-slate-700 hover:bg-slate-50 px-4 py-2 text-[11px] font-black transition-all"><i class="fas fa-eye mr-1.5"></i> View</button>`;
-      const images = (req.images && req.images.length > 0) ? req.images : (req.imageUrl ? [req.imageUrl] : []);
-      const photoBtn = images.length > 0
-        ? `<div class="flex gap-1 flex-wrap max-w-[100px]">` +
-        images.map((img, idx) => {
-          const fixed = fixImageUrl(img);
-          const galleryJson = JSON.stringify(images.map(i => fixImageUrl(i))).replace(/"/g, '&quot;');
-          return `<button onclick="viewPhoto('${fixed}', ${galleryJson}, ${idx})" class="relative h-7 w-7 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center transition-all overflow-hidden">
-                <img src="${fixed}" class="h-full w-full object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden')">
-                <i class="fas fa-image text-slate-400 text-[10px] hidden"></i>
-              </button>`;
-        }).join('') +
-        `</div>`
-        : `<span class="text-slate-400 text-xs italic">—</span>`;
+      const showAssignBtn = req.status !== 'completed' && req.status !== 'cancelled';
+      const actionBtn = showAssignBtn
+        ? `<div class="flex flex-col gap-1 items-end justify-center min-w-[85px]">
+            <button onclick="openCropDetailsModal('${req._id}')" class="w-full inline-flex items-center justify-center rounded-lg border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-1 text-[10px] font-black transition-all shadow-sm">
+              <i class="fas fa-eye mr-1 text-slate-500"></i> View
+            </button>
+            <button onclick="openAssignModal('${req._id}')" class="w-full inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm hover:from-emerald-600 hover:to-emerald-700 px-3 py-1.5 text-[10px] font-black transition-all">
+              <i class="fas fa-link mr-1"></i> ${req.assignedBuyer ? 'Re-assign' : 'Assign'}
+            </button>
+          </div>`
+        : `<div class="flex items-center justify-end min-w-[85px]">
+            <button onclick="openCropDetailsModal('${req._id}')" class="w-full inline-flex items-center justify-center rounded-lg border-2 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-1.5 text-[10px] font-black transition-all shadow-sm">
+              <i class="fas fa-eye mr-1 text-slate-500"></i> View
+            </button>
+          </div>`;
 
+      const dt = formatCropRequestDate(req);
       const shortId = req._id ? req._id.toString().substring(req._id.length - 6).toUpperCase() : 'N/A';
       return `<tr class="hover:bg-emerald-50/20 transition-colors border-b border-slate-100">
-          <td class="px-5 py-4">
+          <td class="px-5 py-3.5">
             <button onclick="openCropDetailsModal('${req._id}')" class="font-black text-emerald-600 hover:text-emerald-700 text-[10px] tracking-widest bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded transition-all cursor-pointer">#${shortId}</button>
           </td>
-          <td class="px-5 py-4">
+          <td class="px-5 py-3.5">
             <div onclick="event.stopPropagation(); viewUserProfileV360('${req.farmerId}')" class="font-bold text-slate-900 cursor-pointer hover:text-emerald-600 hover:underline flex items-center gap-1.5 group/fn">
               ${req.farmerName}
               <i class="fas fa-id-badge text-[10px] text-emerald-500 opacity-0 group-hover/fn:opacity-100 transition-opacity"></i>
             </div>
             <div class="text-[10px] text-slate-500">${req.farmerPhone}</div>
           </td>
-          <td class="px-5 py-4"><div class="font-semibold text-slate-900">${req.location}</div></td>
-          <td class="px-5 py-4"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity}</div></td>
-          <td class="px-5 py-4">
+          <td class="px-5 py-3.5"><div class="font-semibold text-slate-900">${req.location}</div></td>
+          <td class="px-5 py-3.5"><div class="font-bold text-slate-900">${req.crop}</div><div class="text-[10px] text-slate-600">${req.quantity}</div></td>
+          <td class="px-5 py-3.5">
             <div class="flex flex-col gap-0.5">
               <div class="flex items-center gap-1"><span class="text-[9px] text-slate-400 font-bold w-12">Expected</span><span class="text-[11px] font-black text-amber-700">${(()=>{ const s = String(req.expectedPrice||''); const kgMatch = s.match(/([\d.]+)\s*\/?\s*KG/i); if(kgMatch) return '₹'+parseFloat(kgMatch[1]).toFixed(2)+'/KG'; const qMatch = s.match(/([\d.]+)\s*\/?\s*Quintal/i) || s.match(/([\d.]+)\s*\/\s*Q\b/i); if(qMatch) return '₹'+(parseFloat(qMatch[1])/100).toFixed(2)+'/KG'; const raw = parseFloat(s.replace(/[^\d.]/g,'')); return raw>0?'₹'+(raw/100).toFixed(2)+'/KG':'—'; })()}</span></div>
               <div class="flex items-center gap-1"><span class="text-[9px] text-slate-400 font-bold w-12">Final</span><span class="text-[11px] font-black text-emerald-700">${(()=>{ const finalQ = req.finalPrice || 0; return finalQ > 0 ? '₹' + (finalQ/100).toFixed(2) + '/KG' : '—'; })()}</span></div>
             </div>
           </td>
-          <td class="px-5 py-4"><div class="text-[10px] text-slate-700 max-w-[180px] truncate">${req.note || req.variety || '—'}</div></td>
-          <td class="px-5 py-4">${photoBtn}</td>
-          <td class="px-5 py-4">${statusBadge}</td>
-          <td class="px-5 py-4 text-right">${actionBtn}</td>
+          <td class="px-5 py-3.5">${statusBadge}</td>
+          <td class="px-5 py-3.5 whitespace-nowrap">
+            <div class="font-bold text-slate-900 text-xs flex items-center">
+              ${dt.date}
+              ${dt.relativeBadge}
+            </div>
+            ${dt.time ? `<div class="text-[10px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5"><i class="far fa-clock text-slate-400 text-[9px]"></i> ${dt.time}</div>` : ''}
+          </td>
+          <td class="px-5 py-3.5 text-right">${actionBtn}</td>
         </tr>`;
     }
 
@@ -2484,7 +2665,7 @@
       const tbody = document.getElementById('cropRequestsTbody');
       if (!tbody) return;
       if (!requests || requests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-400 font-semibold italic">No crop sell requests yet.</td></tr>';
         return;
       }
       tbody.innerHTML = requests.map(createCropRequestRow).join('');

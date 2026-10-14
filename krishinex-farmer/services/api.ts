@@ -1,9 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Production API & Image URLs
-export const BASE_URL = 'https://demo.ranx24.com/api';
-export const IMAGE_BASE_URL = 'https://demo.ranx24.com';
+const SERVER_URL = process.env.EXPO_PUBLIC_BASE_URL || 'https://demo.ranx24.com';
+export const BASE_URL = `${SERVER_URL}/api`;
+export const IMAGE_BASE_URL = process.env.EXPO_PUBLIC_IMAGE_URL || SERVER_URL;
 
 const api = axios.create({
     baseURL: BASE_URL,

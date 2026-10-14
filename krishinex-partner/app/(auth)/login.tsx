@@ -21,6 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OTPWidget } from '@msg91comm/sendotp-react-native';
 import { useI18n } from '../../context/I18nContext';
+import { useUser } from '../../context/UserContext';
 import { API_URL, BASE_API_URL, MSG91_WIDGET_ID, MSG91_AUTH_KEY } from '../../constants/api';
 import { registerTokenWithBackend } from '../../utils/notificationHelper';
 import { showAlert } from '../../components/CustomAlert';
@@ -108,6 +109,7 @@ const TEXTS: Record<
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { updateUser } = useUser();
   // make sure useI18n returns lang: 'hi' | 'en'
   const { lang, toggleLang } = useI18n() as { lang: Lang; toggleLang: () => void };
 
@@ -116,9 +118,22 @@ export default function LoginScreen() {
   const [otp, setOtp] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [step, setStep] = useState<'role-select' | 'phone-input' | 'otp'>('role-select');
+  const [step, setStep] = useState<
+    'role-select' | 'phone-input' | 'otp' | 'fe-forgot-enter' | 'fe-forgot-otp' | 'fe-forgot-new-pwd'
+  >('role-select');
   const [loading, setLoading] = useState(false);
   const [reqId, setReqId] = useState('');
+
+  // Field Executive Forgot Password State
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotPhone, setForgotPhone] = useState('');
+  const [forgotMaskedPhone, setForgotMaskedPhone] = useState('');
+  const [forgotMode, setForgotMode] = useState<'email' | 'phone'>('phone');
+  const [forgotMaskedTarget, setForgotMaskedTarget] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [forgotReqId, setForgotReqId] = useState('');
 
   // Backend URL matches signup
   // API_URL imported from constants/api
@@ -249,7 +264,7 @@ export default function LoginScreen() {
           const response = await fetch(`${API_URL}/login-employee`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, role }),
             signal: controller.signal
           });
           clearTimeout(timeout);
@@ -257,6 +272,7 @@ export default function LoginScreen() {
           if (response.ok && empData.token) {
             await AsyncStorage.setItem('userToken', empData.token);
             await AsyncStorage.setItem('userData', JSON.stringify(empData.user));
+            if (updateUser) updateUser(empData.user);
             
             // Sync push token
             const pushToken = await AsyncStorage.getItem('pushToken');
@@ -264,12 +280,20 @@ export default function LoginScreen() {
 
             router.replace('/(employee)/home');
           } else {
-            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', empData.error || 'Login failed');
+            const fallbackMsg = role === 'field_executive'
+              ? (lang === 'hi' ? 'अकाउंट नहीं मिला, कृपया एडमिनिस्ट्रेशन से संपर्क करें।' : 'Account not found. Please connect to administration.')
+              : (lang === 'hi' ? 'अकाउंट नहीं मिला, पहले अकाउंट बनाएं' : 'Account not found. Please create an account first.');
+            const errMsg = (lang === 'hi' ? empData.errorHi : empData.error) || empData.error || empData.errorHi || empData.message || fallbackMsg;
+            showAlert(lang === 'hi' ? 'सूचना' : 'Notice', errMsg);
           }
         } catch (e: any) {
           clearTimeout(timeout);
-          const isTimeout = controller.signal.aborted || e?.name === 'AbortError' || e?.message?.includes('aborted');
-          showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', isTimeout ? (lang === 'hi' ? 'सर्वर से जवाब नहीं मिला। इंटरनेट जाँचें।' : 'Server timeout. Check backend.') : (lang === 'hi' ? 'नेटवर्क समस्या। कृपया पुनः प्रयास करें।' : `Error: ${e?.message || 'Network error'}`));
+          showAlert(
+            lang === 'hi' ? 'त्रुटि' : 'Error',
+            lang === 'hi'
+              ? 'लॉगिन करने में असमर्थ। कृपया नेटवर्क जाँचें या कुछ देर बाद पुनः प्रयास करें।'
+              : 'Unable to login. Please check your network or try again shortly.'
+          );
         }
       } else {
         // Google Play Store Dummy Account Bypass
@@ -330,23 +354,273 @@ export default function LoginScreen() {
             else if (role === 'shop') router.replace('/(shop-partner)/home');
             else if (role === 'labour') router.replace('/(labour-partner)/home');
           } else {
-            // Show Hindi error if available
-            const errMsg = partnerData.errorHi || partnerData.error || 'Login failed. Please try again.';
-            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', errMsg);
+            const fallbackMsg = lang === 'hi' ? 'अकाउंट नहीं मिला, पहले अकाउंट बनाएं' : 'Account not found. Please create an account first.';
+            const errMsg = (lang === 'hi' ? partnerData.errorHi : partnerData.error) || partnerData.error || partnerData.errorHi || partnerData.message || fallbackMsg;
+            showAlert(lang === 'hi' ? 'सूचना' : 'Notice', errMsg);
           }
         } catch (serverError: any) {
           clearTimeout(timeout);
-          const isTimeout = controller.signal.aborted || serverError?.name === 'AbortError' || serverError?.message?.includes('aborted');
-          if (isTimeout) {
-            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', lang === 'hi' ? 'सर्वर से जवाब मिलने में समय लग रहा है। कृपया अपना इंटरनेट कनेक्शन जाँचें और दोबारा कोशिश करें।' : 'Server timeout. Please check your internet connection or try again later.');
-          } else {
-            showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', lang === 'hi' ? 'नेटवर्क समस्या: सर्वर से संपर्क नहीं हो सका। कृपया इंटरनेट कनेक्शन जाँचें।' : `Network Error: ${serverError?.message || 'Cannot reach server'}`);
-          }
+          showAlert(
+            lang === 'hi' ? 'त्रुटि' : 'Error',
+            lang === 'hi'
+              ? 'लॉगिन करने में असमर्थ। कृपया नेटवर्क जाँचें या कुछ समय बाद पुनः प्रयास करें।'
+              : 'Unable to login. Please check your network or try again shortly.'
+          );
         }
       }
     } catch (error: any) {
       console.error('Verify error:', error);
       showAlert(lang === 'hi' ? 'त्रुटि' : 'Error', 'Error validating OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- FIELD EXECUTIVE FORGOT PASSWORD HANDLERS ---
+  const handleFeForgotInit = async () => {
+    const ident = forgotIdentifier.trim();
+    if (!ident) {
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi'
+          ? 'कृपया अपना रजिस्टर्ड मोबाइल नंबर या ईमेल दर्ज करें।'
+          : 'Please enter your registered mobile number or email.'
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/field-executive/forgot-password/init`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: ident }),
+      });
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        data = {};
+      }
+
+      if (!res.ok || !data.success) {
+        const errMsg = (lang === 'hi' ? data.errorHi : data.error) || data.error || (
+          res.status === 404
+            ? (lang === 'hi'
+                ? 'अकाउंट नहीं मिला, कृपया एडमिनिस्ट्रेशन से संपर्क करें।'
+                : 'Account not found. Please connect to administration.')
+            : (lang === 'hi'
+                ? 'सर्वर से जवाब नहीं मिला। कृपया थोड़ी देर बाद प्रयास करें।'
+                : 'Unable to reach server. Please try again in a moment.')
+        );
+        showAlert(lang === 'hi' ? 'सूचना' : 'Notice', errMsg);
+        return;
+      }
+
+      const mode = data.mode || (ident.includes('@') ? 'email' : 'phone');
+      setForgotMode(mode);
+      setForgotPhone(data.phone || '');
+      setForgotMaskedPhone(data.maskedPhone || data.phone || '');
+      const targetDisplay = data.maskedTarget || (mode === 'email' ? (data.email || ident) : (data.maskedPhone || data.phone));
+      setForgotMaskedTarget(targetDisplay);
+
+      if (mode === 'email') {
+        // Backend has directly dispatched OTP via SMTP to email
+        setForgotOtp('');
+        setStep('fe-forgot-otp');
+        showAlert(
+          lang === 'hi' ? 'सफल' : 'Success',
+          lang === 'hi'
+            ? `OTP आपके ईमेल (${data.email || ident}) पर भेज दिया गया है।`
+            : `OTP has been sent to your email (${data.email || ident}).`
+        );
+        return;
+      }
+
+      // Phone mode: send SMS OTP via MSG91 Headless Widget
+      if (data.phone === '9519519519') {
+        setForgotOtp('');
+        setStep('fe-forgot-otp');
+        return;
+      }
+
+      const body = {
+        identifier: data.phone.startsWith('91') ? data.phone : `91${data.phone}`
+      };
+      console.log('[AUTH] Sending FE Forgot Password SMS OTP to:', body);
+      const widgetRes = await withTimeout(OTPWidget.sendOTP(body), 30000);
+      console.log('[AUTH] Widget Response:', widgetRes);
+
+      if (widgetRes?.type === 'success' || widgetRes?.message?.includes('success') || widgetRes?.message === 'OTP sent successfully') {
+        setForgotReqId(widgetRes?.message || widgetRes?.reqId || widgetRes?.data?.reqId || '');
+        setForgotOtp('');
+        setStep('fe-forgot-otp');
+      } else {
+        showAlert(
+          lang === 'hi' ? 'सूचना' : 'Notice',
+          lang === 'hi'
+            ? 'OTP भेजने में समस्या आई। कृपया दोबारा प्रयास करें।'
+            : 'Failed to send OTP. Please try again.'
+        );
+      }
+    } catch (err: any) {
+      console.error('Forgot password init error:', err);
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi'
+          ? 'OTP भेजने में समस्या आई। कृपया इंटरनेट जाँचें और पुनः प्रयास करें।'
+          : 'Failed to send OTP. Please check your internet and try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFeForgotVerifyOtp = async () => {
+    const cleanOtp = forgotOtp.trim();
+    if (!cleanOtp || cleanOtp.length < 4) {
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi' ? 'कृपया 4 अंकों का OTP दर्ज करें।' : 'Please enter 4-digit OTP.'
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (forgotMode === 'email') {
+        // Verify Email OTP against backend
+        const res = await fetch(`${API_URL}/field-executive/forgot-password/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identifier: forgotIdentifier,
+            email: forgotIdentifier,
+            otp: cleanOtp,
+            mode: 'email'
+          }),
+        });
+        const text = await res.text();
+        let data: any = {};
+        try { data = JSON.parse(text); } catch (e) { data = {}; }
+
+        if (!res.ok || !data.success) {
+          const errMsg = (lang === 'hi' ? data.errorHi : data.error) || data.error || (
+            lang === 'hi' ? 'गलत या समाप्त OTP। कृपया पुनः प्रयास करें।' : 'Invalid or expired OTP. Please try again.'
+          );
+          showAlert(lang === 'hi' ? 'सूचना' : 'Notice', errMsg);
+          return;
+        }
+
+        setStep('fe-forgot-new-pwd');
+        return;
+      }
+
+      // Phone SMS mode verification
+      if (forgotPhone === '9519519519') {
+        if (cleanOtp !== '9519') {
+          showAlert(lang === 'hi' ? 'सूचना' : 'Notice', lang === 'hi' ? 'गलत OTP' : 'Invalid OTP');
+          return;
+        }
+        setStep('fe-forgot-new-pwd');
+        return;
+      }
+
+      const identifier = forgotPhone.startsWith('91') ? forgotPhone : `91${forgotPhone}`;
+      console.log(`[AUTH] Verifying FE Forgot OTP: Phone=${identifier} OTP=${cleanOtp}`);
+      const verifyRes = await withTimeout(OTPWidget.verifyOTP({ identifier, otp: cleanOtp, reqId: forgotReqId }), 30000);
+      console.log('[AUTH] Widget Verify Response:', verifyRes);
+
+      if (verifyRes.type !== 'success' && verifyRes.message !== 'OTP verified successfully') {
+        showAlert(lang === 'hi' ? 'सूचना' : 'Notice', verifyRes.message || (lang === 'hi' ? 'गलत OTP' : 'Invalid OTP'));
+        return;
+      }
+
+      setStep('fe-forgot-new-pwd');
+    } catch (err: any) {
+      console.error('Forgot verify OTP error:', err);
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi' ? 'OTP सत्यापन विफल रहा। कृपया पुनः प्रयास करें।' : 'OTP verification failed. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFeForgotResetPassword = async () => {
+    if (!forgotNewPassword.trim() || forgotNewPassword.length < 4) {
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi' ? 'पासवर्ड कम से कम 4 अक्षरों का होना चाहिए।' : 'Password must be at least 4 characters long.'
+      );
+      return;
+    }
+
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi' ? 'दोनों पासवर्ड मेल नहीं खाते हैं।' : 'Passwords do not match.'
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/field-executive/forgot-password/reset`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: forgotIdentifier,
+          phone: forgotPhone,
+          email: forgotIdentifier,
+          mode: forgotMode,
+          otp: forgotOtp,
+          newPassword: forgotNewPassword.trim(),
+          widget_verified: forgotMode === 'phone' ? true : false,
+        }),
+      });
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        data = {};
+      }
+
+      if (res.ok && data.success) {
+        showAlert(
+          lang === 'hi' ? 'सफल' : 'Success',
+          lang === 'hi'
+            ? 'पासवर्ड सफलतापूर्वक बदल गया है! अब आप नए पासवर्ड से लॉगिन कर सकते हैं।'
+            : 'Password reset successfully! You can now login with your new password.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                if (forgotIdentifier) setEmail(forgotIdentifier);
+                setPassword('');
+                setForgotOtp('');
+                setForgotNewPassword('');
+                setForgotConfirmPassword('');
+                setStep('otp');
+              }
+            }
+          ]
+        );
+      } else {
+        const errMsg = (lang === 'hi' ? data.errorHi : data.error) || data.error || (
+          lang === 'hi' ? 'पासवर्ड बदलने में समस्या आई।' : 'Failed to reset password.'
+        );
+        showAlert(lang === 'hi' ? 'सूचना' : 'Notice', errMsg);
+      }
+    } catch (err: any) {
+      console.error('Reset password error:', err);
+      showAlert(
+        lang === 'hi' ? 'सूचना' : 'Notice',
+        lang === 'hi' ? 'पासवर्ड बदलने में समस्या आई। कृपया पुनः प्रयास करें।' : 'Failed to reset password. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -548,14 +822,14 @@ export default function LoginScreen() {
 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    {lang === 'hi' ? 'ईमेल / यूज़रनेम' : 'Email / Username'}
+                    {lang === 'hi' ? 'ईमेल या मोबाइल नंबर' : 'Email or Mobile number'}
                   </Text>
                   <TextInput
                     style={styles.input}
                     placeholder={
                       lang === 'hi'
-                        ? 'employee@company.com'
-                        : 'employee@company.com'
+                        ? 'employee@company.com / 9876543210'
+                        : 'employee@company.com / 9876543210'
                     }
                     placeholderTextColor="#9CA3AF"
                     value={email}
@@ -580,6 +854,22 @@ export default function LoginScreen() {
                 </View>
 
                 <TouchableOpacity
+                  style={styles.forgotPassBtn}
+                  onPress={() => {
+                    setForgotIdentifier(email || phone || '');
+                    setForgotOtp('');
+                    setForgotNewPassword('');
+                    setForgotConfirmPassword('');
+                    setStep('fe-forgot-enter');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.forgotPassText}>
+                    {lang === 'hi' ? 'पासवर्ड भूल गए?' : 'Forgot Password?'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={[styles.primaryBtn, loading && { opacity: 0.7 }]}
                   onPress={handleVerify}
                   disabled={loading}
@@ -601,6 +891,187 @@ export default function LoginScreen() {
                   }}
                 >
                   <Text style={styles.secondaryBtnText}>{texts.changeRole}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* FORGOT PASSWORD - STEP 1: ENTER PHONE/EMAIL */}
+            {step === 'fe-forgot-enter' && (
+              <View style={styles.otpContainer}>
+                <Text style={styles.roleTitle}>
+                  {lang === 'hi' ? 'पासवर्ड रीसेट करें' : 'Reset Password'}
+                </Text>
+
+                <Text style={styles.hintText}>
+                  {lang === 'hi'
+                    ? 'अपना रजिस्टर्ड मोबाइल नंबर या ईमेल दर्ज करें। सत्यापन के लिए OTP भेजा जाएगा।'
+                    : 'Enter your registered mobile number or email. We will send an OTP for verification.'}
+                </Text>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>
+                    {lang === 'hi' ? 'रजिस्टर्ड मोबाइल या ईमेल' : 'Registered Mobile or Email'}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={lang === 'hi' ? '9876543210 या email@example.com' : '9876543210 or email@example.com'}
+                    placeholderTextColor="#9CA3AF"
+                    value={forgotIdentifier}
+                    onChangeText={setForgotIdentifier}
+                    autoCapitalize="none"
+                    editable={!loading}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.primaryBtn, loading && { opacity: 0.7 }]}
+                  onPress={handleFeForgotInit}
+                  disabled={loading}
+                >
+                  <Text style={styles.primaryBtnText}>
+                    {loading
+                      ? (lang === 'hi' ? 'प्रतीक्षा करें...' : 'Please wait...')
+                      : (lang === 'hi' ? 'OTP भेजें' : 'Send OTP')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={() => setStep('otp')}
+                >
+                  <Text style={styles.secondaryBtnText}>
+                    {lang === 'hi' ? 'वापस लॉगिन पर जाएँ' : 'Back to Login'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* FORGOT PASSWORD - STEP 2: VERIFY OTP */}
+            {step === 'fe-forgot-otp' && (
+              <View style={styles.otpContainer}>
+                <Text style={styles.roleTitle}>
+                  {lang === 'hi' ? 'OTP सत्यापन' : 'Verify OTP'}
+                </Text>
+
+                <Text style={styles.hintText}>
+                  {forgotMode === 'email'
+                    ? (lang === 'hi'
+                        ? `रजिस्टर्ड ईमेल (${forgotMaskedTarget}) पर भेजा गया OTP दर्ज करें`
+                        : `Enter OTP sent to your email (${forgotMaskedTarget})`)
+                    : (lang === 'hi'
+                        ? `${forgotMaskedTarget || forgotMaskedPhone} पर SMS द्वारा भेजा गया 4 अंकों का OTP दर्ज करें`
+                        : `Enter 4-digit SMS OTP sent to ${forgotMaskedTarget || forgotMaskedPhone}`)}
+                </Text>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>{texts.otpLabel}</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="1234"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="number-pad"
+                    value={forgotOtp}
+                    onChangeText={setForgotOtp}
+                    maxLength={4}
+                    editable={!loading}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.primaryBtn, loading && { opacity: 0.7 }]}
+                  onPress={handleFeForgotVerifyOtp}
+                  disabled={loading}
+                >
+                  <Text style={styles.primaryBtnText}>
+                    {loading
+                      ? (lang === 'hi' ? 'प्रतीक्षा करें...' : 'Please wait...')
+                      : (lang === 'hi' ? 'OTP सत्यापित करें' : 'Verify OTP')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={handleFeForgotInit}
+                  disabled={loading}
+                >
+                  <Text style={[styles.secondaryBtnText, { color: '#0EA76A', fontWeight: '700' }]}>
+                    {lang === 'hi' ? 'OTP दोबारा भेजें' : 'Resend OTP'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.secondaryBtn, { marginTop: 6 }]}
+                  onPress={() => setStep('fe-forgot-enter')}
+                >
+                  <Text style={styles.secondaryBtnText}>
+                    {lang === 'hi' ? 'ईमेल या नंबर बदलें' : 'Change Email or Number'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* FORGOT PASSWORD - STEP 3: SET NEW PASSWORD */}
+            {step === 'fe-forgot-new-pwd' && (
+              <View style={styles.otpContainer}>
+                <Text style={styles.roleTitle}>
+                  {lang === 'hi' ? 'नया पासवर्ड सेट करें' : 'Set New Password'}
+                </Text>
+
+                <Text style={styles.hintText}>
+                  {lang === 'hi'
+                    ? 'कृपया अपना नया पासवर्ड दर्ज करें (कम से कम 4 अक्षर)'
+                    : 'Please enter your new password (min 4 characters)'}
+                </Text>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>
+                    {lang === 'hi' ? 'नया पासवर्ड' : 'New Password'}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={lang === 'hi' ? 'नया पासवर्ड दर्ज करें' : 'Enter new password'}
+                    placeholderTextColor="#9CA3AF"
+                    value={forgotNewPassword}
+                    onChangeText={setForgotNewPassword}
+                    secureTextEntry
+                    editable={!loading}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>
+                    {lang === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Confirm Password'}
+                  </Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={lang === 'hi' ? 'पासवर्ड दोबारा दर्ज करें' : 'Re-enter password'}
+                    placeholderTextColor="#9CA3AF"
+                    value={forgotConfirmPassword}
+                    onChangeText={setForgotConfirmPassword}
+                    secureTextEntry
+                    editable={!loading}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.primaryBtn, loading && { opacity: 0.7 }]}
+                  onPress={handleFeForgotResetPassword}
+                  disabled={loading}
+                >
+                  <Text style={styles.primaryBtnText}>
+                    {loading
+                      ? (lang === 'hi' ? 'प्रतीक्षा करें...' : 'Please wait...')
+                      : (lang === 'hi' ? 'पासवर्ड सेव करें' : 'Save Password')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={() => setStep('otp')}
+                >
+                  <Text style={styles.secondaryBtnText}>
+                    {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -804,6 +1275,23 @@ const styles = StyleSheet.create({
     color: '#0EA76A',
     fontSize: 16,
     fontWeight: '700',
+  },
+  forgotPassBtn: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+    marginBottom: 14,
+    paddingVertical: 4,
+  },
+  forgotPassText: {
+    color: '#0EA76A',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  hintText: {
+    color: '#6B7280',
+    fontSize: 12,
+    marginBottom: 14,
+    lineHeight: 18,
   },
 });
 

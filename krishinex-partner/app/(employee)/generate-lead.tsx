@@ -190,8 +190,7 @@ export default function GenerateLeadScreen() {
         showAlert(isHindi ? 'त्रुटि' : 'Error', data.error || 'Failed to submit');
       }
     } catch (error) {
-      console.error('Submit lead error:', error);
-      showAlert(isHindi ? 'त्रुटि' : 'Error', 'Server Error');
+      showAlert(isHindi ? 'सूचना' : 'Notice', isHindi ? 'कृपया कुछ समय बाद पुनः प्रयास करें।' : 'Please try again in a moment.');
     } finally {
       setLoading(false);
     }

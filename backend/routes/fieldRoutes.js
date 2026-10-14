@@ -133,20 +133,39 @@ router.get('/test', (req, res) => res.json({ msg: 'Field routes working' }));
 
 router.post('/executives/create', protect, checkModule("field_executive"), async (req, res) => {
     try {
-        const { name, phone, email, assignedArea, password, employeeCode } = req.body;
+        let { name, phone, email, assignedArea, password, employeeCode } = req.body;
 
-        if (!name || !phone || !assignedArea || !password) {
-            return res.status(400).json({ error: 'Name, phone, assigned area, and password are required' });
+        if (!name || !phone || !email || !assignedArea || !password) {
+            return res.status(400).json({ error: 'Name, phone, email, assigned area, and password are required' });
         }
 
-        // Check for existing phone or code
-        const existingPhone = await User.findOne({ phone });
+        const formattedEmail = String(email).trim().toLowerCase();
+        if (!formattedEmail) {
+            return res.status(400).json({ error: 'Valid email address is required' });
+        }
+
+        // Normalize phone number
+        phone = String(phone).trim().replace(/\D/g, '');
+        if (phone.startsWith('91') && phone.length === 12) {
+            phone = phone.substring(2);
+        } else if (phone.startsWith('0') && phone.length === 11) {
+            phone = phone.substring(1);
+        }
+
+        // Check for existing phone for field_executive role only
+        const existingPhone = await User.findOne({ phone, role: 'field_executive' });
         if (existingPhone) {
-            return res.status(400).json({ error: 'Phone number already registered' });
+            return res.status(400).json({ error: 'Phone number already registered for a Field Executive' });
         }
 
-        if (employeeCode) {
-            const existingCode = await User.findOne({ employeeCode });
+        // Check for existing email for field_executive role only
+        const existingEmail = await User.findOne({ email: formattedEmail, role: 'field_executive' });
+        if (existingEmail) {
+            return res.status(400).json({ error: 'Email already registered for a Field Executive' });
+        }
+
+        if (employeeCode && employeeCode.trim()) {
+            const existingCode = await User.findOne({ employeeCode: employeeCode.trim() });
             if (existingCode) {
                 return res.status(400).json({ error: 'Executive ID (employeeCode) already exists' });
             }
@@ -156,15 +175,15 @@ router.post('/executives/create', protect, checkModule("field_executive"), async
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newExecutive = new User({
-            name,
+            name: name.trim(),
             phone,
-            email,
+            ...(formattedEmail ? { email: formattedEmail } : {}),
             password: hashedPassword,
             role: 'field_executive',
-            assignedArea,
-            employeeCode,
+            assignedArea: assignedArea.trim(),
+            ...(employeeCode && employeeCode.trim() ? { employeeCode: employeeCode.trim() } : {}),
             status: 'approved', // Auto approve
-            address: assignedArea // default to assigned area
+            address: assignedArea.trim() // default to assigned area
         });
 
         await newExecutive.save();
@@ -172,7 +191,7 @@ router.post('/executives/create', protect, checkModule("field_executive"), async
         res.status(201).json({ message: 'Field Executive created successfully', executive: newExecutive });
     } catch (error) {
         console.error('Error creating field executive:', error);
-        res.status(500).json({ error: 'Network issue. Please try again later.' });
+        res.status(500).json({ error: error.message || 'Network issue. Please try again later.' });
     }
 });
 
@@ -332,43 +351,65 @@ router.patch('/tasks/:id/status', protect, async (req, res) => {
 // @access  Private/Admin
 router.patch('/executives/:id', protect, checkModule("field_executive"), async (req, res) => {
     try {
-        const { name, phone, email, assignedArea, employeeCode } = req.body;
+        let { name, phone, email, assignedArea, employeeCode } = req.body;
 
         const user = await User.findById(req.params.id);
         if (!user || user.role !== 'field_executive') {
             return res.status(404).json({ error: 'Field Executive not found' });
         }
 
-        // Check if phone or employeeCode already exists for a different user
-        if (phone && phone !== user.phone) {
-            const existingPhone = await User.findOne({ phone, _id: { $ne: user._id } });
-            if (existingPhone) {
-                return res.status(400).json({ error: 'Phone number already registered to another user' });
+        // Check if phone already exists for a different field_executive
+        if (phone) {
+            let cleanPhone = String(phone).trim().replace(/\D/g, '');
+            if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
+                cleanPhone = cleanPhone.substring(2);
+            } else if (cleanPhone.startsWith('0') && cleanPhone.length === 11) {
+                cleanPhone = cleanPhone.substring(1);
+            }
+
+            if (cleanPhone !== user.phone) {
+                const existingPhone = await User.findOne({ phone: cleanPhone, role: 'field_executive', _id: { $ne: user._id } });
+                if (existingPhone) {
+                    return res.status(400).json({ error: 'Phone number already registered to another Field Executive' });
+                }
+                user.phone = cleanPhone;
             }
         }
 
-        if (employeeCode && employeeCode !== user.employeeCode) {
-            const existingCode = await User.findOne({ employeeCode, _id: { $ne: user._id } });
-            if (existingCode) {
-                return res.status(400).json({ error: 'Executive ID already exists for another user' });
+        if (email !== undefined) {
+            const formattedEmail = (email && email.trim()) ? email.trim().toLowerCase() : undefined;
+            if (formattedEmail && formattedEmail !== (user.email || '').toLowerCase()) {
+                const existingEmail = await User.findOne({ email: formattedEmail, role: 'field_executive', _id: { $ne: user._id } });
+                if (existingEmail) {
+                    return res.status(400).json({ error: 'Email already registered to another Field Executive' });
+                }
             }
+            user.email = formattedEmail;
         }
 
-        if (name) user.name = name;
-        if (phone) user.phone = phone;
-        if (email !== undefined) user.email = email;
+        if (employeeCode !== undefined) {
+            const cleanCode = employeeCode && employeeCode.trim() ? employeeCode.trim() : undefined;
+            if (cleanCode && cleanCode !== user.employeeCode) {
+                const existingCode = await User.findOne({ employeeCode: cleanCode, _id: { $ne: user._id } });
+                if (existingCode) {
+                    return res.status(400).json({ error: 'Executive ID already exists for another user' });
+                }
+            }
+            user.employeeCode = cleanCode;
+        }
+
+        if (name) user.name = name.trim();
         if (assignedArea) {
-            user.assignedArea = assignedArea;
-            user.address = assignedArea;
+            user.assignedArea = assignedArea.trim();
+            user.address = assignedArea.trim();
         }
-        if (employeeCode !== undefined) user.employeeCode = employeeCode;
 
         await user.save();
 
         res.json({ message: 'Executive updated successfully', executive: user });
     } catch (error) {
         console.error('Error updating executive:', error);
-        res.status(500).json({ error: 'Network issue. Please try again later.' });
+        res.status(500).json({ error: error.message || 'Network issue. Please try again later.' });
     }
 });
 

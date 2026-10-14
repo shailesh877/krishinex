@@ -61,6 +61,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshUser = useCallback(async () => {
     try {
+      // Load cached data first if profile is empty
+      const cached = await AsyncStorage.getItem('userData');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && (parsed.name || parsed.address || parsed.assignedArea)) {
+            setProfile(prev => prev ? { ...parsed, ...prev } : parsed);
+          }
+        } catch (err) {}
+      }
+
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
 
@@ -79,6 +90,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             : `${FILES_BASE_URL}/${data.profilePhotoUrl.replace(/\\/g, '/')}`;
         }
         
+        if (!data.address && data.assignedArea) {
+          data.address = data.assignedArea;
+        }
+
         setProfile(data);
         await AsyncStorage.setItem('userData', JSON.stringify(data));
       }

@@ -1,7 +1,5 @@
-// constants/api.ts
-
-// Production Base URL
-export const BASE_URL = 'https://demo.ranx24.com';
+// Base URL (env configured or local dev)
+export const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || 'https://demo.ranx24.com';
 
 export const FILES_BASE_URL = process.env.EXPO_PUBLIC_FILES_URL || BASE_URL;
 

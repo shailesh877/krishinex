@@ -22,6 +22,31 @@ import { showAlert } from '../../components/CustomAlert';
 const API_URL = `${BASE_API_URL}`;
 const STATUS_GREEN = '#6bb313ff';
 
+interface Farmer {
+  _id?: string;
+  name?: string;
+  role?: string;
+  phone?: string;
+  address?: string;
+  cardNumber?: string;
+  walletBalance?: number;
+  profilePhotoUrl?: string;
+  [key: string]: any;
+}
+
+interface RechargeHistoryItem {
+  _id?: string;
+  type?: string;
+  amount?: number;
+  createdAt?: string;
+  recipient?: {
+    name?: string;
+    phone?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
 export default function RechargeFarmerScreen() {
   
   const router = useRouter();
@@ -29,12 +54,12 @@ export default function RechargeFarmerScreen() {
   const isHindi = lang === 'hi';
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [farmer, setFarmer] = useState(null);
-  const [searchResults, setSearchResults] = useState([]);
+  const [farmer, setFarmer] = useState<Farmer | null>(null);
+  const [searchResults, setSearchResults] = useState<Farmer[]>([]);
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<RechargeHistoryItem[]>([]);
   const [pendingCollection, setPendingCollection] = useState(0);
 
   useEffect(() => {
@@ -158,8 +183,7 @@ export default function RechargeFarmerScreen() {
                 showAlert(isHindi ? 'त्रुटि' : 'Error', data.error || (isHindi ? 'रिचार्ज विफल रहा' : 'Recharge failed'));
               }
             } catch (error) {
-              console.error('Recharge error:', error);
-              showAlert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'सर्वर त्रुटि' : 'Server error');
+              showAlert(isHindi ? 'सूचना' : 'Notice', isHindi ? 'कृपया कुछ समय बाद पुनः प्रयास करें।' : 'Please try again in a moment.');
             } finally {
               setLoading(false);
             }
@@ -326,7 +350,9 @@ export default function RechargeFarmerScreen() {
                     <Text style={styles.historyName}>
                       {isDebit ? (isHindi ? 'नकद जमा (ऑफिस)' : 'Cash Deposit (Office)') : (item.recipient?.name || 'Farmer')}
                     </Text>
-                    <Text style={styles.historyDate}>{new Date(item.createdAt).toLocaleString(isHindi ? 'hi-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</Text>
+                    <Text style={styles.historyDate}>
+                      {item.createdAt ? new Date(item.createdAt).toLocaleString(isHindi ? 'hi-IN' : 'en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : ''}
+                    </Text>
                   </View>
                   <Text style={[styles.historyAmount, isDebit && styles.historyAmountDebit]}>
                     {isDebit ? '-' : '+'} ₹{item.amount}

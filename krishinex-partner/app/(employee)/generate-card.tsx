@@ -227,8 +227,7 @@ export default function GenerateCardScreen() {
                 showAlert(isHindi ? 'त्रुटि' : 'Error', data.error || (isHindi ? 'आवंटन विफल रहा' : 'Assignment failed'));
               }
             } catch (error) {
-              console.error('Card generation error:', error);
-              showAlert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'सर्वर त्रुटि' : 'Server error');
+              showAlert(isHindi ? 'सूचना' : 'Notice', isHindi ? 'कृपया कुछ समय बाद पुनः प्रयास करें।' : 'Please try again in a moment.');
             } finally {
               setLoading(false);
             }

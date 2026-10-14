@@ -26,24 +26,57 @@ export function showAlert(
   message: string, 
   buttons: AlertButton[] = [{ text: 'OK', style: 'default' }]
 ) {
-  // Transform technical errors into generic network issue
-  let displayMessage = message;
-  const lowerMsg = (message || '').toLowerCase();
-  if (
-    lowerMsg.includes('server error') || 
-    lowerMsg.includes('internal server error') || 
+  let displayTitle = title || '';
+  let displayMessage = message || '';
+
+  const isHindi = /[\u0900-\u097F]/.test(displayTitle + displayMessage);
+  const lowerMsg = displayMessage.toLowerCase();
+  const lowerTitle = displayTitle.toLowerCase();
+
+  const isTechnicalOrServerError =
+    lowerMsg.includes('server') ||
+    lowerMsg.includes('सर्वर') ||
+    lowerMsg.includes('internal') ||
+    lowerMsg.includes('500') ||
+    lowerMsg.includes('502') ||
+    lowerMsg.includes('503') ||
+    lowerMsg.includes('504') ||
     lowerMsg.includes('failed to fetch') ||
     lowerMsg.includes('network request failed') ||
-    lowerMsg.includes('status: 500')
-  ) {
-    displayMessage = 'Network issue. Please try again later.';
+    lowerMsg.includes('network error') ||
+    lowerMsg.includes('network issue') ||
+    lowerMsg.includes('connection failed') ||
+    lowerMsg.includes('connection error') ||
+    lowerMsg.includes('connect econn') ||
+    lowerMsg.includes('econnrefused') ||
+    lowerMsg.includes('econnreset') ||
+    lowerMsg.includes('etimedout') ||
+    lowerMsg.includes('socket hang up') ||
+    lowerMsg.includes('typeerror') ||
+    lowerMsg.includes('syntaxerror') ||
+    lowerMsg.includes('referenceerror') ||
+    lowerMsg.includes('abort error') ||
+    lowerMsg.includes('unhandled') ||
+    lowerMsg.includes('exception') ||
+    lowerMsg.includes('cannot post') ||
+    lowerMsg.includes('cannot get') ||
+    lowerMsg.includes('<!doctype') ||
+    lowerMsg.includes('<html>') ||
+    lowerTitle.includes('server') ||
+    lowerTitle.includes('सर्वर');
+
+  if (isTechnicalOrServerError) {
+    displayTitle = isHindi ? 'सूचना' : 'Notice';
+    displayMessage = isHindi
+      ? 'कृपया कुछ समय बाद पुनः प्रयास करें।'
+      : 'Please try again in a few moments.';
   }
 
   if (customAlertRef.current) {
-    customAlertRef.current.show(title, displayMessage, buttons);
+    customAlertRef.current.show(displayTitle, displayMessage, buttons);
   } else {
     // Fallback if component is not mounted
-    Alert.alert(title, displayMessage, buttons as any);
+    Alert.alert(displayTitle, displayMessage, buttons as any);
   }
 }
 
