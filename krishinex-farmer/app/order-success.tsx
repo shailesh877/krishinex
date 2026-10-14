@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
 } from 'react-native';
@@ -39,11 +38,11 @@ export default function OrderSuccessScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* premium top header (simple) */}
-      <View style={styles.topShell}>
+      <View style={[styles.topShell, { paddingTop: Math.max(insets.top, 8) }]}>
         <View style={styles.appbar}>
           <TouchableOpacity
             style={styles.iconBtn}
@@ -71,7 +70,7 @@ export default function OrderSuccessScreen() {
         </View>
       </View>
 
-      <View style={styles.center}>
+      <View style={[styles.center, { paddingBottom: Math.max(20, insets.bottom + 10) }]}>
         <View style={styles.iconCircle}>
           <Ionicons
             name="checkmark-done"
@@ -105,7 +104,7 @@ export default function OrderSuccessScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -113,7 +112,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-    paddingTop: 16,
   },
 
   topShell: {

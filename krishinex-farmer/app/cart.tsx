@@ -6,7 +6,6 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   RefreshControl,
 } from 'react-native';
@@ -173,11 +172,11 @@ export default function CartScreen() {
               </View>
             </View>
 
-            <View style={{ height: 90 }} />
+            <View style={{ height: 100 + insets.bottom }} />
           </ScrollView>
 
           {/* bottom bar */}
-          <View style={styles.bottomBar}>
+          <View style={[styles.bottomBar, { paddingBottom: Math.max(12, insets.bottom + 8) }]}>
             <View>
               <Text style={styles.bottomLabel}>
                 {hi ? 'कुल भुगतान' : 'To pay'}
@@ -206,7 +205,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#F3F4F6',
-    paddingTop: 16,
   },
 
   // premium top shell (statusbar + header ek group)

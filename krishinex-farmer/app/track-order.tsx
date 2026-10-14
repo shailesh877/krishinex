@@ -5,7 +5,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
   ActivityIndicator,
@@ -13,6 +12,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as WebBrowser from 'expo-web-browser';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -24,6 +24,7 @@ import { showAlert } from '@/components/CustomAlert';
 const KHETIFY_GREEN_DARK = '#467804ff';
 
 export default function TrackOrderScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { language } = useI18n();
@@ -109,9 +110,9 @@ export default function TrackOrderScreen() {
   const etaMinutes = order.estimatedDeliveryTime;
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" />
-      <View style={styles.appbar}>
+      <View style={[styles.appbar, { paddingTop: Math.max(insets.top, 10) }]}>
         <TouchableOpacity
           style={styles.iconBtn}
           onPress={() => router.back()}
@@ -318,7 +319,7 @@ export default function TrackOrderScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.bottom}>
+      <View style={[styles.bottom, { paddingBottom: Math.max(16, insets.bottom + 12) }]}>
         <TouchableOpacity
           style={styles.homeBtn}
           onPress={() => router.replace('/(tabs)/shop')}
@@ -326,7 +327,7 @@ export default function TrackOrderScreen() {
           <Text style={styles.homeBtnText}>{t.backHome}</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

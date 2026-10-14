@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   TextInput,
 } from 'react-native';
@@ -275,11 +274,11 @@ export default function CheckoutScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* premium top header */}
-      <View style={styles.topShell}>
+      <View style={[styles.topShell, { paddingTop: Math.max(insets.top, 8) }]}>
         <View style={styles.appbar}>
           <TouchableOpacity
             style={styles.iconBtn}
@@ -591,11 +590,11 @@ export default function CheckoutScreen() {
           </View>
         </View>
 
-        <View style={{ height: 90 }} />
+        <View style={{ height: 100 + insets.bottom }} />
       </ScrollView>
 
       {/* Bottom bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(12, insets.bottom + 8) }]}>
         <View>
           <Text style={styles.bottomLabel}>{t.toPay}</Text>
           <Text style={styles.bottomPrice}>
@@ -625,14 +624,14 @@ export default function CheckoutScreen() {
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1, backgroundColor: '#F3F4F6',
-    paddingTop: 16,
+    flex: 1,
+    backgroundColor: '#F3F4F6',
   },
 
   // premium top header

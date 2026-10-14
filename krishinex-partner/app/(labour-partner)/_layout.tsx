@@ -1,10 +1,12 @@
 import { Tabs } from 'expo-router';
 import { View, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import { useLabourBadge } from '../../hooks/useLabourBadge';
 
 export default function LabourPartnerLayout() {
+  const insets = useSafeAreaInsets();
   const { isHindi } = useI18n();
   const { newCount } = useLabourBadge();
 
@@ -17,8 +19,8 @@ export default function LabourPartnerLayout() {
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: '#E5E7EB',
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 8,
           backgroundColor: '#FFFFFF',
         },

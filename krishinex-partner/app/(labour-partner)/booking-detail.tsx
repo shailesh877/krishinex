@@ -7,6 +7,7 @@ import {
   StatusBar,
   TouchableOpacity,
   ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -57,6 +58,7 @@ const MOCK_BOOKING: BookingDetail = {
   status: 'new' };
 
 export default function LabourBookingDetailScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -106,7 +108,7 @@ export default function LabourBookingDetailScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -337,7 +339,7 @@ export default function LabourBookingDetailScreen() {
       </ScrollView>
 
       {/* BOTTOM ACTION BAR */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(12, insets.bottom + 8) }]}>
         {isNew && (
           <>
             <TouchableOpacity

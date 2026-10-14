@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { I18nProvider, useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_API_URL } from '../../constants/api';
 
 function BuyerTabs() {
+  const insets = useSafeAreaInsets();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
   const [pendingCount, setPendingCount] = useState(0);
@@ -43,8 +45,8 @@ function BuyerTabs() {
         tabBarActiveTintColor: '#16A34A', // KrishiNex green
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          height: 60,
-          paddingBottom: 6,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
           paddingTop: 6,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
