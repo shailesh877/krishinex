@@ -14,7 +14,7 @@ function SoilLabTabs() {
   const isHindi = lang === 'hi';
   const { newCount } = useSoilBadge();
 
-  const bottomPadding = insets.bottom > 0 ? insets.bottom : 6;
+  const bottomPadding = Math.max(insets.bottom, 8);
   const tabHeight = 54 + bottomPadding;
 
   return (

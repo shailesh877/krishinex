@@ -17,7 +17,7 @@ export default function ShopTabsLayout() {
   const ledgerLabel = isHindi ? 'खाता' : 'Ledger';
   const profileLabel = isHindi ? 'प्रोफाइल' : 'Profile';
 
-  const bottomPadding = insets.bottom > 0 ? insets.bottom : 6;
+  const bottomPadding = Math.max(insets.bottom, 8);
   const tabHeight = 54 + bottomPadding;
 
   return (

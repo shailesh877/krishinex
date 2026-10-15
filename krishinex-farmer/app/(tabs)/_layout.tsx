@@ -37,7 +37,7 @@ export default function TabsLayout() {
     return null; // Don't render anything while checking auth
   }
 
-  const PADDING_BOTTOM = insets.bottom > 0 ? insets.bottom : 5;
+  const PADDING_BOTTOM = Math.max(insets.bottom, 8);
   const TAB_HEIGHT = 54 + PADDING_BOTTOM;
 
   return (

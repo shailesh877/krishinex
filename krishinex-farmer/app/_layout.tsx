@@ -235,16 +235,22 @@ function RootLayoutContent() {
   );
 }
 
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <I18nProvider>
-      <CartProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootLayoutContent />
-        </ThemeProvider>
-      </CartProvider>
-    </I18nProvider>
+    <SafeAreaProvider>
+      <I18nProvider>
+        <CartProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+              <RootLayoutContent />
+            </SafeAreaView>
+          </ThemeProvider>
+        </CartProvider>
+      </I18nProvider>
+    </SafeAreaProvider>
   );
 }

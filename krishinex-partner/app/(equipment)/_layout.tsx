@@ -12,7 +12,7 @@ function EquipmentTabs() {
   const isHindi = lang === 'hi';
   const { newCount } = useEquipmentBadge();
 
-  const bottomPadding = insets.bottom > 0 ? insets.bottom : 6;
+  const bottomPadding = Math.max(insets.bottom, 8);
   const tabHeight = 54 + bottomPadding;
 
   return (
