@@ -71,13 +71,13 @@ export default function RootLayout() {
             if (userData) {
               const user = JSON.parse(userData);
               const rPath = (role: string) => {
-                  if (role === 'shop') return '/(shop-partner)/notifications';
-                  if (role === 'labour') return '/(labour-partner)/notifications';
-                  if (role === 'equipment') return '/(equipment)/notifications';
-                  if (role === 'soil') return '/(soil-lab)/notifications';
-                  if (role === 'buyer') return '/(buyer)/notifications';
-                  if (role === 'employee') return '/(employee)/notifications';
-                  return null;
+                if (role === 'shop') return '/(shop-partner)/notifications';
+                if (role === 'labour') return '/(labour-partner)/notifications';
+                if (role === 'equipment') return '/(equipment)/notifications';
+                if (role === 'soil') return '/(soil-lab)/notifications';
+                if (role === 'buyer') return '/(buyer)/notifications';
+                if (role === 'employee') return '/(employee)/notifications';
+                return null;
               };
               const path = rPath(user.role);
               if (path) router.push(path as any);
@@ -100,13 +100,13 @@ export default function RootLayout() {
         const token = await AsyncStorage.getItem('userToken');
         if (token) {
           // Fetch fresh profile in background
-          fetch(`${BASE_API_URL}/user/profile`, { 
-              headers: { 'Authorization': `Bearer ${token}` } 
+          fetch(`${BASE_API_URL}/user/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
           }).then(res => res.json()).then(async (freshData) => {
-              if (freshData && freshData._id) {
-                 await AsyncStorage.setItem('userData', JSON.stringify(freshData));
-                 setProfileStatus(freshData.status || 'approved');
-              }
+            if (freshData && freshData._id) {
+              await AsyncStorage.setItem('userData', JSON.stringify(freshData));
+              setProfileStatus(freshData.status || 'approved');
+            }
           }).catch(err => console.log('Profile fresh fetch failed', err));
         }
       } catch (e) {
@@ -132,7 +132,7 @@ export default function RootLayout() {
           const user = JSON.parse(userData);
           const r = user.role;
           let path: any = null;
-          
+
           if (r === 'buyer') path = '/(buyer)/home';
           else if (r === 'equipment') path = '/(equipment)/home';
           else if (r === 'soil') path = '/(soil-lab)/home';
@@ -198,15 +198,15 @@ export default function RootLayout() {
   }, [isNavGuardReady]);
 
   const AnimatedSplashView = (
-    <Animated.View 
+    <Animated.View
       pointerEvents={showSplash ? "auto" : "none"}
-      style={{ 
+      style={{
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
         zIndex: 99999, elevation: 99999,
-        backgroundColor: '#0E9F6E', 
+        backgroundColor: '#0E9F6E',
         justifyContent: 'center', alignItems: 'center',
-        opacity: splashOpacity 
-    }}>
+        opacity: splashOpacity
+      }}>
       <StatusBar barStyle="light-content" />
       <Animated.Image
         source={require('../assets/images/logo.png')}
@@ -228,7 +228,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <UserProvider>
         <I18nProvider>
-          <SafeAreaView style={{ flex: 1, backgroundColor: '#0808082c' }}>
+          <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
             {isReady && (
               <Stack
                 screenOptions={{

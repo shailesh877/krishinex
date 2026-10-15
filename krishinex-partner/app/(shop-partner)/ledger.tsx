@@ -16,7 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 
@@ -64,11 +64,13 @@ interface Transaction {
 }
 
 export default function LedgerScreen() {
+  const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
   
 
   const [stats, setStats] = useState<LedgerStats | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [dues, setDues] = useState<DueInfo[]>([]);
   const [history, setHistory] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -110,15 +112,20 @@ export default function LedgerScreen() {
         endDate = to.toISOString();
       }
 
-      const [statsRes, duesRes, historyRes] = await Promise.all([
+      const [statsRes, duesRes, historyRes, walletRes] = await Promise.all([
         fetch(`${API_URL}/ledger/dashboard?startDate=${startDate}&endDate=${endDate}`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API_URL}/ledger/dues`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch(`${API_URL}/ledger/history?startDate=${startDate}&endDate=${endDate}&method=${typeFilter}`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/wallet`, { headers: { Authorization: `Bearer ${token}` } }),
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
       if (duesRes.ok) setDues(await duesRes.json());
       if (historyRes.ok) setHistory(await historyRes.json());
+      if (walletRes.ok) {
+        const wData = await walletRes.json();
+        setWalletBalance(wData.balance ?? 0);
+      }
     } catch (e) {
       console.error('Fetch ledger data error', e);
     } finally {
@@ -204,13 +211,15 @@ export default function LedgerScreen() {
 
   const renderBadge = (method: string) => {
     let color = '#6B7280';
-    if (method === 'CASH') color = '#16A34A';
-    if (method === 'WALLET') color = '#2563EB';
-    if (method === 'SHOP_DUE') color = '#DC2626';
-    if (method === 'DUE') color = '#D97706';
+    let label = method;
+    if (method === 'CASH') { color = '#16A34A'; label = isHindi ? 'नकद' : 'CASH'; }
+    if (method === 'WALLET') { color = '#2563EB'; label = isHindi ? 'वॉलेट' : 'WALLET'; }
+    if (method === 'SHOP_DUE') { color = '#DC2626'; label = isHindi ? 'दुकान उधार' : 'SHOP DUE'; }
+    if (method === 'DUE') { color = '#D97706'; label = isHindi ? 'एग्री क्रेडिट' : 'AGRI CREDIT'; }
+    if (method === 'RECOVERY') { color = '#059669'; label = isHindi ? 'रिकवरी' : 'RECOVERY'; }
     return (
       <View style={[styles.methodBadge, { backgroundColor: color + '20' }]}>
-        <Text style={[styles.methodBadgeText, { color }]}>{method}</Text>
+        <Text style={[styles.methodBadgeText, { color }]}>{label}</Text>
       </View>
     );
   };
@@ -306,14 +315,35 @@ export default function LedgerScreen() {
           />
         )}
 
+        {/* SHOP WALLET BANNER */}
+        <TouchableOpacity 
+          style={styles.walletBanner} 
+          onPress={() => router.push('/(shop-partner)/wallet')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.walletBannerLeft}>
+            <View style={styles.walletIconWrap}>
+              <Ionicons name="wallet" size={20} color="#16A34A" />
+            </View>
+            <View>
+              <Text style={styles.walletBannerLabel}>{isHindi ? 'दुकानदार वॉलेट बैलेंस (कुल कमाई)' : 'Your Wallet Balance'}</Text>
+              <Text style={styles.walletBannerVal}>₹{walletBalance !== null ? walletBalance : '0'}</Text>
+            </View>
+          </View>
+          <View style={styles.walletBannerRight}>
+            <Text style={styles.walletViewText}>{isHindi ? 'विवरण' : 'Details'}</Text>
+            <Ionicons name="chevron-forward" size={16} color="#16A34A" />
+          </View>
+        </TouchableOpacity>
+
         {/* STATS CARDS */}
         <View style={styles.statsRow}>
           <View style={[styles.statCard, { borderLeftColor: '#16A34A' }]}>
-            <Text style={styles.statLabel}>{isHindi ? 'नकद (Cash)' : 'Cash'}</Text>
+            <Text style={styles.statLabel}>{isHindi ? 'नकद बिक्री' : 'Cash Sales'}</Text>
             <Text style={[styles.statVal, { color: '#16A34A' }]}>₹{stats?.totalCash || 0}</Text>
           </View>
           <View style={[styles.statCard, { borderLeftColor: '#2563EB' }]}>
-            <Text style={styles.statLabel}>{isHindi ? 'वॉलेट (Wallet)' : 'Wallet'}</Text>
+            <Text style={styles.statLabel}>{isHindi ? 'वॉलेट बिक्री (POS)' : 'Wallet Sales'}</Text>
             <Text style={[styles.statVal, { color: '#2563EB' }]}>₹{stats?.totalWallet || 0}</Text>
           </View>
         </View>
@@ -324,7 +354,7 @@ export default function LedgerScreen() {
             <Text style={[styles.statVal, { color: '#DC2626' }]}>₹{stats?.totalDue || 0}</Text>
           </View>
           <View style={[styles.statCard, { borderLeftColor: '#D97706' }]}>
-            <Text style={styles.statLabel}>{isHindi ? 'एग्री क्रेडिट' : 'Agri Credit'}</Text>
+            <Text style={styles.statLabel}>{isHindi ? 'एग्री क्रेडिट बिक्री' : 'Agri Credit'}</Text>
             <Text style={[styles.statVal, { color: '#D97706' }]}>₹{stats?.totalAgriCredit || 0}</Text>
           </View>
         </View>
@@ -369,13 +399,20 @@ export default function LedgerScreen() {
 
         {/* TYPE FILTERS */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeFilterScroll}>
-          {['ALL', 'CASH', 'WALLET', 'SHOP_DUE', 'DUE', 'RECOVERY'].map(m => (
+          {[
+            { key: 'ALL', label: isHindi ? 'सभी' : 'All' },
+            { key: 'CASH', label: isHindi ? 'नकद' : 'Cash' },
+            { key: 'WALLET', label: isHindi ? 'वॉलेट' : 'Wallet' },
+            { key: 'SHOP_DUE', label: isHindi ? 'दुकान उधार' : 'Shop Due' },
+            { key: 'DUE', label: isHindi ? 'एग्री क्रेडिट' : 'Agri Credit' },
+            { key: 'RECOVERY', label: isHindi ? 'रिकवरी' : 'Recovery' }
+          ].map(m => (
             <TouchableOpacity
-              key={m}
-              style={[styles.typeChip, typeFilter === m && styles.typeChipActive]}
-              onPress={() => setTypeFilter(m)}
+              key={m.key}
+              style={[styles.typeChip, typeFilter === m.key && styles.typeChipActive]}
+              onPress={() => setTypeFilter(m.key)}
             >
-              <Text style={[styles.typeChipText, typeFilter === m && styles.typeChipTextActive]}>{m === 'DUE' ? 'CREDIT' : m}</Text>
+              <Text style={[styles.typeChipText, typeFilter === m.key && styles.typeChipTextActive]}>{m.label}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -629,6 +666,60 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     alignItems: 'center',
     justifyContent: 'center' },
+  walletBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#0000000D',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  walletBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  walletIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#D1FAE5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  walletBannerLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  walletBannerVal: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#047857',
+  },
+  walletBannerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  walletViewText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#047857',
+  },
 
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
   statCard: { flex: 1, backgroundColor: '#FFF', padding: 12, borderRadius: 16, elevation: 2, borderLeftWidth: 4, minHeight: 80, justifyContent: 'center' },

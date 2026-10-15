@@ -62,13 +62,13 @@ const ROLES: { key: Role; labelHi: string; labelEn: string }[] = [
     labelHi: 'लेबर पार्टनर',
     labelEn: 'Labour Partner',
   },
-/*
-  {
-    key: 'employee',
-    labelHi: 'कर्मचारी',
-    labelEn: 'Employee',
-  },
-*/
+  /*
+    {
+      key: 'employee',
+      labelHi: 'कर्मचारी',
+      labelEn: 'Employee',
+    },
+  */
 ];
 
 const TEXTS: Record<
@@ -273,7 +273,7 @@ export default function LoginScreen() {
             await AsyncStorage.setItem('userToken', empData.token);
             await AsyncStorage.setItem('userData', JSON.stringify(empData.user));
             if (updateUser) updateUser(empData.user);
-            
+
             // Sync push token
             const pushToken = await AsyncStorage.getItem('pushToken');
             if (pushToken) await registerTokenWithBackend(pushToken);
@@ -309,7 +309,7 @@ export default function LoginScreen() {
           try {
             const identifier = phone.startsWith('91') ? phone : `91${phone}`;
             console.log(`[AUTH] Verifying Headless OTP: Phone=${identifier} OTP=${otp} ReqId=${reqId}`);
-            
+
             const verifyRes = await OTPWidget.verifyOTP({ identifier, otp, reqId });
             console.log('[AUTH] Widget Verify Response:', verifyRes);
 
@@ -408,11 +408,11 @@ export default function LoginScreen() {
         const errMsg = (lang === 'hi' ? data.errorHi : data.error) || data.error || (
           res.status === 404
             ? (lang === 'hi'
-                ? 'अकाउंट नहीं मिला, कृपया एडमिनिस्ट्रेशन से संपर्क करें।'
-                : 'Account not found. Please connect to administration.')
+              ? 'अकाउंट नहीं मिला, कृपया एडमिनिस्ट्रेशन से संपर्क करें।'
+              : 'Account not found. Please connect to administration.')
             : (lang === 'hi'
-                ? 'सर्वर से जवाब नहीं मिला। कृपया थोड़ी देर बाद प्रयास करें।'
-                : 'Unable to reach server. Please try again in a moment.')
+              ? 'सर्वर से जवाब नहीं मिला। कृपया थोड़ी देर बाद प्रयास करें।'
+              : 'Unable to reach server. Please try again in a moment.')
         );
         showAlert(lang === 'hi' ? 'सूचना' : 'Notice', errMsg);
         return;
@@ -691,8 +691,8 @@ export default function LoginScreen() {
 
             {/* STEP 1: ROLE SELECT */}
             {step === 'role-select' && (
-              <ScrollView 
-                style={styles.rolesScroll} 
+              <ScrollView
+                style={styles.rolesScroll}
                 contentContainerStyle={styles.rolesContainer}
                 showsVerticalScrollIndicator={false}
               >
@@ -956,11 +956,11 @@ export default function LoginScreen() {
                 <Text style={styles.hintText}>
                   {forgotMode === 'email'
                     ? (lang === 'hi'
-                        ? `रजिस्टर्ड ईमेल (${forgotMaskedTarget}) पर भेजा गया OTP दर्ज करें`
-                        : `Enter OTP sent to your email (${forgotMaskedTarget})`)
+                      ? `रजिस्टर्ड ईमेल (${forgotMaskedTarget}) पर भेजा गया OTP दर्ज करें`
+                      : `Enter OTP sent to your email (${forgotMaskedTarget})`)
                     : (lang === 'hi'
-                        ? `${forgotMaskedTarget || forgotMaskedPhone} पर SMS द्वारा भेजा गया 4 अंकों का OTP दर्ज करें`
-                        : `Enter 4-digit SMS OTP sent to ${forgotMaskedTarget || forgotMaskedPhone}`)}
+                      ? `${forgotMaskedTarget || forgotMaskedPhone} पर SMS द्वारा भेजा गया 4 अंकों का OTP दर्ज करें`
+                      : `Enter 4-digit SMS OTP sent to ${forgotMaskedTarget || forgotMaskedPhone}`)}
                 </Text>
 
                 <View style={styles.inputGroup}>

@@ -91,7 +91,7 @@ router.post('/register', upload.single('aadhaarDoc'), async (req, res) => {
     }
 });
 
-const { sendOtp, verifyOtp } = require('../services/msg91');
+const { sendOtp, verifyOtp, verifyWidgetOtp } = require('../services/msg91');
 const jwt = require('jsonwebtoken');
 
 // Utility to generate JWT token
@@ -133,7 +133,7 @@ router.post('/send-otp', async (req, res) => {
 // POST /api/auth/verify-otp
 router.post('/verify-otp', async (req, res) => {
     try {
-        let { phone, otp, role, widget_verified } = req.body;
+        let { phone, otp, role, widget_verified, reqId } = req.body;
         if (!phone) return res.status(400).json({ error: 'Phone is required.' });
 
         // Normalize phone
@@ -155,14 +155,24 @@ router.post('/verify-otp', async (req, res) => {
             console.log(`[AUTH] Widget pre-verified OTP for ${phone} — skipping backend MSG91 check.`);
             result = { type: 'success', message: 'Widget verified' };
         }
-        // CASE 3: Standard OTP verification via MSG91
+        // CASE 3: Server-side verification (fallback when client widget network fails or direct backend verify)
         else {
             if (!otp) return res.status(400).json({ error: 'OTP is required.' });
-            console.log(`[AUTH] Verifying OTP for ${phone} via MSG91`);
-            result = await verifyOtp(phone, otp);
+            console.log(`[AUTH] Verifying OTP for ${phone} via backend MSG91 (reqId: ${reqId || 'none'})`);
+
+            if (verifyWidgetOtp && reqId) {
+                try {
+                    result = await verifyWidgetOtp(phone, otp, reqId);
+                } catch (widgetErr) {
+                    console.warn('[AUTH] Widget verify failed, trying verifyOtp fallback:', widgetErr.message);
+                    result = await verifyOtp(phone, otp);
+                }
+            } else {
+                result = await verifyOtp(phone, otp);
+            }
         }
 
-        if (result.type === 'success' || result.message === 'Mock OTP verified' || result.message === 'Dummy OTP verified' || result.message === 'Widget verified') {
+        if (result && (result.type === 'success' || result.message === 'Mock OTP verified' || result.message === 'Dummy OTP verified' || result.message === 'Widget verified' || result.message === 'OTP verified successfully')) {
             // Check if user exists for this role. We also query with RegExp to match non-normalized DB entries just in case!
             const phoneRegex = new RegExp(`${phone}$`);
             let user = await User.findOne({
@@ -192,7 +202,11 @@ router.post('/verify-otp', async (req, res) => {
                 }
             });
         } else {
-            res.status(401).json({ error: 'Invalid OTP', verified: false });
+            const rawMsg = result?.message || '';
+            const errorMsg = rawMsg.toLowerCase().includes('expire')
+                ? 'OTP समाप्त हो चुका है। कृपया नया OTP प्राप्त करें।'
+                : 'गलत OTP दर्ज किया गया है। कृपया पुनः प्रयास करें।';
+            res.status(401).json({ error: errorMsg, rawError: rawMsg, verified: false });
         }
     } catch (error) {
         console.error('Verify OTP error:', error);

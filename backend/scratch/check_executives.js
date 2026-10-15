@@ -6,9 +6,9 @@ async function test() {
         const uri = 'mongodb+srv://pasiwaresocial_db_user:Ys%409455238860@cluster0.x0wee2n.mongodb.net/khetify?retryWrites=true&w=majority';
         await mongoose.connect(uri);
         const allowedStatuses = ['approved', 'active', 'verified'];
-        const executives = await User.find({ 
-            role: 'field_executive', 
-            status: { $in: allowedStatuses } 
+        const executives = await User.find({
+            role: 'field_executive',
+            status: { $in: allowedStatuses }
         }).select('name phone businessName status');
         console.log('--- FOUND EXECUTIVES ---');
         console.log(JSON.stringify(executives, null, 2));
@@ -19,4 +19,5 @@ async function test() {
     }
 }
 
+test();
 test();

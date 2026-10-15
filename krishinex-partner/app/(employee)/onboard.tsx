@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert } from 'react-native';
+  Alert
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -23,7 +24,7 @@ const STATUS_GREEN = '#6bb313ff';
 type Role = 'farmer' | 'shop' | 'ksp' | 'soil' | 'equipment' | 'labour';
 
 export default function OnboardScreen() {
-  
+
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -82,7 +83,8 @@ export default function OnboardScreen() {
     submitSub: isHindi ? 'सफल होने पर नया अकाउंट बनेगा' : 'Account will be created on success',
     validationAlert: isHindi ? 'कृपया सभी ज़रूरी जानकारी भरें' : 'Please fill all required fields',
     phoneAlert: isHindi ? 'कृपया वैध 10-अंकीय मोबाइल नंबर दर्ज करें' : 'Please enter a valid 10-digit mobile number',
-    pincodeAlert: isHindi ? 'कृपया वैध 6-अंकीय पिनकोड दर्ज करें' : 'Please enter a valid 6-digit pincode' };
+    pincodeAlert: isHindi ? 'कृपया वैध 6-अंकीय पिनकोड दर्ज करें' : 'Please enter a valid 6-digit pincode'
+  };
 
   const handleRegister = async () => {
     // Basic validation
@@ -147,7 +149,9 @@ export default function OnboardScreen() {
         method: 'POST',
         body: formData,
         headers: {
-          'Accept': 'application/json' } });
+          'Accept': 'application/json'
+        }
+      });
 
       const data = await response.json();
 
@@ -169,7 +173,8 @@ export default function OnboardScreen() {
                 setState('');
                 setPincode('');
                 router.back();
-              } },
+              }
+            },
           ]
         );
       } else {
@@ -192,7 +197,7 @@ export default function OnboardScreen() {
       style={styles.root}
     >
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
-      
+
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -203,7 +208,7 @@ export default function OnboardScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        
+
         {/* ROLE SELECTION */}
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>{texts.roleLabel}</Text>
@@ -388,25 +393,30 @@ export default function OnboardScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: STATUS_GREEN,
+  header: {
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: STATUS_GREEN,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24},
+    borderBottomRightRadius: 24
+  },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FFF' },
+    color: '#FFF'
+  },
   scrollContent: {
-    padding: 16 },
+    padding: 16
+  },
   card: {
     backgroundColor: '#FFF',
     borderRadius: 20,
@@ -417,18 +427,21 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0' },
+    borderColor: '#E2E8F0'
+  },
   sectionLabel: {
     fontSize: 13,
     color: '#475569',
     fontWeight: '700',
     marginBottom: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.5 },
+    letterSpacing: 0.5
+  },
   roleGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8 },
+    gap: 8
+  },
   rolePill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -437,24 +450,30 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#F1F5F9',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0' },
+    borderColor: '#E2E8F0'
+  },
   rolePillActive: {
     backgroundColor: STATUS_GREEN,
-    borderColor: STATUS_GREEN },
+    borderColor: STATUS_GREEN
+  },
   rolePillText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#4B5563' },
+    color: '#4B5563'
+  },
   rolePillTextActive: {
     color: '#FFFFFF',
-    fontWeight: '700' },
+    fontWeight: '700'
+  },
   fieldBlock: {
-    marginBottom: 14 },
+    marginBottom: 14
+  },
   label: {
     fontSize: 13,
     fontWeight: '700',
     color: '#475569',
-    marginBottom: 6 },
+    marginBottom: 6
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -463,15 +482,18 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderRadius: 12,
     paddingHorizontal: 12,
-    height: 48 },
+    height: 48
+  },
   inputIcon: {
-    marginRight: 8 },
+    marginRight: 8
+  },
   input: {
     flex: 1,
     height: '100%',
     fontSize: 14,
     color: '#1E293B',
-    fontWeight: '500' },
+    fontWeight: '500'
+  },
   submitBtn: {
     backgroundColor: STATUS_GREEN,
     height: 56,
@@ -482,15 +504,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
-    marginTop: 10 },
+    marginTop: 10
+  },
   submitBtnText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '800' },
+    fontWeight: '800'
+  },
   submitBtnSub: {
     color: '#DCFCE7',
     fontSize: 10,
     marginTop: 2,
-    fontWeight: '500' },
+    fontWeight: '500'
+  },
   disabledBtn: {
-    opacity: 0.7 } });
+    opacity: 0.7
+  }
+});

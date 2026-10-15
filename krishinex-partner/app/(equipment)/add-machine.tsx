@@ -10,7 +10,8 @@ import {
   StatusBar,
   Image,
   Alert,
-  Platform } from 'react-native';
+  Platform
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -23,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { showAlert } from '../../components/CustomAlert';
 
 export default function AddMachineScreen() {
-  
+
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
@@ -86,11 +87,13 @@ export default function AddMachineScreen() {
     const result = fromCamera
       ? await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        quality: 0.8 })
+        quality: 0.8
+      })
       : await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        quality: 0.8 });
+        quality: 0.8
+      });
 
     if (!result.canceled && result.assets?.length) {
       try {
@@ -119,10 +122,12 @@ export default function AddMachineScreen() {
       [
         {
           text: isHindi ? 'कैमरा' : 'Camera',
-          onPress: () => askPermissionAndPick(true) },
+          onPress: () => askPermissionAndPick(true)
+        },
         {
           text: isHindi ? 'गैलरी' : 'Gallery',
-          onPress: () => askPermissionAndPick(false) },
+          onPress: () => askPermissionAndPick(false)
+        },
         { text: isHindi ? 'Cancel' : 'Cancel', style: 'cancel' },
       ]
     );
@@ -143,7 +148,8 @@ export default function AddMachineScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 0.7 });
+      quality: 0.7
+    });
 
     if (!result.canceled && result.assets?.[0]) {
       try {
@@ -296,17 +302,19 @@ export default function AddMachineScreen() {
       showAlert(
         isHindi ? 'सफल' : 'Success',
         isHindi ? 'मशीन सफलतापूर्वक जुड़ गई!' : 'Machine added successfully!',
-        [{ text: 'OK', onPress: () => {
-          setMachineName('');
-          setPriceDay('');
-          setPriceHour('');
-          setDesc('');
-          setDistanceKm('');
-          setVillage('');
-          setImages([]);
-          setSubMachinery([]);
-          router.back();
-        } }]
+        [{
+          text: 'OK', onPress: () => {
+            setMachineName('');
+            setPriceDay('');
+            setPriceHour('');
+            setDesc('');
+            setDistanceKm('');
+            setVillage('');
+            setImages([]);
+            setSubMachinery([]);
+            router.back();
+          }
+        }]
       );
     } catch (error: any) {
       console.error('Add machine error:', error);
@@ -543,7 +551,7 @@ export default function AddMachineScreen() {
             {loading ? (isHindi ? 'सेव हो रहा है...' : 'Saving...') : (isHindi ? 'मशीन सेव करें' : 'Save machine')}
           </Text>
         </TouchableOpacity>
-        </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
@@ -551,25 +559,29 @@ export default function AddMachineScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
-  appHeader: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
+  appHeader: {
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
     alignItems: 'center',
-    
-    
-    
+
+
+
     backgroundColor: '#FFFFFF',
     elevation: 3,
-    shadowColor: '#00000020'},
+    shadowColor: '#00000020'
+  },
   backBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   headerCenter: { flex: 1, alignItems: 'center' },
   headerTitle: { fontSize: 16, fontWeight: '700', color: '#111827' },
   rightPlaceHolder: {
     width: 34,
-    height: 34 },
+    height: 34
+  },
 
   container: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
 
@@ -577,7 +589,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    gap: 8 },
+    gap: 8
+  },
   appLogoIcon: { width: 28, height: 28, resizeMode: 'contain' },
   logoTextImage: { width: 140, height: 28, resizeMode: 'contain' },
 
@@ -591,10 +604,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginBottom: 10,
     fontSize: 13,
-    color: '#111827' },
+    color: '#111827'
+  },
   textArea: {
     minHeight: 80,
-    textAlignVertical: 'top' },
+    textAlignVertical: 'top'
+  },
 
   row2: { flexDirection: 'row', marginBottom: 4 },
 
@@ -603,12 +618,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 16 },
+    marginBottom: 16
+  },
   imageThumb: {
     width: 72,
     height: 72,
     borderRadius: 12,
-    backgroundColor: '#E5E7EB' },
+    backgroundColor: '#E5E7EB'
+  },
   imageAdd: {
     width: 90,
     height: 72,
@@ -618,7 +635,8 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB' },
+    backgroundColor: '#F9FAFB'
+  },
   imageAddText: { fontSize: 11, color: '#6B7280', marginTop: 4 },
 
   saveBtn: {
@@ -628,7 +646,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     paddingVertical: 10,
     borderRadius: 999,
-    backgroundColor: '#22C55E' },
+    backgroundColor: '#22C55E'
+  },
   saveText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
   sectionDivider: { height: 1, backgroundColor: '#E5E7EB', marginVertical: 16 },
   labelBold: { fontSize: 14, fontWeight: '700', color: '#1F2937' },
@@ -636,7 +655,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12 },
+    marginBottom: 12
+  },
   addMoreBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   addMoreText: { fontSize: 13, color: '#22C55E', fontWeight: '600' },
   subItemCard: {
@@ -645,7 +665,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#E5E7EB' },
+    borderColor: '#E5E7EB'
+  },
   subItemRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   subInput: {
     backgroundColor: '#F9FAFB',
@@ -654,12 +675,14 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    fontSize: 13 },
+    fontSize: 13
+  },
   labelSub: {
     fontSize: 11,
     color: '#4B5563',
     marginBottom: 2,
-    fontWeight: '500' },
+    fontWeight: '500'
+  },
   subImagePicker: {
     width: 44,
     height: 44,
@@ -670,6 +693,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F3F4F6',
-    overflow: 'hidden' },
+    overflow: 'hidden'
+  },
   subImagePreview: { width: '100%', height: '100%' },
-  removeBtn: { padding: 4 } });
+  removeBtn: { padding: 4 }
+});

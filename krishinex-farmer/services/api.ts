@@ -49,8 +49,8 @@ api.interceptors.response.use(
 
 export const authApi = {
     sendOtp: (phone: string) => api.post('/auth/send-otp', { phone }),
-    verifyOtp: (phone: string, otp: string, role: string = 'farmer', widget_verified: boolean = false) =>
-        api.post('/auth/verify-otp', { phone, otp, role, widget_verified }),
+    verifyOtp: (phone: string, otp: string, role: string = 'farmer', widget_verified: boolean = false, reqId: string = '') =>
+        api.post('/auth/verify-otp', { phone, otp, role, widget_verified, reqId }),
     register: async (data: any) => {
         const isFormData = data instanceof FormData;
         const response = await fetch(`${BASE_URL}/auth/register`, {

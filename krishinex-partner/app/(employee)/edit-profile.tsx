@@ -26,7 +26,7 @@ const STATUS_GREEN = '#6bb313ff';
 
 export default function EmployeeEditProfileScreen() {
     const router = useRouter();
-  
+
     const { lang } = useI18n();
     const isHindi = lang === 'hi';
 
@@ -84,7 +84,8 @@ export default function EmployeeEditProfileScreen() {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.8 });
+            quality: 0.8
+        });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
             setAvatarUri(result.assets[0].uri);
@@ -100,16 +101,19 @@ export default function EmployeeEditProfileScreen() {
             formData.append('photo', {
                 uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
                 name: 'photo.jpg',
-                type: 'image/jpeg' } as any);
+                type: 'image/jpeg'
+            } as any);
 
             const res = await fetch(`${API_URL}/user/upload-photo`, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${token}` },
-                body: formData });
+                    Authorization: `Bearer ${token}`
+                },
+                body: formData
+            });
 
             if (!res.ok) throw new Error('Photo upload failed');
-            
+
             const data = await res.json();
             if (data.url) {
                 const pfp = data.url?.startsWith('http')
@@ -153,8 +157,10 @@ export default function EmployeeEditProfileScreen() {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ name, email, phone, address }) });
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, email, phone, address })
+            });
 
             if (res.ok) {
                 updateUser({ name, email, phone, address });
@@ -181,7 +187,8 @@ export default function EmployeeEditProfileScreen() {
         name: isHindi ? 'पूरा नाम' : 'Full Name',
         email: isHindi ? 'ईमेल आईडी' : 'Email ID',
         phone: isHindi ? 'मोबाइल नंबर' : 'Phone Number',
-        address: isHindi ? 'पता (गाँव/शहर)' : 'Address (Village/City)' };
+        address: isHindi ? 'पता (गाँव/शहर)' : 'Address (Village/City)'
+    };
 
     if (loading) {
         return (
@@ -281,38 +288,45 @@ export default function EmployeeEditProfileScreen() {
 const styles = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#F9FAFB' },
     statusBg: { height: 44, backgroundColor: STATUS_GREEN },
-    header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
+    header: {
+        paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, flexDirection: 'row',
         alignItems: 'center',
-            
-        
+
+
         backgroundColor: STATUS_GREEN,
-        justifyContent: 'space-between'},
+        justifyContent: 'space-between'
+    },
     backBtn: {
         width: 32,
         height: 32,
         borderRadius: 16,
         backgroundColor: '#5BA40F',
         alignItems: 'center',
-        justifyContent: 'center' },
+        justifyContent: 'center'
+    },
     headerTitle: {
         flex: 1,
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '700',
-        color: '#FFFFFF' },
+        color: '#FFFFFF'
+    },
     headerSaveBtn: {
         paddingHorizontal: 12,
         paddingVertical: 6,
         backgroundColor: '#047857',
-        borderRadius: 8 },
+        borderRadius: 8
+    },
     headerSaveText: {
         color: '#FFFFFF',
         fontWeight: '600',
-        fontSize: 13 },
+        fontSize: 13
+    },
     body: { flex: 1, padding: 20 },
     avatarSection: {
         alignItems: 'center',
-        marginBottom: 30 },
+        marginBottom: 30
+    },
     avatarWrap: {
         width: 90,
         height: 90,
@@ -320,11 +334,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#E5E7EB',
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative' },
+        position: 'relative'
+    },
     avatarImg: {
         width: 90,
         height: 90,
-        borderRadius: 45 },
+        borderRadius: 45
+    },
     avatarCamera: {
         position: 'absolute',
         bottom: 0,
@@ -336,19 +352,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
-        borderColor: '#F9FAFB' },
+        borderColor: '#F9FAFB'
+    },
     changePhotoText: {
         marginTop: 10,
         fontSize: 14,
         color: '#16A34A',
-        fontWeight: '600' },
+        fontWeight: '600'
+    },
     inputGroup: {
-        marginBottom: 16 },
+        marginBottom: 16
+    },
     label: {
         fontSize: 13,
         fontWeight: '600',
         color: '#4B5563',
-        marginBottom: 6 },
+        marginBottom: 6
+    },
     input: {
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
@@ -357,7 +377,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         paddingVertical: 12,
         fontSize: 15,
-        color: '#111827' },
+        color: '#111827'
+    },
     saveActionBtn: {
         backgroundColor: '#16A34A',
         borderRadius: 12,
@@ -368,8 +389,11 @@ const styles = StyleSheet.create({
         shadowColor: '#16A34A',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
-        shadowRadius: 8 },
+        shadowRadius: 8
+    },
     saveActionText: {
         color: '#FFFFFF',
         fontSize: 16,
-        fontWeight: 'bold' } });
+        fontWeight: 'bold'
+    }
+});

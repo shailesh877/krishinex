@@ -5,6 +5,7 @@ type Lang = 'hi' | 'en';
 
 type I18nContextType = {
   lang: Lang;
+  isHindi: boolean;
   toggleLang: () => void;
 };
 
@@ -17,8 +18,10 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     setLang(prev => (prev === 'hi' ? 'en' : 'hi'));
   };
 
+  const isHindi = lang === 'hi';
+
   return (
-    <I18nContext.Provider value={{ lang, toggleLang }}>
+    <I18nContext.Provider value={{ lang, isHindi, toggleLang }}>
       {children}
     </I18nContext.Provider>
   );

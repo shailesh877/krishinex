@@ -63,7 +63,7 @@ export default function SellScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const [userAddress, setUserAddress] = useState(hi ? 'लोकेशन लोड हो रही है...' : 'Loading location...');
-  
+
   const loadUserAddress = async () => {
     try {
       // 1. Try local cache first
@@ -73,13 +73,13 @@ export default function SellScreen() {
         if (user.address && user.address !== 'N/A' && user.address !== 'पता नहीं') {
           setUserAddress(user.address);
         } else {
-           // 2. Fetch fresh profile if cache is empty
-           const res = await authApi.getProfile();
-           if (res.data?.address) {
-             setUserAddress(res.data.address);
-           } else {
-             setUserAddress(hi ? 'पता नहीं' : 'N/A');
-           }
+          // 2. Fetch fresh profile if cache is empty
+          const res = await authApi.getProfile();
+          if (res.data?.address) {
+            setUserAddress(res.data.address);
+          } else {
+            setUserAddress(hi ? 'पता नहीं' : 'N/A');
+          }
         }
       } else {
         // 3. Fallback to API if no local data
@@ -115,7 +115,7 @@ export default function SellScreen() {
           return;
         }
       }
-      
+
       const [newMandis, newCrops] = await Promise.all([fetchMandis(), fetchCrops()]);
       RAM_CACHE_SELL = { mandis: newMandis, crops: newCrops };
       RAM_CACHE_SELL_TIMESTAMP = Date.now();
@@ -260,7 +260,7 @@ export default function SellScreen() {
           const fileName = uri.split('/').pop() || `image_${index}.jpg`;
           const match = /\.(\w+)$/.exec(fileName);
           const type = match ? `image/${match[1]}` : `image`;
-          
+
           formData.append('images', {
             uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
             name: fileName,

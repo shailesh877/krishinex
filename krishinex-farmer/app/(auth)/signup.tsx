@@ -36,7 +36,7 @@ export default function SignupScreen() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState(params.phone || '');
   const [email, setEmail] = useState('');
-  
+
   const [village, setVillage] = useState('');
   const [district, setDistrict] = useState('');
   const [state, setState] = useState('');

@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useI18n } from '../../context/I18nContext';
@@ -10,6 +10,9 @@ export default function LabourPartnerLayout() {
   const { isHindi } = useI18n();
   const { newCount } = useLabourBadge();
 
+  const bottomPadding = insets.bottom > 0 ? insets.bottom : 8;
+  const tabHeight = 54 + bottomPadding;
+
   return (
     <Tabs
       screenOptions={{
@@ -19,8 +22,8 @@ export default function LabourPartnerLayout() {
         tabBarStyle: {
           borderTopWidth: 1,
           borderTopColor: '#E5E7EB',
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
+          height: tabHeight,
+          paddingBottom: bottomPadding,
           paddingTop: 8,
           backgroundColor: '#FFFFFF',
         },

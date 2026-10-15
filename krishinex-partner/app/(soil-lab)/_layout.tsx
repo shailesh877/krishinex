@@ -1,6 +1,6 @@
 // app/(soil-lab)/_layout.tsx
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,9 @@ function SoilLabTabs() {
   const isHindi = lang === 'hi';
   const { newCount } = useSoilBadge();
 
+  const bottomPadding = insets.bottom > 0 ? insets.bottom : 6;
+  const tabHeight = 54 + bottomPadding;
+
   return (
     <Tabs
       screenOptions={{
@@ -21,8 +24,8 @@ function SoilLabTabs() {
         tabBarActiveTintColor: '#1B9C85',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
+          height: tabHeight,
+          paddingBottom: bottomPadding,
           paddingTop: 6,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,

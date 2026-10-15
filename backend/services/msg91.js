@@ -51,6 +51,66 @@ async function sendOtp(phone, customOtp = null) {
     }
 }
 
+const MSG91_WIDGET_ID = process.env.MSG91_WIDGET_ID || '366361727571383132303632';
+
+/**
+ * Verify an OTP via MSG91 Headless Widget API
+ * @param {string} phone - Mobile number
+ * @param {string} otp - The OTP entered by the user
+ * @param {string} reqId - Optional request ID from widget sendOTP
+ * @returns {Promise<object>} response from MSG91
+ */
+async function verifyWidgetOtp(phone, otp, reqId = '') {
+    let cleanPhone = String(phone).replace(/\D/g, '');
+    if (cleanPhone.startsWith('91') && cleanPhone.length === 12) {
+        cleanPhone = cleanPhone.substring(2);
+    }
+    const identifier = `91${cleanPhone}`;
+
+    const payload = {
+        widgetId: MSG91_WIDGET_ID,
+        tokenAuth: MSG91_AUTH_KEY,
+        identifier: identifier,
+        otp: String(otp).trim()
+    };
+    if (reqId) {
+        payload.reqId = reqId;
+    }
+
+    try {
+        console.log(`[MSG91] Verifying Widget OTP for ${identifier}, reqId: ${reqId || 'none'}`);
+        const response = await axios.post(
+            'https://control.msg91.com/api/v5/widget/verifyOtp',
+            payload,
+            {
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 15000
+            }
+        );
+        console.log('[MSG91] Widget verify response:', response.data);
+        const data = response.data;
+        if (data?.type === 'success' || data?.message === 'OTP verified successfully' || data?.message === 'Success') {
+            return { type: 'success', message: 'OTP verified successfully', data };
+        }
+        return {
+            type: 'error',
+            message: data?.message || 'Invalid OTP',
+            code: data?.code
+        };
+    } catch (error) {
+        const errorData = error.response?.data;
+        console.error('[MSG91] Error verifying Widget OTP:', errorData || error.message);
+        if (errorData?.type === 'error' || errorData?.message) {
+            return {
+                type: 'error',
+                message: errorData.message || 'Verification failed',
+                code: errorData.code
+            };
+        }
+        throw new Error(error.message || 'Failed to verify OTP via MSG91 widget');
+    }
+}
+
 /**
  * Verify an OTP via MSG91
  * @param {string} phone - Mobile number with country code (e.g. 919876543210)
@@ -61,32 +121,43 @@ async function verifyOtp(phone, otp) {
     // Ensure phone has country code
     if (phone.length === 10) phone = '91' + phone;
 
-    // Mock fallback for local dev
-    if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
-        console.warn('[MSG91-DEBUG] Mocking OTP Verify for', phone);
-        const storedOtp = mockOtpStore.get(phone) || '123456';
-        if (otp === storedOtp) {
-            return { type: 'success', message: 'Mock OTP verified' };
-        } else {
-            return { type: 'error', message: 'Invalid Mock OTP' };
+    // If template ID is available, try standard OTP API
+    if (MSG91_AUTH_KEY && MSG91_TEMPLATE_ID) {
+        const url = `https://control.msg91.com/api/v5/otp/verify?otp=${otp}&mobile=${phone}`;
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    'authkey': MSG91_AUTH_KEY
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error verifying OTP via MSG91 template API:', error.response?.data || error.message);
+            throw new Error('Failed to verify OTP via MSG91');
         }
     }
 
-    const url = `https://control.msg91.com/api/v5/otp/verify?otp=${otp}&mobile=${phone}`;
-    try {
-        const response = await axios.get(url, {
-            headers: {
-                'authkey': MSG91_AUTH_KEY
-            }
-        });
-        return response.data;
-    } catch (error) {
-        console.error('Error verifying OTP via MSG91:', error.response?.data || error.message);
-        throw new Error('Failed to verify OTP via MSG91');
+    // Fallback to widget verify if auth key is present
+    if (MSG91_AUTH_KEY) {
+        try {
+            return await verifyWidgetOtp(phone, otp);
+        } catch (widgetErr) {
+            console.warn('[MSG91] verifyWidgetOtp fallback error:', widgetErr.message);
+        }
+    }
+
+    // Mock fallback for local dev
+    console.warn('[MSG91-DEBUG] Mocking OTP Verify for', phone);
+    const storedOtp = mockOtpStore.get(phone) || '123456';
+    if (otp === storedOtp) {
+        return { type: 'success', message: 'Mock OTP verified' };
+    } else {
+        return { type: 'error', message: 'Invalid Mock OTP' };
     }
 }
 
 module.exports = {
     sendOtp,
-    verifyOtp
+    verifyOtp,
+    verifyWidgetOtp
 };

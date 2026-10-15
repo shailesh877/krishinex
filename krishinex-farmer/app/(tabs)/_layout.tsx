@@ -37,8 +37,8 @@ export default function TabsLayout() {
     return null; // Don't render anything while checking auth
   }
 
-  const TAB_HEIGHT = Platform.OS === 'ios' ? 60 + insets.bottom : 60 + insets.bottom;
   const PADDING_BOTTOM = insets.bottom > 0 ? insets.bottom : 5;
+  const TAB_HEIGHT = 54 + PADDING_BOTTOM;
 
   return (
     <Tabs

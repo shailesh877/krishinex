@@ -244,7 +244,24 @@ export default function ShopWallet() {
             </View>
           </View>
         </View>
-        {item.note ? <Text style={styles.noteText}>{item.note}</Text> : null}
+        {item.totalAmount && item.commissionAmount ? (
+          <View style={styles.breakdownContainer}>
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>{hi ? 'कुल ऑर्डर:' : 'Total Order:'}</Text>
+              <Text style={styles.breakdownValue}>₹{item.totalAmount.toLocaleString('en-IN')}</Text>
+            </View>
+            <View style={styles.breakdownRow}>
+              <Text style={styles.breakdownLabel}>{hi ? 'प्लेटफ़ॉर्म कमीशन' : 'Admin Commission'} ({Math.round((item.commissionAmount / item.totalAmount) * 100)}%):</Text>
+              <Text style={[styles.breakdownValue, { color: '#EF4444' }]}>- ₹{item.commissionAmount.toLocaleString('en-IN')}</Text>
+            </View>
+            <View style={[styles.breakdownRow, styles.netRow]}>
+              <Text style={styles.netLabel}>{hi ? 'कुल पेआउट (वॉलेट):' : 'Net Payout:'}</Text>
+              <Text style={styles.netValue}>₹{item.amount.toLocaleString('en-IN')}</Text>
+            </View>
+          </View>
+        ) : (
+          item.note ? <Text style={styles.noteText}>{item.note}</Text> : null
+        )}
       </View>
     );
   };
@@ -368,6 +385,44 @@ const styles = StyleSheet.create({
   statusBadge: { marginTop: 4, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   statusText: { fontSize: 10, fontWeight: '700' },
   noteText: { marginTop: 10, fontSize: 11, color: '#6B7280', fontStyle: 'italic', paddingTop: 8, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+  breakdownContainer: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  breakdownLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  breakdownValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  netRow: {
+    marginTop: 4,
+    paddingTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  netLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  netValue: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyContainer: { alignItems: 'center' },
   emptyText: { fontSize: 14, color: '#9CA3AF', marginTop: 10 },

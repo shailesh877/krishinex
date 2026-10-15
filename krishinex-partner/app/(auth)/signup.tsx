@@ -162,7 +162,7 @@ export default function SignupScreen() {
       formData.append('businessName', businessName);
       formData.append('email', email);
       formData.append('phone', phone);
-      
+
       const fullAddress = `${village.trim()}, ${district.trim()}, ${state.trim()} - ${pincode.trim()}`;
       formData.append('address', fullAddress);
 

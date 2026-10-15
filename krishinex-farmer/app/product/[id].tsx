@@ -424,7 +424,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#F3F4F6',
-    paddingTop: 30,
   },
 
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },

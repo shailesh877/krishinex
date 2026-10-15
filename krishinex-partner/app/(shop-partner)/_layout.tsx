@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +17,9 @@ export default function ShopTabsLayout() {
   const ledgerLabel = isHindi ? 'खाता' : 'Ledger';
   const profileLabel = isHindi ? 'प्रोफाइल' : 'Profile';
 
+  const bottomPadding = insets.bottom > 0 ? insets.bottom : 6;
+  const tabHeight = 54 + bottomPadding;
+
   return (
     <Tabs
       screenOptions={{
@@ -23,8 +27,8 @@ export default function ShopTabsLayout() {
         tabBarActiveTintColor: '#16A34A',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
+          height: tabHeight,
+          paddingBottom: bottomPadding,
           paddingTop: 6,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0,

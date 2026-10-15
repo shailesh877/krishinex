@@ -7,14 +7,16 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Image,
   Modal,
+  Platform,
+  Keyboard,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -43,6 +45,17 @@ export default function LoginScreen() {
   const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
   const [loading, setLoading] = useState(false);
   const [reqId, setReqId] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+
+  React.useEffect(() => {
+    let interval: any;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   // Custom Alert State
   const [alertVisible, setAlertVisible] = useState(false);
@@ -115,13 +128,14 @@ export default function LoginScreen() {
     }
 
     if (finalPhone.length < 10) return;
-    
+
     // Update the state so the UI reflects the clean number
     setPhone(finalPhone);
 
     // Google Play Store Dummy Account Bypass
     if (finalPhone === '9519519519') {
       setStep('OTP');
+      setResendTimer(30);
       return;
     }
 
@@ -143,11 +157,12 @@ export default function LoginScreen() {
 
         setReqId(parsedReqId || widgetRes?.message || '');
         setStep('OTP');
+        setResendTimer(30);
       } else {
         let msg = widgetRes?.message || 'Failed to send OTP via Widget';
         if (msg.toLowerCase().includes('ipbloack') || msg.toLowerCase().includes('ipblock') || msg.toLowerCase().includes('blocked')) {
-          msg = hi 
-            ? 'सुरक्षा कारणों से कुछ समय के लिए अनुरोध रोक दिया गया है। कृपया थोड़ी देर बाद प्रयास करें।' 
+          msg = hi
+            ? 'सुरक्षा कारणों से कुछ समय के लिए अनुरोध रोक दिया गया है। कृपया थोड़ी देर बाद प्रयास करें।'
             : 'Too many requests. Please try again after some time.';
         }
         showAlert(hi ? 'त्रुटि' : 'Error', msg);
@@ -182,7 +197,7 @@ export default function LoginScreen() {
             await AsyncStorage.setItem('userData', JSON.stringify(res.data.user));
             // Register push token after login (race condition fix)
             const pushToken = await AsyncStorage.getItem('pushToken');
-            if (pushToken) registerTokenWithBackend(pushToken).catch(() => {});
+            if (pushToken) registerTokenWithBackend(pushToken).catch(() => { });
             router.replace('/(tabs)' as any);
           } else {
             showAlert(hi ? 'पंजीकरण आवश्यक' : 'Registration Required', hi ? 'कृपया रजिस्टर करें।' : 'Please register.');
@@ -201,67 +216,91 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      // Verify OTP via Widget
+      let isVerified = false;
+      const cleanOtp = otp.trim();
       const identifier = phone.startsWith('91') ? phone : `91${phone}`;
       const body = {
         identifier: identifier,
         reqId: reqId,
-        otp: otp
+        otp: cleanOtp
       };
 
-      const widgetRes = await withTimeout(OTPWidget.verifyOTP(body), 60000);
+      // 1. Try client-side MSG91 Widget verification (fast path)
+      try {
+        const widgetRes = await withTimeout(OTPWidget.verifyOTP(body), 10000);
+        console.log('[AUTH] Client Widget verify response:', widgetRes);
 
-      // We bypass the backend verification by sending the mock '123456' which the backend is currently configured to accept, 
-      // OR we just use the real verify if it's disabled. 
-      // Since backend has MSG91 disabled, ANY request to our backend with OTP='123456' will be accepted.
-      // This is a bridge between the frontend widget passing and our backend getting the user data.
-      if (widgetRes?.type === 'success' || widgetRes?.message === 'OTP verified successfully') {
-        // Widget verified successfully! Now authenticate with our backend.
-        // We send widget_verified=true so the backend trusts the widget verification
-        // and doesn't try to re-verify the OTP against MSG91 (which would fail with 401).
-        const res = await authApi.verifyOtp(phone, '', 'farmer', true);
+        if (widgetRes?.type === 'success' || widgetRes?.message === 'OTP verified successfully' || widgetRes?.message === 'Success') {
+          isVerified = true;
+        } else if (
+          widgetRes?.type === 'error' &&
+          (widgetRes?.code === 705 || widgetRes?.message?.toLowerCase().includes('invalid') || widgetRes?.message?.toLowerCase().includes('expire') || widgetRes?.message?.toLowerCase().includes('wrong'))
+        ) {
+          // Explicit invalid OTP from MSG91
+          showAlert(
+            hi ? 'त्रुटि' : 'Error',
+            hi ? 'गलत OTP दर्ज किया गया है। कृपया सही OTP दर्ज करें।' : (widgetRes?.message || 'Invalid OTP. Please try again.')
+          );
+          setLoading(false);
+          return;
+        }
+      } catch (widgetError: any) {
+        console.warn('[AUTH] Client-side widget verify network/timeout issue, proceeding with backend verification fallback:', widgetError?.message);
+      }
 
-        if (res.data.verified) {
-          if (res.data.exists) {
-            // User exists, save token and go to tabs
-            await AsyncStorage.setItem('userToken', res.data.token);
-            await AsyncStorage.setItem('userData', JSON.stringify(res.data.user));
-            // Register push token after login (race condition fix)
-            const pushToken = await AsyncStorage.getItem('pushToken');
-            if (pushToken) registerTokenWithBackend(pushToken).catch(() => {});
-            router.replace('/(tabs)' as any);
-          } else {
-            // User doesn't exist, go to signup
-            showAlert(
-              hi ? 'पंजीकरण आवश्यक' : 'Registration Required',
-              hi ? 'कृपया अपना अकाउंट बनाने के लिए रजिस्टर करें।' : 'Please register to create your account.'
-            );
-            router.push({
-              pathname: '/(auth)/signup' as any,
-              params: { phone }
-            });
-          }
+      // 2. Authenticate or Verify with backend (bridge/fallback)
+      // If widget already verified, pass widget_verified = true.
+      // If widget had network error on mobile, pass widget_verified = false + cleanOtp + reqId, so backend verifies it via MSG91!
+      const res = await authApi.verifyOtp(phone, cleanOtp, 'farmer', isVerified, reqId);
+
+      if (res.data?.verified) {
+        if (res.data?.exists) {
+          // User exists, save token and go to tabs
+          await AsyncStorage.setItem('userToken', res.data.token);
+          await AsyncStorage.setItem('userData', JSON.stringify(res.data.user));
+          // Register push token after login (race condition fix)
+          const pushToken = await AsyncStorage.getItem('pushToken');
+          if (pushToken) registerTokenWithBackend(pushToken).catch(() => { });
+          router.replace('/(tabs)' as any);
+        } else {
+          // User doesn't exist, go to signup
+          showAlert(
+            hi ? 'पंजीकरण आवश्यक' : 'Registration Required',
+            hi ? 'कृपया अपना अकाउंट बनाने के लिए रजिस्टर करें।' : 'Please register to create your account.'
+          );
+          router.push({
+            pathname: '/(auth)/signup' as any,
+            params: { phone }
+          });
         }
       } else {
-        throw new Error('Invalid OTP from Widget');
+        showAlert(
+          hi ? 'त्रुटि' : 'Error',
+          res.data?.error || (hi ? 'गलत OTP दर्ज किया गया है।' : 'Invalid OTP')
+        );
       }
     } catch (error: any) {
       console.error('Verify OTP error:', error);
+      const backendError = error?.response?.data?.error;
+      const is401 = error?.response?.status === 401;
       const isTimeout = error?.message?.includes('TIMEOUT') || error?.message?.includes('timeout');
-      const isNetwork = error?.message?.toLowerCase().includes('network') || error?.message?.toLowerCase().includes('fetch');
+      const isNetwork = !error?.response && (error?.message?.toLowerCase().includes('network') || error?.message?.toLowerCase().includes('fetch'));
+
       let errMsg: string;
-      if (isTimeout) {
+      if (backendError) {
+        errMsg = backendError;
+      } else if (is401) {
+        errMsg = hi ? 'गलत OTP दर्ज किया गया है। कृपया सही OTP दर्ज करें।' : 'Invalid OTP. Please check and try again.';
+      } else if (isTimeout) {
         errMsg = hi
-          ? 'सर्वर से जवाब मिलने में समय लग रहा है। कृपया अपना इंटरनेट कनेक्शन जाँचें।'
-          : 'Server timeout. Please check your internet connection.';
+          ? 'सर्वर से जवाब मिलने में समय लग रहा है। कृपया कुछ देर बाद पुनः प्रयास करें।'
+          : 'Server timeout. Please try again in a moment.';
       } else if (isNetwork) {
         errMsg = hi
           ? 'नेटवर्क समस्या: सर्वर से संपर्क नहीं हो सका। कृपया इंटरनेट जाँचें।'
           : 'Network error: Cannot reach server. Please check your connection.';
-      } else if (error?.response?.data?.error) {
-        errMsg = error.response.data.error;
       } else {
-        errMsg = hi ? 'गलत OTP या सर्वर समस्या। कृपया पुन: प्रयास करें।' : 'Invalid OTP or server issue. Please try again.';
+        errMsg = hi ? 'OTP सत्यापन में समस्या आई। कृपया पुनः प्रयास करें।' : 'Verification failed. Please try again.';
       }
       showAlert(
         hi ? 'त्रुटि' : 'Error',
@@ -290,7 +329,16 @@ export default function LoginScreen() {
         style={StyleSheet.absoluteFill}
       />
 
-      <View style={styles.container}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={30}
+        bounces={false}
+      >
         {/* HEADER */}
         <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
           <View style={styles.logoRow}>
@@ -366,9 +414,14 @@ export default function LoginScreen() {
                     placeholder={t.phonePlaceholder}
                     placeholderTextColor="#9CA3AF"
                     value={phone}
-                    onChangeText={setPhone}
+                    onChangeText={(val) => {
+                      setPhone(val);
+                      if (val.replace(/\D/g, '').length >= 10) {
+                        Keyboard.dismiss();
+                      }
+                    }}
                   />
-{/* <TouchableOpacity activeOpacity={0.8}>
+                  {/* <TouchableOpacity activeOpacity={0.8}>
                     <Ionicons name="mic-outline" size={18} color="#6B7280" />
                   </TouchableOpacity> */}
                 </View>
@@ -429,7 +482,12 @@ export default function LoginScreen() {
                   keyboardType="number-pad"
                   maxLength={4}
                   value={otp}
-                  onChangeText={setOtp}
+                  onChangeText={(val) => {
+                    setOtp(val);
+                    if (val.replace(/\D/g, '').length >= 4) {
+                      Keyboard.dismiss();
+                    }
+                  }}
                   placeholder={t.otpPlaceholder}
                   placeholderTextColor="#D1D5DB"
                 />
@@ -480,21 +538,42 @@ export default function LoginScreen() {
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.changeNumberBtn}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setStep('PHONE');
-                  setOtp('');
-                }}
-              >
-                <Ionicons
-                  name="swap-horizontal-outline"
-                  size={16}
-                  color="#4b5563"
-                />
-                <Text style={styles.changeNumberText}>{t.changeNumber}</Text>
-              </TouchableOpacity>
+              <View style={styles.otpActionRow}>
+                <TouchableOpacity
+                  style={[styles.resendBtn, resendTimer > 0 && { opacity: 0.6 }]}
+                  activeOpacity={0.8}
+                  disabled={resendTimer > 0 || loading}
+                  onPress={handleSendOtp}
+                >
+                  <Ionicons
+                    name="refresh-outline"
+                    size={15}
+                    color={resendTimer > 0 ? '#9ca3af' : KHETIFY_GREEN_DARK}
+                  />
+                  <Text style={[styles.resendText, resendTimer > 0 && { color: '#9ca3af' }]}>
+                    {resendTimer > 0
+                      ? `${hi ? 'पुनः OTP भेजें' : 'Resend OTP'} (${resendTimer}s)`
+                      : (hi ? 'पुनः OTP भेजें' : 'Resend OTP')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.changeNumberBtn}
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setStep('PHONE');
+                    setOtp('');
+                    setResendTimer(0);
+                  }}
+                >
+                  <Ionicons
+                    name="swap-horizontal-outline"
+                    size={15}
+                    color="#4b5563"
+                  />
+                  <Text style={styles.changeNumberText}>{t.changeNumber}</Text>
+                </TouchableOpacity>
+              </View>
             </>
           )}
 
@@ -535,7 +614,7 @@ export default function LoginScreen() {
         </View>
 
         <Text style={styles.termsText}>{t.termsLine}</Text>
-      </View>
+      </KeyboardAwareScrollView>
 
       {/* Custom Alert Modal */}
       <Modal
@@ -569,11 +648,11 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  container: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 18,
     paddingTop: 0,
-    paddingBottom: 14,
+    paddingBottom: 16,
     justifyContent: 'space-between',
   },
 
@@ -627,7 +706,7 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    marginTop: 28,
+    marginVertical: 12,
     borderRadius: 22,
     backgroundColor: '#ffffff',
     paddingHorizontal: 18,
@@ -784,11 +863,29 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  changeNumberBtn: {
-    marginTop: 10,
-    alignSelf: 'flex-start',
+  otpActionRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  resendBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+  },
+  resendText: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: KHETIFY_GREEN_DARK,
+    fontWeight: '700',
+  },
+  changeNumberBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
   changeNumberText: {
     marginLeft: 4,

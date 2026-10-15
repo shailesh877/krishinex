@@ -243,8 +243,8 @@ export default function SoilTestScreen() {
     if (userStatus !== 'approved') {
       showAlert(
         hi ? 'वेरिफिकेशन आवश्यक' : 'Verification Required',
-        hi 
-          ? 'मिट्टी जांच बुक करने के लिए आपका प्रोफाइल वेरीफाइड होना जरूरी है। कृपया अपनी प्रोफाइल पूरी करें और वेरिफिकेशन का इंतजार करें।' 
+        hi
+          ? 'मिट्टी जांच बुक करने के लिए आपका प्रोफाइल वेरीफाइड होना जरूरी है। कृपया अपनी प्रोफाइल पूरी करें और वेरिफिकेशन का इंतजार करें।'
           : 'Your profile must be verified to book a soil test. Please complete your profile and wait for verification.',
         [
           { text: hi ? 'रद्द' : 'Cancel', style: 'cancel' },
@@ -595,7 +595,7 @@ export default function SoilTestScreen() {
               </Text>
             </View>
             <Text style={[styles.priceText, { fontSize: 11, color: '#6B7280' }]}>
-              {paymentMethod === 'wallet' 
+              {paymentMethod === 'wallet'
                 ? (hi ? 'शुल्क तुरंत आपके वॉलेट से काट लिया जाएगा' : 'Fee will be deducted from your wallet instantly')
                 : (hi ? 'शुल्क का भुगतान आपको लैब में करना होगा' : 'You will need to pay the fee at the lab')}
             </Text>

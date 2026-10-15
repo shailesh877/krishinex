@@ -1,7 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  TextInput, StatusBar, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
+  TextInput, StatusBar, KeyboardAvoidingView, Platform, Alert, ActivityIndicator
+} from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -13,7 +14,7 @@ const API_URL = `${BASE_API_URL}/orders`;
 
 export default function BuyerCreateOrder() {
   const router = useRouter();
-  
+
   const { lang } = useI18n();
 
   const t = {
@@ -24,7 +25,8 @@ export default function BuyerCreateOrder() {
       varietyLabel: 'वैरायटी (वैकल्पिक)', varietyPlaceholder: 'जैसे: PBW-343 (वैकल्पिक)',
       locationLabel: 'लोकेशन', locationPlaceholder: 'आपका वर्तमान लोकेशन अपने आप भर जाएगा',
       noteLabel: 'नोट (वैकल्पिक)', notePlaceholder: 'कोई खास निर्देश लिखें (वैकल्पिक)',
-      submitBtn: 'रिक्वेस्ट भेजें', requestsBtn: 'मेरी रिक्वेस्ट' },
+      submitBtn: 'रिक्वेस्ट भेजें', requestsBtn: 'मेरी रिक्वेस्ट'
+    },
     en: {
       headerTitle: 'Buy request', formTitle: 'New buy request',
       cropLabel: 'Crop name', cropPlaceholder: 'e.g. Wheat, Paddy',
@@ -32,7 +34,9 @@ export default function BuyerCreateOrder() {
       varietyLabel: 'Variety (optional)', varietyPlaceholder: 'e.g. PBW-343 (optional)',
       locationLabel: 'Location', locationPlaceholder: 'Your current location will auto-fill here',
       noteLabel: 'Note (optional)', notePlaceholder: 'Any special instructions (optional)',
-      submitBtn: 'Submit request', requestsBtn: 'My requests' } }[lang];
+      submitBtn: 'Submit request', requestsBtn: 'My requests'
+    }
+  }[lang];
 
   const [crop, setCrop] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -68,7 +72,7 @@ export default function BuyerCreateOrder() {
           const g = geo[0];
           setLocation([g.city || g.subregion || g.region || '', g.region || ''].filter(Boolean).join(', '));
         }
-      } catch (e) {}
+      } catch (e) { }
     })();
   }, []);
 
@@ -88,7 +92,8 @@ export default function BuyerCreateOrder() {
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ crop: crop.trim(), quantity: qtyNum, variety: variety.trim(), location: location.trim(), note: note.trim() }) });
+        body: JSON.stringify({ crop: crop.trim(), quantity: qtyNum, variety: variety.trim(), location: location.trim(), note: note.trim() })
+      });
       const data = await res.json();
       if (res.ok) {
         showAlert(lang === 'hi' ? 'सफल!' : 'Success!', lang === 'hi' ? 'रिक्वेस्ट भेज दी गई है' : 'Your request has been submitted',
@@ -188,4 +193,5 @@ const styles = StyleSheet.create({
   inputWithIcon: { flexDirection: 'row', alignItems: 'center', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 10, paddingVertical: 2, backgroundColor: '#F9FAFB' },
   input: { flex: 1, paddingVertical: 10, fontSize: 14, color: '#111827' },
   primaryBtn: { marginTop: 8, backgroundColor: '#16A34A', borderRadius: 18, paddingVertical: 12, alignItems: 'center' },
-  primaryBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' } });
+  primaryBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' }
+});

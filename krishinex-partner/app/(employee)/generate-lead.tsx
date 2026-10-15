@@ -11,7 +11,8 @@ import {
   Platform,
   ScrollView,
   Alert,
-  Image } from 'react-native';
+  Image
+} from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
@@ -26,14 +27,14 @@ const STATUS_GREEN = '#6bb313ff';
 type Category = 'Kisan' | 'Dukan';
 
 export default function GenerateLeadScreen() {
-  
+
   const router = useRouter();
   const { lang } = useI18n();
   const isHindi = lang === 'hi';
 
   const [loading, setLoading] = useState(false);
   const [category, setCategory] = useState<Category>('Kisan');
-  
+
   // Common Fields
   const [mobile, setMobile] = useState('');
   const [address, setAddress] = useState('');
@@ -63,7 +64,8 @@ export default function GenerateLeadScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.7 });
+      quality: 0.7
+    });
 
     if (!result.canceled) {
       setPhoto(result.assets[0].uri);
@@ -172,15 +174,18 @@ export default function GenerateLeadScreen() {
         formData.append('photo', {
           uri: photo,
           name: `lead_${Date.now()}.${fileType}`,
-          type: `image/${fileType}` } as any);
+          type: `image/${fileType}`
+        } as any);
       }
 
       const res = await fetch(`${API_URL}/employee/leads/generate`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data' },
-        body: formData });
+          'Content-Type': 'multipart/form-data'
+        },
+        body: formData
+      });
 
       const data = await res.json();
       if (res.ok) {
@@ -199,7 +204,7 @@ export default function GenerateLeadScreen() {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor={STATUS_GREEN} />
-      
+
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
@@ -213,8 +218,8 @@ export default function GenerateLeadScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>{isHindi ? 'कैटेगरी चुनें' : 'Select Category'}</Text>
           <View style={styles.categoryRow}>
-            <TouchableOpacity 
-              style={[styles.categoryBtn, category === 'Kisan' && styles.categoryBtnActive]} 
+            <TouchableOpacity
+              style={[styles.categoryBtn, category === 'Kisan' && styles.categoryBtnActive]}
               onPress={() => setCategory('Kisan')}
             >
               <Ionicons name="leaf" size={20} color={category === 'Kisan' ? '#FFF' : '#64748B'} />
@@ -222,8 +227,8 @@ export default function GenerateLeadScreen() {
                 {isHindi ? 'किसान' : 'Farmer'}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.categoryBtn, category === 'Dukan' && styles.categoryBtnActive]} 
+            <TouchableOpacity
+              style={[styles.categoryBtn, category === 'Dukan' && styles.categoryBtnActive]}
               onPress={() => setCategory('Dukan')}
             >
               <Ionicons name="business" size={20} color={category === 'Dukan' ? '#FFF' : '#64748B'} />
@@ -236,18 +241,18 @@ export default function GenerateLeadScreen() {
 
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>{isHindi ? 'विवरण भरें' : 'Enter Details'}</Text>
-          
+
           {category === 'Kisan' ? (
             <>
               <Input label={isHindi ? 'किसान का नाम' : 'Farmer Name'} value={farmerName} onChange={setFarmerName} placeholder="Enter name" />
               <Input label={isHindi ? 'गाँव' : 'Village'} value={village} onChange={setVillage} placeholder="Enter village" />
               <Input label={isHindi ? 'ज़मीन (एकड़)' : 'Land Size (Acre)'} value={landSize} onChange={setLandSize} placeholder="e.g. 5" keyboardType="numeric" />
               <Input label={isHindi ? 'वर्तमान फसल' : 'Current Crop'} value={currentCrop} onChange={setCurrentCrop} placeholder="e.g. Wheat" />
-              
+
               <Text style={styles.label}>{isHindi ? 'NexCard चाहिए?' : 'Need NexCard?'}</Text>
               <View style={styles.optionRow}>
                 {['Yes', 'No'].map((opt) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={opt}
                     style={[styles.choiceBtn, needsNexCard === opt && styles.choiceBtnActive]}
                     onPress={() => setNeedsNexCard(opt as any)}
@@ -262,11 +267,11 @@ export default function GenerateLeadScreen() {
               <Input label={isHindi ? 'दुकान का नाम' : 'Shop Name'} value={shopName} onChange={setShopName} placeholder="Enter shop name" />
               <Input label={isHindi ? 'दुकानदार का नाम' : 'Owner Name'} value={ownerName} onChange={setOwnerName} placeholder="Enter owner name" />
               <Input label={isHindi ? 'दुकान कैटेगरी' : 'Shop Category'} value={shopCategory} onChange={setShopCategory} placeholder="e.g. Seeds, Pesticides" />
-              
+
               <Text style={styles.label}>{isHindi ? 'Interest (KrishiNex Partner)' : 'Interest (KrishiNex Partner)'}</Text>
               <View style={styles.optionRow}>
                 {['High', 'Low'].map((opt) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={opt}
                     style={[styles.choiceBtn, partnerInterest === opt && styles.choiceBtnActive]}
                     onPress={() => setPartnerInterest(opt as any)}
@@ -312,10 +317,10 @@ function Input({ label, value, onChange, placeholder, keyboardType = 'default', 
   return (
     <View style={styles.inputGroup}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput 
-        style={[styles.input, multiline && styles.textArea]} 
-        value={value} 
-        onChangeText={onChange} 
+      <TextInput
+        style={[styles.input, multiline && styles.textArea]}
+        value={value}
+        onChangeText={onChange}
         placeholder={placeholder}
         keyboardType={keyboardType}
         multiline={multiline}
@@ -327,17 +332,20 @@ function Input({ label, value, onChange, placeholder, keyboardType = 'default', 
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: STATUS_GREEN,
+  header: {
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, backgroundColor: STATUS_GREEN,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'},
+    justifyContent: 'space-between'
+  },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#FFF' },
   scrollContent: { padding: 20 },
   card: {
@@ -348,7 +356,8 @@ const styles = StyleSheet.create({
     elevation: 3,
     shadowColor: '#64748B',
     shadowOpacity: 0.1,
-    shadowRadius: 10 },
+    shadowRadius: 10
+  },
   sectionLabel: { fontSize: 14, fontWeight: '700', color: '#475569', marginBottom: 15 },
   categoryRow: { flexDirection: 'row', gap: 12 },
   categoryBtn: {
@@ -360,7 +369,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8 },
+    gap: 8
+  },
   categoryBtnActive: { backgroundColor: STATUS_GREEN, borderColor: STATUS_GREEN },
   categoryBtnText: { fontWeight: '700', color: '#64748B' },
   categoryBtnTextActive: { color: '#FFF' },
@@ -372,7 +382,8 @@ const styles = StyleSheet.create({
     height: 48,
     paddingHorizontal: 15,
     fontSize: 14,
-    color: '#1E293B' },
+    color: '#1E293B'
+  },
   textArea: { height: 80, textAlignVertical: 'top', paddingTop: 12 },
   optionRow: { flexDirection: 'row', gap: 10, marginBottom: 15 },
   choiceBtn: {
@@ -382,7 +393,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
     alignItems: 'center',
-    justifyContent: 'center' },
+    justifyContent: 'center'
+  },
   choiceBtnActive: { backgroundColor: '#F0FDF4', borderColor: STATUS_GREEN },
   choiceText: { fontWeight: '700', color: '#64748B' },
   choiceTextActive: { color: STATUS_GREEN },
@@ -396,7 +408,8 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden' },
+    overflow: 'hidden'
+  },
   previewImg: { width: '100%', height: '100%' },
   photoPlaceholder: { marginTop: 8, fontSize: 13, color: '#94A3B8', fontWeight: '600' },
   submitBtn: {
@@ -407,6 +420,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     elevation: 8,
     shadowColor: STATUS_GREEN,
-    shadowOpacity: 0.3 },
+    shadowOpacity: 0.3
+  },
   submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
-  disabledBtn: { opacity: 0.7 } });
+  disabledBtn: { opacity: 0.7 }
+});

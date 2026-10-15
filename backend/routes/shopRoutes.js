@@ -553,6 +553,25 @@ router.post('/orders/:id/verify-delivery-otp', protect, async (req, res) => {
                     note: `Commission from Shop Order #${freshOrder._id.toString().slice(-6)}`
                 });
             }
+
+            // Sync Ledger (Bahi-Khata) for delivery
+            await Ledger.updateMany(
+                { orderId: freshOrder._id },
+                { $set: { type: 'PAYMENT' } }
+            );
+
+            const existingLedger = await Ledger.findOne({ orderId: freshOrder._id });
+            if (!existingLedger && freshOrder.paymentMode === 'CASH') {
+                await Ledger.create({
+                    shopId: freshOrder.owner,
+                    farmerId: freshOrder.buyer?._id || freshOrder.buyer,
+                    orderId: freshOrder._id,
+                    amount: freshOrder.totalAmount,
+                    type: 'PAYMENT',
+                    method: 'CASH',
+                    note: `Online Order Delivered (COD Cash) #${freshOrder._id.toString().slice(-6)}`
+                });
+            }
         }
 
         res.json({ success: true, order: updatedOrder });
@@ -754,6 +773,25 @@ router.patch('/orders/:id/status', protect, async (req, res) => {
                 });
                 console.log(`[SHOP] Credited ₹${commissionAmount} commission to Admin`);
             }
+
+            // Sync Ledger (Bahi-Khata) for delivery
+            await Ledger.updateMany(
+                { orderId: order._id },
+                { $set: { type: 'PAYMENT' } }
+            );
+
+            const existingLedger = await Ledger.findOne({ orderId: order._id });
+            if (!existingLedger && order.paymentMode === 'CASH') {
+                await Ledger.create({
+                    shopId: order.owner,
+                    farmerId: order.buyer?._id || order.buyer,
+                    orderId: order._id,
+                    amount: order.totalAmount,
+                    type: 'PAYMENT',
+                    method: 'CASH',
+                    note: `Online Order Delivered (COD Cash) #${order._id.toString().slice(-6)}`
+                });
+            }
         }
 
         res.json(updatedOrder);
@@ -944,6 +982,17 @@ router.post('/checkout', protect, async (req, res) => {
                     referenceId: order._id,
                     note: `Payment for Shop Order (Discount: ₹${discountApplied})`
                 });
+
+                // Create Ledger record for Shop Partner (Wallet Sale)
+                await Ledger.create({
+                    shopId: resolvedOwnerId,
+                    farmerId: req.user.id,
+                    orderId: order._id,
+                    amount: finalAmount,
+                    type: 'PAYMENT',
+                    method: 'WALLET',
+                    note: `Online Shop Wallet Purchase #${order._id.toString().slice(-6)}`
+                });
             } else if (paymentMethod === 'credit') {
                 const user = await User.findById(req.user.id);
                 user.creditUsed = (user.creditUsed || 0) + finalAmount;
@@ -962,13 +1011,13 @@ router.post('/checkout', protect, async (req, res) => {
                     note: `Payment for Shop Order via Nex Credit #${order._id.toString().slice(-6)}`
                 });
 
-                // Create Ledger record (Bahi-Khata / Udhar record for farmer & shop)
+                // Create Ledger record (Platform Credit Sale - Guaranteed payment to partner)
                 await Ledger.create({
                     shopId: resolvedOwnerId,
                     farmerId: req.user.id,
                     orderId: order._id,
                     amount: finalAmount,
-                    type: 'DUE',
+                    type: 'PAYMENT',
                     method: 'DUE',
                     note: `Online Shop Nex Credit Purchase #${order._id.toString().slice(-6)}`
                 });

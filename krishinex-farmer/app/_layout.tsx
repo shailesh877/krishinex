@@ -29,7 +29,7 @@ function RootLayoutContent() {
   useEffect(() => {
     console.log('[FONT DEBUG] fontsLoaded:', fontsLoaded, 'fontError:', fontError);
   }, [fontsLoaded, fontError]);
-  
+
   const colorScheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
@@ -64,7 +64,7 @@ function RootLayoutContent() {
       responseListener = Notifications.addNotificationResponseReceivedListener((response: any) => {
         const { data } = response.notification.request.content;
         console.log('[NOTIFY] User tapped:', data);
-        
+
         if (data?.type === 'order' || data?.type === 'status') {
           if (data?.refId) {
             router.push({ pathname: '/track-order', params: { id: data.refId } } as any);
@@ -115,13 +115,13 @@ function RootLayoutContent() {
       setIsReady(true);
       try {
         await SplashScreen.hideAsync();
-      } catch (e) {} // Ignore if already hidden
+      } catch (e) { } // Ignore if already hidden
     }
   };
 
   useEffect(() => {
     if (!isReady || (!fontsLoaded && !fontError)) return;
-    
+
     const verifyAndNavigate = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
@@ -129,7 +129,7 @@ function RootLayoutContent() {
         setIsAuthenticated(isAuth);
 
         const inAuthGroup = String(segments[0]) === '(auth)';
-        
+
         // Add delay to let Stack mount completely before navigating
         setTimeout(() => {
           if (isAuth) {
@@ -174,21 +174,21 @@ function RootLayoutContent() {
               resizeMode="contain"
             />
           </View>
-          
-          <Text style={{ 
-            fontSize: 36, 
-            fontWeight: '900', 
-            color: '#4b7d0a', 
+
+          <Text style={{
+            fontSize: 36,
+            fontWeight: '900',
+            color: '#4b7d0a',
             letterSpacing: 1,
             marginTop: -10, // Pull text closer to logo
             fontFamily: 'System'
           }}>
             KrishiNex
           </Text>
-          <Text style={{ 
-            fontSize: 12, 
-            color: '#9CA3AF', 
-            marginTop: 4, 
+          <Text style={{
+            fontSize: 12,
+            color: '#9CA3AF',
+            marginTop: 4,
             letterSpacing: 3,
             textTransform: 'uppercase',
             fontWeight: '700'

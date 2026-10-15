@@ -123,7 +123,7 @@ export default function CheckoutScreen() {
 
   const itemTotal = useMemo(() => (directItem ? directItem.price * directItem.qty : totalAmount), [directItem, totalAmount]);
   const delivery: number = 0;
-  
+
   const discountAmount = useMemo(() => {
     if (paymentMethod === 'wallet' && walletInfo.discount > 0) {
       return Math.round((itemTotal * walletInfo.discount) / 100);
@@ -190,8 +190,8 @@ export default function CheckoutScreen() {
     if (userStatus !== 'approved') {
       showAlert(
         hi ? 'वेरिफिकेशन आवश्यक' : 'Verification Required',
-        hi 
-          ? 'ऑर्डर प्लेस करने के लिए आपका प्रोफाइल वेरीफाइड होना जरूरी है। कृपया अपनी प्रोफाइल पूरी करें और वेरिफिकेशन का इंतजार करें।' 
+        hi
+          ? 'ऑर्डर प्लेस करने के लिए आपका प्रोफाइल वेरीफाइड होना जरूरी है। कृपया अपनी प्रोफाइल पूरी करें और वेरिफिकेशन का इंतजार करें।'
           : 'Your profile must be verified to place an order. Please complete your profile and wait for verification.',
         [
           { text: hi ? 'रद्द' : 'Cancel', style: 'cancel' },
@@ -314,7 +314,7 @@ export default function CheckoutScreen() {
         <View style={styles.card}>
           <View style={styles.cardHeaderRow}>
             <Text style={styles.cardTitle}>{t.address}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => router.push('/(tabs)/profile')}
             >
@@ -466,7 +466,7 @@ export default function CheckoutScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{t.paymentTitle}</Text>
           <View style={styles.paymentRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setPaymentMethod('cod')}
               activeOpacity={0.8}
               style={{ flex: 1 }}
@@ -477,7 +477,7 @@ export default function CheckoutScreen() {
                 icon="cash-outline"
               />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setPaymentMethod('wallet')}
               activeOpacity={0.8}
               style={{ flex: 1 }}
@@ -488,7 +488,7 @@ export default function CheckoutScreen() {
                 icon="wallet-outline"
               />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setPaymentMethod('credit')}
               activeOpacity={0.8}
               style={{ flex: 1 }}
