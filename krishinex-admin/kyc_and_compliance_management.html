@@ -710,7 +710,8 @@
 
   <!-- DOCUMENT VIEWER MODAL -->
   <div id="documentModal"
-    class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md"
+    class="fixed inset-0 hidden items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md"
+    style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: none;"
     onclick="closeDocumentModal()">
     <div class="relative w-full max-w-4xl h-[85vh] bg-slate-800 rounded-3xl border border-slate-700 flex flex-col items-center justify-center shadow-2xl animate-[slideUp_0.3s_ease-out]" onclick="event.stopPropagation()">
       
@@ -1264,15 +1265,41 @@
 
     // View Document
     function viewDocument(documentUrl) {
-      if (documentUrl && !documentUrl.startsWith('http') && !documentUrl.startsWith('data:')) {
+      if (documentUrl && typeof window.fixImageUrl === 'function') {
+        documentUrl = window.fixImageUrl(documentUrl);
+      } else if (documentUrl && !documentUrl.startsWith('http') && !documentUrl.startsWith('data:')) {
         documentUrl = documentUrl.startsWith('/') ? IMAGE_BASE + documentUrl : IMAGE_BASE + '/' + documentUrl;
       }
-      document.getElementById('documentImage').src = documentUrl || '';
-      document.getElementById('documentModal').classList.remove('hidden');
+      const img = document.getElementById('documentImage');
+      if (img) img.src = documentUrl || '';
+
+      const modal = document.getElementById('documentModal');
+      const kycModal = document.getElementById('kycProfileModal');
+
+      // Temporarily hide kycProfileModal so documentModal is 100% on top and unobstructed
+      if (kycModal && !kycModal.classList.contains('hidden')) {
+        kycModal.style.setProperty('visibility', 'hidden', 'important');
+      }
+
+      if (modal) {
+        // Move to end of body to guarantee it's the topmost sibling in DOM stacking order
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
+        modal.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; background-color: rgba(15, 23, 42, 0.95) !important;';
+      }
     }
 
     function closeDocumentModal() {
-      document.getElementById('documentModal').classList.add('hidden');
+      const modal = document.getElementById('documentModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.setProperty('display', 'none', 'important');
+      }
+      // Restore kycProfileModal visibility
+      const kycModal = document.getElementById('kycProfileModal');
+      if (kycModal) {
+        kycModal.style.removeProperty('visibility');
+      }
     }
 
     function downloadDocument() {
@@ -1421,7 +1448,11 @@
     }
 
     function closeKycProfileModal() {
-      document.getElementById('kycProfileModal').classList.add('hidden');
+      const kycModal = document.getElementById('kycProfileModal');
+      if (kycModal) {
+        kycModal.classList.add('hidden');
+        kycModal.style.removeProperty('visibility');
+      }
     }
 
     // Show Toast

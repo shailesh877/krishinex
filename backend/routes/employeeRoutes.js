@@ -6253,8 +6253,7 @@ router.get('/admin/finance/stats', protect, checkModule('finance'), async (req, 
 
         // 4. Find all existing Payout Transactions to exclude already-paid/processing ones
         const allTransactions = await Transaction.find({
-            status: { $in: ['Pending', 'Completed'] },
-            type: 'Payout'
+            status: { $in: ['Pending', 'Completed'] }
         }).select('referenceId').lean();
         const paidRefIds = new Set(allTransactions.filter(t => t.referenceId).map(t => t.referenceId.toString()));
 
@@ -6281,69 +6280,65 @@ router.get('/admin/finance/stats', protect, checkModule('finance'), async (req, 
         let pendingCollectionsCount = 0;
         overdueOrders.forEach(o => {
             let due = (o.amount || 0) - (o.amountReceived || 0);
-            if (due > 0) {
+            if (due > 0 && !paidRefIds.has(o._id.toString())) {
                 fieldCollections += due;
                 pendingCollectionsCount++;
             }
         });
 
-        // Paid This Month / Period
-        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        // Paid in Period (or All Time if no date filter)
         const txQuery = {
             status: 'Completed',
             type: 'Payout'
         };
         if (hasFilter) {
             txQuery.createdAt = queryRange.createdAt;
-        } else {
-            txQuery.createdAt = { $gte: startOfMonth };
         }
         const periodTxns = await Transaction.find(txQuery);
 
-        const thisMonthPaid = periodTxns.reduce((sum, t) => sum + t.amount, 0);
+        const paidAmount = periodTxns.reduce((sum, t) => sum + (t.amount || 0), 0);
         const completedCount = periodTxns.length;
 
-        // Revenue (Platform Commission + Shop Sales)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Platform Revenue (Shop Sales + Platform Commissions)
+        let revenue = 0;
+        let revenueCount = 0;
 
-        let todayRevenue = 0;
-        const revQuery = hasFilter ? queryRange.createdAt : { $gte: today };
-
-        const todayShopOrders = await ShopOrder.find({
-            createdAt: revQuery,
-            status: { $ne: 'CANCELLED' }
-        });
-
-        // For Shop Orders, platform revenue is typically the commission/margin.
-        todayRevenue += todayShopOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        const filterShop = { status: { $ne: 'CANCELLED' } };
+        if (hasFilter) filterShop.createdAt = queryRange.createdAt;
+        const periodShopOrders = await ShopOrder.find(filterShop);
+        revenue += periodShopOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        revenueCount += periodShopOrders.length;
 
         // Platform Commissions from completed rentals in period
-        const todayRentals = await Rental.find({
-            status: 'Completed',
-            updatedAt: revQuery
-        });
-        todayRevenue += todayRentals.reduce((sum, r) => sum + (r.platformCommission || 0), 0);
+        const filterRentals = { status: 'Completed' };
+        if (hasFilter) filterRentals.createdAt = queryRange.createdAt;
+        const periodRentals = await Rental.find(filterRentals);
+        revenue += periodRentals.reduce((sum, r) => sum + (r.platformCommission || 0), 0);
+        revenueCount += periodRentals.length;
 
         // Platform Commissions from Buyer Trading in period
         const settings = await Settings.getSettings();
-        const bCommissionRate = settings.commissions.buyerTrading || 0;
-        const todayBuyerOrders = await Order.find({
-            status: 'completed',
-            updatedAt: revQuery
-        });
-        todayRevenue += todayBuyerOrders.reduce((sum, o) => {
+        const bCommissionRate = settings?.commissions?.buyerTrading || 0;
+        const filterBuyer = { status: 'completed' };
+        if (hasFilter) filterBuyer.createdAt = queryRange.createdAt;
+        const periodBuyerOrders = await Order.find(filterBuyer);
+        revenue += periodBuyerOrders.reduce((sum, o) => {
             const commission = o.commission || ((o.amount || (parseQuantityInQuintals(o.quantity) * (o.pricePerQuintal || 0))) * bCommissionRate / 100);
-            return sum + commission;
+            return sum + (commission || 0);
         }, 0);
+        revenueCount += periodBuyerOrders.length;
 
         res.json({
             totalPendingPayouts,
-            thisMonthPaid,
-            todayRevenue,
-            fieldCollections,
             pendingCount: pendingCount + pendingCollectionsCount,
-            completedCount
+            thisMonthPaid: paidAmount,
+            paidAmount,
+            completedCount,
+            todayRevenue: revenue,
+            revenue,
+            revenueCount,
+            fieldCollections,
+            pendingCollectionsCount
         });
 
     } catch (e) {
