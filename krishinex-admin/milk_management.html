@@ -1,0 +1,3292 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Milk Management - KrishiNex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <script src="js/auth.js?v=1.0.1"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: { 
+            brand: { green: '#16A34A', blue: '#0EA5E9' } 
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    .tab-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      font-weight: 800;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-tab-fade {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-slate-50 text-slate-900 font-sans">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== SIDEBAR (REUSABLE FULL STANDARD) ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div
+        class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-emerald-50/40 to-sky-50/40 sticky top-0 z-10 justify-between">
+        <div class="flex items-center">
+          <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+            <img src="images/logo.png" alt="KrishiNex">
+          </div>
+          <div class="ml-3">
+            <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="KrishiNex">
+            <p class="text-[10px] text-slate-600 font-bold">Super Admin</p>
+          </div>
+        </div>
+        <button class="md:hidden text-slate-400 hover:text-slate-600 p-1" onclick="toggleSidebar(false)">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-home text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200 "></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Milk Services</p>
+        </div>
+
+        <a href="milk_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 text-emerald-800 border-2 border-emerald-300 shadow-md">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 shadow-sm">
+            <i class="fas fa-glass-water text-emerald-600"></i>
+          </span>
+          <span class="truncate font-black">Milk Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col md:ml-64 min-w-0">
+      <!-- HEADER -->
+      <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-xs">
+        <div class="flex items-center gap-3">
+          <button class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100" onclick="toggleSidebar(true)">
+            <i class="fas fa-bars text-lg"></i>
+          </button>
+          <div>
+            <h1 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+              <span class="inline-flex p-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
+                <i class="fas fa-glass-water"></i>
+              </span>
+              Milk Management Hub
+              <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold hidden sm:inline">Enterprise Dairy</span>
+            </h1>
+            <p class="text-[11px] sm:text-xs text-slate-500 font-medium">Complete operations: farmer requests, partner fleet, daily ledgers, pauses, cancellations & rollout settings</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <!-- Realtime WebSocket Live Badge -->
+          <div id="liveSyncBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 shadow-xs">
+            <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-emerald-700 font-black text-[10px]">Realtime Active</span>
+          </div>
+
+          <span id="lastUpdatedTime" class="text-[11px] font-bold text-slate-400 hidden lg:inline">Updated just now</span>
+          <button onclick="refreshCurrentTab(true)" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold shadow-sm transition-all flex items-center gap-2 active:scale-95">
+            <i id="refreshIcon" class="fas fa-arrows-rotate"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="p-4 sm:p-6 space-y-6 max-w-7xl w-full mx-auto">
+        <!-- KPI STATS SUMMARY CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+          <!-- Pending Requests -->
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xs hover:border-amber-200 transition-all cursor-pointer" onclick="switchMainTab('former_request', 'pending')">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending Farmer</span>
+              <div class="h-7 w-7 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center text-xs">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+            <p id="statPending" class="text-xl sm:text-2xl font-black text-slate-800">0</p>
+            <p class="text-[10px] text-amber-600 font-bold mt-0.5">Awaiting review</p>
+          </div>
+
+          <!-- Active Sellers -->
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xs hover:border-emerald-200 transition-all cursor-pointer" onclick="switchMainTab('former_request', 'sell')">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Sellers</span>
+              <div class="h-7 w-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                <i class="fas fa-arrow-up"></i>
+              </div>
+            </div>
+            <p id="statSellers" class="text-xl sm:text-2xl font-black text-slate-800">0</p>
+            <p class="text-[10px] text-emerald-600 font-bold mt-0.5">Dairy suppliers</p>
+          </div>
+
+          <!-- Active Buyers -->
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xs hover:border-blue-200 transition-all cursor-pointer" onclick="switchMainTab('former_request', 'buy')">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Buyers</span>
+              <div class="h-7 w-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+                <i class="fas fa-arrow-down"></i>
+              </div>
+            </div>
+            <p id="statBuyers" class="text-xl sm:text-2xl font-black text-slate-800">0</p>
+            <p class="text-[10px] text-blue-600 font-bold mt-0.5">Daily subscribers</p>
+          </div>
+
+          <!-- Milk Partners -->
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xs hover:border-purple-200 transition-all cursor-pointer" onclick="switchMainTab('partner_request')">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Milk Partners</span>
+              <div class="h-7 w-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs">
+                <i class="fas fa-motorcycle"></i>
+              </div>
+            </div>
+            <p id="statPartners" class="text-xl sm:text-2xl font-black text-slate-800">0</p>
+            <p id="statPartnersSub" class="text-[10px] text-purple-600 font-bold mt-0.5">0 pending</p>
+          </div>
+
+          <!-- Temp Paused -->
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xs hover:border-orange-200 transition-all cursor-pointer" onclick="switchMainTab('temp_pose')">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Temp Paused</span>
+              <div class="h-7 w-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center text-xs">
+                <i class="fas fa-pause"></i>
+              </div>
+            </div>
+            <p id="statPaused" class="text-xl sm:text-2xl font-black text-slate-800">0</p>
+            <p class="text-[10px] text-orange-600 font-bold mt-0.5">Paused services</p>
+          </div>
+
+          <!-- Cancellations -->
+          <div class="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-xs hover:border-rose-200 transition-all cursor-pointer" onclick="switchMainTab('canlation')">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cancellations</span>
+              <div class="h-7 w-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs">
+                <i class="fas fa-ban"></i>
+              </div>
+            </div>
+            <p id="statCancelled" class="text-xl sm:text-2xl font-black text-slate-800">0</p>
+            <p class="text-[10px] text-rose-600 font-bold mt-0.5">Total cancelled</p>
+          </div>
+        </div>
+
+        <!-- MAIN TABS CONTAINER -->
+        <div class="bg-white rounded-3xl border-2 border-slate-100 shadow-sm overflow-hidden">
+          <!-- TABS NAVIGATION BAR -->
+          <div class="border-b-2 border-slate-100 bg-slate-50/70 px-4 sm:px-6 pt-3 flex items-center gap-1.5 sm:gap-2 overflow-x-auto custom-scroll">
+            <!-- 1. Farmer Requests -->
+            <button onclick="switchMainTab('former_request')" id="mainTab-former_request"
+              class="main-tab-btn px-4 sm:px-5 py-3 font-black text-xs border-b-2 border-emerald-600 text-emerald-700 bg-white rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-user-tag text-sm"></i>
+              <span>Farmer Requests</span>
+              <span id="badgeFormerReq" class="tab-badge bg-emerald-100 text-emerald-800">0</span>
+            </button>
+
+            <!-- 2. Partner Requests -->
+            <button onclick="switchMainTab('partner_request')" id="mainTab-partner_request"
+              class="main-tab-btn px-4 sm:px-5 py-3 font-bold text-xs border-b-2 border-transparent text-slate-500 hover:text-slate-800 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-truck-ramp-box text-sm"></i>
+              <span>Partner Requests</span>
+              <span id="badgePartnerReq" class="tab-badge bg-slate-200 text-slate-600">0</span>
+            </button>
+
+            <!-- 3. Milk History -->
+            <button onclick="switchMainTab('milk_history')" id="mainTab-milk_history"
+              class="main-tab-btn px-4 sm:px-5 py-3 font-bold text-xs border-b-2 border-transparent text-slate-500 hover:text-slate-800 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-book-open text-sm"></i>
+              <span>Milk History</span>
+              <span id="badgeMilkHistory" class="tab-badge bg-slate-200 text-slate-600">0</span>
+            </button>
+
+            <!-- 4. Temp Pause -->
+            <button onclick="switchMainTab('temp_pose')" id="mainTab-temp_pose"
+              class="main-tab-btn px-4 sm:px-5 py-3 font-bold text-xs border-b-2 border-transparent text-slate-500 hover:text-slate-800 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-pause-circle text-sm"></i>
+              <span>Temp Pause</span>
+              <span id="badgeTempPose" class="tab-badge bg-slate-200 text-slate-600">0</span>
+            </button>
+
+            <!-- 5. Cancellation -->
+            <button onclick="switchMainTab('canlation')" id="mainTab-canlation"
+              class="main-tab-btn px-4 sm:px-5 py-3 font-bold text-xs border-b-2 border-transparent text-slate-500 hover:text-slate-800 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-circle-xmark text-sm"></i>
+              <span>Cancellation</span>
+              <span id="badgeCanlation" class="tab-badge bg-slate-200 text-slate-600">0</span>
+            </button>
+
+            <!-- 6. Settings -->
+            <button onclick="switchMainTab('setings')" id="mainTab-setings"
+              class="main-tab-btn px-4 sm:px-5 py-3 font-bold text-xs border-b-2 border-transparent text-slate-500 hover:text-slate-800 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-sliders text-sm"></i>
+              <span>Settings</span>
+            </button>
+          </div>
+
+          <!-- TAB CONTENT PANELS -->
+
+          <!-- ============================================== -->
+          <!-- 1. FORMER REQUEST (Farmer Requests) -->
+          <!-- ============================================== -->
+          <div id="panel-former_request" class="p-4 sm:p-6 space-y-5 animate-tab-fade">
+            <!-- Filter Bar -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="setFarmerFilter('all')" id="ff-all" class="ff-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all">All</button>
+                <button onclick="setFarmerFilter('pending')" id="ff-pending" class="ff-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                  Pending Review
+                </button>
+                <button onclick="setFarmerFilter('sell')" id="ff-sell" class="ff-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Sell Milk (विक्रेता)
+                </button>
+                <button onclick="setFarmerFilter('buy')" id="ff-buy" class="ff-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Buy Milk (खरीदार)
+                </button>
+                <button onclick="setFarmerFilter('approved')" id="ff-approved" class="ff-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Active
+                </button>
+                <button onclick="setFarmerFilter('rejected')" id="ff-rejected" class="ff-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Rejected
+                </button>
+              </div>
+
+              <div class="relative w-full md:w-72">
+                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="farmerSearch" oninput="debounceFarmerSearch()" placeholder="Search farmer name, phone..."
+                  class="w-full pl-9 pr-4 py-2 bg-white rounded-xl text-xs border border-slate-200 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-medium">
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto rounded-2xl border-2 border-slate-100">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                    <th class="p-3.5">Farmer / Applicant</th>
+                    <th class="p-3.5">Request Type</th>
+                    <th class="p-3.5">Daily Qty</th>
+                    <th class="p-3.5">Schedule</th>
+                    <th class="p-3.5">Rate (₹/L)</th>
+                    <th class="p-3.5">Assigned Partner</th>
+                    <th class="p-3.5">Location / Address</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="farmerRequestsTableBody" class="divide-y divide-slate-100 font-medium">
+                  <tr>
+                    <td colspan="9" class="text-center py-12 text-slate-400">
+                      <i class="fas fa-circle-notch fa-spin text-xl text-emerald-600 mb-2"></i>
+                      <p>Loading farmer requests...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- 2. PARTNER REQUEST (Milk Partner Applications) -->
+          <!-- ============================================== -->
+          <div id="panel-partner_request" class="p-4 sm:p-6 space-y-5 animate-tab-fade hidden">
+            <!-- Header bar with Add Partner Button -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-purple-50/60 p-4 rounded-2xl border border-purple-100">
+              <div>
+                <h3 class="text-sm font-black text-purple-900 flex items-center gap-2">
+                  <i class="fas fa-truck-droplet text-purple-600"></i>
+                  Milk Delivery & Collection Partner Fleet
+                </h3>
+                <p class="text-xs text-purple-700/80 font-medium mt-0.5">Manage partner onboarding, route assignments, vehicle verification, and testing equipment.</p>
+              </div>
+              <button onclick="openAddPartnerModal()" class="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-md shadow-purple-600/20 transition-all flex items-center justify-center gap-2">
+                <i class="fas fa-plus"></i> Add New Partner
+              </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="setPartnerFilter('all')" id="pf-all" class="pf-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all">All</button>
+                <button onclick="setPartnerFilter('pending')" id="pf-pending" class="pf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                  Pending Approval
+                </button>
+                <button onclick="setPartnerFilter('approved')" id="pf-approved" class="pf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Active Partners
+                </button>
+                <button onclick="setPartnerFilter('blocked')" id="pf-blocked" class="pf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                  Blocked
+                </button>
+                <button onclick="setPartnerFilter('rejected')" id="pf-rejected" class="pf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Rejected
+                </button>
+              </div>
+
+              <div class="relative w-full md:w-72">
+                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="partnerSearch" oninput="debouncePartnerSearch()" placeholder="Search partner, route, vehicle..."
+                  class="w-full pl-9 pr-4 py-2 bg-white rounded-xl text-xs border border-slate-200 focus:outline-none focus:border-purple-500 font-medium">
+              </div>
+            </div>
+
+            <!-- Partners Table -->
+            <div class="overflow-x-auto rounded-2xl border-2 border-slate-100">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                    <th class="p-3.5">Partner Name & Contact</th>
+                    <th class="p-3.5">Wallet Balance</th>
+                    <th class="p-3.5">Vehicle Type & Reg</th>
+                    <th class="p-3.5">Canister Capacity</th>
+                    <th class="p-3.5">Assigned Route</th>
+                    <th class="p-3.5">Testing Kit</th>
+                    <th class="p-3.5">Status</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="partnersTableBody" class="divide-y divide-slate-100 font-medium">
+                  <tr>
+                    <td colspan="8" class="text-center py-12 text-slate-400">
+                      <i class="fas fa-circle-notch fa-spin text-xl text-purple-600 mb-2"></i>
+                      <p>Loading milk partners...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- 3. MILK HISTORY (Ledger & Daily Logs) -->
+          <!-- ============================================== -->
+          <div id="panel-milk_history" class="p-4 sm:p-6 space-y-5 animate-tab-fade hidden">
+            <!-- Filter & Export Controls -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <!-- Date Range -->
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">From Date</label>
+                  <input type="date" id="historyStartDate" class="w-full px-3 py-2 bg-white rounded-xl text-xs border border-slate-200 font-semibold focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">To Date</label>
+                  <input type="date" id="historyEndDate" class="w-full px-3 py-2 bg-white rounded-xl text-xs border border-slate-200 font-semibold focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <!-- Shift -->
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Shift</label>
+                  <select id="historyShift" class="w-full px-3 py-2 bg-white rounded-xl text-xs border border-slate-200 font-semibold focus:outline-none focus:border-emerald-500">
+                    <option value="all">All Shifts</option>
+                    <option value="Morning">Morning (सुबह)</option>
+                    <option value="Evening">Evening (शाम)</option>
+                  </select>
+                </div>
+
+                <!-- Type -->
+                <div>
+                  <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider mb-1">Operation Type</label>
+                  <select id="historyType" class="w-full px-3 py-2 bg-white rounded-xl text-xs border border-slate-200 font-semibold focus:outline-none focus:border-emerald-500">
+                    <option value="all">All Types</option>
+                    <option value="sell">Farmer Supply (Sell / खरीद)</option>
+                    <option value="buy">Consumer Delivery (Buy / बिक्री)</option>
+                  </select>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-end gap-2">
+                  <button onclick="loadMilkHistory()" class="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition-all">
+                    Apply Filter
+                  </button>
+                  <button onclick="exportHistoryCSV()" title="Export CSV" class="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-black transition-all flex items-center justify-center">
+                    <i class="fas fa-file-csv text-sm"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Date Presets -->
+              <div class="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200/60">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1">Presets:</span>
+                <button onclick="applyHistoryPreset('today')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">Today</button>
+                <button onclick="applyHistoryPreset('yesterday')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">Yesterday</button>
+                <button onclick="applyHistoryPreset('7days')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">Last 7 Days</button>
+                <button onclick="applyHistoryPreset('month')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-slate-600 hover:bg-slate-200 border border-slate-200">This Month</button>
+              </div>
+            </div>
+
+            <!-- Ledger Summary Banner -->
+            <div id="historySummaryBanner" class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gradient-to-r from-emerald-50 via-teal-50 to-sky-50 p-4 rounded-2xl border border-emerald-100">
+              <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Filtered Records</p>
+                <p id="histRecCount" class="text-lg font-black text-slate-800">0</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Volume</p>
+                <p id="histVolSum" class="text-lg font-black text-emerald-700">0 L</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Value</p>
+                <p id="histAmountSum" class="text-lg font-black text-blue-700">₹0</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Completed Deliveries</p>
+                <p id="histCompletedSum" class="text-lg font-black text-slate-800">0</p>
+              </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="overflow-x-auto rounded-2xl border-2 border-slate-100">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                    <th class="p-3.5">Date & Shift</th>
+                    <th class="p-3.5">Farmer / Customer</th>
+                    <th class="p-3.5">Type</th>
+                    <th class="p-3.5">Quantity (L)</th>
+                    <th class="p-3.5">Rate (₹/L)</th>
+                    <th class="p-3.5">Total Amount</th>
+                    <th class="p-3.5">Wallet / Rollout Status</th>
+                    <th class="p-3.5">Staff / Performer</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody" class="divide-y divide-slate-100 font-medium">
+                  <tr>
+                    <td colspan="8" class="text-center py-12 text-slate-400">
+                      <i class="fas fa-circle-notch fa-spin text-xl text-emerald-600 mb-2"></i>
+                      <p>Loading milk history ledger...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- 4. TEMP POSE (Temp Pause Management & Permanent Audit Ledger) -->
+          <!-- ============================================== -->
+          <div id="panel-temp_pose" class="p-4 sm:p-6 space-y-5 animate-tab-fade hidden">
+            <!-- View Mode Switcher -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 p-3 sm:p-4 rounded-2xl border border-orange-200">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <i class="fas fa-pause-circle text-lg"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-black text-orange-950 uppercase tracking-wider flex items-center gap-2">
+                    Temporary Pause Management & Audit Ledger
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      <i class="fas fa-shield-halved mr-1"></i>Zero Data Loss Guarantee
+                    </span>
+                  </h4>
+                  <p class="text-xs text-orange-800/90 font-medium mt-0.5">
+                    सक्रिय अस्थायी रोक प्रबंधित करें या भूतपूर्व सभी रोक व एक्सटेंशन का स्थायी अन-डिलीटेबल ऑडिट लेजर देखें।
+                  </p>
+                </div>
+              </div>
+
+              <!-- View Switcher Buttons -->
+              <div class="flex items-center bg-white p-1 rounded-xl border border-orange-200 shadow-xs shrink-0">
+                <button onclick="switchPauseSubView('active')" id="btnPauseViewActive"
+                  class="px-3.5 py-1.5 rounded-lg text-xs font-black bg-orange-600 text-white transition-all flex items-center gap-1.5 shadow-xs">
+                  <i class="fas fa-clock-rotate-left"></i>
+                  <span>सक्रिय रोक (Active)</span>
+                  <span id="badgeActivePauseSub" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-white text-orange-700 font-black">0</span>
+                </button>
+                <button onclick="switchPauseSubView('history')" id="btnPauseViewHistory"
+                  class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+                  <i class="fas fa-book-bookmark"></i>
+                  <span>सम्पूर्ण रोक इतिहास (Audit Ledger)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- SUB-VIEW 1: ACTIVE PAUSES -->
+            <div id="subviewActivePauses" class="space-y-4">
+              <!-- Search & Count -->
+              <div class="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <div class="relative w-full sm:w-80">
+                  <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <input type="text" id="pauseSearch" oninput="debouncePauseSearch()" placeholder="Search active paused subscriber..."
+                    class="w-full pl-9 pr-4 py-2 bg-white rounded-xl text-xs border border-slate-200 focus:outline-none focus:border-orange-500 font-medium">
+                </div>
+                <span id="pausedCountIndicator" class="text-xs font-bold text-slate-500">0 subscriptions paused</span>
+              </div>
+
+              <!-- Active Paused Table -->
+              <div class="overflow-x-auto rounded-2xl border-2 border-slate-100">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                      <th class="p-3.5">Subscriber Details</th>
+                      <th class="p-3.5">Service Type</th>
+                      <th class="p-3.5">Daily Qty</th>
+                      <th class="p-3.5">Pause Window (Start &rarr; Resume)</th>
+                      <th class="p-3.5">Approval Status</th>
+                      <th class="p-3.5">Reason</th>
+                      <th class="p-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pausedTableBody" class="divide-y divide-slate-100 font-medium">
+                    <tr>
+                      <td colspan="7" class="text-center py-12 text-slate-400">
+                        <i class="fas fa-circle-notch fa-spin text-xl text-orange-600 mb-2"></i>
+                        <p>Loading paused services...</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SUB-VIEW 2: PERMANENT AUDIT LEDGER (ALL PAUSE REQUESTS EVER - NEVER DELETED) -->
+            <div id="subviewHistoryPauses" class="space-y-4 hidden">
+              <!-- Summary KPI Cards -->
+              <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <span class="text-[10px] font-black text-slate-400 uppercase">Total Requests</span>
+                  <p id="histTotalPauses" class="text-lg font-black text-slate-900">0</p>
+                </div>
+                <div class="bg-orange-50 p-3 rounded-xl border border-orange-200">
+                  <span class="text-[10px] font-black text-orange-600 uppercase">Active Now</span>
+                  <p id="histActivePauses" class="text-lg font-black text-orange-700">0</p>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
+                  <span class="text-[10px] font-black text-emerald-600 uppercase">Resumed</span>
+                  <p id="histResumedPauses" class="text-lg font-black text-emerald-700">0</p>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                  <span class="text-[10px] font-black text-blue-600 uppercase">Auto-Approved (&le;7d)</span>
+                  <p id="histAutoApproved" class="text-lg font-black text-blue-700">0</p>
+                </div>
+                <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
+                  <span class="text-[10px] font-black text-amber-600 uppercase">Admin Pending (>7d)</span>
+                  <p id="histPendingReview" class="text-lg font-black text-amber-700">0</p>
+                </div>
+                <div class="bg-rose-50 p-3 rounded-xl border border-rose-200">
+                  <span class="text-[10px] font-black text-rose-600 uppercase">Rejected</span>
+                  <p id="histRejectedPauses" class="text-lg font-black text-rose-700">0</p>
+                </div>
+              </div>
+
+              <!-- History Filter & Search Bar -->
+              <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <div class="flex flex-wrap items-center gap-2">
+                  <button onclick="setPauseHistoryFilter('all')" id="phf-all" class="phf-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all">All History</button>
+                  <button onclick="setPauseHistoryFilter('active')" id="phf-active" class="phf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">Active Pauses</button>
+                  <button onclick="setPauseHistoryFilter('resumed')" id="phf-resumed" class="phf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">Resumed (सेवा बहाल)</button>
+                  <button onclick="setPauseHistoryFilter('auto_approved')" id="phf-auto_approved" class="phf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">Auto-Approved</button>
+                  <button onclick="setPauseHistoryFilter('pending')" id="phf-pending" class="phf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">Pending Review</button>
+                  <button onclick="setPauseHistoryFilter('rejected')" id="phf-rejected" class="phf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">Rejected</button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <select id="pauseHistoryType" onchange="loadPauseHistory()" class="px-3 py-2 bg-white rounded-xl text-xs border border-slate-200 font-bold focus:outline-none">
+                    <option value="all">All Types (खरीद व बिक्री)</option>
+                    <option value="sell">Sell Milk (विक्रेता)</option>
+                    <option value="buy">Buy Milk (उपभोक्ता)</option>
+                  </select>
+                  <div class="relative w-full sm:w-64">
+                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="pauseHistorySearch" oninput="debouncePauseHistorySearch()" placeholder="Search subscriber, phone, reason..."
+                      class="w-full pl-9 pr-4 py-2 bg-white rounded-xl text-xs border border-slate-200 focus:outline-none focus:border-orange-500 font-medium">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Permanent Ledger Table -->
+              <div class="overflow-x-auto rounded-2xl border-2 border-slate-100">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                      <th class="p-3.5">Applicant / Subscriber</th>
+                      <th class="p-3.5">Type & Qty</th>
+                      <th class="p-3.5">Requested At & Notice</th>
+                      <th class="p-3.5">Pause Window</th>
+                      <th class="p-3.5">Approval Type</th>
+                      <th class="p-3.5">Current Status</th>
+                      <th class="p-3.5">Actual Resumed / Extended</th>
+                      <th class="p-3.5">Reason & Admin Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pauseHistoryTableBody" class="divide-y divide-slate-100 font-medium">
+                    <tr>
+                      <td colspan="8" class="text-center py-12 text-slate-400">
+                        <i class="fas fa-circle-notch fa-spin text-xl text-orange-600 mb-2"></i>
+                        <p>Loading complete pause audit ledger...</p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- 5. CANLATION (Cancellation Management) -->
+          <!-- ============================================== -->
+          <div id="panel-canlation" class="p-4 sm:p-6 space-y-5 animate-tab-fade hidden">
+            <!-- Info Callout -->
+            <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-start gap-3">
+              <div class="h-8 w-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fas fa-ban text-sm"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-black text-rose-950 uppercase tracking-wider">Service Cancellation Ledger</h4>
+                <p class="text-xs text-rose-800/90 font-medium mt-0.5">
+                  Permanent cancellations submitted by users after accepting legal exit terms. Once cancelled, farmers are eligible to choose a new service or request reactivation through admin approval.
+                </p>
+              </div>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              <div class="flex flex-wrap items-center gap-2">
+                <button onclick="setCancelFilter('all')" id="cf-all" class="cf-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all">All</button>
+                <button onclick="setCancelFilter('pending')" id="cf-pending" class="cf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-1.5">
+                  <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                  Pending Review (समीक्षाधीन)
+                  <span id="badgePendingCancelFilter" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800 font-black">0</span>
+                </button>
+                <button onclick="setCancelFilter('approved')" id="cf-approved" class="cf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Approved / Cancelled (स्वीकृत)
+                </button>
+                <button onclick="setCancelFilter('rejected')" id="cf-rejected" class="cf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all">
+                  Rejected (अस्वीकृत)
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <div class="relative w-full sm:w-64">
+                  <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <input type="text" id="cancelSearch" oninput="debounceCancelSearch()" placeholder="Search subscriber, phone, reason..."
+                    class="w-full pl-9 pr-4 py-2 bg-white rounded-xl text-xs border border-slate-200 focus:outline-none focus:border-rose-500 font-medium">
+                </div>
+                <span id="cancelCountIndicator" class="text-xs font-bold text-slate-500 whitespace-nowrap">0 requests</span>
+              </div>
+            </div>
+
+            <!-- Cancel Table -->
+            <div class="overflow-x-auto rounded-2xl border-2 border-slate-100">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-black uppercase tracking-wider text-[10px]">
+                    <th class="p-3.5">Subscriber Details</th>
+                    <th class="p-3.5">Service Type</th>
+                    <th class="p-3.5">Daily Qty</th>
+                    <th class="p-3.5">Requested / Action At</th>
+                    <th class="p-3.5">Reason for Cancellation</th>
+                    <th class="p-3.5">Current Status</th>
+                    <th class="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="cancelledTableBody" class="divide-y divide-slate-100 font-medium">
+                  <tr>
+                    <td colspan="7" class="text-center py-12 text-slate-400">
+                      <i class="fas fa-circle-notch fa-spin text-xl text-rose-600 mb-2"></i>
+                      <p>Loading cancelled services...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ============================================== -->
+          <!-- 6. SETINGS (Configuration & 7-Day Rollout) -->
+          <!-- ============================================== -->
+          <div id="panel-setings" class="p-4 sm:p-6 space-y-6 animate-tab-fade hidden">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div>
+                <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                  <i class="fas fa-sliders text-emerald-600"></i>
+                  Milk Service Global Rules & Configurations
+                </h3>
+                <p class="text-xs text-slate-500 font-medium mt-0.5">Control payout cycles, 7-day rollout rules, base dairy pricing, shift timings & legal cancellation terms.</p>
+              </div>
+              <button onclick="saveMilkSettings()" id="btnSaveConfig" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 active:scale-95">
+                <i class="fas fa-check"></i>
+                <span>Save Settings</span>
+              </button>
+            </div>
+
+            <form id="settingsForm" onsubmit="event.preventDefault(); saveMilkSettings();" class="space-y-6">
+              <!-- Section 1: 7-Day Rollout Rules -->
+              <div class="p-5 bg-emerald-50/60 rounded-2xl border-2 border-emerald-100 space-y-4">
+                <div class="flex items-start gap-3">
+                  <div class="h-9 w-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <i class="fas fa-calendar-week text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-black text-emerald-950 uppercase tracking-wider">7-Day Supply Rollout Rule (7-दिवसीय भुगतान चक्र)</h4>
+                    <p class="text-xs text-emerald-800/90 font-medium mt-0.5">
+                      Dairy farmers accumulate daily milk supply earnings over a rolling cycle before direct withdrawal to main wallet becomes eligible.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Supply Cycle Duration (Days / दिन) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" id="cfgWithdrawalDays" min="1" max="90" required
+                        class="w-full px-4 py-2.5 bg-white rounded-xl text-xs border border-emerald-200 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-emerald-700">Days</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">Default standard is 7 days. Farmer's app displays countdown cycle.</p>
+                  </div>
+
+                  <div class="p-3.5 bg-white rounded-xl border border-emerald-200/80 text-xs text-slate-600 font-medium space-y-1">
+                    <p class="font-black text-slate-800 text-[11px] uppercase tracking-wide">Withdrawal Destination:</p>
+                    <p class="text-emerald-700 font-bold flex items-center gap-1.5">
+                      <i class="fas fa-wallet"></i> Direct Transfer to Farmer Main Wallet
+                    </p>
+                    <p class="text-[11px] text-slate-500">Upon rollout completion, farmer taps "Request Withdrawal to Wallet" and funds appear directly in main wallet with transaction audit trail.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 1.5: Temporary Pause Policy Controls -->
+              <div class="p-5 bg-orange-50/70 rounded-2xl border-2 border-orange-200/80 space-y-4">
+                <div class="flex items-start gap-3">
+                  <div class="h-9 w-9 rounded-xl bg-orange-600 text-white flex items-center justify-center shrink-0">
+                    <i class="fas fa-pause-circle text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-black text-orange-950 uppercase tracking-wider">Temporary Pause Governance (अस्थायी रोक नीति एवं अग्रिम सूचना नियंत्रण)</h4>
+                    <p class="text-xs text-orange-800/90 font-medium mt-0.5">
+                      प्रबंधन को पूर्व सूचना देने का न्यूनतम समय (घंटे व दिन) और स्वतः स्वीकृति (Auto-approval) की अधिकतम सीमा तय करें।
+                    </p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+                  <!-- Advance Notice Hours -->
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Advance Notice (कितने घंटे पहले) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" id="cfgMinAdvancePauseHours" min="0" max="720" required oninput="syncNoticeDaysFromHours()"
+                        class="w-full px-4 py-2.5 bg-white rounded-xl text-xs border border-orange-200 font-bold focus:outline-none focus:ring-2 focus:ring-orange-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-orange-700">Hours (घंटे)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">जैसे: 24 घंटे, 12 घंटे, 48 घंटे पूर्व।</p>
+                  </div>
+
+                  <!-- Advance Notice Days Equivalent -->
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Advance Notice (दिनों में) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" id="cfgMinAdvancePauseDays" min="0" max="30" required oninput="syncNoticeHoursFromDays()"
+                        class="w-full px-4 py-2.5 bg-white rounded-xl text-xs border border-orange-200 font-bold focus:outline-none focus:ring-2 focus:ring-orange-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-orange-700">Days Prior (दिन)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">घंटों के आधार पर स्वतः गणना या सीधे दर्ज करें।</p>
+                  </div>
+
+                  <!-- Auto-Approval Days Limit -->
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Auto-Approval Max Limit (कितने दिन का ऑटो होगा) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" id="cfgMaxAutoApprovePauseDays" min="1" max="90" required
+                        class="w-full px-4 py-2.5 bg-white rounded-xl text-xs border border-orange-200 font-bold focus:outline-none focus:ring-2 focus:ring-orange-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-orange-700">Days (दिन)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">इतने दिन या इससे कम स्वतः स्वीकृत होगा। इससे अधिक पर एडमिन अनुमोदन आवश्यक होगा।</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: Pricing Defaults -->
+              <div class="p-5 bg-white rounded-2xl border-2 border-slate-100 space-y-4">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fas fa-indian-rupee-sign text-emerald-600"></i>
+                  Base Milk Rates (डिफ़ॉल्ट खरीद व विक्रय दरें)
+                </h4>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Base Purchase Rate from Farmers (दूध खरीद दर) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
+                      <input type="number" id="cfgDefaultSellRate" step="0.5" min="1" required
+                        class="w-full pl-8 pr-14 py-2.5 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">/ Liter</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Base rate offered to dairy farmers when approving sell requests.</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Base Selling Rate to Consumers (दूध विक्रय दर) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
+                      <input type="number" id="cfgDefaultBuyRate" step="0.5" min="1" required
+                        class="w-full pl-8 pr-14 py-2.5 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">/ Liter</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Standard rate debited automatically from buyer's wallet on delivery.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2.5: Milk Partner Wallet & Commission Settings -->
+              <div class="p-5 bg-sky-50/70 rounded-2xl border-2 border-sky-200 space-y-4">
+                <div class="flex items-start gap-3">
+                  <div class="h-9 w-9 rounded-xl bg-sky-600 text-white flex items-center justify-center shrink-0">
+                    <i class="fas fa-wallet text-sm"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-black text-sky-950 uppercase tracking-wider">Milk Partner Wallet Limits & Admin Commission (पार्टनर वॉलेट नियंत्रण)</h4>
+                    <p class="text-xs text-sky-800/90 font-medium mt-0.5">
+                      पार्टनर द्वारा दूध खरीद (Purchase) के लिए अनिवार्य न्यूनतम वॉलेट बैलेंस और दूध बिक्री (Sales) पर प्लेटफ़ॉर्म का कमीशन तय करें।
+                    </p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Min Partner Wallet Balance (न्यूनतम बैलेंस सीमा - ₹) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
+                      <input type="number" id="cfgMinPartnerWalletBalance" step="50" min="0" required
+                        class="w-full pl-8 pr-14 py-2.5 bg-white rounded-xl text-xs border border-sky-200 font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-sky-700">Min ₹</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">यदि पार्टनर के वॉलेट में यह राशि नहीं होगी तो वह किसान से दूध खरीद नहीं सकेगा।</p>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Admin Commission on Sales (एडमिन कमीशन %) <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input type="number" id="cfgAdminCommissionPercent" step="0.5" min="0" max="100" required
+                        class="w-full pl-4 pr-10 py-2.5 bg-white rounded-xl text-xs border border-sky-200 font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
+                      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-sky-700">%</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-1">दूध बिक्री पर कुल राशि में से यह % एडमिन को कटेगा और बाकी पूरा पैसा पार्टनर के वॉलेट में तुरंत क्रेडिट होगा।</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 3: Delivery Shift Timings -->
+              <div class="p-5 bg-white rounded-2xl border-2 border-slate-100 space-y-4">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fas fa-clock text-blue-600"></i>
+                  Delivery & Collection Shifts (वितरण समय सारिणी)
+                </h4>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Morning Shift Time Window (सुबह की पाली)
+                    </label>
+                    <input type="text" id="cfgMorningWindow" placeholder="e.g. 06:00 AM - 08:30 AM"
+                      class="w-full px-4 py-2.5 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-black text-slate-700 mb-1">
+                      Evening Shift Time Window (शाम की पाली)
+                    </label>
+                    <input type="text" id="cfgEveningWindow" placeholder="e.g. 05:00 PM - 07:30 PM"
+                      class="w-full px-4 py-2.5 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 4: Cancellation Agreement Terms -->
+              <div class="p-5 bg-white rounded-2xl border-2 border-slate-100 space-y-3">
+                <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                  <i class="fas fa-file-contract text-amber-600"></i>
+                  Cancellation Agreement Policy (रद्दीकरण नीति एवं शर्तें)
+                </h4>
+                <p class="text-xs text-slate-500 font-medium">Text shown to users inside the Farmer App when requesting permanent service cancellation.</p>
+                <textarea id="cfgCancellationAgreement" rows="3" required
+                  class="w-full p-4 bg-slate-50 rounded-xl text-xs border border-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 leading-relaxed"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: REVIEW FARMER REQUEST (Approve / Reject) -->
+  <!-- ============================================== -->
+  <div id="reviewFarmerModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 border-2 border-slate-200 shadow-2xl animate-tab-fade">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-user-check text-emerald-600"></i>
+            Review Farmer Milk Request
+          </h3>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Approve subscription, configure custom rate per liter, or decline.</p>
+        </div>
+        <button onclick="closeModal('reviewFarmerModal')" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times text-base"></i>
+        </button>
+      </div>
+
+      <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Applicant:</span>
+          <span id="mdlFarmerName" class="font-black text-slate-900">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Phone Number:</span>
+          <span id="mdlFarmerPhone" class="font-bold text-slate-800">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Service Type:</span>
+          <span id="mdlFarmerType" class="font-black">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Daily Volume:</span>
+          <span id="mdlFarmerQty" class="font-black text-slate-900">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Delivery Schedule:</span>
+          <span id="mdlFarmerSchedule" class="font-semibold text-slate-800">-</span>
+        </div>
+        <div class="flex justify-between items-start pt-1 border-t border-slate-200/60">
+          <span class="text-slate-500 font-medium">Address:</span>
+          <span id="mdlFarmerAddress" class="font-semibold text-slate-800 text-right max-w-xs truncate">-</span>
+        </div>
+      </div>
+
+      <input type="hidden" id="mdlRequestId">
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">
+            Assigned Rate Per Liter (₹/L) <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">₹</span>
+            <input type="number" id="mdlRatePerLiter" step="0.5" min="1" required
+              class="w-full pl-8 pr-14 py-2.5 bg-white rounded-xl text-xs border border-slate-300 font-bold focus:outline-none focus:border-emerald-500">
+            <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">/ Liter</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">
+            Assign Milk Partner (दूध डिलीवरी पार्टनर)
+          </label>
+          <select id="mdlAssignedPartner" class="w-full px-3.5 py-2.5 bg-white rounded-xl text-xs border border-slate-300 font-bold focus:outline-none focus:border-emerald-500">
+            <option value="">-- No Partner Assigned (असाइन नहीं) --</option>
+          </select>
+          <p class="text-[10px] text-slate-400 mt-1">Sirf assign kiye gaye milk partner ke app me ye subscriber dikhega. Ise kabhi bhi badla ja sakta hai.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">Admin Remarks (Optional)</label>
+          <input type="text" id="mdlAdminRemarks" placeholder="e.g. Rate approved as per local fat standard"
+            class="w-full px-3.5 py-2.5 bg-white rounded-xl text-xs border border-slate-300 font-medium focus:outline-none focus:border-emerald-500">
+        </div>
+      </div>
+
+      <div id="mdlActionButtonsContainer" class="flex items-center gap-3 pt-2">
+        <button onclick="submitFarmerReview('rejected')" class="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black transition-all">
+          Reject Request
+        </button>
+        <button onclick="submitFarmerReview('approved')" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md shadow-emerald-600/20 transition-all">
+          Approve & Activate
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD / EDIT PARTNER -->
+  <!-- ============================================== -->
+  <div id="partnerModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 border-2 border-slate-200 shadow-2xl animate-tab-fade">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 id="partnerModalTitle" class="text-sm font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-motorcycle text-purple-600"></i>
+            Add Milk Delivery Partner
+          </h3>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Register a partner and assign their delivery route and vehicle.</p>
+        </div>
+        <button onclick="closeModal('partnerModal')" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times text-base"></i>
+        </button>
+      </div>
+
+      <form id="partnerForm" onsubmit="event.preventDefault(); submitPartnerForm();" class="space-y-3.5">
+        <input type="hidden" id="pmId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Partner Full Name <span class="text-rose-500">*</span></label>
+            <input type="text" id="pmName" required placeholder="e.g. Ramesh Kumar"
+              class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Phone Number <span class="text-rose-500">*</span></label>
+            <input type="tel" id="pmPhone" required placeholder="10-digit mobile"
+              class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">Address / Hub Center <span class="text-rose-500">*</span></label>
+          <input type="text" id="pmAddress" required placeholder="Village, Mandi, or Hub location"
+            class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-medium focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Vehicle Type</label>
+            <select id="pmVehicleType" class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
+              <option value="Bike / Motorcycle">Bike / Motorcycle</option>
+              <option value="3-Wheeler Auto">3-Wheeler Auto</option>
+              <option value="Pickup Truck">Pickup Truck</option>
+              <option value="Delivery Van">Delivery Van</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Vehicle Number</label>
+            <input type="text" id="pmVehicleNumber" placeholder="e.g. UP 32 AB 1234"
+              class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500 uppercase">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Canister Capacity (Liters)</label>
+            <input type="number" id="pmCanister" placeholder="40" min="5" max="1000"
+              class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Assigned Route / Villages</label>
+            <input type="text" id="pmRoute" placeholder="e.g. Sector 5 & Village Barola"
+              class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="pmTestingKit" class="h-4 w-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300">
+          <label for="pmTestingKit" class="text-xs font-bold text-slate-700 cursor-pointer">
+            Equipped with Fat / SNF Testing Kit (परीक्षण किट उपलब्ध)
+          </label>
+        </div>
+
+        <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('partnerModal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+            Cancel
+          </button>
+          <button type="submit" id="pmSubmitBtn" class="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black shadow-md shadow-purple-600/20 transition-all">
+            Save Partner
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD MONEY TO MILK PARTNER WALLET -->
+  <!-- ============================================== -->
+  <div id="addPartnerMoneyModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border-2 border-slate-200 shadow-2xl animate-tab-fade">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-wallet text-emerald-600"></i>
+            Add Money to Milk Partner Wallet
+          </h3>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Credit funds directly into partner's wallet for milk purchasing.</p>
+        </div>
+        <button onclick="closeModal('addPartnerMoneyModal')" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times text-base"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="apmPartnerId">
+
+      <div class="p-4 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-2 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-600 font-medium">Partner Name:</span>
+          <span id="apmPartnerName" class="font-black text-slate-900">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-600 font-medium">Current Balance:</span>
+          <span id="apmCurrentBalance" class="font-black text-emerald-800 text-sm">₹0.00</span>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-1">
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">
+            Amount to Add (जमा करने की राशि - ₹) <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-emerald-600">₹</span>
+            <input type="number" id="apmAmount" min="1" step="10" placeholder="1000" required
+              class="w-full pl-8 pr-4 py-2.5 bg-white rounded-xl text-sm font-black text-slate-900 border border-slate-300 focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- Quick Chips -->
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="setAddMoneyPreset(500)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-black border border-slate-200">+₹500</button>
+          <button type="button" onclick="setAddMoneyPreset(1000)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-black border border-slate-200">+₹1000</button>
+          <button type="button" onclick="setAddMoneyPreset(2000)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-black border border-slate-200">+₹2000</button>
+          <button type="button" onclick="setAddMoneyPreset(5000)" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-black border border-slate-200">+₹5000</button>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">Payment Mode / Source</label>
+          <select id="apmPaymentMode" class="w-full px-3 py-2 bg-white rounded-xl text-xs border border-slate-300 font-bold focus:outline-none focus:border-emerald-500">
+            <option value="Cash">Cash (कार्यालय / KFC में नकद प्राप्त)</option>
+            <option value="UPI">UPI / Bank Transfer</option>
+            <option value="NexCard Wallet">Company Incentive / Adjustment</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">Remarks / Audit Note (Optional)</label>
+          <input type="text" id="apmNote" placeholder="e.g. Cash deposited by partner at hub center"
+            class="w-full px-3 py-2 bg-white rounded-xl text-xs border border-slate-300 font-medium focus:outline-none focus:border-emerald-500">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+        <button type="button" onclick="closeModal('addPartnerMoneyModal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+          Cancel
+        </button>
+        <button type="button" onclick="submitAddMoneyToPartner()" id="btnSubmitAddMoney" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-1.5">
+          <i class="fas fa-check-circle"></i> Credit Wallet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: EXTEND PAUSE -->
+  <!-- ============================================== -->
+  <div id="extendPauseModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border-2 border-slate-200 shadow-2xl animate-tab-fade">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+            <i class="fas fa-calendar-plus text-orange-600"></i>
+            Adjust Pause Period
+          </h3>
+          <p class="text-[11px] text-slate-500 font-medium mt-0.5">Update expected resume date for this subscription.</p>
+        </div>
+        <button onclick="closeModal('extendPauseModal')" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times text-base"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="epSubId">
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">New Expected Resume Date <span class="text-rose-500">*</span></label>
+          <input type="date" id="epResumeDate" required
+            class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl text-xs border border-slate-300 font-bold focus:outline-none focus:border-orange-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-700 mb-1">Reason for Extension</label>
+          <input type="text" id="epReason" placeholder="e.g. Farmer requested additional 5 days"
+            class="w-full px-3.5 py-2.5 bg-slate-50 rounded-xl text-xs border border-slate-300 font-medium focus:outline-none focus:border-orange-500">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <button onclick="closeModal('extendPauseModal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+          Cancel
+        </button>
+        <button onclick="submitExtendPause()" class="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-black shadow-md shadow-orange-600/20 transition-all">
+          Save Extension
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 max-w-sm w-full bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
+    <div id="toastIcon" class="h-8 w-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+      <i class="fas fa-check"></i>
+    </div>
+    <div class="flex-1">
+      <p id="toastMessage" class="text-xs font-bold leading-tight">Notification</p>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // State store
+    let currentMainTab = 'former_request';
+    let farmerFilter = 'all';
+    let partnerFilter = 'all';
+    let currentPauseSubView = 'active';
+    let pauseHistoryFilter = 'all';
+    let allFarmerRequests = [];
+    let allPartners = [];
+    let allPausedSubs = [];
+    let allPauseHistory = [];
+    let allCancelledSubs = [];
+    let cancelFilter = 'all';
+    let allMilkLogs = [];
+    let searchDebounceTimer = null;
+    let pauseHistoryDebounceTimer = null;
+
+    // API Token helper
+    function getAuthHeaders() {
+      const token = localStorage.getItem('employeeToken') || localStorage.getItem('token');
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+      };
+    }
+
+    // Socket.io Real-time connection
+    let socket = null;
+    function initRealtimeSocket() {
+      try {
+        if (typeof io === 'undefined') {
+          console.warn('[Socket.io] io client library not loaded.');
+          return;
+        }
+
+        const token = localStorage.getItem('employeeToken') || localStorage.getItem('token');
+        socket = io({
+          transports: ['websocket', 'polling'],
+          auth: { token: token || '' },
+          reconnection: true,
+          reconnectionAttempts: 20,
+          reconnectionDelay: 2000
+        });
+
+        socket.on('connect', () => {
+          console.log('⚡ [Admin WebSocket] Connected to server! id:', socket.id);
+          socket.emit('join_admin');
+          const badge = document.getElementById('liveSyncBadge');
+          if (badge) {
+            badge.innerHTML = '<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-700 font-black text-[10px]">Realtime Active</span>';
+            badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 shadow-xs';
+          }
+        });
+
+        socket.on('milk_event', (data) => {
+          console.log('⚡ [Realtime Milk Event]:', data);
+          
+          let alertMsg = data.message || `Milk Update: ${data.action}`;
+          showToast(`⚡ ${alertMsg}`, 'info');
+
+          // Auto-refresh stats and current tab data live without page reload!
+          fetchStats();
+          if (currentMainTab === 'former_request') loadFarmerRequests();
+          if (currentMainTab === 'partner_request') loadPartners();
+          if (currentMainTab === 'milk_history') loadMilkHistory();
+          if (currentMainTab === 'temp_pose') loadPausedSubscriptions();
+          if (currentMainTab === 'canlation') loadCancelledSubscriptions();
+          if (currentMainTab === 'setings') loadMilkSettings();
+        });
+
+        socket.on('disconnect', () => {
+          console.log('⚡ [Admin WebSocket] Disconnected');
+          const badge = document.getElementById('liveSyncBadge');
+          if (badge) {
+            badge.innerHTML = '<span class="h-2 w-2 rounded-full bg-slate-400"></span><span class="text-slate-500 font-bold text-[10px]">Offline</span>';
+            badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200';
+          }
+        });
+
+        socket.on('connect_error', (err) => {
+          console.warn('[Admin WebSocket] Connection error:', err.message);
+        });
+      } catch (err) {
+        console.warn('Socket initialization exception:', err);
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Set user name if available
+      try {
+        const u = JSON.parse(localStorage.getItem('employeeUser') || '{}');
+        if (u.name) {
+          document.getElementById('adminUserName')?.setAttribute('textContent', u.name);
+          const sName = document.getElementById('sidebarUserName');
+          if (sName) sName.textContent = u.name;
+        }
+      } catch (e) {}
+
+      // Initialize default history dates (last 7 days)
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      document.getElementById('historyEndDate').value = now.toISOString().split('T')[0];
+      document.getElementById('historyStartDate').value = sevenDaysAgo.toISOString().split('T')[0];
+
+      // Initialize Realtime WebSocket
+      initRealtimeSocket();
+
+      // Load initial tab and stats
+      await fetchStats();
+      await switchMainTab('former_request');
+    });
+
+    // Mobile sidebar toggle
+    function toggleSidebar(open) {
+      const sb = document.getElementById('sidebar');
+      const mb = document.getElementById('mobile-backdrop');
+      if (open) {
+        sb.classList.remove('-translate-x-full');
+        mb.classList.remove('hidden');
+      } else {
+        sb.classList.add('-translate-x-full');
+        mb.classList.add('hidden');
+      }
+    }
+
+    // Modal helpers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // Toast helper
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = message;
+
+      if (type === 'success') {
+        toastIcon.className = 'h-8 w-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0';
+        toastIcon.innerHTML = '<i class="fas fa-check"></i>';
+      } else if (type === 'error') {
+        toastIcon.className = 'h-8 w-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0';
+        toastIcon.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
+      } else {
+        toastIcon.className = 'h-8 w-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0';
+        toastIcon.innerHTML = '<i class="fas fa-info"></i>';
+      }
+
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3500);
+    }
+
+    // Switch Main Tabs
+    async function switchMainTab(tabName, subFilter = null) {
+      // Normalize aliases
+      if (tabName === 'farmer_requests' || tabName === 'farmer_request') tabName = 'former_request';
+      if (tabName === 'partner_requests') tabName = 'partner_request';
+      if (tabName === 'temp_pause') tabName = 'temp_pose';
+      if (tabName === 'cancellation') tabName = 'canlation';
+      if (tabName === 'settings') tabName = 'setings';
+
+      currentMainTab = tabName;
+
+      // Update Tab Buttons UI
+      const tabs = ['former_request', 'partner_request', 'milk_history', 'temp_pose', 'canlation', 'setings'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`mainTab-${t}`);
+        const panel = document.getElementById(`panel-${t}`);
+
+        if (t === tabName) {
+          btn.className = 'main-tab-btn px-4 sm:px-5 py-3 font-black text-xs border-b-2 border-emerald-600 text-emerald-700 bg-white rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap';
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = 'main-tab-btn px-4 sm:px-5 py-3 font-bold text-xs border-b-2 border-transparent text-slate-500 hover:text-slate-800 rounded-t-xl transition-all flex items-center gap-2 whitespace-nowrap';
+          panel.classList.add('hidden');
+        }
+      });
+
+      // Load specific tab data
+      if (tabName === 'former_request') {
+        if (subFilter) setFarmerFilter(subFilter);
+        else await loadFarmerRequests();
+      } else if (tabName === 'partner_request') {
+        if (subFilter) setPartnerFilter(subFilter);
+        else await loadPartners();
+      } else if (tabName === 'milk_history') {
+        await loadMilkHistory();
+      } else if (tabName === 'temp_pose') {
+        await loadPausedSubscriptions();
+      } else if (tabName === 'canlation') {
+        await loadCancelledSubscriptions();
+      } else if (tabName === 'setings') {
+        await loadMilkSettings();
+      }
+    }
+
+    // Refresh Current Tab
+    async function refreshCurrentTab(animated = false) {
+      if (animated) {
+        const icon = document.getElementById('refreshIcon');
+        icon.classList.add('fa-spin');
+        setTimeout(() => icon.classList.remove('fa-spin'), 1000);
+      }
+
+      await fetchStats();
+      await switchMainTab(currentMainTab);
+      document.getElementById('lastUpdatedTime').textContent = `Updated at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    // ==============================================
+    // STATS METRICS
+    // ==============================================
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/milk/admin/stats', { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && data.stats) {
+          const s = data.stats;
+          document.getElementById('statPending').textContent = s.pendingRequests || 0;
+          document.getElementById('statSellers').textContent = s.totalSellers || 0;
+          document.getElementById('statBuyers').textContent = s.totalBuyers || 0;
+          document.getElementById('statPartners').textContent = s.activePartners || 0;
+          document.getElementById('statPartnersSub').textContent = `${s.pendingPartners || 0} pending`;
+          document.getElementById('statPaused').textContent = s.pausedCount || 0;
+          document.getElementById('statCancelled').textContent = s.cancelledCount || 0;
+
+          // Update Tab Badges
+          document.getElementById('badgeFormerReq').textContent = s.pendingRequests || 0;
+          document.getElementById('badgePartnerReq').textContent = s.pendingPartners || 0;
+          document.getElementById('badgeTempPose').textContent = s.pausedCount || 0;
+          document.getElementById('badgeCanlation').textContent = s.pendingCancellations || 0;
+          const filterPendingBadge = document.getElementById('badgePendingCancelFilter');
+          if (filterPendingBadge) filterPendingBadge.textContent = s.pendingCancellations || 0;
+        }
+      } catch (err) {
+        console.error('Fetch Stats Error:', err);
+      }
+    }
+
+    // ==============================================
+    // 1. FORMER REQUEST LOGIC
+    // ==============================================
+    function setFarmerFilter(filter) {
+      farmerFilter = filter;
+      document.querySelectorAll('.ff-btn').forEach(btn => {
+        btn.className = 'ff-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all';
+      });
+      const activeBtn = document.getElementById(`ff-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'ff-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all';
+      }
+      filterAndRenderFarmerRequests();
+    }
+
+    async function loadFarmerRequests() {
+      const tbody = document.getElementById('farmerRequestsTableBody');
+      try {
+        if (!allPartners || allPartners.length === 0) {
+          loadPartners().catch(() => {});
+        }
+        const res = await fetch('/api/milk/admin/requests', { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.requests)) {
+          allFarmerRequests = data.requests;
+          filterAndRenderFarmerRequests();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load requests'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function debounceFarmerSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(filterAndRenderFarmerRequests, 250);
+    }
+
+    function filterAndRenderFarmerRequests() {
+      const tbody = document.getElementById('farmerRequestsTableBody');
+      const search = (document.getElementById('farmerSearch').value || '').toLowerCase().trim();
+
+      let list = allFarmerRequests.filter(req => {
+        // Status & type filters
+        if (farmerFilter === 'pending' && req.status !== 'pending') return false;
+        if (farmerFilter === 'approved' && req.status !== 'approved') return false;
+        if (farmerFilter === 'rejected' && req.status !== 'rejected') return false;
+        if (farmerFilter === 'sell' && req.type !== 'sell') return false;
+        if (farmerFilter === 'buy' && req.type !== 'buy') return false;
+
+        // Search text
+        if (search) {
+          const name = (req.name || req.userId?.name || '').toLowerCase();
+          const phone = (req.phone || req.userId?.phone || '').toLowerCase();
+          const address = (req.address || '').toLowerCase();
+          return name.includes(search) || phone.includes(search) || address.includes(search);
+        }
+        return true;
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-12 text-slate-400">
+              <i class="fas fa-inbox text-3xl mb-2 opacity-40"></i>
+              <p class="font-bold text-xs">No farmer requests found matching the filter.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(req => {
+        const isSell = req.type === 'sell';
+        const typeBadge = isSell
+          ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 flex items-center gap-1 w-fit"><i class="fas fa-arrow-up text-[9px]"></i> Sell Milk</span>`
+          : `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 flex items-center gap-1 w-fit"><i class="fas fa-arrow-down text-[9px]"></i> Buy Milk</span>`;
+
+        let statusBadge = '';
+        if (req.cancellationStatus === 'pending_approval') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1 w-max">
+            <span class="h-1.5 w-1.5 rounded-full bg-rose-600 animate-pulse"></span> Cancel Pending
+          </span>`;
+        } else if (req.status === 'pending') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">Pending</span>`;
+        } else if (req.status === 'approved') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Active</span>`;
+        } else if (req.status === 'rejected') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">Rejected</span>`;
+        } else if (req.status === 'paused') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-100 text-orange-800">Paused</span>`;
+        } else if (req.status === 'cancelled') {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-200 text-slate-700">Cancelled</span>`;
+        }
+
+        let actionButtons = '';
+        if (req.cancellationStatus === 'pending_approval') {
+          actionButtons = `
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="reviewCancellation('${req._id}', 'approved')" 
+                class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black shadow-xs flex items-center gap-1 transition-all"
+                title="Accept permanent cancellation">
+                <i class="fas fa-check"></i> Accept Cancel
+              </button>
+              <button onclick="reviewCancellation('${req._id}', 'rejected')" 
+                class="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold transition-all"
+                title="Reject cancellation (keep active)">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          `;
+        } else if (req.status === 'pending') {
+          actionButtons = `
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="openReviewFarmerModal('${req._id}')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black shadow-xs transition-all flex items-center gap-1">
+                <i class="fas fa-check"></i> Accept
+              </button>
+              <button onclick="submitFarmerReviewDirect('${req._id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          `;
+        } else if (req.status === 'approved') {
+          actionButtons = `
+            <div class="flex items-center justify-end gap-1.5">
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                <i class="fas fa-check-circle text-emerald-600"></i> Accepted
+              </span>
+              <button onclick="openReviewFarmerModal('${req._id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold transition-all inline-flex items-center gap-1" title="Edit Rate">
+                <i class="fas fa-pen text-[9px]"></i> Rate
+              </button>
+            </div>
+          `;
+        } else if (req.status === 'rejected') {
+          actionButtons = `
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200 inline-flex items-center gap-1">
+              <i class="fas fa-times-circle text-rose-600"></i> Rejected
+            </span>
+          `;
+        } else if (req.status === 'paused') {
+          actionButtons = `
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+              <i class="fas fa-pause text-amber-600"></i> Paused
+            </span>
+          `;
+        } else {
+          actionButtons = `
+            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center gap-1">
+              <i class="fas fa-ban text-slate-400"></i> Cancelled
+            </span>
+          `;
+        }
+
+        const isCancelled = req.status === 'cancelled' || req.cancellationStatus === 'approved';
+        const assignedPartner = req.assignedPartnerId;
+        const partnerBadge = assignedPartner
+          ? `<span class="px-2 py-1 rounded-lg text-[10px] font-black bg-purple-50 text-purple-700 border border-purple-200 inline-flex items-center gap-1 ${isCancelled ? 'opacity-70' : 'cursor-pointer hover:bg-purple-100'} transition-all" ${isCancelled ? '' : `onclick="openReviewFarmerModal('${req._id}')"`} title="${isCancelled ? 'Cancelled subscription' : 'Click to change partner'}">
+              <i class="fas fa-motorcycle text-purple-500"></i> ${assignedPartner.name || 'Assigned'}
+             </span>`
+          : (isCancelled
+            ? `<span class="px-2 py-1 rounded-lg text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 inline-flex items-center gap-1">
+                <i class="fas fa-ban text-[9px]"></i> None
+               </span>`
+            : `<button onclick="openReviewFarmerModal('${req._id}')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all inline-flex items-center gap-1">
+                <i class="fas fa-plus text-[9px]"></i> Assign
+               </button>`);
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-all">
+            <td class="p-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-full bg-slate-100 text-slate-600 font-black text-xs flex items-center justify-center shrink-0">
+                  ${(req.name || 'F')[0].toUpperCase()}
+                </div>
+                <div>
+                  <p class="font-black text-slate-900 leading-tight">${req.name}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${req.phone}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3.5">${typeBadge}</td>
+            <td class="p-3.5 font-black text-slate-800">${req.dailyQuantityLiters || 0} L/day</td>
+            <td class="p-3.5 text-slate-600 font-semibold">${req.deliverySchedule || 'Morning Only'}</td>
+            <td class="p-3.5 font-black text-emerald-700">₹${req.ratePerLiter || 0}/L</td>
+            <td class="p-3.5">${partnerBadge}</td>
+            <td class="p-3.5 text-slate-500 max-w-xs truncate" title="${req.address || ''}">${req.address || '-'}</td>
+            <td class="p-3.5">${statusBadge}</td>
+            <td class="p-3.5 text-right whitespace-nowrap">${actionButtons}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openReviewFarmerModal(reqId) {
+      const req = allFarmerRequests.find(r => r._id === reqId);
+      if (!req) return;
+
+      document.getElementById('mdlRequestId').value = req._id;
+      document.getElementById('mdlFarmerName').textContent = req.name;
+      document.getElementById('mdlFarmerPhone').textContent = req.phone;
+      document.getElementById('mdlFarmerType').textContent = req.type === 'sell' ? 'Sell Milk (किसान से खरीद)' : 'Buy Milk (उपभोक्ता आपूर्ति)';
+      document.getElementById('mdlFarmerQty').textContent = `${req.dailyQuantityLiters} Liters/day`;
+      document.getElementById('mdlFarmerSchedule').textContent = req.deliverySchedule || 'Morning Only';
+      document.getElementById('mdlFarmerAddress').textContent = req.address;
+
+      document.getElementById('mdlRatePerLiter').value = req.ratePerLiter || (req.type === 'sell' ? 45 : 60);
+      document.getElementById('mdlAdminRemarks').value = req.adminRemarks || '';
+
+      // Populate assigned partner select options
+      const partnerSelect = document.getElementById('mdlAssignedPartner');
+      const curPartnerId = req.assignedPartnerId?._id || req.assignedPartnerId || '';
+      const partnerOpts = allPartners.filter(p => p.status === 'approved');
+      partnerSelect.innerHTML = `<option value="">-- No Partner Assigned (असाइन नहीं) --</option>` +
+        partnerOpts.map(p => `
+          <option value="${p._id}" ${String(p._id) === String(curPartnerId) ? 'selected' : ''}>
+            ${p.name} (${p.assignedRoute || 'No Route'} - ${p.phone})
+          </option>
+        `).join('');
+
+      const btnContainer = document.getElementById('mdlActionButtonsContainer');
+      const rateInput = document.getElementById('mdlRatePerLiter');
+      const remarksInput = document.getElementById('mdlAdminRemarks');
+
+      if (req.status === 'pending') {
+        rateInput.disabled = false;
+        remarksInput.disabled = false;
+        partnerSelect.disabled = false;
+        btnContainer.innerHTML = `
+          <button onclick="submitFarmerReview('rejected')" class="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5">
+            <i class="fas fa-times-circle"></i> Reject Request
+          </button>
+          <button onclick="submitFarmerReview('approved')" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-1.5">
+            <i class="fas fa-check-circle"></i> Approve & Activate
+          </button>
+        `;
+      } else if (req.status === 'approved') {
+        rateInput.disabled = false;
+        remarksInput.disabled = false;
+        partnerSelect.disabled = false;
+        btnContainer.innerHTML = `
+          <div class="w-full space-y-2">
+            <div class="p-2.5 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
+              <i class="fas fa-check-circle text-emerald-600"></i> Request is Active. You can reassign partner or adjust rate below.
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="closeModal('reviewFarmerModal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+                Close
+              </button>
+              <button onclick="submitFarmerReview('update_details')" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-sm transition-all flex items-center justify-center gap-1.5">
+                <i class="fas fa-save"></i> Save Partner & Rate
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (req.status === 'rejected') {
+        rateInput.disabled = true;
+        remarksInput.disabled = true;
+        partnerSelect.disabled = true;
+        btnContainer.innerHTML = `
+          <div class="w-full space-y-2">
+            <div class="p-2.5 bg-rose-50 text-rose-800 rounded-xl text-xs font-bold border border-rose-200 flex items-center gap-2">
+              <i class="fas fa-times-circle text-rose-600"></i> Request was Rejected.
+            </div>
+            <button type="button" onclick="closeModal('reviewFarmerModal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+              Close
+            </button>
+          </div>
+        `;
+      } else if (req.status === 'cancelled' || req.cancellationStatus === 'approved') {
+        rateInput.disabled = true;
+        remarksInput.disabled = true;
+        partnerSelect.disabled = true;
+        btnContainer.innerHTML = `
+          <div class="w-full space-y-2">
+            <div class="p-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 flex items-center gap-2">
+              <i class="fas fa-ban text-rose-500"></i> Subscription is Cancelled. Partner cannot be assigned.
+            </div>
+            <button type="button" onclick="closeModal('reviewFarmerModal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+              Close
+            </button>
+          </div>
+        `;
+      } else {
+        rateInput.disabled = false;
+        remarksInput.disabled = false;
+        partnerSelect.disabled = false;
+        btnContainer.innerHTML = `
+          <div class="w-full space-y-2">
+            <div class="p-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 flex items-center gap-2">
+              <i class="fas fa-info-circle text-slate-500"></i> Status: ${req.status.toUpperCase()}
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="closeModal('reviewFarmerModal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all">
+                Close
+              </button>
+              <button onclick="submitFarmerReview('update_details')" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-sm transition-all flex items-center justify-center gap-1.5">
+                <i class="fas fa-save"></i> Save Partner
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      openModal('reviewFarmerModal');
+    }
+
+    async function submitFarmerReview(action) {
+      const reqId = document.getElementById('mdlRequestId').value;
+      const rate = document.getElementById('mdlRatePerLiter').value;
+      const remarks = document.getElementById('mdlAdminRemarks').value;
+      const partnerId = document.getElementById('mdlAssignedPartner').value;
+
+      try {
+        const res = await fetch(`/api/milk/admin/requests/${reqId}/review`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            action,
+            ratePerLiter: Number(rate),
+            assignedPartnerId: partnerId || null,
+            adminRemarks: remarks
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal('reviewFarmerModal');
+          const msg = action === 'approved' ? 'Farmer request Accepted & Partner Assigned!' : action === 'rejected' ? 'Farmer request Rejected!' : 'Partner & Rate Updated Successfully!';
+          showToast(msg);
+          await fetchStats();
+          await loadFarmerRequests();
+        } else {
+          alert(data.error || 'Failed to review request');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function submitFarmerReviewDirect(reqId, action) {
+      if (action === 'rejected' && !confirm('Are you sure you want to reject this milk subscription request?')) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/milk/admin/requests/${reqId}/review`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Request has been ${action === 'approved' ? 'accepted' : 'rejected'}!`);
+          await fetchStats();
+          await loadFarmerRequests();
+        } else {
+          alert(data.error || 'Failed to update request');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // ==============================================
+    // 2. PARTNER REQUEST LOGIC
+    // ==============================================
+    function setPartnerFilter(filter) {
+      partnerFilter = filter;
+      document.querySelectorAll('.pf-btn').forEach(btn => {
+        btn.className = 'pf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all';
+      });
+      const activeBtn = document.getElementById(`pf-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'pf-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all';
+      }
+      filterAndRenderPartners();
+    }
+
+    async function loadPartners() {
+      const tbody = document.getElementById('partnersTableBody');
+      try {
+        const res = await fetch('/api/milk/admin/partners', { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.partners)) {
+          allPartners = data.partners;
+          filterAndRenderPartners();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load partners'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function debouncePartnerSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(filterAndRenderPartners, 250);
+    }
+
+    function filterAndRenderPartners() {
+      const tbody = document.getElementById('partnersTableBody');
+      const search = (document.getElementById('partnerSearch').value || '').toLowerCase().trim();
+
+      let list = allPartners.filter(p => {
+        if (partnerFilter === 'pending' && p.status !== 'pending') return false;
+        if (partnerFilter === 'approved' && p.status !== 'approved') return false;
+        if (partnerFilter === 'rejected' && p.status !== 'rejected') return false;
+        if (partnerFilter === 'blocked' && p.status !== 'blocked') return false;
+
+        if (search) {
+          const name = (p.name || '').toLowerCase();
+          const phone = (p.phone || '').toLowerCase();
+          const route = (p.assignedRoute || '').toLowerCase();
+          const vNum = (p.vehicleNumber || '').toLowerCase();
+          return name.includes(search) || phone.includes(search) || route.includes(search) || vNum.includes(search);
+        }
+        return true;
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-12 text-slate-400">
+              <i class="fas fa-motorcycle text-3xl mb-2 opacity-40"></i>
+              <p class="font-bold text-xs">No milk delivery partners found matching the filter.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(p => {
+        const isApproved = p.status === 'approved';
+        const isPending = p.status === 'pending';
+        const isBlocked = p.status === 'blocked';
+
+        const statusBadge = isApproved
+          ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-100 text-purple-800">Active Fleet</span>`
+          : (isPending
+            ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">Pending Review</span>`
+            : (isBlocked
+              ? `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">Blocked</span>`
+              : `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-700">Rejected</span>`));
+
+        const kitBadge = p.hasTestingKit
+          ? `<span class="text-emerald-700 font-bold flex items-center gap-1"><i class="fas fa-check-circle"></i> Equipped</span>`
+          : `<span class="text-slate-400 font-medium">None</span>`;
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-all">
+            <td class="p-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-full bg-purple-100 text-purple-700 font-black text-xs flex items-center justify-center shrink-0">
+                  ${(p.name || 'P')[0].toUpperCase()}
+                </div>
+                <div>
+                  <p class="font-black text-slate-900 leading-tight">${p.name}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${p.phone}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3.5 font-black text-emerald-700 text-xs">
+              ₹${(p.walletBalance || 0).toLocaleString('en-IN')}
+            </td>
+            <td class="p-3.5">
+              <p class="font-black text-slate-800">${p.vehicleType || 'Bike'}</p>
+              <p class="text-[11px] text-slate-500 font-semibold uppercase">${p.vehicleNumber || 'No plate'}</p>
+            </td>
+            <td class="p-3.5 font-black text-slate-800">${p.canisterCapacityLiters || 40} Liters</td>
+            <td class="p-3.5 text-slate-700 font-bold">${p.assignedRoute || '<span class="text-slate-400 font-normal">Unassigned</span>'}</td>
+            <td class="p-3.5">${kitBadge}</td>
+            <td class="p-3.5">${statusBadge}</td>
+            <td class="p-3.5 text-right whitespace-nowrap">
+              <button onclick="openAddMoneyModal('${p._id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.walletBalance || 0})" 
+                class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black mr-1 shadow-xs transition-all inline-flex items-center gap-1">
+                <i class="fas fa-wallet"></i> Add ₹
+              </button>
+              ${isPending 
+                ? `<button onclick="openReviewPartnerModal('${p._id}', 'approved')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-[11px] font-black mr-1.5">Approve</button>
+                   <button onclick="openReviewPartnerModal('${p._id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-[11px] font-bold">Reject</button>`
+                : `${isBlocked
+                     ? `<button onclick="togglePartnerBlock('${p._id}', false)" class="px-2.5 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg text-[11px] font-bold mr-1 inline-flex items-center gap-1"><i class="fas fa-unlock"></i> Unblock</button>`
+                     : `<button onclick="togglePartnerBlock('${p._id}', true)" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[11px] font-bold mr-1 inline-flex items-center gap-1"><i class="fas fa-ban"></i> Block</button>`}
+                   <button onclick="openEditPartnerModal('${p._id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold">Edit</button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openAddPartnerModal() {
+      document.getElementById('pmId').value = '';
+      document.getElementById('partnerModalTitle').innerHTML = '<i class="fas fa-plus text-purple-600"></i> Add Milk Delivery Partner';
+      document.getElementById('pmName').value = '';
+      document.getElementById('pmPhone').value = '';
+      document.getElementById('pmAddress').value = '';
+      document.getElementById('pmVehicleType').value = 'Bike / Motorcycle';
+      document.getElementById('pmVehicleNumber').value = '';
+      document.getElementById('pmCanister').value = '40';
+      document.getElementById('pmRoute').value = '';
+      document.getElementById('pmTestingKit').checked = false;
+      document.getElementById('pmSubmitBtn').textContent = 'Register Partner';
+
+      openModal('partnerModal');
+    }
+
+    function openEditPartnerModal(pId) {
+      const p = allPartners.find(x => x._id === pId);
+      if (!p) return;
+
+      document.getElementById('pmId').value = p._id;
+      document.getElementById('partnerModalTitle').innerHTML = '<i class="fas fa-edit text-purple-600"></i> Edit Milk Partner';
+      document.getElementById('pmName').value = p.name;
+      document.getElementById('pmPhone').value = p.phone;
+      document.getElementById('pmAddress').value = p.address;
+      document.getElementById('pmVehicleType').value = p.vehicleType || 'Bike / Motorcycle';
+      document.getElementById('pmVehicleNumber').value = p.vehicleNumber || '';
+      document.getElementById('pmCanister').value = p.canisterCapacityLiters || 40;
+      document.getElementById('pmRoute').value = p.assignedRoute || '';
+      document.getElementById('pmTestingKit').checked = Boolean(p.hasTestingKit);
+      document.getElementById('pmSubmitBtn').textContent = 'Update Partner';
+
+      openModal('partnerModal');
+    }
+
+    async function submitPartnerForm() {
+      const id = document.getElementById('pmId').value;
+      const payload = {
+        name: document.getElementById('pmName').value.trim(),
+        phone: document.getElementById('pmPhone').value.trim(),
+        address: document.getElementById('pmAddress').value.trim(),
+        vehicleType: document.getElementById('pmVehicleType').value,
+        vehicleNumber: document.getElementById('pmVehicleNumber').value.trim(),
+        canisterCapacityLiters: Number(document.getElementById('pmCanister').value) || 40,
+        assignedRoute: document.getElementById('pmRoute').value.trim(),
+        hasTestingKit: document.getElementById('pmTestingKit').checked
+      };
+
+      try {
+        let res, data;
+        if (id) {
+          // Edit
+          res = await fetch(`/api/milk/admin/partners/${id}/review`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Create
+          payload.status = 'approved';
+          res = await fetch('/api/milk/admin/partners', {
+            method: 'POST',
+            credentials: 'include',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+          });
+        }
+
+        data = await res.json();
+        if (data.success) {
+          closeModal('partnerModal');
+          showToast(id ? 'Partner updated successfully!' : 'Partner registered successfully!');
+          await fetchStats();
+          await loadPartners();
+        } else {
+          alert(data.error || 'Failed to save partner');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function openReviewPartnerModal(pId, action) {
+      if (!confirm(`Are you sure you want to ${action} this partner application?`)) return;
+      try {
+        const res = await fetch(`/api/milk/admin/partners/${pId}/review`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Partner application ${action}!`);
+          await fetchStats();
+          await loadPartners();
+        } else {
+          alert(data.error || 'Failed to update partner');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // ==============================================
+    // 2.5 PARTNER WALLET MANAGEMENT
+    // ==============================================
+    function openAddMoneyModal(partnerId, partnerName, currentBalance) {
+      document.getElementById('apmPartnerId').value = partnerId;
+      document.getElementById('apmPartnerName').textContent = partnerName || 'Milk Partner';
+      document.getElementById('apmCurrentBalance').textContent = '₹' + Number(currentBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+      document.getElementById('apmAmount').value = '';
+      document.getElementById('apmPaymentMode').value = 'Cash';
+      document.getElementById('apmNote').value = '';
+      openModal('addPartnerMoneyModal');
+      setTimeout(() => document.getElementById('apmAmount').focus(), 150);
+    }
+
+    function setAddMoneyPreset(amount) {
+      document.getElementById('apmAmount').value = amount;
+    }
+
+    async function submitAddMoneyToPartner() {
+      const partnerId = document.getElementById('apmPartnerId').value;
+      const amount = Number(document.getElementById('apmAmount').value);
+      const paymentMode = document.getElementById('apmPaymentMode').value;
+      const note = document.getElementById('apmNote').value.trim();
+
+      if (!partnerId) {
+        alert('Partner ID missing.');
+        return;
+      }
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount greater than 0.');
+        document.getElementById('apmAmount').focus();
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitAddMoney');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Crediting...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/milk/admin/partners/${partnerId}/add-money`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ amount, paymentMode, note })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal('addPartnerMoneyModal');
+          showToast(`Successfully credited ₹${amount} to partner wallet!`);
+          await loadPartners();
+        } else {
+          alert(data.error || 'Failed to credit wallet.');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      }
+    }
+
+    async function togglePartnerBlock(partnerId, shouldBlock) {
+      const action = shouldBlock ? 'block' : 'unblock';
+      if (!confirm(`Are you sure you want to ${action} this milk partner?`)) return;
+
+      try {
+        const res = await fetch(`/api/milk/admin/partners/${partnerId}/toggle-block`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ block: shouldBlock })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(data.message || `Partner ${action}ed successfully!`);
+          await loadPartners();
+        } else {
+          alert(data.error || `Failed to ${action} partner`);
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // ==============================================
+    // 3. MILK HISTORY LOGIC
+    // ==============================================
+    function applyHistoryPreset(preset) {
+      const now = new Date();
+      let start = new Date();
+
+      if (preset === 'today') {
+        // start is today
+      } else if (preset === 'yesterday') {
+        start.setDate(now.getDate() - 1);
+        now.setDate(now.getDate() - 1);
+      } else if (preset === '7days') {
+        start.setDate(now.getDate() - 7);
+      } else if (preset === 'month') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      document.getElementById('historyStartDate').value = start.toISOString().split('T')[0];
+      document.getElementById('historyEndDate').value = now.toISOString().split('T')[0];
+      loadMilkHistory();
+    }
+
+    async function loadMilkHistory() {
+      const tbody = document.getElementById('historyTableBody');
+      const start = document.getElementById('historyStartDate').value;
+      const end = document.getElementById('historyEndDate').value;
+      const shift = document.getElementById('historyShift').value;
+      const type = document.getElementById('historyType').value;
+
+      try {
+        const params = new URLSearchParams({ startDate: start, endDate: end, shift, type });
+        const res = await fetch(`/api/milk/admin/history?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+
+        if (data.success && Array.isArray(data.logs)) {
+          allMilkLogs = data.logs;
+
+          // Update Summary Banner
+          const s = data.summary || {};
+          document.getElementById('histRecCount').textContent = s.totalRecords || 0;
+          document.getElementById('histVolSum').textContent = `${s.totalLiters || 0} L`;
+          document.getElementById('histAmountSum').textContent = `₹${(s.totalAmount || 0).toLocaleString('en-IN')}`;
+          document.getElementById('histCompletedSum').textContent = s.completedCount || 0;
+          document.getElementById('badgeMilkHistory').textContent = s.totalRecords || 0;
+
+          if (!data.logs.length) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="8" class="text-center py-12 text-slate-400">
+                  <i class="fas fa-file-invoice text-3xl mb-2 opacity-40"></i>
+                  <p class="font-bold text-xs">No milk ledger entries found for the selected date range & filters.</p>
+                </td>
+              </tr>`;
+            return;
+          }
+
+          tbody.innerHTML = data.logs.map(log => {
+            const isSell = log.type === 'sell';
+            const typeBadge = isSell
+              ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Collected (खरीद)</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800">Delivered (बिक्री)</span>`;
+
+            const dateStr = new Date(log.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            
+            // Settlement status
+            let settleStatus = '';
+            if (isSell) {
+              settleStatus = log.isProcessedInWithdrawal
+                ? `<span class="text-emerald-700 font-bold"><i class="fas fa-check-circle"></i> Withdrawn to Wallet</span>`
+                : `<span class="text-amber-600 font-bold"><i class="fas fa-clock"></i> Rolling Cycle</span>`;
+            } else {
+              settleStatus = log.debitTransactionId
+                ? `<span class="text-blue-700 font-bold"><i class="fas fa-wallet"></i> Auto Debited</span>`
+                : `<span class="text-emerald-700 font-bold"><i class="fas fa-check"></i> Paid</span>`;
+            }
+
+            return `
+              <tr class="hover:bg-slate-50/80 transition-all">
+                <td class="p-3.5">
+                  <p class="font-black text-slate-900">${dateStr}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${log.shift || 'Morning'}</p>
+                </td>
+                <td class="p-3.5">
+                  <p class="font-black text-slate-900 leading-tight">${log.userId?.name || 'Customer'}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${log.userId?.phone || ''}</p>
+                </td>
+                <td class="p-3.5">${typeBadge}</td>
+                <td class="p-3.5 font-black text-slate-800">${log.quantityLiters} L</td>
+                <td class="p-3.5 font-bold text-slate-600">₹${log.ratePerLiter}</td>
+                <td class="p-3.5 font-black text-slate-900">₹${log.totalAmount}</td>
+                <td class="p-3.5 text-[11px]">${settleStatus}</td>
+                <td class="p-3.5 text-slate-500 font-medium">${log.performedBy?.name || 'System Auto'}</td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load milk history'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function exportHistoryCSV() {
+      if (!allMilkLogs.length) {
+        alert('No records available to export.');
+        return;
+      }
+
+      const rows = [
+        ['Date', 'Shift', 'User Name', 'Phone', 'Type', 'Quantity (L)', 'Rate (Rs/L)', 'Total Amount (Rs)', 'Status', 'Wallet / Rollout Status']
+      ];
+
+      allMilkLogs.forEach(l => {
+        rows.push([
+          new Date(l.date).toLocaleDateString('en-IN'),
+          l.shift || 'Morning',
+          `"${(l.userId?.name || '').replace(/"/g, '""')}"`,
+          l.userId?.phone || '',
+          l.type,
+          l.quantityLiters,
+          l.ratePerLiter,
+          l.totalAmount,
+          l.status,
+          l.type === 'sell' ? (l.isProcessedInWithdrawal ? 'Withdrawn' : 'Accumulated') : 'Auto-Debited'
+        ]);
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `krishinex_milk_history_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ==============================================
+    // 4. TEMP POSE (PAUSE MANAGEMENT & AUDIT LEDGER)
+    // ==============================================
+    function switchPauseSubView(view) {
+      currentPauseSubView = view;
+      const btnActive = document.getElementById('btnPauseViewActive');
+      const btnHistory = document.getElementById('btnPauseViewHistory');
+      const panelActive = document.getElementById('subviewActivePauses');
+      const panelHistory = document.getElementById('subviewHistoryPauses');
+
+      if (view === 'active') {
+        btnActive.className = 'px-3.5 py-1.5 rounded-lg text-xs font-black bg-orange-600 text-white transition-all flex items-center gap-1.5 shadow-xs';
+        btnHistory.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5';
+        panelActive.classList.remove('hidden');
+        panelHistory.classList.add('hidden');
+        loadPausedSubscriptions();
+      } else {
+        btnActive.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5';
+        btnHistory.className = 'px-3.5 py-1.5 rounded-lg text-xs font-black bg-orange-600 text-white transition-all flex items-center gap-1.5 shadow-xs';
+        panelActive.classList.add('hidden');
+        panelHistory.classList.remove('hidden');
+        loadPauseHistory();
+      }
+    }
+
+    // Active Pauses Loading
+    async function loadPausedSubscriptions() {
+      const tbody = document.getElementById('pausedTableBody');
+      try {
+        const res = await fetch('/api/milk/admin/paused', { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.subscriptions)) {
+          allPausedSubs = data.subscriptions;
+          document.getElementById('pausedCountIndicator').textContent = `${data.subscriptions.length} subscriptions paused`;
+          document.getElementById('badgeTempPose').textContent = data.subscriptions.length;
+          const badgeActiveSub = document.getElementById('badgeActivePauseSub');
+          if (badgeActiveSub) badgeActiveSub.textContent = data.subscriptions.length;
+          renderPausedTable();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load paused subscriptions'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function debouncePauseSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(renderPausedTable, 250);
+    }
+
+    function renderPausedTable() {
+      const tbody = document.getElementById('pausedTableBody');
+      const search = (document.getElementById('pauseSearch').value || '').toLowerCase().trim();
+
+      const list = allPausedSubs.filter(s => {
+        if (!search) return true;
+        const name = (s.name || s.userId?.name || '').toLowerCase();
+        const phone = (s.phone || s.userId?.phone || '').toLowerCase();
+        const reason = (s.pauseReason || '').toLowerCase();
+        return name.includes(search) || phone.includes(search) || reason.includes(search);
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-12 text-slate-400">
+              <i class="fas fa-check-circle text-3xl mb-2 opacity-40 text-emerald-500"></i>
+              <p class="font-bold text-xs">No active paused services. All subscribers are currently operating normally!</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(sub => {
+        const pStart = sub.pauseStartDate ? new Date(sub.pauseStartDate).toLocaleDateString('en-IN') : 'N/A';
+        const pResume = sub.expectedResumeDate ? new Date(sub.expectedResumeDate).toLocaleDateString('en-IN') : 'Unspecified';
+
+        const days = sub.pauseRequestedDays || (sub.pauseStartDate && sub.expectedResumeDate 
+          ? Math.max(1, Math.round((new Date(sub.expectedResumeDate) - new Date(sub.pauseStartDate)) / (24 * 3600 * 1000))) 
+          : 0);
+
+        const typeBadge = sub.type === 'sell'
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Sell Milk</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800">Buy Milk</span>`;
+
+        const isPendingReview = sub.pauseApprovalStatus === 'pending_approval';
+        let statusBadge = '';
+        if (isPendingReview) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 w-max animate-pulse">
+            <i class="fas fa-clock text-amber-600"></i> एडमिन अनुमोदन प्रतीक्षित (${days} दिन)
+          </span>`;
+        } else if (sub.pauseApprovalStatus === 'auto_approved') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 flex items-center gap-1 w-max">
+            <i class="fas fa-robot text-emerald-600"></i> स्वतः स्वीकृत (${days} दिन)
+          </span>`;
+        } else if (sub.pauseApprovalStatus === 'approved') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 flex items-center gap-1 w-max">
+            <i class="fas fa-check-double text-blue-600"></i> प्रशासक स्वीकृत (${days} दिन)
+          </span>`;
+        } else {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-700 w-max">
+            <i class="fas fa-pause text-slate-500 mr-1"></i> Paused (${days} दिन)
+          </span>`;
+        }
+
+        const actionHtml = isPendingReview
+          ? `<button onclick="reviewPauseRequest('${sub._id}', 'approved')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black mr-1 shadow-xs"><i class="fas fa-check mr-1"></i>Approve</button>
+             <button onclick="reviewPauseRequest('${sub._id}', 'rejected')" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-black shadow-xs"><i class="fas fa-times mr-1"></i>Reject</button>`
+          : `<button onclick="resumeSubscription('${sub._id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black mr-1.5 shadow-xs">Resume Now</button>
+             <button onclick="openExtendPauseModal('${sub._id}', '${sub.expectedResumeDate ? new Date(sub.expectedResumeDate).toISOString().split('T')[0] : ''}')" class="px-2.5 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-lg text-[11px] font-bold">Extend</button>`;
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-all ${isPendingReview ? 'bg-amber-50/40' : ''}">
+            <td class="p-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-full bg-orange-100 text-orange-700 font-black text-xs flex items-center justify-center shrink-0">
+                  ${(sub.name || 'F')[0].toUpperCase()}
+                </div>
+                <div>
+                  <p class="font-black text-slate-900 leading-tight">${sub.name}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${sub.phone}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3.5">${typeBadge}</td>
+            <td class="p-3.5 font-black text-slate-800">${sub.dailyQuantityLiters} L/day</td>
+            <td class="p-3.5">
+              <div class="flex flex-col">
+                <span class="font-bold text-slate-700">${pStart}</span>
+                <span class="text-[11px] font-black text-orange-700">&rarr; ${pResume}</span>
+                <span class="text-[10px] font-bold text-slate-500 mt-0.5">Shift: <span class="text-purple-700 font-black">${sub.pauseShift === 'Morning' ? 'Morning (सुबह)' : sub.pauseShift === 'Evening' ? 'Evening (शाम)' : 'Both (दोनों)'}</span></span>
+              </div>
+            </td>
+            <td class="p-3.5">${statusBadge}</td>
+            <td class="p-3.5 text-slate-600 max-w-xs truncate" title="${sub.pauseReason || ''}">${sub.pauseReason || 'Paused by subscriber'}</td>
+            <td class="p-3.5 text-right whitespace-nowrap">
+              ${actionHtml}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Permanent Pause History Audit Ledger
+    function setPauseHistoryFilter(filter) {
+      pauseHistoryFilter = filter;
+      document.querySelectorAll('.phf-btn').forEach(btn => {
+        btn.className = 'phf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all';
+      });
+      const activeBtn = document.getElementById(`phf-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'phf-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all';
+      }
+      loadPauseHistory();
+    }
+
+    function debouncePauseHistorySearch() {
+      clearTimeout(pauseHistoryDebounceTimer);
+      pauseHistoryDebounceTimer = setTimeout(renderPauseHistoryTable, 250);
+    }
+
+    async function loadPauseHistory() {
+      const tbody = document.getElementById('pauseHistoryTableBody');
+      const type = document.getElementById('pauseHistoryType')?.value || 'all';
+
+      try {
+        const params = new URLSearchParams({ status: pauseHistoryFilter, type });
+        const res = await fetch(`/api/milk/admin/pause-history?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+
+        if (data.success && Array.isArray(data.history)) {
+          allPauseHistory = data.history;
+
+          // Update KPI cards
+          const s = data.summary || {};
+          document.getElementById('histTotalPauses').textContent = s.totalPauses || 0;
+          document.getElementById('histActivePauses').textContent = s.activePauses || 0;
+          document.getElementById('histResumedPauses').textContent = s.resumedPauses || 0;
+          document.getElementById('histAutoApproved').textContent = s.autoApproved || 0;
+          document.getElementById('histPendingReview').textContent = s.pendingReview || 0;
+          document.getElementById('histRejectedPauses').textContent = s.rejectedPauses || 0;
+
+          renderPauseHistoryTable();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load pause history'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderPauseHistoryTable() {
+      const tbody = document.getElementById('pauseHistoryTableBody');
+      const search = (document.getElementById('pauseHistorySearch')?.value || '').toLowerCase().trim();
+
+      const list = allPauseHistory.filter(h => {
+        if (!search) return true;
+        const name = (h.name || h.userId?.name || '').toLowerCase();
+        const phone = (h.phone || h.userId?.phone || '').toLowerCase();
+        const reason = (h.pauseReason || '').toLowerCase();
+        const remarks = (h.adminRemarks || '').toLowerCase();
+        return name.includes(search) || phone.includes(search) || reason.includes(search) || remarks.includes(search);
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-12 text-slate-400">
+              <i class="fas fa-folder-open text-3xl mb-2 opacity-40"></i>
+              <p class="font-bold text-xs">No records found in pause audit ledger for the current filter.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(h => {
+        const reqDate = h.requestedAt ? new Date(h.requestedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const pStart = h.pauseStartDate ? new Date(h.pauseStartDate).toLocaleDateString('en-IN') : 'N/A';
+        const pResume = h.expectedResumeDate ? new Date(h.expectedResumeDate).toLocaleDateString('en-IN') : 'N/A';
+        const actualResumed = h.actualResumedDate 
+          ? `<span class="text-emerald-700 font-bold flex items-center gap-1"><i class="fas fa-check-circle"></i> Resumed: ${new Date(h.actualResumedDate).toLocaleDateString('en-IN')}</span>` 
+          : `<span class="text-slate-400 font-medium">Still in Pause Window</span>`;
+
+        const typeBadge = h.type === 'sell'
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Sell Milk</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800">Buy Milk</span>`;
+
+        // Approval Type badge
+        let approvalBadge = '';
+        if (h.approvalStatus === 'auto_approved') {
+          approvalBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 flex items-center gap-1 w-max"><i class="fas fa-robot text-emerald-600"></i> Auto-Approved (${h.pauseDurationDays}d)</span>`;
+        } else if (h.approvalStatus === 'approved') {
+          approvalBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800 flex items-center gap-1 w-max"><i class="fas fa-user-check text-blue-600"></i> Admin Approved (${h.pauseDurationDays}d)</span>`;
+        } else if (h.approvalStatus === 'rejected') {
+          approvalBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 w-max">Rejected</span>`;
+        } else {
+          approvalBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 w-max">Pending Review</span>`;
+        }
+
+        // Lifecycle Status badge
+        let lifecycleBadge = '';
+        if (h.lifecycleStatus === 'active_pause') {
+          lifecycleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-100 text-orange-800">Active Pause</span>`;
+        } else if (h.lifecycleStatus === 'extended') {
+          lifecycleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-800">Extended</span>`;
+        } else if (h.lifecycleStatus === 'resumed') {
+          lifecycleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Resumed (बहाल)</span>`;
+        } else if (h.lifecycleStatus === 'rejected') {
+          lifecycleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">Rejected</span>`;
+        } else {
+          lifecycleBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800">Awaiting Admin</span>`;
+        }
+
+        const noticeNotice = h.advanceNoticeHours 
+          ? `<span class="text-[10px] font-bold text-slate-500">${h.advanceNoticeHours} घंटे पूर्व सूचना</span>` 
+          : `<span class="text-[10px] text-slate-400">पूर्व सूचना</span>`;
+
+        const extensionsCount = (h.extensionHistory && h.extensionHistory.length > 0)
+          ? `<p class="text-[10px] text-purple-700 font-bold mt-0.5"><i class="fas fa-history"></i> Extended ${h.extensionHistory.length} time(s)</p>`
+          : '';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-all">
+            <td class="p-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-full bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
+                  ${(h.name || 'F')[0].toUpperCase()}
+                </div>
+                <div>
+                  <p class="font-black text-slate-900 leading-tight">${h.name}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${h.phone}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3.5">
+              ${typeBadge}
+              <p class="text-[11px] font-black text-slate-700 mt-1">${h.dailyQuantityLiters || 0} L/day</p>
+            </td>
+            <td class="p-3.5">
+              <p class="font-bold text-slate-800">${reqDate}</p>
+              ${noticeNotice}
+            </td>
+            <td class="p-3.5">
+              <span class="font-bold text-slate-700">${pStart}</span>
+              <span class="text-[11px] font-black text-orange-700">&rarr; ${pResume}</span>
+              <p class="text-[10px] font-bold text-slate-500">${h.pauseDurationDays} Days Total</p>
+              <p class="text-[10px] font-black text-purple-700">Shift: ${h.pauseShift === 'Morning' ? 'Morning (सुबह)' : h.pauseShift === 'Evening' ? 'Evening (शाम)' : 'Both (दोनों)'}</p>
+            </td>
+            <td class="p-3.5">${approvalBadge}</td>
+            <td class="p-3.5">${lifecycleBadge}</td>
+            <td class="p-3.5">
+              ${actualResumed}
+              ${extensionsCount}
+            </td>
+            <td class="p-3.5 text-xs text-slate-600 max-w-xs">
+              <p class="font-semibold truncate" title="${h.pauseReason || ''}">${h.pauseReason || 'Normal user pause'}</p>
+              ${h.adminRemarks ? `<p class="text-[10px] text-slate-500 font-medium italic mt-0.5">Admin: ${h.adminRemarks}</p>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function reviewPauseRequest(subId, action) {
+      const confirmMsg = action === 'approved' 
+        ? 'क्या आप इस लंबी रोक अनुरोध (> 7 दिन) को स्वीकृत करना चाहते हैं?'
+        : 'क्या आप इस रोक अनुरोध को अस्वीकृत करना चाहते हैं? (सेवा सामान्य रूप से चालू रहेगी)';
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/review-pause`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ action, adminRemarks: `Pause ${action} by Admin` })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Pause request has been ${action} successfully!`);
+          await fetchStats();
+          await loadPausedSubscriptions();
+          if (currentPauseSubView === 'history') await loadPauseHistory();
+        } else {
+          alert(data.error || 'Failed to review pause request');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function resumeSubscription(subId) {
+      if (!confirm('Are you sure you want to resume this milk subscription service now?')) return;
+      try {
+        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/resume`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ adminRemarks: 'Resumed by Admin via Dashboard' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Subscription has been resumed and activated successfully!');
+          await fetchStats();
+          await loadPausedSubscriptions();
+          if (currentPauseSubView === 'history') await loadPauseHistory();
+        } else {
+          alert(data.error || 'Failed to resume subscription');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    function openExtendPauseModal(subId, currDate) {
+      document.getElementById('epSubId').value = subId;
+      document.getElementById('epResumeDate').value = currDate || '';
+      document.getElementById('epReason').value = '';
+      openModal('extendPauseModal');
+    }
+
+    async function submitExtendPause() {
+      const subId = document.getElementById('epSubId').value;
+      const date = document.getElementById('epResumeDate').value;
+      const reason = document.getElementById('epReason').value;
+
+      if (!date) {
+        alert('Please select an expected resume date.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/extend-pause`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ expectedResumeDate: date, pauseReason: reason })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeModal('extendPauseModal');
+          showToast('Pause duration updated successfully!');
+          await loadPausedSubscriptions();
+          if (currentPauseSubView === 'history') await loadPauseHistory();
+        } else {
+          alert(data.error || 'Failed to update pause duration');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // ==============================================
+    // 5. CANLATION LOGIC (CANCELLATION REQUESTS & AUDIT LEDGER)
+    // ==============================================
+    function setCancelFilter(filter) {
+      cancelFilter = filter;
+      document.querySelectorAll('.cf-btn').forEach(btn => {
+        btn.className = 'cf-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 transition-all';
+      });
+      const activeBtn = document.getElementById(`cf-${filter}`);
+      if (activeBtn) {
+        activeBtn.className = 'cf-btn px-3 py-1.5 rounded-xl text-xs font-black bg-slate-900 text-white transition-all';
+      }
+      loadCancelledSubscriptions();
+    }
+
+    async function loadCancelledSubscriptions() {
+      const tbody = document.getElementById('cancelledTableBody');
+      try {
+        const params = new URLSearchParams({ status: cancelFilter });
+        const res = await fetch(`/api/milk/admin/cancellations?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.subscriptions)) {
+          allCancelledSubs = data.subscriptions;
+          const s = data.summary || {};
+          document.getElementById('cancelCountIndicator').textContent = `${data.subscriptions.length} records`;
+          
+          const pendingBadge = document.getElementById('badgePendingCancelFilter');
+          if (pendingBadge) pendingBadge.textContent = s.pendingCount || 0;
+          document.getElementById('badgeCanlation').textContent = s.pendingCount || 0;
+
+          renderCancelledTable();
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load cancellations'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function debounceCancelSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(renderCancelledTable, 250);
+    }
+
+    function renderCancelledTable() {
+      const tbody = document.getElementById('cancelledTableBody');
+      const search = (document.getElementById('cancelSearch').value || '').toLowerCase().trim();
+
+      const list = allCancelledSubs.filter(s => {
+        if (!search) return true;
+        const name = (s.name || s.userId?.name || '').toLowerCase();
+        const phone = (s.phone || s.userId?.phone || '').toLowerCase();
+        const reason = (s.cancellationReason || '').toLowerCase();
+        return name.includes(search) || phone.includes(search) || reason.includes(search);
+      });
+
+      if (!list.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-12 text-slate-400">
+              <i class="fas fa-file-circle-xmark text-3xl mb-2 opacity-40 text-slate-400"></i>
+              <p class="font-bold text-xs">No cancellation records found for this filter.</p>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(sub => {
+        const isPending = sub.cancellationStatus === 'pending_approval';
+        const isApproved = sub.cancellationStatus === 'approved' || (sub.status === 'cancelled' && sub.cancellationStatus !== 'rejected');
+        const isRejected = sub.cancellationStatus === 'rejected';
+
+        const actionDate = sub.cancellationRequestedAt 
+          ? new Date(sub.cancellationRequestedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+          : (sub.cancelledAt ? new Date(sub.cancelledAt).toLocaleDateString('en-IN') : 'N/A');
+
+        const typeBadge = sub.type === 'sell'
+          ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">Sell Milk (विक्रेता)</span>`
+          : `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-800">Buy Milk (खरीदार)</span>`;
+
+        let statusBadge = '';
+        if (isPending) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5 w-max">
+            <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+            Pending Admin Review (अर्जी प्रतीक्षारत)
+          </span>`;
+        } else if (isApproved) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200 flex items-center gap-1 w-max">
+            <i class="fas fa-ban text-rose-600"></i> Permanent Cancelled (रद्द)
+          </span>`;
+        } else if (isRejected) {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1 w-max">
+            <i class="fas fa-rotate-left text-slate-500"></i> Cancellation Rejected (सक्रिय)
+          </span>`;
+        }
+
+        let actionHtml = '';
+        if (isPending) {
+          actionHtml = `
+            <div class="flex items-center justify-end gap-1.5">
+              <button onclick="reviewCancellation('${sub._id}', 'approved')" 
+                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black shadow-xs flex items-center gap-1 transition-all">
+                <i class="fas fa-check"></i> Accept Cancellation
+              </button>
+              <button onclick="reviewCancellation('${sub._id}', 'rejected')" 
+                class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-[11px] font-bold transition-all">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          `;
+        } else if (isApproved) {
+          actionHtml = `
+            <button onclick="reactivateSubscription('${sub._id}')" 
+              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1">
+              <i class="fas fa-rotate-left"></i> Reactivate
+            </button>
+          `;
+        } else {
+          actionHtml = `<span class="text-[11px] text-slate-400 font-semibold">Active Service</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-all ${isPending ? 'bg-amber-50/20' : ''}">
+            <td class="p-3.5">
+              <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-full ${isPending ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700'} font-black text-xs flex items-center justify-center shrink-0">
+                  ${(sub.name || 'F')[0].toUpperCase()}
+                </div>
+                <div>
+                  <p class="font-black text-slate-900 leading-tight">${sub.name}</p>
+                  <p class="text-[11px] text-slate-400 font-semibold">${sub.phone}</p>
+                </div>
+              </div>
+            </td>
+            <td class="p-3.5">${typeBadge}</td>
+            <td class="p-3.5 font-black text-slate-800">${sub.dailyQuantityLiters} L/day</td>
+            <td class="p-3.5 font-bold text-slate-700">${actionDate}</td>
+            <td class="p-3.5 text-slate-700 font-medium max-w-xs">
+              <p class="truncate font-semibold" title="${sub.cancellationReason || ''}">${sub.cancellationReason || 'No reason provided'}</p>
+              ${sub.cancellationAdminRemarks ? `<p class="text-[10px] text-slate-400 italic">Admin: ${sub.cancellationAdminRemarks}</p>` : ''}
+            </td>
+            <td class="p-3.5">${statusBadge}</td>
+            <td class="p-3.5 text-right whitespace-nowrap">
+              ${actionHtml}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function reviewCancellation(subId, action) {
+      const confirmPrompt = action === 'approved'
+        ? 'क्या आप इस सेवा रद्दीकरण अर्जी को स्वीकार (Accept) करना चाहते हैं? इससे ग्राहक की सदस्यता स्थायी रूप से रद्द हो जाएगी।'
+        : 'क्या आप इस रद्दीकरण अर्जी को अस्वीकार (Reject) करना चाहते हैं? ग्राहक की सेवा चालू रहेगी।';
+      if (!confirm(confirmPrompt)) return;
+
+      try {
+        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/review-cancellation`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ action, adminRemarks: `Cancellation ${action} by Admin` })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Cancellation request has been ${action}!`);
+          await fetchStats();
+          await loadCancelledSubscriptions();
+          await loadFarmerRequests();
+        } else {
+          alert(data.error || 'Failed to review cancellation request');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    async function reactivateSubscription(subId) {
+      if (!confirm('Reactivate this cancelled subscription back to active status?')) return;
+      try {
+        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/reactivate`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ adminRemarks: 'Reactivated by Admin' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Subscription reactivated successfully!');
+          await fetchStats();
+          await loadCancelledSubscriptions();
+        } else {
+          alert(data.error || 'Failed to reactivate');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // ==============================================
+    // 6. SETINGS LOGIC (GLOBAL CONFIG & ADVANCE NOTICE CONTROLS)
+    // ==============================================
+    function syncNoticeDaysFromHours() {
+      const h = Number(document.getElementById('cfgMinAdvancePauseHours').value) || 0;
+      document.getElementById('cfgMinAdvancePauseDays').value = Math.ceil(h / 24);
+    }
+
+    function syncNoticeHoursFromDays() {
+      const d = Number(document.getElementById('cfgMinAdvancePauseDays').value) || 0;
+      document.getElementById('cfgMinAdvancePauseHours').value = d * 24;
+    }
+
+    async function loadMilkSettings() {
+      try {
+        const res = await fetch('/api/milk/admin/config', { credentials: 'include', headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && data.config) {
+          const c = data.config;
+          document.getElementById('cfgWithdrawalDays').value = c.withdrawalCycleDays || 7;
+          
+          const hours = c.minAdvancePauseHours !== undefined ? c.minAdvancePauseHours : (c.minAdvancePauseDays || 1) * 24;
+          const days = c.minAdvancePauseDays !== undefined ? c.minAdvancePauseDays : Math.ceil(hours / 24);
+          
+          document.getElementById('cfgMinAdvancePauseHours').value = hours;
+          document.getElementById('cfgMinAdvancePauseDays').value = days;
+          document.getElementById('cfgMaxAutoApprovePauseDays').value = c.maxAutoApprovePauseDays !== undefined ? c.maxAutoApprovePauseDays : 7;
+
+          document.getElementById('cfgDefaultSellRate').value = c.defaultSellRate || 45;
+          document.getElementById('cfgDefaultBuyRate').value = c.defaultBuyRate || 60;
+          document.getElementById('cfgMinPartnerWalletBalance').value = c.minPartnerWalletBalance !== undefined ? c.minPartnerWalletBalance : 500;
+          document.getElementById('cfgAdminCommissionPercent').value = c.adminCommissionPercent !== undefined ? c.adminCommissionPercent : 10;
+          document.getElementById('cfgMorningWindow').value = c.morningShiftWindow || '06:00 AM - 08:30 AM';
+          document.getElementById('cfgEveningWindow').value = c.eveningShiftWindow || '05:00 PM - 07:30 PM';
+          document.getElementById('cfgCancellationAgreement').value = c.cancellationAgreementText || '';
+        }
+      } catch (err) {
+        console.error('Load Config Error:', err);
+      }
+    }
+
+    async function saveMilkSettings() {
+      const btn = document.getElementById('btnSaveConfig');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving...';
+      btn.disabled = true;
+
+      const payload = {
+        withdrawalCycleDays: Number(document.getElementById('cfgWithdrawalDays').value),
+        minAdvancePauseHours: Number(document.getElementById('cfgMinAdvancePauseHours').value),
+        minAdvancePauseDays: Number(document.getElementById('cfgMinAdvancePauseDays').value),
+        maxAutoApprovePauseDays: Number(document.getElementById('cfgMaxAutoApprovePauseDays').value),
+        defaultSellRate: Number(document.getElementById('cfgDefaultSellRate').value),
+        defaultBuyRate: Number(document.getElementById('cfgDefaultBuyRate').value),
+        minPartnerWalletBalance: Number(document.getElementById('cfgMinPartnerWalletBalance').value),
+        adminCommissionPercent: Number(document.getElementById('cfgAdminCommissionPercent').value),
+        morningShiftWindow: document.getElementById('cfgMorningWindow').value.trim(),
+        eveningShiftWindow: document.getElementById('cfgEveningWindow').value.trim(),
+        cancellationAgreementText: document.getElementById('cfgCancellationAgreement').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/milk/admin/config', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Global Milk Governance & Pause Settings updated successfully!');
+        } else {
+          alert(data.error || 'Failed to update settings');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      }
+    }
+  </script>
+  <script src="js/sidebar-guard.js"></script>
+</body>
+</html>

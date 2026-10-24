@@ -1,0 +1,192 @@
+Krishinex Milk Services & Premium Farmer  Features Implementation Plan
+User App – Milk Sale/Purchase Feature
+1. New Section on the User App Homepage
+We need to add a new section to the User App homepage.
+Currently, when we open the app, four cards are displayed at the bottom:
+Mandi Bhav
+Mandi Janch
+Upkaran / Labour
+Doctor Se Sampark Karein
+A new card will be added below these four cards. Its name may be Milk Sale/Purchase or another suitable name. The final name has not yet been confirmed and will be updated once decided.
+When the user clicks on this card, two options will be displayed:
+Sell Milk
+Buy Milk
+The “Buy Milk” option will be for users who want to purchase milk.
+2. Sell Milk
+First-Time Registration
+When a user clicks on “Sell Milk” for the first time, a form will open containing the following fields:
+Name
+Mobile Number
+Email ID
+Milk Quantity
+Milk Delivery Schedule:
+Morning and Evening
+Morning Only
+Evening Only
+Full Address
+Landmark
+These fields can be modified if required.
+After filling in all the details, the user will submit the form for admin approval.
+After Admin Approval
+Once the registration has been approved by the admin, clicking on “Sell Milk” again will directly open the history page instead of displaying the registration form.
+The history page will display the user's daily milk delivery history.
+When the user clicks on a particular record, the complete history and details for that date will be displayed.
+Temporary Pause of Service
+Sometimes, cows or buffaloes may temporarily stop producing milk during certain months. Therefore, the user must have an option to temporarily pause the service.
+The user can select an expected date for resuming milk delivery. Since the actual date may not be certain, the selected date will be approximate.
+An extension option will also be provided so that the user can extend the pause period when required.
+Service Cancellation
+If the user is not satisfied with the service, an option to cancel the service will be provided.
+Before the service is cancelled, the user must be shown the appropriate agreement. Cancellation will be completed only after the required agreement and documentation have been completed.
+3. Buy Milk
+First-Time Registration
+When a user clicks on “Buy Milk” for the first time, a form will open containing the following fields:
+Name
+Mobile Number
+Email ID
+Address
+Milk Quantity
+After the user submits the form and the admin approves it, clicking on “Buy Milk” again will directly open the history page.
+Milk Purchase History
+The history page will display date-wise records in a calendar format.
+When the user selects a particular date, the complete history for that date will be displayed, including:
+At what time the milk was received
+Quantity of milk received
+Applicable milk rate
+Payment details
+The user will be able to view the complete history of milk purchases.
+Temporary Pause of Service
+An option to temporarily pause the service will be provided.
+When the user selects this option, they will be able to select the pause start date and the expected resumption date.
+For example, if the user pauses the service on 15-10-2026 until 20-10-2026, and later needs to extend the pause period, an “Extend Pause” button will be provided.
+Through this option, the user will be able to:
+Extend the pause end date.
+Extend or modify the expected service resumption date.
+The user must be able to update these dates whenever required.
+Service Cancellation
+An option to cancel the service will also be provided.
+Before cancellation, the required documentation must be completed and the user must agree to the applicable cancellation agreement.
+4. Wallet Management
+Note: The milk buyer's wallet will be debited daily according to the amount payable for the milk received.
+The milk seller's wallet will be credited daily with the amount earned from the milk supplied.
+5. Milk Seller Withdrawal System
+The milk seller will be able to withdraw the eligible amount from their Milk Wallet to their main KrishiNex wallet.
+The number of days required before withdrawal becomes available will be configurable through the Admin Panel.
+For example, if the admin sets the withdrawal period to seven days, the system will check whether the seller has completed the required seven-day period.
+If the seven-day period has not been completed, withdrawal will not be allowed.
+The application will display how many days remain before withdrawal becomes available.
+It will also display the exact date and time after which the seller can withdraw the amount.
+Withdrawal Cycle Example
+If the seller starts supplying milk today, the system will begin counting the days from today.
+Once seven days have been completed, the seller will be allowed to withdraw the eligible amount.
+After the withdrawal cycle is completed, the next cycle will start from the following day, which will be counted as Day 1 of the next seven-day period.
+The system will continue counting the days, and withdrawal will become available again once the next seven-day period has been completed.
+When the seller withdraws the amount, the eligible balance for that period will be transferred to their main KrishiNex wallet.
+6. Separate Milk Wallet
+The daily amounts associated with milk supplied and milk purchased will be displayed in a separate Milk Wallet.
+This wallet will maintain the milk-related balance separately from the user's main wallet.
+Milk Partner Module – Partner App
+1. Milk Partner Option
+A new section named “Milk Partner” will be added to the Partner App.
+When we open the Partner App, options such as Field Executive and other existing options are displayed for selection. A new option named “Milk Partner” will be added in the same section.
+2. Login and Registration
+When the user clicks on “Milk Partner,” a page will open with two options:
+Login
+Registration
+Registration Form:
+The registration form will include the following fields:
+Name
+Mobile Number
+Email ID
+Address
+Other required details
+After filling in all the details, the user will click on the Submit button to submit the registration form.
+Login:
+The Milk Partner will be able to log in using their registered mobile number and OTP.
+3. Milk Partner Dashboard
+After successfully logging in, the Milk Partner Dashboard will open.
+The dashboard will display the following information:
+Total quantity of milk purchased during the current month.
+Total quantity of milk sold during the current month.
+Overall performance and sales details.
+4. Milk Purchase and Milk Sales
+The dashboard will provide two main options:
+Option 1: Milk Purchase
+Through this option, the Milk Partner will be able to collect or purchase milk from registered milk suppliers.
+Option 2: Milk Sales
+Through this option, the Milk Partner will be able to supply or sell milk to customers.
+This module will work similarly to the traditional village milk delivery system, where a milkman visits households to collect milk from suppliers and deliver milk to customers.
+5. Daily Milk Collection and Delivery List
+The daily list of milk collection and delivery activities must be dynamic and editable, allowing the list to be updated or modified whenever required.
+When the Milk Partner clicks on this option, the system will display the daily list of activities, including:
+Customers or suppliers from whom milk must be collected.
+Customers to whom milk must be delivered.
+After collecting milk from a supplier or delivering milk to a customer, the Milk Partner will mark the respective task as completed.
+The system will maintain updated records of daily milk collection and delivery activities.
+6. Performance and Sales Reports
+The Milk Partner will be able to view their individual performance and sales information through the dashboard.
+This will include their milk purchase details, milk sales details, and other relevant performance records.
+Admin Panel – Milk Partner Management Module
+A new Milk Partner section will be added to the Admin Panel to manage milk partner registrations, approvals, performance reports, and milk-related requests.
+1. Milk Partner Registration
+A new registration section will be available under Milk Partner.
+All new Milk Partner registration requests will be displayed here.
+The admin can open each registration to view the partner's complete details.
+An Approve option will be provided to approve registrations.
+2. Registered Milk Partners
+A separate section will display all approved Milk Partners.
+The admin can click on any partner to view their complete reports.
+Daily milk collection, milk sales, and other relevant transaction details will be available.
+Each partner's records and performance will be maintained and displayed individually.
+3. Milk New Requests
+A separate Milk New Requests section will be added to manage milk-related requests submitted by users.
+New milk service requests submitted by users will be displayed here.
+The admin can view user-related milk requests and their associated history.
+All requests and relevant records will be accessible for review and management.
+Note: All the above functionalities will be managed individually under the Milk Partner section of the Admin Panel.
+KRISHINEX – PREMIUM FARMER MODULE
+Feature Enhancement & Functional Requirements
+1. Farmer App – Join as Premium Farmer
+A new option named “Join as Premium Farmer” will be added to the Farmer App homepage, alongside the existing feature cards.
+When a farmer clicks on this option, the following process will begin:
+Step 1: Terms & Conditions
+The farmer will be shown the Premium Farmer Terms & Conditions.
+The farmer must review and accept the terms before proceeding.
+The terms displayed in the app will be managed through the Admin Panel.
+Step 2: Payment
+After accepting the Terms & Conditions, the farmer will be redirected to the payment process.
+The farmer must complete the required payment to submit the Premium Farmer application.
+Step 3: Application Status
+After successful payment, the application status will be displayed as “Payment Successful – Approval Pending.”
+The app will inform the farmer that approval normally takes up to 24 hours during working hours.
+Once the admin approves the application, the farmer will be upgraded to Premium Farmer status.
+2. Admin Panel – Premium Farmer Management
+A new section named “Premium Farmer” will be added to the Admin Panel.
+This section will provide the following functionalities:
+A. Premium Farmer Terms & Conditions
+The admin can add and update the Terms & Conditions applicable to Premium Farmers.
+The latest approved terms will be displayed in the Farmer App.
+Farmers must accept the applicable terms before proceeding with payment.
+B. Premium Farmer Applications & Payments
+Display all Premium Farmer applications and their payment details.
+View the farmer's name, registration details, payment amount, payment date, and application status.
+Allow the admin to open an individual farmer's details.
+Provide options to approve or reject applications according to the defined process.
+Maintain payment and approval history for each farmer.
+C. Farmer Details & Limit Management
+After opening a farmer's details, the admin will be able to configure the applicable limit for that Premium Farmer.
+Set an individual limit for each farmer.
+Update the limit when required.
+View the currently assigned limit.
+Maintain records of limit changes.
+The exact type of limit, such as a credit limit or a transaction limit, will be configured according to the final business requirements.
+3. Premium Farmer Status & Limit Activation
+After successful payment and admin approval:
+The farmer's account will be upgraded to Premium Farmer status.
+A “Premium Farmer” badge or label will be displayed in the Farmer App.
+The limit configured by the admin will be assigned to the farmer's account.
+The farmer will be able to access the applicable premium benefits and features according to the assigned limit and approved business rules.
+Payment alone will not activate Premium Farmer status or the assigned limit. Activation will take place only after admin approval.
+4. Expected Outcome
+The Premium Farmer Module will provide a structured process for farmers to apply for premium membership, accept the applicable terms, complete payment, and receive approval.
+The Admin Panel will provide centralized management of Premium Farmer terms, applications, payments, approvals, and individual farmer limits, ensuring transparent tracking and controlled activation of premium accounts.

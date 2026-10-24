@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   role: {
     type: String,
-    enum: ['farmer', 'buyer', 'equipment', 'soil', 'shop', 'ksp', 'labour', 'employee', 'admin', 'field_executive'],
+    enum: ['farmer', 'buyer', 'equipment', 'soil', 'shop', 'ksp', 'labour', 'employee', 'admin', 'field_executive', 'milk_partner'],
     required: true
   },
   name: {
@@ -186,6 +186,40 @@ const userSchema = new mongoose.Schema({
   creditUsed: {
     type: Number,
     default: 0
+  },
+  // Milk Supply Cycle Tracking (for 7-day rollout withdrawal)
+  milkCycleStartDate: {
+    type: Date,
+    default: null
+  },
+  milkCycleAccumulatedAmount: {
+    type: Number,
+    default: 0
+  },
+  lastMilkWithdrawalAt: {
+    type: Date,
+    default: null
+  },
+  // Milk Partner specific fields
+  assignedRoute: {
+    type: String,
+    default: ''
+  },
+  vehicleType: {
+    type: String,
+    default: ''
+  },
+  vehicleNumber: {
+    type: String,
+    default: ''
+  },
+  canisterCapacityLiters: {
+    type: Number,
+    default: 0
+  },
+  hasTestingKit: {
+    type: Boolean,
+    default: false
   },
   loginOtp: {
     type: String,

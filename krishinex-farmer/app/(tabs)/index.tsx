@@ -12,6 +12,7 @@ import {
   RefreshControl,
   FlatList,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -82,6 +83,9 @@ export default function HomeScreen() {
   const [profileImage, setProfileImage] = React.useState<string | null>(null);
   const [creditLimit, setCreditLimit] = React.useState(0);
   const [creditUsed, setCreditUsed] = React.useState(0);
+  const [milkSub, setMilkSub] = React.useState<any>(null);
+  const [checkingMilk, setCheckingMilk] = React.useState(false);
+  const milkSubRef = React.useRef<any>(undefined);
 
   const loadWeather = async (silent = false, forceFetch = false) => {
     try {
@@ -203,7 +207,7 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadWeather(true, true), loadSuggestions(), loadProfile(), fetchUnreadCount(true)]);
+    await Promise.all([loadWeather(true, true), loadSuggestions(), loadProfile(), fetchUnreadCount(true), loadMilkStatus()]);
     setRefreshing(false);
   };
 
@@ -239,6 +243,15 @@ export default function HomeScreen() {
           const cachedSuggestions = await AsyncStorage.getItem('cached_suggestions');
           if (cachedSuggestions) setSuggestions(JSON.parse(cachedSuggestions));
 
+          const cachedMilkSub = await AsyncStorage.getItem('cached_milk_sub');
+          if (cachedMilkSub) {
+            try {
+              const parsed = JSON.parse(cachedMilkSub);
+              milkSubRef.current = parsed;
+              setMilkSub(parsed);
+            } catch {}
+          }
+
         } catch (error) {
           console.error('Error loading cache:', error);
         }
@@ -252,6 +265,7 @@ export default function HomeScreen() {
         await loadSuggestions();
         await loadProfile();
         await fetchUnreadCount(true);
+        await loadMilkStatus();
       };
 
       loadCachedData().then(() => {
@@ -259,6 +273,70 @@ export default function HomeScreen() {
       });
     }, [language])
   );
+
+  React.useEffect(() => {
+    let s: any = null;
+    const { initSocket } = require('../../services/socket');
+    initSocket().then((sock: any) => {
+      s = sock;
+      s?.on('milk_event', () => {
+        loadMilkStatus();
+      });
+    });
+
+    return () => {
+      s?.off('milk_event');
+    };
+  }, []);
+
+  const loadMilkStatus = async () => {
+    try {
+      const res = await authApi.getMyMilkSubscription();
+      const sub = res.data?.subscription || null;
+      milkSubRef.current = sub;
+      setMilkSub(sub);
+      if (sub) {
+        await AsyncStorage.setItem('cached_milk_sub', JSON.stringify(sub));
+      } else {
+        await AsyncStorage.removeItem('cached_milk_sub');
+      }
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const handleMilkPress = async () => {
+    let sub = milkSubRef.current;
+    if (sub === undefined) {
+      try {
+        setCheckingMilk(true);
+        const res = await authApi.getMyMilkSubscription();
+        sub = res.data?.subscription || null;
+        milkSubRef.current = sub;
+        setMilkSub(sub);
+        if (sub) {
+          await AsyncStorage.setItem('cached_milk_sub', JSON.stringify(sub));
+        }
+      } catch {
+        sub = null;
+      } finally {
+        setCheckingMilk(false);
+      }
+    }
+
+    const isPendingCancel = sub && sub.cancellationStatus === 'pending_approval';
+    if (sub && (sub.status !== 'cancelled' || isPendingCancel)) {
+      if (sub.type === 'sell') {
+        router.push('/milk/sell-history' as any);
+        return;
+      } else if (sub.type === 'buy') {
+        router.push('/milk/buy-history' as any);
+        return;
+      }
+    }
+
+    router.push('/milk' as any);
+  };
 
   const loadSuggestions = async () => {
     try {
@@ -595,6 +673,57 @@ export default function HomeScreen() {
               onPress={() => router.push('/agri-doctor')}
             />
           </View>
+
+          {/* MILK SERVICES CARD */}
+          <TouchableOpacity
+            style={styles.milkCardWrapper}
+            activeOpacity={0.9}
+            onPress={handleMilkPress}
+            disabled={checkingMilk}
+          >
+            <LinearGradient
+              colors={['#0284C7', '#0369A1']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.milkCardGradient}
+            >
+              <View style={styles.milkCardLeft}>
+                <View style={styles.milkIconBadge}>
+                  {checkingMilk ? (
+                    <ActivityIndicator size="small" color="#0284C7" />
+                  ) : (
+                    <Ionicons name="water" size={24} color="#0284C7" />
+                  )}
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={styles.milkCardTitle}>
+                      {hi ? 'दूध क्रय / विक्रय सेवा' : 'Milk Sale / Purchase'}
+                    </Text>
+                    {milkSub && milkSub.status !== 'cancelled' ? (
+                      <View style={[styles.milkNewBadge, { backgroundColor: milkSub.status === 'pending' ? '#FEF3C7' : '#D1FAE5' }]}>
+                        <Text style={[styles.milkNewBadgeText, { color: milkSub.status === 'pending' ? '#92400E' : '#065F46' }]}>
+                          {milkSub.status === 'pending' ? (hi ? 'समीक्षाधीन' : 'PENDING') : (hi ? 'सक्रिय' : 'ACTIVE')}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={styles.milkNewBadge}>
+                        <Text style={styles.milkNewBadgeText}>NEW</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.milkCardSubtitle}>
+                    {milkSub && milkSub.status !== 'cancelled'
+                      ? (milkSub.type === 'sell'
+                          ? (hi ? 'दूध बिक्री हिस्ट्री व वॉलेट भुगतान' : 'Milk Supply History & Wallet Payout')
+                          : (hi ? 'दैनिक दूध खरीद हिस्ट्री व विवरण' : 'Milk Purchase History & Details'))
+                      : (hi ? 'दूध बेचें या खरीदें • सीधा वॉलेट भुगतान' : 'Sell or Buy milk • Direct wallet payout')}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
         </ScrollView>
 
       </View>
@@ -987,5 +1116,61 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 1,
+  },
+  milkCardWrapper: {
+    marginTop: 14,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: SHADOW_COLOR,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  milkCardGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  milkCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  milkIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  milkCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  milkCardSubtitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#E0F2FE',
+    marginTop: 2,
+  },
+  milkNewBadge: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+  },
+  milkNewBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
 });

@@ -81,7 +81,8 @@
         'finance': 'finance_payouts_management.html',
         'analytics': 'Analytics_Reports.html',
         'settings': 'settings.html',
-        'nex_card': 'nex_card_management.html' // Added so it gets hidden for employees
+        'nex_card': 'nex_card_management.html',
+        'milk': 'milk_management.html'
     };
 
     const sidebar = document.getElementById('sidebar');

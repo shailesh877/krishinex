@@ -108,6 +108,14 @@ function RootLayoutContent() {
     try {
       const token = await AsyncStorage.getItem('userToken');
       setIsAuthenticated(!!token);
+      if (token) {
+        try {
+          const { initSocket } = require('../services/socket');
+          initSocket();
+        } catch (sockErr) {
+          console.warn('[Socket Init Error]:', sockErr);
+        }
+      }
     } catch (e) {
       console.error('Check auth error', e);
       setIsAuthenticated(false);
@@ -153,6 +161,10 @@ function RootLayoutContent() {
 
   const handleLogout = async () => {
     try {
+      try {
+        const { disconnectSocket } = require('../services/socket');
+        disconnectSocket();
+      } catch (sockErr) {}
       await AsyncStorage.multiRemove(['userToken', 'userData']);
       router.replace('/(auth)/signup' as any);
     } catch (e) {

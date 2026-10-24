@@ -28,10 +28,15 @@ import { showAlert } from '../../components/CustomAlert';
 
 const { height } = Dimensions.get('window');
 
-type Role = 'buyer' | 'equipment' | 'soil' | 'shop' | 'labour' | 'employee' | 'field_executive';
+type Role = 'buyer' | 'equipment' | 'soil' | 'shop' | 'labour' | 'employee' | 'field_executive' | 'milk_partner';
 type Lang = 'hi' | 'en';
 
 const ROLES: { key: Role; labelHi: string; labelEn: string }[] = [
+  {
+    key: 'milk_partner',
+    labelHi: 'मिल्क पार्टनर (दूध संकलन व वितरण)',
+    labelEn: 'Milk Partner (Collection & Delivery)',
+  },
   {
     key: 'field_executive',
     labelHi: 'फील्ड एग्जीक्यूटिव',
@@ -62,13 +67,6 @@ const ROLES: { key: Role; labelHi: string; labelEn: string }[] = [
     labelHi: 'लेबर पार्टनर',
     labelEn: 'Labour Partner',
   },
-  /*
-    {
-      key: 'employee',
-      labelHi: 'कर्मचारी',
-      labelEn: 'Employee',
-    },
-  */
 ];
 
 const TEXTS: Record<
@@ -353,6 +351,13 @@ export default function LoginScreen() {
             else if (role === 'soil') router.replace('/(soil-lab)/home');
             else if (role === 'shop') router.replace('/(shop-partner)/home');
             else if (role === 'labour') router.replace('/(labour-partner)/home');
+            else if (role === 'milk_partner') {
+              if (partnerData.user?.status === 'pending') {
+                router.replace('/(milk-partner)/approval-pending' as any);
+              } else {
+                router.replace('/(milk-partner)/home' as any);
+              }
+            }
           } else {
             const fallbackMsg = lang === 'hi' ? 'अकाउंट नहीं मिला, पहले अकाउंट बनाएं' : 'Account not found. Please create an account first.';
             const errMsg = (lang === 'hi' ? partnerData.errorHi : partnerData.error) || partnerData.error || partnerData.errorHi || partnerData.message || fallbackMsg;

@@ -240,6 +240,21 @@ export const authApi = {
     getWeather: (lat: number, lon: number) => api.get('/weather', { params: { lat, lon } }),
     getCreditData: () => api.get('/user/credit-data'),
     repayCredit: (amount?: number) => api.post('/user/credit-repay', { amount }),
+
+    // Milk Services APIs
+    registerMilk: (data: any) => api.post('/milk/register', data),
+    getMyMilkSubscription: (type?: 'sell' | 'buy' | 'any') => api.get('/milk/my-subscription', { params: type ? { type } : {} }),
+    getMilkHistory: (type: 'sell' | 'buy', month?: number, year?: number) => api.get('/milk/history', { params: { type, month, year } }),
+    pauseMilkService: (data: { subscriptionId: string; pauseStartDate: string; expectedResumeDate: string; pauseReason?: string; pauseShift?: string }) =>
+        api.post('/milk/pause', data),
+    extendMilkPause: (data: { subscriptionId: string; newResumeDate: string; reason?: string }) =>
+        api.post('/milk/extend-pause', data),
+    resumeMilkService: (subscriptionId: string) => api.post('/milk/resume', { subscriptionId }),
+    cancelMilkService: (data: { subscriptionId: string; cancellationReason: string; cancellationAgreementAccepted: boolean }) =>
+        api.post('/milk/cancel', data),
+    getMilkCycleStatus: () => api.get('/milk/sell/cycle-status'),
+    requestMilkWithdrawal: () => api.post('/milk/sell/request-withdrawal'),
+    getMilkConfig: () => api.get('/milk/config'),
 };
 
 export default api;

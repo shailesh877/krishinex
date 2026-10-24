@@ -18,11 +18,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as DocumentPicker from 'expo-document-picker';
 import { useI18n } from '../../context/I18nContext';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { API_URL } from '../../constants/api';
+import { API_URL, BASE_API_URL } from '../../constants/api';
 import * as Location from 'expo-location';
 import { showAlert } from '../../components/CustomAlert';
 
-type Role = 'buyer' | 'equipment' | 'soil' | 'shop' | 'labour';
+type Role = 'buyer' | 'equipment' | 'soil' | 'shop' | 'labour' | 'milk_partner';
 type AadhaarDoc = DocumentPicker.DocumentPickerAsset | null;
 
 export default function SignupScreen() {
@@ -45,6 +45,13 @@ export default function SignupScreen() {
   const [pincode, setPincode] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Milk Partner specific states
+  const [assignedRoute, setAssignedRoute] = useState('');
+  const [vehicleType, setVehicleType] = useState('Motorcycle');
+  const [vehicleNumber, setVehicleNumber] = useState('');
+  const [canisterCapacity, setCanisterCapacity] = useState('40');
+  const [hasTestingKit, setHasTestingKit] = useState(false);
+
   const roleLabel = (() => {
     if (role === 'soil') {
       return hi ? 'लैब का नाम' : 'Lab name';
@@ -58,6 +65,7 @@ export default function SignupScreen() {
   })();
 
   const headerTitle = (() => {
+    if (role === 'milk_partner') return hi ? 'मिल्क पार्टनर साइनअप' : 'Milk Partner Signup';
     if (role === 'buyer') return hi ? 'फसल खरीदार साइनअप' : 'Crop Buyer Signup';
     if (role === 'equipment')
       return hi ? 'किराया प्रदाता साइनअप' : 'Rental Provider Signup';
@@ -182,6 +190,41 @@ export default function SignupScreen() {
       } catch (locErr) {
         console.warn('Location fetch failed:', locErr);
         // Continue signup without location if it fails
+      }
+
+      // Milk Partner specific API submission
+      if (role === 'milk_partner') {
+        const payload = {
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          address: fullAddress,
+          assignedRoute: assignedRoute.trim(),
+          vehicleType,
+          vehicleNumber: vehicleNumber.trim(),
+          canisterCapacityLiters: Number(canisterCapacity) || 40,
+          hasTestingKit,
+        };
+
+        const res = await fetch(`${BASE_API_URL}/milk/partner/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const mData = await res.json();
+        if (res.ok && mData.success) {
+          showAlert(
+            hi ? 'पंजीकरण सफल! 🎉' : 'Registration Submitted! 🎉',
+            hi
+              ? 'आपका मिल्क पार्टनर आवेदन एडमिन समीक्षा हेतु भेज दिया गया है। स्वीकृति मिलने के बाद सेवाएं सक्रिय होंगी।'
+              : 'Your Milk Partner application has been submitted for admin approval.'
+          );
+          router.replace('/(milk-partner)/approval-pending' as any);
+          return;
+        } else {
+          showAlert(hi ? 'त्रुटि' : 'Error', mData.error || 'Registration failed');
+          return;
+        }
       }
 
       // Use production API URL defined in constants
@@ -385,6 +428,104 @@ export default function SignupScreen() {
                   maxLength={6}
                 />
               </View>
+
+              {/* Milk Partner Specific Fields */}
+              {role === 'milk_partner' && (
+                <>
+                  <View style={styles.fieldBlock}>
+                    <Text style={styles.label}>{hi ? 'दैनिक दूध वितरण रूट / क्षेत्र' : 'Assigned Route / Delivery Locality'}</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={hi ? 'जैसे: रामनगर - सेक्टर 4' : 'e.g. Ramnagar - Sector 4'}
+                      placeholderTextColor="#9CA3AF"
+                      value={assignedRoute}
+                      onChangeText={setAssignedRoute}
+                    />
+                  </View>
+
+                  <View style={styles.fieldBlock}>
+                    <Text style={styles.label}>{hi ? 'वाहन प्रकार' : 'Vehicle Type'}</Text>
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                      {['Motorcycle', 'Van', 'Auto', 'Cycle'].map(v => (
+                        <TouchableOpacity
+                          key={v}
+                          onPress={() => setVehicleType(v)}
+                          style={{
+                            paddingVertical: 8,
+                            paddingHorizontal: 12,
+                            borderRadius: 10,
+                            borderWidth: 1.5,
+                            borderColor: vehicleType === v ? '#16A34A' : '#E5E7EB',
+                            backgroundColor: vehicleType === v ? '#DCFCE7' : '#FFFFFF',
+                          }}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: vehicleType === v ? '#15803D' : '#4B5563' }}>
+                            {v}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={styles.fieldBlock}>
+                    <Text style={styles.label}>{hi ? 'वाहन नंबर (यदि है)' : 'Vehicle Number (Optional)'}</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder={hi ? 'जैसे: UP65 AB 1234' : 'e.g. UP65 AB 1234'}
+                      placeholderTextColor="#9CA3AF"
+                      value={vehicleNumber}
+                      onChangeText={setVehicleNumber}
+                      autoCapitalize="characters"
+                    />
+                  </View>
+
+                  <View style={styles.fieldBlock}>
+                    <Text style={styles.label}>{hi ? 'दैनिक कैन क्षमता (लीटर में)' : 'Canister Capacity (Liters)'}</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="40"
+                      placeholderTextColor="#9CA3AF"
+                      value={canisterCapacity}
+                      onChangeText={setCanisterCapacity}
+                      keyboardType="number-pad"
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={() => setHasTestingKit(!hasTestingKit)}
+                    activeOpacity={0.8}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: hasTestingKit ? '#ECFDF5' : '#F9FAFB',
+                      padding: 12,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: hasTestingKit ? '#10B981' : '#E5E7EB',
+                      marginBottom: 16,
+                      gap: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: 6,
+                        borderWidth: 2,
+                        borderColor: hasTestingKit ? '#10B981' : '#9CA3AF',
+                        backgroundColor: hasTestingKit ? '#10B981' : '#FFFFFF',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {hasTestingKit && <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>✓</Text>}
+                    </View>
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: '#1F2937', flex: 1 }}>
+                      {hi ? 'मेरे पास दूध गुणवत्ता जांच किट (FAT/लैक्टोमीटर) उपलब्ध है' : 'I have Milk Quality Testing Kit (FAT / Lactometer)'}
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
               {/* SUBMIT */}
               <TouchableOpacity

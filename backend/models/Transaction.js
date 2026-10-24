@@ -13,7 +13,7 @@ const transactionSchema = new mongoose.Schema({
     },
     module: {
         type: String,
-        enum: ['Equipment', 'Labour', 'BuyerTrading', 'Platform', 'KSP', 'Shop', 'Soil'],
+        enum: ['Equipment', 'Labour', 'BuyerTrading', 'Platform', 'KSP', 'Shop', 'Soil', 'Milk'],
         required: true
     },
     amount: {

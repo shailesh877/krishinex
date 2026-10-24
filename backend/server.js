@@ -62,21 +62,47 @@ app.use(express.urlencoded({ extended: true }));
 const io = new Server(server, { cors: corsOptions });
 
 io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) return next(new Error('Authentication error: Missing token'));
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    if (!token) {
+        socket.user = { id: 'anonymous', role: 'guest' };
+        return next();
+    }
     
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return next(new Error('Authentication error: Invalid token'));
-        socket.user = decoded;
+        if (err) {
+            socket.user = { id: 'anonymous', role: 'guest' };
+        } else {
+            socket.user = decoded;
+        }
         next();
     });
 });
 
 io.on('connection', (socket) => {
-    console.log(`🔌 [Socket.io] User connected: ${socket.user.id} (${socket.user.role})`);
-    socket.join(`user_${socket.user.id}`);
+    console.log(`🔌 [Socket.io] Connected: ${socket.user.id} (${socket.user.role})`);
+    
+    if (socket.user.id && socket.user.id !== 'anonymous') {
+        socket.join(`user_${socket.user.id}`);
+    }
+    
+    if (['admin', 'employee'].includes(socket.user.role)) {
+        socket.join('admin_room');
+    }
+    
+    socket.on('join_admin', () => {
+        socket.join('admin_room');
+        console.log(`🔌 [Socket.io] Socket ${socket.id} joined admin_room`);
+    });
+
+    socket.on('join_user', (userId) => {
+        if (userId) {
+            socket.join(`user_${userId}`);
+            console.log(`🔌 [Socket.io] Socket ${socket.id} joined user_${userId}`);
+        }
+    });
+
     socket.on('disconnect', () => {
-        console.log(`🔌 [Socket.io] User disconnected: ${socket.user.id}`);
+        console.log(`🔌 [Socket.io] Disconnected: ${socket.user.id}`);
     });
 });
 
@@ -132,6 +158,7 @@ app.use('/api/videos', require('./routes/videoRoutes'));
 app.use('/api/weather', require('./routes/weatherRoutes'));
 app.use('/api/nex-cards', require('./routes/nexCardRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
+app.use('/api/milk', require('./routes/milkRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

@@ -77,6 +77,7 @@ export default function RootLayout() {
                 if (role === 'soil') return '/(soil-lab)/notifications';
                 if (role === 'buyer') return '/(buyer)/notifications';
                 if (role === 'employee') return '/(employee)/notifications';
+                if (role === 'milk_partner') return '/(milk-partner)/notifications';
                 return null;
               };
               const path = rPath(user.role);
@@ -139,6 +140,9 @@ export default function RootLayout() {
           else if (r === 'shop') path = '/(shop-partner)/home';
           else if (r === 'labour') path = '/(labour-partner)/home';
           else if (r === 'employee' || r === 'field_executive') path = '/(employee)/home';
+          else if (r === 'milk_partner') {
+            path = user.status === 'pending' ? '/(milk-partner)/approval-pending' : '/(milk-partner)/home';
+          }
 
           if (path && inAuthGroup) {
             setTargetRoute(path);
