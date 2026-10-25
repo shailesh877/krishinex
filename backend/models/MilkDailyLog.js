@@ -79,5 +79,7 @@ const milkDailyLogSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 milkDailyLogSchema.index({ userId: 1, date: -1 });
+milkDailyLogSchema.index({ subscriptionId: 1, date: -1, shift: 1 });
+milkDailyLogSchema.index({ type: 1, date: -1, shift: 1 });
 
 module.exports = mongoose.model('MilkDailyLog', milkDailyLogSchema);

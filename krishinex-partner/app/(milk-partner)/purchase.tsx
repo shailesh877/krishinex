@@ -13,7 +13,13 @@ import {
   StatusBar,
   Linking,
   Platform,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -61,7 +67,12 @@ export default function MilkPurchaseScreen() {
 
       const data = await res.json();
       if (res.ok && data.success && Array.isArray(data.list)) {
-        setFarmers(data.list);
+        const sorted = [...data.list].sort((a, b) => {
+          const aDone = (a.log && a.log.status === 'Completed') ? 1 : (a.isPausedToday ? 2 : 0);
+          const bDone = (b.log && b.log.status === 'Completed') ? 1 : (b.isPausedToday ? 2 : 0);
+          return aDone - bDone;
+        });
+        setFarmers(sorted);
       }
     } catch (e) {
       console.error('Fetch Collection List Error:', e);
@@ -157,6 +168,35 @@ export default function MilkPurchaseScreen() {
           data.message || (hi ? 'दूध संकलन सफलतापूर्वक दर्ज कर लिया गया है।' : 'Collection recorded successfully.')
         );
         setModalVisible(false);
+
+        // Animate smooth layout transition and push completed farmer to bottom
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setFarmers(prev => {
+          const updated = prev.map(f => {
+            if (String(f.subscriptionId) === String(selectedFarmer.subscriptionId)) {
+              return {
+                ...f,
+                log: data.log || {
+                  quantityLiters: qty,
+                  ratePerLiter: rate,
+                  totalAmount: Math.round(qty * rate * 100) / 100,
+                  status: 'Completed',
+                  fatPercentage: fatPercentage.trim() ? Number(fatPercentage) : null,
+                  snfPercentage: snfPercentage.trim() ? Number(snfPercentage) : null,
+                  notes: notes.trim(),
+                }
+              };
+            }
+            return f;
+          });
+
+          // Sort: Pending farmers first, Completed/Skipped/Paused at the end
+          return updated.sort((a, b) => {
+            const aDone = (a.log && a.log.status === 'Completed') ? 1 : (a.isPausedToday ? 2 : 0);
+            const bDone = (b.log && b.log.status === 'Completed') ? 1 : (b.isPausedToday ? 2 : 0);
+            return aDone - bDone;
+          });
+        });
       } else {
         const errMsg = data.error || (hi ? 'संकलन दर्ज नहीं हो सका' : 'Failed to record collection');
         const isWalletErr = data.requiredBalance !== undefined || data.requiredAmount !== undefined || errMsg.includes('वॉलेट') || errMsg.toLowerCase().includes('wallet');
@@ -191,15 +231,21 @@ export default function MilkPurchaseScreen() {
     if (phone) Linking.openURL(`tel:${phone}`);
   };
 
-  const filteredFarmers = farmers.filter(f => {
-    if (!search.trim()) return true;
-    const s = search.toLowerCase();
-    return (
-      (f.name || '').toLowerCase().includes(s) ||
-      (f.phone || '').toLowerCase().includes(s) ||
-      (f.address || '').toLowerCase().includes(s)
-    );
-  });
+  const filteredFarmers = farmers
+    .filter(f => {
+      if (!search.trim()) return true;
+      const s = search.toLowerCase();
+      return (
+        (f.name || '').toLowerCase().includes(s) ||
+        (f.phone || '').toLowerCase().includes(s) ||
+        (f.address || '').toLowerCase().includes(s)
+      );
+    })
+    .sort((a, b) => {
+      const aDone = (a.log && a.log.status === 'Completed') ? 1 : (a.isPausedToday ? 2 : 0);
+      const bDone = (b.log && b.log.status === 'Completed') ? 1 : (b.isPausedToday ? 2 : 0);
+      return aDone - bDone;
+    });
 
   const totalToCollect = farmers.filter(f => !f.isPausedToday).reduce((sum, f) => sum + (f.dailyQuantityLiters || 0), 0);
   const totalCollectedSoFar = farmers.filter(f => f.log && f.log.status === 'Completed').reduce((sum, f) => sum + (f.log.quantityLiters || 0), 0);

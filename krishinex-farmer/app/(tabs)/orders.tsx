@@ -226,11 +226,11 @@ export default function UnifiedOrdersScreen() {
     : require('../../assets/images/Khetify_use_under_the_app-English.png');
 
   return (
-    <SafeAreaView style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
+    <View style={styles.root}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
         <View style={{ width: 42 }} />
         <Image source={mainLogo} style={styles.logo} resizeMode="contain" />
         <TouchableOpacity onPress={() => fetchData(true)}>
@@ -470,7 +470,7 @@ export default function UnifiedOrdersScreen() {
           )
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,

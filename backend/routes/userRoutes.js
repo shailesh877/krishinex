@@ -224,9 +224,13 @@ router.get('/profile', protect, async (req, res) => {
                     bankDocUrl: ''
                 },
                 skills: user.labourDetails?.skills || [],
-                skillDescription: user.labourDetails?.skillDescription || ''
+                skillDescription: user.labourDetails?.skillDescription || '',
+                isPremiumFarmer: !!user.isPremiumFarmer,
+                premiumFarmerStatus: user.premiumFarmerStatus || 'none',
+                premiumFarmerLimit: user.premiumFarmerLimit || 0,
+                creditLimit: user.creditLimit || 0
             });
-            console.log(`[DEBUG] Profile fetched for user ${req.user.id}: GST=${user.gstNumber}, LIC=${user.licenseNumber}`);
+            console.log(`[DEBUG] Profile fetched for user ${req.user.id}: GST=${user.gstNumber}, LIC=${user.licenseNumber}, isPremium=${user.isPremiumFarmer}`);
         } else {
             res.status(404).json({ error: 'User not found' });
         }

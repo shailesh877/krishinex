@@ -27,6 +27,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useI18n } from '@/context/I18nContext';
 import { showAlert } from '@/components/CustomAlert';
 import { useNotificationBadge } from '@/hooks/useNotificationBadge';
@@ -55,6 +56,8 @@ export default function ProfileScreen() {
   );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isPremiumFarmer, setIsPremiumFarmer] = useState(false);
+  const [premiumFarmerStatus, setPremiumFarmerStatus] = useState('none');
   const onRefresh = () => {
     setRefreshing(true);
     fetchProfile(true).finally(() => setRefreshing(false));
@@ -76,6 +79,8 @@ export default function ProfileScreen() {
     setPhone(user.phone);
     setEmail(user.email || '');
     setAddress(user.address || (hi ? 'पता नहीं' : 'N/A'));
+    setIsPremiumFarmer(!!user.isPremiumFarmer);
+    setPremiumFarmerStatus(user.premiumFarmerStatus || 'none');
     if (user.profilePhotoUrl) {
       const pfp = user.profilePhotoUrl.startsWith('http')
         ? user.profilePhotoUrl
@@ -544,11 +549,11 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
         <TouchableOpacity style={styles.avatarWrap} activeOpacity={0.8}>
           <Image source={profileAvatar} style={styles.avatarImage} />
         </TouchableOpacity>
@@ -597,9 +602,15 @@ export default function ProfileScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16A34A" />}
         >
           {/* PROFILE CARD */}
-          <View style={styles.profileCard}>
+          <View style={[styles.profileCard, isPremiumFarmer && styles.profileCardPremium]}>
             <View style={styles.profileTop}>
-              <Image source={{ uri: avatarUrl }} style={styles.profileImage} />
+              <Image source={{ uri: avatarUrl }} style={[styles.profileImage, isPremiumFarmer && styles.profileImagePremium]} />
+
+              {isPremiumFarmer && (
+                <View style={styles.avatarCrownBadge}>
+                  <Ionicons name="sparkles" size={12} color="#FFFFFF" />
+                </View>
+              )}
 
               <TouchableOpacity
                 style={[styles.editBtn, status === 'approved' && { backgroundColor: '#9CA3AF' }]}
@@ -609,7 +620,21 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.name}>{name}</Text>
+            <View style={styles.nameRow}>
+              <Text style={styles.name}>{name}</Text>
+              {isPremiumFarmer && (
+                <LinearGradient
+                  colors={['#F59E0B', '#B45309']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.premiumGoldPill}
+                >
+                  <Ionicons name="ribbon" size={11} color="#FFFFFF" />
+                  <Text style={styles.premiumGoldPillTxt}>PREMIUM</Text>
+                </LinearGradient>
+              )}
+            </View>
+
             <Text style={styles.phone}>{phone}</Text>
             <Text style={styles.email}>{email}</Text>
 
@@ -622,17 +647,40 @@ export default function ProfileScreen() {
               <Text style={styles.locationText}>{address}</Text>
             </View>
 
-            <View style={[styles.verifiedBadge, status !== 'approved' && { backgroundColor: '#FEF3C7' }]}>
-              <Ionicons
-                name={status === 'approved' ? "checkmark-circle" : "time-outline"}
-                size={16}
-                color={status === 'approved' ? KHETIFY_GREEN : '#D97706'}
-              />
-              <Text style={[styles.verifiedText, status !== 'approved' && { color: '#D97706' }]}>
-                {status === 'approved'
-                  ? hi ? 'सत्यापित किसान' : 'Verified Farmer'
-                  : hi ? 'सत्यापन लंबित' : 'Verification Pending'}
-              </Text>
+            <View style={styles.badgesCluster}>
+              {isPremiumFarmer && (
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => router.push('/premium' as any)}
+                  style={styles.premiumClubBadge}
+                >
+                  <LinearGradient
+                    colors={['#FEF3C7', '#FDE68A']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.premiumClubBadgeGrad}
+                  >
+                    <Ionicons name="shield-checkmark" size={15} color="#B45309" />
+                    <Text style={styles.premiumClubBadgeTxt}>
+                      {hi ? 'प्रीमियम किसान' : 'Premium Farmer'}
+                    </Text>
+                    <Ionicons name="chevron-forward" size={13} color="#B45309" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+
+              <View style={[styles.verifiedBadge, status !== 'approved' && { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons
+                  name={status === 'approved' ? "checkmark-circle" : "time-outline"}
+                  size={16}
+                  color={status === 'approved' ? KHETIFY_GREEN : '#D97706'}
+                />
+                <Text style={[styles.verifiedText, status !== 'approved' && { color: '#D97706' }]}>
+                  {status === 'approved'
+                    ? hi ? 'सत्यापित किसान' : 'Verified Farmer'
+                    : hi ? 'सत्यापन लंबित' : 'Verification Pending'}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -821,22 +869,58 @@ export default function ProfileScreen() {
               />
             </TouchableOpacity>
 
-            {/* Nex Credit */}
-            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/nex-credit' as any)}>
+            {/* Apply for Premium Member / VIP Status */}
+            <TouchableOpacity 
+              style={[
+                styles.menuItem, 
+                isPremiumFarmer && { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }
+              ]} 
+              onPress={() => router.push('/premium' as any)}
+            >
               <Ionicons
-                name="card-outline"
+                name="ribbon"
                 size={22}
-                color="#2563EB"
+                color="#D97706"
               />
-              <Text style={styles.menuText}>
-                {hi ? 'नेक्स क्रेडिट / शॉप क्रेडिट' : 'Nex Credit / Shop Credit'}
-              </Text>
+              <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.menuText, { flex: 0, fontWeight: '700' }]}>
+                  {hi ? 'प्रीमियम किसान बनें' : 'Apply for Premium Farmer'}
+                </Text>
+                {isPremiumFarmer ? (
+                  <View style={{ backgroundColor: '#B45309', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>VIP ACTIVE</Text>
+                  </View>
+                ) : (
+                  <View style={{ backgroundColor: '#F59E0B', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '800' }}>⭐ VIP</Text>
+                  </View>
+                )}
+              </View>
               <Ionicons
                 name="chevron-forward"
                 size={18}
                 color="#9CA3AF"
               />
             </TouchableOpacity>
+
+            {/* Nex Credit - Visible only when user is Premium Farmer */}
+            {isPremiumFarmer && (
+              <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/nex-credit' as any)}>
+                <Ionicons
+                  name="card-outline"
+                  size={22}
+                  color="#2563EB"
+                />
+                <Text style={styles.menuText}>
+                  {hi ? 'नेक्स क्रेडिट / शॉप क्रेडिट' : 'Nex Credit / Shop Credit'}
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color="#9CA3AF"
+                />
+              </TouchableOpacity>
+            )}
 
             {/* My Booking */}
             <TouchableOpacity style={styles.menuItem} onPress={goToMyBookings}>
@@ -1044,8 +1128,8 @@ export default function ProfileScreen() {
           onPress={() => setEditModalVisible(false)}
         >
           <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ width: '100%' }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ width: '100%', justifyContent: 'flex-end' }}
           >
             <Pressable style={styles.modalSheet} onPress={() => {}}>
             <View style={styles.modalHandle} />
@@ -1064,9 +1148,9 @@ export default function ProfileScreen() {
             </Text>
 
             <ScrollView
-              style={{ maxHeight: 450, marginTop: 10 }}
+              style={{ maxHeight: 380, marginTop: 10 }}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 20 }}
+              contentContainerStyle={{ paddingBottom: 40 }}
               keyboardShouldPersistTaps="handled"
             >
               {activeEditSection === 'profile' ? (
@@ -1260,7 +1344,7 @@ export default function ProfileScreen() {
           </KeyboardAvoidingView>
         </Pressable>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -1328,11 +1412,82 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
-  name: {
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginTop: 10,
+  },
+  name: {
     fontSize: 18,
     fontWeight: '800',
     color: '#111827',
+  },
+  profileCardPremium: {
+    borderColor: '#F59E0B',
+    borderWidth: 1.5,
+    shadowColor: '#F59E0B',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+  },
+  profileImagePremium: {
+    borderColor: '#F59E0B',
+    borderWidth: 3.5,
+  },
+  avatarCrownBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#D97706',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    elevation: 3,
+  },
+  premiumGoldPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  premiumGoldPillTxt: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  badgesCluster: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+  },
+  premiumClubBadge: {
+    width: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  premiumClubBadgeGrad: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+  },
+  premiumClubBadgeTxt: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#92400E',
   },
   phone: {
     fontSize: 13,
@@ -1363,7 +1518,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
-    marginTop: 10,
   },
   verifiedText: {
     marginLeft: 6,

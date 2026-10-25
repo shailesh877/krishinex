@@ -19,6 +19,7 @@ function EquipmentTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: '#1B9C85',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {

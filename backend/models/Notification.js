@@ -11,7 +11,7 @@ const notificationSchema = new mongoose.Schema({
     messageEn: { type: String, required: true },
     type: {
         type: String,
-        enum: ['order', 'assigned', 'status', 'system', 'payment', 'PAYMENT_REMINDER', 'crop_sale', 'low_stock', 'otp', 'soil_test'],
+        enum: ['order', 'assigned', 'farmer_assigned', 'rate_updated', 'delivery', 'withdrawal', 'status', 'system', 'payment', 'PAYMENT_REMINDER', 'crop_sale', 'low_stock', 'otp', 'soil_test'],
         default: 'system'
     },
     refId: { type: String, default: '' }, // order ID or other ref

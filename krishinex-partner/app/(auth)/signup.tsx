@@ -201,7 +201,7 @@ export default function SignupScreen() {
           address: fullAddress,
           assignedRoute: assignedRoute.trim(),
           vehicleType,
-          vehicleNumber: vehicleNumber.trim(),
+          vehicleNumber: vehicleType === 'Cycle' ? '' : vehicleNumber.trim(),
           canisterCapacityLiters: Number(canisterCapacity) || 40,
           hasTestingKit,
         };
@@ -449,7 +449,12 @@ export default function SignupScreen() {
                       {['Motorcycle', 'Van', 'Auto', 'Cycle'].map(v => (
                         <TouchableOpacity
                           key={v}
-                          onPress={() => setVehicleType(v)}
+                          onPress={() => {
+                            setVehicleType(v);
+                            if (v === 'Cycle') {
+                              setVehicleNumber('');
+                            }
+                          }}
                           style={{
                             paddingVertical: 8,
                             paddingHorizontal: 12,
@@ -467,17 +472,19 @@ export default function SignupScreen() {
                     </View>
                   </View>
 
-                  <View style={styles.fieldBlock}>
-                    <Text style={styles.label}>{hi ? 'वाहन नंबर (यदि है)' : 'Vehicle Number (Optional)'}</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder={hi ? 'जैसे: UP65 AB 1234' : 'e.g. UP65 AB 1234'}
-                      placeholderTextColor="#9CA3AF"
-                      value={vehicleNumber}
-                      onChangeText={setVehicleNumber}
-                      autoCapitalize="characters"
-                    />
-                  </View>
+                  {vehicleType !== 'Cycle' && (
+                    <View style={styles.fieldBlock}>
+                      <Text style={styles.label}>{hi ? 'वाहन नंबर (यदि है)' : 'Vehicle Number (Optional)'}</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder={hi ? 'जैसे: UP65 AB 1234' : 'e.g. UP65 AB 1234'}
+                        placeholderTextColor="#9CA3AF"
+                        value={vehicleNumber}
+                        onChangeText={setVehicleNumber}
+                        autoCapitalize="characters"
+                      />
+                    </View>
+                  )}
 
                   <View style={styles.fieldBlock}>
                     <Text style={styles.label}>{hi ? 'दैनिक कैन क्षमता (लीटर में)' : 'Canister Capacity (Liters)'}</Text>

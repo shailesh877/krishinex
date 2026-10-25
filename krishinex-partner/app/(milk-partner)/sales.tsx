@@ -11,7 +11,14 @@ import {
   RefreshControl,
   StatusBar,
   Linking,
+  Platform,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,6 +46,7 @@ export default function MilkSalesScreen() {
   const [deliveryStatus, setDeliveryStatus] = useState<'Completed' | 'Skipped'>('Completed');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [adminCommissionPercent, setAdminCommissionPercent] = useState(10);
 
   const fetchDeliveryList = useCallback(async () => {
     try {
@@ -55,7 +63,15 @@ export default function MilkSalesScreen() {
 
       const data = await res.json();
       if (res.ok && data.success && Array.isArray(data.list)) {
-        setCustomers(data.list);
+        const sorted = [...data.list].sort((a, b) => {
+          const aDone = (a.log && (a.log.status === 'Completed' || a.log.status === 'Skipped')) ? 1 : (a.isPausedToday ? 2 : 0);
+          const bDone = (b.log && (b.log.status === 'Completed' || b.log.status === 'Skipped')) ? 1 : (b.isPausedToday ? 2 : 0);
+          return aDone - bDone;
+        });
+        setCustomers(sorted);
+        if (data.adminCommissionPercent !== undefined) {
+          setAdminCommissionPercent(data.adminCommissionPercent);
+        }
       }
     } catch (e) {
       console.error('Fetch Delivery List Error:', e);
@@ -75,9 +91,16 @@ export default function MilkSalesScreen() {
       const handleMilkEvent = () => {
         fetchDeliveryList();
       };
+      const handleConfigUpdate = (data: any) => {
+        if (data?.config?.adminCommissionPercent !== undefined) {
+          setAdminCommissionPercent(data.config.adminCommissionPercent);
+        }
+      };
       s.on('milk_event', handleMilkEvent);
+      s.on('config_updated', handleConfigUpdate);
       return () => {
         s.off('milk_event', handleMilkEvent);
+        s.off('config_updated', handleConfigUpdate);
       };
     }
   }, [fetchDeliveryList]);
@@ -143,7 +166,33 @@ export default function MilkSalesScreen() {
           data.message || (hi ? 'दूध डिलीवरी सफलतापूर्वक दर्ज कर ली गई है।' : 'Delivery recorded successfully.')
         );
         setModalVisible(false);
-        fetchDeliveryList();
+
+        // Animate smooth layout transition and push completed/skipped customer to bottom
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setCustomers(prev => {
+          const updated = prev.map(c => {
+            if (String(c.subscriptionId) === String(selectedCustomer.subscriptionId)) {
+              return {
+                ...c,
+                log: data.log || {
+                  quantityLiters: qty,
+                  ratePerLiter: c.ratePerLiter || 60,
+                  totalAmount: Math.round(qty * (c.ratePerLiter || 60) * 100) / 100,
+                  status: isSkipped ? 'Skipped' : 'Completed',
+                  notes: notes.trim(),
+                }
+              };
+            }
+            return c;
+          });
+
+          // Sort: Pending customers first, Completed/Skipped/Paused at bottom
+          return updated.sort((a, b) => {
+            const aDone = (a.log && (a.log.status === 'Completed' || a.log.status === 'Skipped')) ? 1 : (a.isPausedToday ? 2 : 0);
+            const bDone = (b.log && (b.log.status === 'Completed' || b.log.status === 'Skipped')) ? 1 : (b.isPausedToday ? 2 : 0);
+            return aDone - bDone;
+          });
+        });
       } else {
         showAlert(hi ? 'त्रुटि' : 'Error', data.error || (hi ? 'डिलीवरी दर्ज नहीं हो सकी' : 'Failed to record delivery'));
       }
@@ -158,15 +207,21 @@ export default function MilkSalesScreen() {
     if (phone) Linking.openURL(`tel:${phone}`);
   };
 
-  const filteredCustomers = customers.filter(c => {
-    if (!search.trim()) return true;
-    const s = search.toLowerCase();
-    return (
-      (c.name || '').toLowerCase().includes(s) ||
-      (c.phone || '').toLowerCase().includes(s) ||
-      (c.address || '').toLowerCase().includes(s)
-    );
-  });
+  const filteredCustomers = customers
+    .filter(c => {
+      if (!search.trim()) return true;
+      const s = search.toLowerCase();
+      return (
+        (c.name || '').toLowerCase().includes(s) ||
+        (c.phone || '').toLowerCase().includes(s) ||
+        (c.address || '').toLowerCase().includes(s)
+      );
+    })
+    .sort((a, b) => {
+      const aDone = (a.log && (a.log.status === 'Completed' || a.log.status === 'Skipped')) ? 1 : (a.isPausedToday ? 2 : 0);
+      const bDone = (b.log && (b.log.status === 'Completed' || b.log.status === 'Skipped')) ? 1 : (b.isPausedToday ? 2 : 0);
+      return aDone - bDone;
+    });
 
   const totalToDeliver = customers.filter(c => !c.isPausedToday).reduce((sum, c) => sum + (c.dailyQuantityLiters || 0), 0);
   const totalDeliveredSoFar = customers.filter(c => c.log && c.log.status === 'Completed').reduce((sum, c) => sum + (c.log.quantityLiters || 0), 0);
@@ -446,18 +501,32 @@ export default function MilkSalesScreen() {
                   />
                 </View>
 
-                {/* Amount Preview & Wallet warning */}
-                <View style={styles.calcPreviewBox}>
-                  <Text style={styles.calcLbl}>
-                    {hi ? 'दर:' : 'Rate:'} ₹{selectedCustomer?.ratePerLiter || 60}/L
-                  </Text>
-                  <Text style={styles.calcTotal}>
-                    {hi ? 'वॉलेट से कटेगा:' : 'Debit Amount:'}{' '}
-                    <Text style={{ fontWeight: '900', color: '#2563EB' }}>
-                      ₹{Math.round((Number(quantityLiters) || 0) * (selectedCustomer?.ratePerLiter || 60) * 100) / 100}
-                    </Text>
-                  </Text>
-                </View>
+                {/* Amount Preview & Net Earnings Credit */}
+                {(() => {
+                  const grossAmt = Math.round((Number(quantityLiters) || 0) * (selectedCustomer?.ratePerLiter || 60) * 100) / 100;
+                  const feeCut = Math.round((grossAmt * (adminCommissionPercent / 100)) * 100) / 100;
+                  const netEarn = Math.round((grossAmt - feeCut) * 100) / 100;
+                  return (
+                    <View style={styles.calcPreviewBox}>
+                      <Text style={styles.calcLbl}>
+                        {hi ? 'दर:' : 'Rate:'} ₹{selectedCustomer?.ratePerLiter || 60}/L
+                      </Text>
+                      <View style={{ alignItems: 'flex-end' }}>
+                        <Text style={styles.calcTotal}>
+                          {hi ? 'वॉलेट में मिलेगा:' : 'Wallet Credit:'}{' '}
+                          <Text style={{ fontWeight: '900', color: '#16A34A' }}>
+                            ₹{netEarn}
+                          </Text>
+                        </Text>
+                        {feeCut > 0 && (
+                          <Text style={{ fontSize: 10, color: '#64748B', fontWeight: '600', marginTop: 1 }}>
+                            ({hi ? `कुल ₹${grossAmt} - शुल्क ₹${feeCut}` : `Gross ₹${grossAmt} - Fee ₹${feeCut}`})
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })()}
               </>
             )}
 

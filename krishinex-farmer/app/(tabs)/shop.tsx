@@ -430,7 +430,7 @@ export default function ShopScreen() {
         colors={['#b9e573ff', '#69ad49ff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        style={[styles.headerGradient, { paddingTop: Math.max(insets.top, 16) }]}
+        style={[styles.headerGradient, { paddingTop: Math.max(insets.top, 12) }]}
       >
         <View style={styles.headerRow}>
           <TouchableOpacity

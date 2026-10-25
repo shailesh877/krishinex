@@ -11,6 +11,7 @@ import {
   RefreshControl,
   Platform,
   Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -18,7 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authApi } from '../../services/api';
+import { authApi, IMAGE_BASE_URL } from '../../services/api';
 import { useI18n } from '@/context/I18nContext';
 import { showAlert } from '@/components/CustomAlert';
 
@@ -811,8 +812,12 @@ export default function MilkSellHistoryScreen() {
               ) : (
                 <>
                   <Ionicons name="wallet-outline" size={18} color={cycleData?.isEligible ? '#065F46' : '#94A3B8'} />
-                  <Text style={[styles.withdrawBtnText, !cycleData?.isEligible && { color: '#94A3B8' }]}>
-                    {hi ? 'Request Withdrawal to Wallet (वॉलेट में ट्रांसफर करें)' : 'Request Withdrawal to Wallet'}
+                  <Text
+                    style={[styles.withdrawBtnText, !cycleData?.isEligible && { color: '#94A3B8' }]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {hi ? 'वॉलेट में ट्रांसफर करें (Withdraw to Wallet)' : 'Withdraw to Main Wallet'}
                   </Text>
                 </>
               )}
@@ -829,7 +834,18 @@ export default function MilkSellHistoryScreen() {
           <View style={styles.partnerCard}>
             <View style={styles.partnerTopRow}>
               <View style={styles.partnerAvatarRing}>
-                <Ionicons name="bicycle" size={20} color="#7C3AED" />
+                {subscription?.assignedPartnerId?.profilePhotoUrl ? (
+                  <Image
+                    source={{
+                      uri: subscription.assignedPartnerId.profilePhotoUrl.startsWith('http')
+                        ? subscription.assignedPartnerId.profilePhotoUrl
+                        : `${IMAGE_BASE_URL}/${subscription.assignedPartnerId.profilePhotoUrl.replace(/\\/g, '/')}`
+                    }}
+                    style={styles.partnerAvatarImg}
+                  />
+                ) : (
+                  <Ionicons name="bicycle" size={20} color="#7C3AED" />
+                )}
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.partnerSectionSub}>
@@ -839,7 +855,11 @@ export default function MilkSellHistoryScreen() {
                   {subscription?.assignedPartnerId?.name || (hi ? 'पार्टनर जल्द ही असाइन होगा' : 'Assigning Soon')}
                 </Text>
                 <Text style={styles.partnerMetaText}>
-                  {subscription?.assignedPartnerId?.vehicleType || 'Bike'} • {subscription?.assignedPartnerId?.vehicleNumber || (hi ? 'वाहन नंबर प्रतीक्षारत' : 'No Vehicle Reg')} {subscription?.assignedPartnerId?.assignedRoute ? `• ${subscription.assignedPartnerId.assignedRoute}` : ''}
+                  {subscription?.assignedPartnerId?.vehicleType || 'Bike'}
+                  {subscription?.assignedPartnerId?.vehicleType !== 'Cycle' && (
+                    ` • ${subscription?.assignedPartnerId?.vehicleNumber || (hi ? 'वाहन नंबर प्रतीक्षारत' : 'No Vehicle Reg')}`
+                  )}
+                  {subscription?.assignedPartnerId?.assignedRoute ? ` • ${subscription.assignedPartnerId.assignedRoute}` : ''}
                 </Text>
               </View>
               {subscription?.assignedPartnerId?.phone ? (
@@ -1683,11 +1703,13 @@ const styles = StyleSheet.create({
   withdrawBtn: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    height: 48,
+    minHeight: 48,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1699,8 +1721,10 @@ const styles = StyleSheet.create({
   },
   withdrawBtnText: {
     fontSize: 13,
-    fontWeight: '900',
+    fontWeight: '800',
     color: '#065F46',
+    flexShrink: 1,
+    textAlign: 'center',
   },
   rolloutFootnote: {
     fontSize: 10,
@@ -2411,6 +2435,12 @@ const styles = StyleSheet.create({
     borderColor: '#DDD6FE',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  partnerAvatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 22,
   },
   partnerSectionSub: {
     fontSize: 10,

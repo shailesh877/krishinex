@@ -11,6 +11,7 @@ import {
   RefreshControl,
   Platform,
   Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -18,7 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authApi } from '../../services/api';
+import { authApi, IMAGE_BASE_URL } from '../../services/api';
 import { useI18n } from '@/context/I18nContext';
 import { showAlert } from '@/components/CustomAlert';
 
@@ -735,7 +736,18 @@ export default function MilkBuyHistoryScreen() {
           <View style={styles.partnerCard}>
             <View style={styles.partnerTopRow}>
               <View style={styles.partnerAvatarRing}>
-                <Ionicons name="bicycle" size={20} color="#7C3AED" />
+                {subscription?.assignedPartnerId?.profilePhotoUrl ? (
+                  <Image
+                    source={{
+                      uri: subscription.assignedPartnerId.profilePhotoUrl.startsWith('http')
+                        ? subscription.assignedPartnerId.profilePhotoUrl
+                        : `${IMAGE_BASE_URL}/${subscription.assignedPartnerId.profilePhotoUrl.replace(/\\/g, '/')}`
+                    }}
+                    style={styles.partnerAvatarImg}
+                  />
+                ) : (
+                  <Ionicons name="bicycle" size={20} color="#7C3AED" />
+                )}
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.partnerSectionSub}>
@@ -745,7 +757,11 @@ export default function MilkBuyHistoryScreen() {
                   {subscription?.assignedPartnerId?.name || (hi ? 'पार्टनर जल्द ही असाइन होगा' : 'Assigning Soon')}
                 </Text>
                 <Text style={styles.partnerMetaText}>
-                  {subscription?.assignedPartnerId?.vehicleType || 'Bike'} • {subscription?.assignedPartnerId?.vehicleNumber || (hi ? 'वाहन नंबर प्रतीक्षारत' : 'No Vehicle Reg')} {subscription?.assignedPartnerId?.assignedRoute ? `• ${subscription.assignedPartnerId.assignedRoute}` : ''}
+                  {subscription?.assignedPartnerId?.vehicleType || 'Bike'}
+                  {subscription?.assignedPartnerId?.vehicleType !== 'Cycle' && (
+                    ` • ${subscription?.assignedPartnerId?.vehicleNumber || (hi ? 'वाहन नंबर प्रतीक्षारत' : 'No Vehicle Reg')}`
+                  )}
+                  {subscription?.assignedPartnerId?.assignedRoute ? ` • ${subscription.assignedPartnerId.assignedRoute}` : ''}
                 </Text>
               </View>
               {subscription?.assignedPartnerId?.phone ? (
@@ -2274,6 +2290,12 @@ const styles = StyleSheet.create({
     borderColor: '#DDD6FE',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  partnerAvatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 22,
   },
   partnerSectionSub: {
     fontSize: 10,

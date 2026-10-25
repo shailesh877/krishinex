@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Premium Farmer Management - KrishiNex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <script src="js/auth.js?v=1.0.1"></script>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        extend: {
+          colors: { 
+            brand: { gold: '#D97706', amber: '#F59E0B', green: '#16A34A', blue: '#0EA5E9' } 
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-tab-fade {
+      animation: fadeIn 0.22s ease-out forwards;
+    }
+  </style>
+</head>
+
+<body class="h-full bg-slate-50 text-slate-900 font-sans">
+  <div class="min-h-screen flex">
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-backdrop"
+      class="fixed inset-0 z-30 hidden bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+      onclick="toggleSidebar(false)"></div>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full md:translate-x-0 flex flex-col bg-white border-r-2 border-slate-200 shadow-2xl transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)]">
+      <!-- Brand -->
+      <div class="h-16 flex items-center px-4 border-b-2 border-slate-200 bg-gradient-to-r from-white via-amber-50/40 to-yellow-50/40 sticky top-0 z-10 justify-between">
+        <div class="flex items-center">
+          <div class="h-10 w-10 rounded-xl flex items-center justify-center shadow-lg">
+            <img src="images/logo.png" alt="KrishiNex">
+          </div>
+          <div class="ml-3">
+            <img src="images/Khetify_use_under_the_app-English.png" class="w-20" alt="KrishiNex">
+            <p class="text-[10px] text-amber-700 font-bold">Premium Farmer Admin</p>
+          </div>
+        </div>
+        <button class="md:hidden text-slate-400 hover:text-slate-600 p-1" onclick="toggleSidebar(false)">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scroll">
+
+        <a href="index.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-slate-100 transition-all">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
+            <i class="fas fa-home text-slate-600"></i>
+          </span>
+          <span class="truncate font-semibold">Dashboard</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Core Modules</p>
+        </div>
+
+        <a href="ksp_Franchise_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-store text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Franchise</span>
+        </a>
+
+        <a href="mandi_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Mandi Rates</span>
+        </a>
+
+        <a href="machine_partners_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:text-orange-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-orange-100 group-hover:to-amber-100 transition-all">
+            <i class="fas fa-tractor text-slate-600 group-hover:text-orange-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Equipment Rentals</span>
+        </a>
+
+        <a href="labour_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-violet-50 hover:text-purple-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-purple-100 group-hover:to-violet-100 transition-all">
+            <i class="fas fa-people-group text-slate-600 group-hover:text-purple-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Labour Aggregation</span>
+        </a>
+
+        <a href="buyer_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Buyer Trading (B2B)</span>
+        </a>
+
+        <a href="shop_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 hover:text-teal-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-teal-100 group-hover:to-emerald-100 transition-all">
+            <i class="fas fa-shopping-cart text-slate-600 group-hover:text-teal-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Management</span>
+        </a>
+
+        <a href="shop_banners.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-images text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Shop Banners</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Supporting</p>
+        </div>
+
+        <a href="soil_testing_patner.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-flask text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Soil Testing</span>
+        </a>
+
+        <a href="loan_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-file-invoice-dollar text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Loan Applications</span>
+        </a>
+
+        <a href="kisan_pathshala_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-graduation-cap text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Kisan Pathshala</span>
+        </a>
+
+        <a href="suggestion_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-lightbulb text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Dynamic Advisory</span>
+        </a>
+
+        <a href="doctor_consultation_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-doctor text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Doctor Consultations</span>
+        </a>
+
+        <a href="contact_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-ticket text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Contact Inquiries</span>
+        </a>
+
+        <a href="ad_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-bullhorn text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Ad Enquiries</span>
+        </a>
+
+        <a href="ksp_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-handshake text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KSP Applications</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Users</p>
+        </div>
+
+        <a href="employee_managment.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tie text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Employee Management</span>
+        </a>
+
+        <!-- Farmers & Crop Submenu Container -->
+        <div class="group relative space-y-1">
+          <button onclick="toggleUsersSubmenu(event)"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 text-amber-900 border-2 border-amber-300 shadow-md font-black transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-100 to-yellow-100 shadow-sm">
+                <i class="fas fa-seedling text-amber-600"></i>
+              </span>
+              <span class="truncate">Farmers & Crop</span>
+            </div>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-amber-600 transition-transform duration-200 rotate-180"></i>
+          </button>
+
+          <!-- Submenu options -->
+          <div id="usersSubmenu" class="pl-5 pr-1 py-1 space-y-1 transition-all duration-300 hidden">
+            <a id="sublinkFarmer" href="users_managment.html?tab=farmersDb"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-users text-[11px] text-emerald-600"></i>
+              <span>Farmer</span>
+            </a>
+            <a id="sublinkCropSell" href="users_managment.html?tab=cropSell"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/70 transition-all">
+              <i class="fas fa-wheat-awn text-[11px] text-amber-500"></i>
+              <span>Crop Sell Requests</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="premium_farmer_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-900 border-2 border-amber-300 shadow-md font-black">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm">
+            <i class="fas fa-crown text-white"></i>
+          </span>
+          <span class="truncate font-black">Premium Farmers</span>
+        </a>
+
+        <a href="nex_card_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-id-card text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Nex Card Management</span>
+        </a>
+
+        <a href="field_executive.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-user-tag text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Field Executives</span>
+        </a>
+
+        <a href="payout_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-sky-50 hover:text-blue-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-blue-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-hand-holding-dollar text-slate-600 group-hover:text-blue-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Payout Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">Milk Services</p>
+        </div>
+
+        <a href="milk_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-glass-water text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Milk Management</span>
+        </a>
+
+        <div class="pt-3">
+          <p class="px-3 py-1 text-[10px] uppercase tracking-wider text-slate-500 font-black">System</p>
+        </div>
+
+        <a href="kyc_and_compliance_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-shield-halved text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">KYC & Compliance</span>
+        </a>
+
+        <a href="finance_payouts_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-wallet text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Finance & Payouts</span>
+        </a>
+
+        <a href="Analytics_Reports.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-indigo-100 group-hover:to-purple-100 transition-all">
+            <i class="fas fa-chart-line text-slate-600 group-hover:text-indigo-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Analytics & Reports</span>
+        </a>
+
+        <a href="settings.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
+            <i class="fas fa-cog text-slate-600 group-hover:text-emerald-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div
+        class="px-4 py-4 border-t-2 border-slate-200 bg-gradient-to-r from-slate-50 via-sky-50 to-slate-50 sticky bottom-0 z-10">
+        <div class="flex items-center gap-3">
+          <div
+            class="h-10 w-10 rounded-full bg-gradient-to-br from-emerald-500 to-sky-500 flex items-center justify-center shadow-lg">
+            <i class="fas fa-crown text-white text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[10px] text-slate-500 font-bold uppercase">Logged in</p>
+            <p id="sidebarUserName" class="text-xs font-black text-slate-900 truncate">Super Admin</p>
+          </div>
+          <button onclick="logoutSession()"
+            class="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all"
+            title="Logout Session">
+            <i class="fas fa-sign-out-alt text-slate-600 text-sm"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="flex-1 flex flex-col md:ml-64">
+      <!-- Top header bar -->
+      <header class="h-16 bg-white border-b-2 border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
+        <div class="flex items-center gap-4">
+          <button class="md:hidden text-slate-500 hover:text-slate-700" onclick="toggleSidebar(true)">
+            <i class="fas fa-bars text-xl"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <span class="p-2 bg-amber-100 text-amber-700 rounded-lg text-sm font-black">
+              <i class="fas fa-crown"></i>
+            </span>
+            <div>
+              <h1 class="text-base font-black text-slate-900 tracking-tight">Premium Farmer Management</h1>
+              <p class="text-[11px] font-semibold text-slate-500">Applications, Payment Audits, Terms Versioning & Credit Limits</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="loadAllPremiumData()" class="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all flex items-center gap-1.5">
+            <i class="fas fa-rotate"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main body container -->
+      <main class="flex-1 p-6 space-y-6">
+
+        <!-- KPI METRICS ROW -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- KPI 1: Active Premium Farmers -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Active Premium Farmers</p>
+              <h3 id="kpiActiveFarmers" class="text-2xl font-black text-slate-900 mt-1">--</h3>
+              <p class="text-[11px] text-emerald-600 font-bold mt-0.5">VIP Badge Enabled</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-inner">
+              <i class="fas fa-crown"></i>
+            </div>
+          </div>
+
+          <!-- KPI 2: Pending Applications -->
+          <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm flex items-center justify-between bg-amber-50/30">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-amber-800">Pending Approval</p>
+              <h3 id="kpiPendingApps" class="text-2xl font-black text-amber-900 mt-1">--</h3>
+              <p class="text-[11px] text-amber-700 font-bold mt-0.5">Action required within 24h</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-md">
+              <i class="fas fa-clock"></i>
+            </div>
+          </div>
+
+          <!-- KPI 3: Total Membership Revenue -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Fees Collected</p>
+              <h3 id="kpiRevenue" class="text-2xl font-black text-emerald-600 mt-1">₹--</h3>
+              <p class="text-[11px] text-slate-500 font-semibold mt-0.5">Verified Gateway Receipts</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+              <i class="fas fa-wallet"></i>
+            </div>
+          </div>
+
+          <!-- KPI 4: Total Assigned Limits -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Allocated Credit Limit</p>
+              <h3 id="kpiLimits" class="text-2xl font-black text-blue-600 mt-1">₹--</h3>
+              <p class="text-[11px] text-blue-600 font-semibold mt-0.5">Agri-Input Purchasing Cap</p>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+              <i class="fas fa-credit-card"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS BAR -->
+        <div class="flex items-center gap-2 border-b-2 border-slate-200 pb-2">
+          <button id="tabBtnApps" onclick="switchTab('apps')" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-600 text-white shadow-sm flex items-center gap-2">
+            <i class="fas fa-list-check"></i>
+            <span>Applications & Reviews</span>
+            <span id="tabBadgePending" class="bg-white text-amber-700 text-[10px] font-black px-1.5 py-0.5 rounded-full ml-1 hidden">0</span>
+          </button>
+
+          <button id="tabBtnFarmers" onclick="switchTab('farmers')" class="px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:bg-slate-100 transition-all flex items-center gap-2">
+            <i class="fas fa-user-check"></i>
+            <span>Active Premium Farmers & Limits</span>
+          </button>
+
+          <button id="tabBtnTerms" onclick="switchTab('terms')" class="px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:bg-slate-100 transition-all flex items-center gap-2">
+            <i class="fas fa-book-bookmark"></i>
+            <span>Terms & Conditions (Versioning)</span>
+          </button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: APPLICATIONS & REVIEW -->
+        <!-- ============================================================== -->
+        <section id="tabContentApps" class="animate-tab-fade space-y-4">
+          <!-- Filters & Search -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div class="flex items-center gap-2 w-full md:w-auto">
+              <span class="text-xs font-bold text-slate-500">Status:</span>
+              <select id="appStatusFilter" onchange="loadApplications()" class="text-xs font-bold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700">
+                <option value="all">All Applications</option>
+                <option value="pending_approval" selected>Pending Approval (Action Req.)</option>
+                <option value="approved">Approved Members</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            <div class="relative w-full md:w-80">
+              <i class="fas fa-search absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+              <input id="appSearchInput" oninput="debounceAppSearch()" type="text" placeholder="Search by name, phone, payment ID..."
+                class="w-full pl-9 pr-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+          </div>
+
+          <!-- Applications Table -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th class="py-3 px-4">Farmer Details</th>
+                    <th class="py-3 px-4">Payment & Receipt</th>
+                    <th class="py-3 px-4">Signed Terms</th>
+                    <th class="py-3 px-4">Application Status</th>
+                    <th class="py-3 px-4">Assigned Limit</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="applicationsTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                  <tr>
+                    <td colspan="6" class="py-10 text-center text-slate-400">Loading applications...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Chunk Pagination Controls -->
+            <div id="appPaginationContainer" class="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-slate-600">
+              <span id="appPaginationInfo">Showing page 1 of 1</span>
+              <div class="flex items-center gap-1.5">
+                <button id="btnPrevAppPage" onclick="changeAppPage(-1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 font-bold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                  <i class="fas fa-chevron-left mr-1"></i> Prev
+                </button>
+                <span id="appPageIndicator" class="px-3 py-1 rounded-lg bg-amber-100 text-amber-900 font-black">1</span>
+                <button id="btnNextAppPage" onclick="changeAppPage(1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 font-bold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                  Next <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: ACTIVE PREMIUM FARMERS & LIMITS -->
+        <!-- ============================================================== -->
+        <section id="tabContentFarmers" class="animate-tab-fade space-y-4 hidden">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-black text-slate-900">Active Premium Farmers & Assigned Limits</h3>
+              <p class="text-xs text-slate-500 font-medium">Update credit allocations and view utilization in real-time</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th class="py-3 px-4">Farmer</th>
+                    <th class="py-3 px-4">Contact & Location</th>
+                    <th class="py-3 px-4">Credit Limit</th>
+                    <th class="py-3 px-4">Agreed Terms</th>
+                    <th class="py-3 px-4">Expiry Date</th>
+                    <th class="py-3 px-4 text-right">Limit Action</th>
+                  </tr>
+                </thead>
+                <tbody id="activeFarmersTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                  <tr>
+                    <td colspan="6" class="py-10 text-center text-slate-400">Loading active premium farmers...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: TERMS & CONDITIONS VERSIONING -->
+        <!-- ============================================================== -->
+        <section id="tabContentTerms" class="animate-tab-fade space-y-6 hidden">
+          <!-- Active Terms Preview -->
+          <div class="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm bg-gradient-to-br from-white to-amber-50/20">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+              <div>
+                <span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800">Currently Active Version</span>
+                <h3 id="activeTermsVersionTitle" class="text-base font-black text-slate-900 mt-1.5">Version --</h3>
+                <p class="text-xs text-slate-500">Every new applicant must review and accept this exact version before payment</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs text-slate-400 font-bold">Annual Fee:</span>
+                <p id="activeTermsFee" class="text-lg font-black text-amber-700">₹--</p>
+                <span id="activeTermsMinLimit" class="inline-block mt-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black">Min Limit: ₹10,000</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 class="text-xs font-black uppercase text-slate-700 mb-2 flex items-center gap-1.5">
+                  <i class="fas fa-language text-amber-600"></i> Hindi Content (किसान ऐप में प्रदर्शित)
+                </h4>
+                <div id="activeTermsHi" class="h-48 overflow-y-auto custom-scroll p-3 bg-slate-50 rounded-xl text-xs text-slate-700 whitespace-pre-line border border-slate-200">
+                  Loading...
+                </div>
+              </div>
+              <div>
+                <h4 class="text-xs font-black uppercase text-slate-700 mb-2 flex items-center gap-1.5">
+                  <i class="fas fa-file-lines text-amber-600"></i> English Content (Legal Baseline)
+                </h4>
+                <div id="activeTermsEn" class="h-48 overflow-y-auto custom-scroll p-3 bg-slate-50 rounded-xl text-xs text-slate-700 whitespace-pre-line border border-slate-200">
+                  Loading...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Publish New Version Form -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="border-b border-slate-100 pb-3 mb-5">
+              <h3 class="text-sm font-black text-slate-900">Publish New Terms & Conditions Version</h3>
+              <p class="text-xs text-slate-500 font-medium">
+                Publishing creates a <strong>new immutable version</strong>. Existing premium farmers who registered earlier will permanently retain their original agreed terms and will NEVER be overridden.
+              </p>
+            </div>
+
+            <form id="newTermsForm" onsubmit="handlePublishNewTerms(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Annual Fee (₹)</label>
+                  <input id="newFeeInput" type="number" required min="0" value="999"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Validity (Days)</label>
+                  <input id="newValidityInput" type="number" required min="0" value="365"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                  <p class="text-[10px] text-slate-400 mt-0.5">0 = Lifetime (आजीवन)</p>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Min Credit Limit (₹)</label>
+                  <input id="newMinLimitInput" type="number" required min="0" step="500" value="10000"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                  <p class="text-[10px] text-slate-400 mt-0.5">न्यूनतम क्रेडिट सीमा</p>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">TAT (Hours)</label>
+                  <input id="newTatInput" type="number" required min="1" value="24"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Hindi Content (हिंदी नियम व शर्तें) *</label>
+                <textarea id="newContentHi" rows="6" required placeholder="हिंदी में नियम व शर्तें दर्ज करें..."
+                  class="w-full p-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 custom-scroll"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">English Content (Agreement Clauses) *</label>
+                <textarea id="newContentEn" rows="6" required placeholder="Enter clauses in English..."
+                  class="w-full p-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 custom-scroll"></textarea>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2">
+                  <i class="fas fa-upload"></i>
+                  <span>Publish New Version & Activate</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Terms Version Audit History -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h4 class="text-xs font-black uppercase text-slate-700">All Published Terms Versions (Immutable Archive)</h4>
+            </div>
+            <div id="termsHistoryContainer" class="divide-y divide-slate-100 p-4 text-xs font-medium text-slate-700">
+              Loading version history...
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: REVIEW APPLICATION & ASSIGN LIMIT -->
+  <!-- ============================================================== -->
+  <div id="reviewModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 animate-tab-fade">
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-50 to-yellow-50">
+        <div class="flex items-center gap-2.5">
+          <span class="p-2 bg-amber-500 text-white rounded-xl text-sm font-black shadow-sm">
+            <i class="fas fa-crown"></i>
+          </span>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">Review Premium Application</h3>
+            <p id="modalFarmerSub" class="text-xs text-slate-500 font-semibold">Farmer: --</p>
+          </div>
+        </div>
+        <button onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times text-base"></i>
+        </button>
+      </div>
+
+      <form id="reviewAppForm" onsubmit="handleSubmitReview(event)" class="p-5 space-y-4 text-xs font-medium">
+        <input type="hidden" id="modalAppId" />
+
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Membership Fee Paid:</span>
+            <span id="modalPaidAmount" class="font-black text-emerald-600">₹--</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Gateway Order ID:</span>
+            <span id="modalOrderId" class="font-bold text-slate-800">--</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Signed Terms Version:</span>
+            <span id="modalTermsVer" class="font-bold text-amber-700">v--</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Plan Validity (नियम अनुसार):</span>
+            <span id="modalPlanValidity" class="font-black text-blue-700">--</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Administrative Decision *</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-emerald-200 bg-emerald-50/50 cursor-pointer">
+              <input type="radio" name="modalAction" value="approved" checked onchange="toggleLimitInputs(true)" class="text-emerald-600">
+              <span class="font-bold text-emerald-800">Approve & Assign Limit</span>
+            </label>
+            <label class="flex items-center gap-2 p-3 rounded-xl border border-rose-200 bg-rose-50/50 cursor-pointer">
+              <input type="radio" name="modalAction" value="rejected" onchange="toggleLimitInputs(false)" class="text-rose-600">
+              <span class="font-bold text-rose-800">Reject Application</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="modalLimitSection" class="space-y-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Assigned Operational Credit Limit (₹) <span class="text-rose-500">* (अनिवार्य)</span></label>
+            <input id="modalAssignedLimit" type="number" min="0" step="500" placeholder="e.g. 25000" required
+              class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white font-black text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <p id="modalMinLimitNotice" class="text-[11px] text-amber-700 font-bold mt-1">⚠️ एडमिन द्वारा तय न्यूनतम क्रेडिट सीमा अनुसार दर्ज करें।</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Administrative Remarks / Notes</label>
+          <textarea id="modalAdminRemarks" rows="2" placeholder="Optional remarks communicated to farmer..."
+            class="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeReviewModal()" class="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold shadow-md">
+            Save Decision
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: QUICK UPDATE FARMER LIMIT -->
+  <!-- ============================================================== -->
+  <div id="limitModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl border border-slate-200 animate-tab-fade">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-sky-50">
+        <div>
+          <h3 class="text-sm font-black text-slate-900">Update Farmer Limit</h3>
+          <p id="limitModalFarmerName" class="text-xs text-slate-500 font-semibold">--</p>
+        </div>
+        <button onclick="closeLimitModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form id="updateLimitForm" onsubmit="handleSaveFarmerLimit(event)" class="p-4 space-y-3 text-xs font-medium">
+        <input type="hidden" id="limitModalUserId" />
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">New Credit Limit Amount (₹)</label>
+          <input id="limitModalAmount" type="number" min="0" step="500" required
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 font-black text-slate-900 text-base">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Reason / Remarks</label>
+          <input id="limitModalRemarks" type="text" placeholder="e.g. Approved 50k limit based on 5 acre land"
+            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="closeLimitModal()" class="px-3 py-1.5 rounded-xl border border-slate-200 font-bold text-slate-600">Cancel</button>
+          <button type="submit" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold">Update Limit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: VIEW HISTORICAL TERMS & CONDITIONS -->
+  <!-- ============================================================== -->
+  <div id="historicalTermsModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200 animate-tab-fade">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50 shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="p-2 bg-amber-500 text-white rounded-xl text-sm font-black shadow-sm">
+            <i class="fas fa-file-contract"></i>
+          </span>
+          <div>
+            <h3 id="histModalTitle" class="text-sm font-black text-slate-900">Historical Terms Archive</h3>
+            <p id="histModalMeta" class="text-xs text-slate-500 font-semibold">Immutable Terms Version</p>
+          </div>
+        </div>
+        <button onclick="closeHistoricalTermsModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fas fa-times text-base"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto custom-scroll space-y-4 text-xs font-medium text-slate-700">
+        <div class="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Membership Fee</span>
+            <p id="histModalFee" class="font-black text-sm text-slate-900">₹--</p>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Validity</span>
+            <p id="histModalValidity" class="font-black text-sm text-blue-700">--</p>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Min Credit Limit</span>
+            <p id="histModalMinLimit" class="font-black text-sm text-emerald-700">₹--</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-black uppercase text-slate-800 mb-1.5 flex items-center gap-1.5">
+            <i class="fas fa-language text-amber-600"></i> Hindi Agreement (हिंदी नियम व शर्तें)
+          </h4>
+          <div id="histModalContentHi" class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs leading-relaxed whitespace-pre-line text-slate-800">
+            --
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-black uppercase text-slate-800 mb-1.5 flex items-center gap-1.5">
+            <i class="fas fa-file-lines text-amber-600"></i> English Legal Agreement
+          </h4>
+          <div id="histModalContentEn" class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs leading-relaxed whitespace-pre-line text-slate-800">
+            --
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 border-t border-slate-100 flex justify-end bg-slate-50 shrink-0">
+        <button onclick="closeHistoricalTermsModal()" class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 font-bold text-xs text-slate-700">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:5500/api'
+      : '/api';
+
+    let currentTab = 'apps';
+    let allApplications = [];
+    let allTermsList = [];
+    let appSearchDebounce = null;
+    let currentAppPage = 1;
+    let totalAppPages = 1;
+
+    function openHistoricalTermsModal(termId) {
+      const term = allTermsList.find(t => String(t._id) === String(termId));
+      if (!term) {
+        alert('Terms details not found');
+        return;
+      }
+
+      document.getElementById('histModalTitle').textContent = `Terms Version v${term.version} (${term.titleEn || ''})`;
+      document.getElementById('histModalMeta').textContent = `Published on ${new Date(term.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} • ${term.isActive ? 'Active' : 'Superseded'}`;
+      document.getElementById('histModalFee').textContent = Number(term.membershipFee) === 0 ? 'FREE (निःशुल्क)' : `₹${term.membershipFee}`;
+      
+      const val = term.validityDays;
+      document.getElementById('histModalValidity').textContent = (val === 0 || val >= 9999) ? '🌟 Lifetime (आजीवन)' : `${val} Days`;
+      document.getElementById('histModalMinLimit').textContent = `₹${(term.minimumCreditLimit || 0).toLocaleString('en-IN')}`;
+      document.getElementById('histModalContentHi').textContent = term.contentHi || 'No Hindi text recorded.';
+      document.getElementById('histModalContentEn').textContent = term.contentEn || 'No English text recorded.';
+
+      document.getElementById('historicalTermsModal').classList.remove('hidden');
+    }
+
+    function closeHistoricalTermsModal() {
+      document.getElementById('historicalTermsModal').classList.add('hidden');
+    }
+
+    function getAuthHeaders() {
+      const token = localStorage.getItem('employeeToken') || localStorage.getItem('token') || localStorage.getItem('adminToken') || '';
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('mobile-backdrop');
+      if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabs = ['apps', 'farmers', 'terms'];
+      tabs.forEach(t => {
+        const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (t === tab) {
+          content.classList.remove('hidden');
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-black transition-all bg-amber-600 text-white shadow-sm flex items-center gap-2';
+        } else {
+          content.classList.add('hidden');
+          btn.className = 'px-4 py-2 rounded-xl text-xs font-black text-slate-600 hover:bg-slate-100 transition-all flex items-center gap-2';
+        }
+      });
+
+      if (tab === 'apps') loadApplications();
+      if (tab === 'farmers') loadActiveFarmers();
+      if (tab === 'terms') loadTermsData();
+    }
+
+    async function loadAllPremiumData() {
+      loadStats();
+      if (currentTab === 'apps') loadApplications();
+      if (currentTab === 'farmers') loadActiveFarmers();
+      if (currentTab === 'terms') loadTermsData();
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/stats`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && data.stats) {
+          const s = data.stats;
+          document.getElementById('kpiActiveFarmers').textContent = s.activePremiumFarmers || 0;
+          document.getElementById('kpiPendingApps').textContent = s.pendingApproval || 0;
+          document.getElementById('kpiRevenue').textContent = `₹${(s.totalRevenue || 0).toLocaleString('en-IN')}`;
+          document.getElementById('kpiLimits').textContent = `₹${(s.totalLimitsAssigned || 0).toLocaleString('en-IN')}`;
+
+          const badge = document.getElementById('tabBadgePending');
+          if (s.pendingApproval > 0) {
+            badge.textContent = s.pendingApproval;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+      } catch (err) {
+        console.error('Stats error:', err);
+      }
+    }
+
+    async function loadApplications(page = currentAppPage) {
+      currentAppPage = page;
+      const tbody = document.getElementById('applicationsTableBody');
+      const status = document.getElementById('appStatusFilter').value;
+      const search = (document.getElementById('appSearchInput').value || '').trim();
+      const limit = 20;
+
+      try {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-semibold"><i class="fas fa-spinner fa-spin mr-2"></i>Loading applications chunk (page ${currentAppPage})...</td></tr>`;
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/applications?status=${status}&search=${encodeURIComponent(search)}&page=${currentAppPage}&limit=${limit}`, {
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.applications)) {
+          allApplications = data.applications;
+          renderApplicationsTable(allApplications);
+
+          // Update chunk pagination bar
+          if (data.pagination) {
+            totalAppPages = Math.max(1, data.pagination.pages || 1);
+            currentAppPage = data.pagination.page || 1;
+            const total = data.pagination.total || 0;
+            const startRec = total === 0 ? 0 : (currentAppPage - 1) * limit + 1;
+            const endRec = Math.min(total, currentAppPage * limit);
+
+            const infoEl = document.getElementById('appPaginationInfo');
+            if (infoEl) infoEl.textContent = `Showing ${startRec} - ${endRec} of ${total} applications (Page ${currentAppPage} of ${totalAppPages})`;
+
+            const indicator = document.getElementById('appPageIndicator');
+            if (indicator) indicator.textContent = `${currentAppPage} / ${totalAppPages}`;
+
+            const prevBtn = document.getElementById('btnPrevAppPage');
+            const nextBtn = document.getElementById('btnNextAppPage');
+            if (prevBtn) prevBtn.disabled = currentAppPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentAppPage >= totalAppPages;
+          }
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-rose-500 font-semibold">${data.error || 'Failed to load applications'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function changeAppPage(delta) {
+      const target = currentAppPage + delta;
+      if (target >= 1 && target <= totalAppPages) {
+        loadApplications(target);
+      }
+    }
+
+    function renderApplicationsTable(apps) {
+      const tbody = document.getElementById('applicationsTableBody');
+      if (apps.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-semibold">No applications found matching the selected filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = apps.map(app => {
+        const u = app.userId || {};
+        const isPending = app.status === 'pending_approval';
+        const isApproved = app.status === 'approved';
+        const isRejected = app.status === 'rejected';
+
+        let statusBadge = '<span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600">Payment Pending</span>';
+        if (isPending) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">⏳ Pending Approval</span>';
+        } else if (isApproved) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">✓ Active Premium</span>';
+        } else if (isRejected) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-200">✕ Rejected</span>';
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-black text-slate-900">${app.farmerName}</div>
+              <div class="text-[11px] text-slate-500">${app.farmerPhone} • ${app.farmerAddress || 'Address not listed'}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-black text-emerald-700">${Number(app.paymentAmount) === 0 ? '<span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">FREE</span>' : '₹' + app.paymentAmount}</div>
+              <div class="text-[10px] text-slate-400 font-mono">${app.razorpayPaymentId || app.razorpayOrderId || 'N/A'}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                <i class="fas fa-file-contract text-amber-600"></i> v${app.termsVersion} (Archived)
+              </span>
+            </td>
+            <td class="py-3 px-4">${statusBadge}</td>
+            <td class="py-3 px-4">
+              <div class="font-black text-slate-900">${app.assignedLimit ? '₹' + app.assignedLimit.toLocaleString('en-IN') : '₹0'}</div>
+              <div class="text-[10px] text-slate-500 capitalize">${(app.limitType || '').replace('_', ' ')}</div>
+            </td>
+            <td class="py-3 px-4 text-right">
+              ${isPending ? `
+                <button onclick="openReviewModal('${app._id}')" class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 ml-auto">
+                  <i class="fas fa-pen-to-square"></i>
+                  <span>Review & Approve</span>
+                </button>
+              ` : `
+                <button onclick="openReviewModal('${app._id}')" class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 font-bold text-slate-600 text-xs transition-all">
+                  Details
+                </button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function debounceAppSearch() {
+      clearTimeout(appSearchDebounce);
+      appSearchDebounce = setTimeout(() => {
+        loadApplications(1);
+      }, 300);
+    }
+
+    // Modal logic
+    function openReviewModal(appId) {
+      const app = allApplications.find(a => a._id === appId);
+      if (!app) return;
+
+      document.getElementById('modalAppId').value = app._id;
+      document.getElementById('modalFarmerSub').textContent = `Farmer: ${app.farmerName} (${app.farmerPhone})`;
+      document.getElementById('modalPaidAmount').textContent = Number(app.paymentAmount) === 0 ? 'FREE (निःशुल्क)' : `₹${app.paymentAmount}`;
+      document.getElementById('modalOrderId').textContent = app.razorpayPaymentId || app.razorpayOrderId || 'N/A';
+      document.getElementById('modalTermsVer').textContent = `v${app.termsVersion}`;
+      
+      const valDays = app.termsId?.validityDays !== undefined ? app.termsId.validityDays : (app.validityDays || 0);
+      document.getElementById('modalPlanValidity').textContent = (valDays === 0 || valDays >= 9999) ? '🌟 Lifetime (आजीवन)' : `${valDays} Days (दिन)`;
+
+      const minLimit = app.termsId?.minimumCreditLimit !== undefined ? app.termsId.minimumCreditLimit : 10000;
+      const limitInput = document.getElementById('modalAssignedLimit');
+      limitInput.min = minLimit;
+      limitInput.value = app.assignedLimit || (minLimit > 0 ? minLimit : 10000);
+
+      const notice = document.getElementById('modalMinLimitNotice');
+      if (notice) {
+        notice.textContent = minLimit > 0
+          ? `⚠️ नियम v${app.termsVersion} अनुसार न्यूनतम क्रेडिट लिमिट ₹${minLimit.toLocaleString('en-IN')} होनी आवश्यक है।`
+          : `⚠️ किसान को अपनी इच्छानुसार कोई भी क्रेडिट लिमिट आवंटित कर सकते हैं।`;
+      }
+
+      document.getElementById('modalAdminRemarks').value = app.adminRemarks || '';
+
+      const isApprove = app.status !== 'rejected';
+      document.querySelector(`input[name="modalAction"][value="${isApprove ? 'approved' : 'rejected'}"]`).checked = true;
+      toggleLimitInputs(isApprove);
+
+      document.getElementById('reviewModal').classList.remove('hidden');
+    }
+
+    function closeReviewModal() {
+      document.getElementById('reviewModal').classList.add('hidden');
+    }
+
+    function toggleLimitInputs(show) {
+      const limitBox = document.getElementById('modalLimitSection');
+      if (show) limitBox.classList.remove('hidden');
+      else limitBox.classList.add('hidden');
+    }
+
+    async function handleSubmitReview(e) {
+      e.preventDefault();
+      const appId = document.getElementById('modalAppId').value;
+      const action = document.querySelector('input[name="modalAction"]:checked').value;
+      const assignedLimit = document.getElementById('modalAssignedLimit').value;
+      if (action === 'approved') {
+        const numLimit = Number(assignedLimit);
+        const minReq = Number(document.getElementById('modalAssignedLimit').min) || 0;
+        if (numLimit === undefined || isNaN(numLimit) || numLimit < 0) {
+          alert('कृपया किसान के लिए मान्य क्रेडिट लिमिट (Credit Limit) दर्ज करें।');
+          document.getElementById('modalAssignedLimit').focus();
+          return;
+        }
+        if (minReq > 0 && numLimit < minReq) {
+          alert(`क्रेडिट लिमिट कम से कम ₹${minReq.toLocaleString('en-IN')} होनी चाहिए।`);
+          document.getElementById('modalAssignedLimit').focus();
+          return;
+        }
+      }
+      const adminRemarks = document.getElementById('modalAdminRemarks').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/applications/${appId}/review`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ action, assignedLimit, adminRemarks })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeReviewModal();
+          loadAllPremiumData();
+        } else {
+          alert(data.error || 'Failed to save review');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // Tab 2: Active Farmers
+    async function loadActiveFarmers() {
+      const tbody = document.getElementById('activeFarmersTableBody');
+      try {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-semibold"><i class="fas fa-spinner fa-spin mr-2"></i>Loading farmers...</td></tr>`;
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/applications?status=approved&limit=100`, {
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.applications)) {
+          if (data.applications.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-400 font-semibold">No active premium farmers found.</td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = data.applications.map(app => {
+            const u = app.userId || {};
+            const expiry = app.expiresAt ? new Date(app.expiresAt).toLocaleDateString('en-IN') : 'N/A';
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="py-3 px-4">
+                  <div class="font-black text-slate-900">${app.farmerName}</div>
+                  <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-amber-100 text-amber-800">
+                    <i class="fas fa-crown text-amber-600"></i> VIP Member
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <div class="font-semibold text-slate-700">${app.farmerPhone}</div>
+                  <div class="text-[11px] text-slate-500">${app.farmerAddress || '-'}</div>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="font-black text-emerald-700 text-sm">₹${(app.assignedLimit || 0).toLocaleString('en-IN')}</span>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Version v${app.termsVersion}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-500 font-semibold">${expiry}</td>
+                <td class="py-3 px-4 text-right">
+                  <button onclick="openLimitModal('${u._id || app.userId}', '${app.farmerName}', ${app.assignedLimit || 0})"
+                    class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 text-xs transition-all">
+                    <i class="fas fa-sliders mr-1"></i> Edit Limit
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-rose-500 font-semibold">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function openLimitModal(userId, farmerName, currentLimit) {
+      document.getElementById('limitModalUserId').value = userId;
+      document.getElementById('limitModalFarmerName').textContent = `Farmer: ${farmerName}`;
+      document.getElementById('limitModalAmount').value = currentLimit;
+      document.getElementById('limitModal').classList.remove('hidden');
+    }
+
+    function closeLimitModal() {
+      document.getElementById('limitModal').classList.add('hidden');
+    }
+
+    async function handleSaveFarmerLimit(e) {
+      e.preventDefault();
+      const userId = document.getElementById('limitModalUserId').value;
+      const assignedLimit = document.getElementById('limitModalAmount').value;
+      const adminRemarks = document.getElementById('limitModalRemarks').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/farmers/${userId}/limit`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ assignedLimit, adminRemarks })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeLimitModal();
+          loadActiveFarmers();
+          loadStats();
+        } else {
+          alert(data.error || 'Failed to update limit');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // Tab 3: Terms
+    async function loadTermsData() {
+      try {
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/terms`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && data.activeTerms) {
+          const t = data.activeTerms;
+          const feeTxt = t.membershipFee === 0 ? 'FREE (निःशुल्क)' : `₹${t.membershipFee}`;
+          const valTxt = t.validityDays === 0 || t.validityDays >= 9999 ? 'Lifetime (आजीवन)' : `${t.validityDays} Days`;
+          document.getElementById('activeTermsVersionTitle').textContent = `Version ${t.version} (${t.titleEn})`;
+          document.getElementById('activeTermsFee').textContent = `${feeTxt} / ${valTxt}`;
+          document.getElementById('activeTermsHi').textContent = t.contentHi;
+          document.getElementById('activeTermsEn').textContent = t.contentEn;
+
+          document.getElementById('newFeeInput').value = typeof t.membershipFee === 'number' ? t.membershipFee : 999;
+          document.getElementById('newValidityInput').value = typeof t.validityDays === 'number' ? t.validityDays : 365;
+          document.getElementById('newMinLimitInput').value = typeof t.minimumCreditLimit === 'number' ? t.minimumCreditLimit : 10000;
+          document.getElementById('newTatInput').value = typeof t.approvalTatHours === 'number' ? t.approvalTatHours : 24;
+          document.getElementById('newContentHi').value = t.contentHi;
+          document.getElementById('newContentEn').value = t.contentEn;
+
+          // Render version history
+          const histContainer = document.getElementById('termsHistoryContainer');
+          if (data.allVersions && data.allVersions.length > 0) {
+            allTermsList = data.allVersions;
+            histContainer.innerHTML = data.allVersions.map(v => {
+              const vFeeTxt = v.membershipFee === 0 ? 'FREE' : `₹${v.membershipFee}`;
+              const vValTxt = v.validityDays === 0 || v.validityDays >= 9999 ? 'Lifetime (आजीवन)' : `${v.validityDays} days`;
+              const vMinLim = typeof v.minimumCreditLimit === 'number' ? v.minimumCreditLimit : 10000;
+              return `
+                <div class="py-3 flex items-center justify-between">
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-black text-slate-900">Version v${v.version}</span>
+                      ${v.isActive ? '<span class="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-100 text-emerald-800">ACTIVE</span>' : '<span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-slate-100 text-slate-500">SUPERSEDED</span>'}
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Published on ${new Date(v.createdAt).toLocaleDateString('en-IN')} • Fee: ${vFeeTxt} • Validity: ${vValTxt} • Min Limit: ₹${vMinLim.toLocaleString('en-IN')}</p>
+                  </div>
+                  <button onclick="openHistoricalTermsModal('${v._id}')" class="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs flex items-center gap-1.5 transition-all">
+                    <i class="fas fa-eye text-amber-600"></i>
+                    <span>View Text</span>
+                  </button>
+                </div>
+              `;
+            }).join('');
+          }
+        }
+      } catch (err) {
+        console.error('Terms load error:', err);
+      }
+    }
+
+    async function handlePublishNewTerms(e) {
+      e.preventDefault();
+      if (!confirm('Are you sure you want to publish a new Terms version? Existing premium farmers will retain their old agreed versions permanently.')) {
+        return;
+      }
+
+      const membershipFee = document.getElementById('newFeeInput').value;
+      const validityDays = document.getElementById('newValidityInput').value;
+      const minimumCreditLimit = document.getElementById('newMinLimitInput').value;
+      const approvalTatHours = document.getElementById('newTatInput').value;
+      const contentHi = document.getElementById('newContentHi').value;
+      const contentEn = document.getElementById('newContentEn').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/premium-farmer/admin/terms`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ membershipFee, validityDays, minimumCreditLimit, approvalTatHours, contentHi, contentEn })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message);
+          loadTermsData();
+        } else {
+          alert(data.error || 'Failed to publish terms');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    function previewHistoricalTerms(id) {
+      openHistoricalTermsModal(id);
+    }
+
+    // Startup
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAllPremiumData();
+    });
+  </script>
+</body>
+</html>

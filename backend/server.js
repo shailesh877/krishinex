@@ -159,6 +159,7 @@ app.use('/api/weather', require('./routes/weatherRoutes'));
 app.use('/api/nex-cards', require('./routes/nexCardRoutes'));
 app.use('/api/wallet', require('./routes/walletRoutes'));
 app.use('/api/milk', require('./routes/milkRoutes'));
+app.use('/api/premium-farmer', require('./routes/premiumFarmerRoutes'));
 
 // Global Error Handler
 app.use((err, req, res, next) => {

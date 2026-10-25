@@ -29,10 +29,10 @@ router.get('/unread-count', protect, async (req, res) => {
     }
 });
 
-// @route   PATCH /api/notifications/:id/read
+// @route   PATCH or POST /api/notifications/:id/read
 // @desc    Mark a notification as read
 // @access  Private
-router.patch('/:id/read', protect, async (req, res) => {
+const handleMarkRead = async (req, res) => {
     try {
         await Notification.findOneAndUpdate(
             { _id: req.params.id, user: req.user.id },
@@ -42,12 +42,14 @@ router.patch('/:id/read', protect, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Failed to update notification' });
     }
-});
+};
+router.patch('/:id/read', protect, handleMarkRead);
+router.post('/:id/read', protect, handleMarkRead);
 
-// @route   PATCH /api/notifications/read-all
+// @route   PATCH or POST /api/notifications/read-all
 // @desc    Mark all notifications as read
 // @access  Private
-router.patch('/read-all', protect, async (req, res) => {
+const handleReadAll = async (req, res) => {
     try {
         await Notification.updateMany(
             { user: req.user.id, unread: true },
@@ -57,7 +59,9 @@ router.patch('/read-all', protect, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Failed to update notifications' });
     }
-});
+};
+router.patch('/read-all', protect, handleReadAll);
+router.post('/read-all', protect, handleReadAll);
 
 // @route   DELETE /api/notifications/:id
 // @desc    Delete a single notification

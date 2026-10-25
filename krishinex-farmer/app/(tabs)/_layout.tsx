@@ -44,6 +44,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,  // ✅ DEFAULT HEADER OFF - SABHI SCREENS KE LIYE
+        tabBarHideOnKeyboard: true, // ✅ Keyboard aane par bottom tab bar chhip jayega taki space mile
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: 10,

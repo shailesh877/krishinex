@@ -21,6 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '@/context/I18nContext';
 import { authApi } from '../../services/api';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as ImagePicker from 'expo-image-picker';
 import { Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -319,11 +320,11 @@ export default function SellScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
         <TouchableOpacity
           style={styles.avatarWrap}
           activeOpacity={0.8}
@@ -363,9 +364,14 @@ export default function SellScreen() {
       </View>
 
       {/* CONTENT */}
-      <ScrollView
-        contentContainerStyle={styles.content}
+      <KeyboardAwareScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: 60 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={Platform.OS === 'android' ? 60 : 30}
+        keyboardOpeningTime={0}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22c55e" />}
       >
         {/* LOCATION CARD */}
@@ -594,7 +600,7 @@ export default function SellScreen() {
             </Text>
           </LinearGradient>
         </TouchableOpacity>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* MANDI SELECTION MODAL */}
       <Modal
@@ -676,7 +682,7 @@ export default function SellScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

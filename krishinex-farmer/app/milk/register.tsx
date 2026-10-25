@@ -28,6 +28,7 @@ export default function MilkRegisterScreen() {
 
   const [loading, setLoading] = useState(false);
   const [fetchingProfile, setFetchingProfile] = useState(true);
+  const [isVerified, setIsVerified] = useState(false);
 
   // Form Fields
   const [name, setName] = useState('');
@@ -51,6 +52,8 @@ export default function MilkRegisterScreen() {
         setPhone(res.data.phone || '');
         setEmail(res.data.email || '');
         setAddress(res.data.address || '');
+        const verified = res.data.status === 'approved' || res.data.kycStatus === 'verified';
+        setIsVerified(verified);
       }
     } catch (e) {
       console.warn('Could not prefill profile:', e);
@@ -60,6 +63,16 @@ export default function MilkRegisterScreen() {
   };
 
   const handleSubmit = async () => {
+    if (!isVerified) {
+      showAlert(
+        hi ? 'सत्यापन आवश्यक (Verification Required)' : 'Verification Required',
+        hi
+          ? 'दूध सेवा में आवेदन करने के लिए आपका किसान प्रोफ़ाइल सत्यापित (Verified / Approved) होना आवश्यक है। कृपया पहले अपनी KYC व प्रोफ़ाइल सत्यापन पूरा करें।'
+          : 'Your farmer profile must be verified/approved before applying for Milk Service. Please complete your profile KYC verification first.'
+      );
+      return;
+    }
+
     if (!name.trim()) return showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'कृपया अपना नाम दर्ज करें।' : 'Please enter your name.');
     if (!phone.trim()) return showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'कृपया मोबाइल नंबर दर्ज करें।' : 'Please enter phone number.');
     if (!address.trim()) return showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'कृपया पूरा पता दर्ज करें।' : 'Please enter full address.');

@@ -22,6 +22,7 @@ import {
   KeyboardAvoidingView,
   RefreshControl,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Audio } from 'expo-av';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -1386,11 +1387,13 @@ export default function BookEquipmentScreen() {
         onRequestClose={() => setShowDateModal(false)}
       >
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <ScrollView 
+          <KeyboardAwareScrollView 
             style={{ width: '100%' }}
             contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}} 
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            enableOnAndroid={true}
+            extraScrollHeight={20}
           >
             <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{t.bookingDetails}</Text>
@@ -1650,7 +1653,7 @@ export default function BookEquipmentScreen() {
               <Ionicons name="close" size={20} color="#4B5563" />
             </TouchableOpacity>
           </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </KeyboardAvoidingView>
       </Modal>
 

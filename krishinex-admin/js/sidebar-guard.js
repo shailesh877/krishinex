@@ -82,7 +82,8 @@
         'analytics': 'Analytics_Reports.html',
         'settings': 'settings.html',
         'nex_card': 'nex_card_management.html',
-        'milk': 'milk_management.html'
+        'milk': 'milk_management.html',
+        'premium_farmer': 'premium_farmer_management.html'
     };
 
     const sidebar = document.getElementById('sidebar');

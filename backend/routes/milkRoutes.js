@@ -8,6 +8,7 @@ const MilkSubscription = require('../models/MilkSubscription');
 const MilkDailyLog = require('../models/MilkDailyLog');
 const MilkConfig = require('../models/MilkConfig');
 const MilkPauseRequest = require('../models/MilkPauseRequest');
+const { sendNotification } = require('../services/notificationService');
 
 // Helper to get or initialize MilkConfig
 async function getOrCreateConfig() {
@@ -86,6 +87,15 @@ router.post('/register', protect, async (req, res) => {
       return res.status(400).json({ error: 'Please provide all required fields' });
     }
 
+    // Check if farmer/user is verified
+    const user = await User.findById(req.user.id);
+    const isVerified = user && (user.status === 'approved' || user.kycStatus === 'verified');
+    if (!isVerified) {
+      return res.status(403).json({
+        error: 'दूध सेवा (Milk Service) पंजीकरण के लिए आपका किसान खाता सत्यापित (Verified / Approved) होना अनिवार्य है। कृपया पहले अपनी KYC / प्रोफ़ाइल सत्यापन कराएं।'
+      });
+    }
+
     const qty = Number(dailyQuantityLiters);
     if (isNaN(qty) || qty <= 0) {
       return res.status(400).json({ error: 'Daily quantity must be greater than zero' });
@@ -152,19 +162,19 @@ router.get('/my-subscription', protect, async (req, res) => {
       subscription = await MilkSubscription.findOne({
         userId: req.user.id,
         type
-      }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType').sort({ createdAt: -1 });
+      }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl').sort({ createdAt: -1 });
     } else {
       // Find active or pending subscription first
       subscription = await MilkSubscription.findOne({
         userId: req.user.id,
         status: { $in: ['pending', 'approved', 'paused'] }
-      }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType').sort({ updatedAt: -1 });
+      }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl').sort({ updatedAt: -1 });
 
       // If none active, find latest (e.g. cancelled)
       if (!subscription) {
         subscription = await MilkSubscription.findOne({
           userId: req.user.id
-        }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType').sort({ createdAt: -1 });
+        }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl').sort({ createdAt: -1 });
       }
     }
 
@@ -209,13 +219,13 @@ router.get('/history', protect, async (req, res) => {
       userId: req.user.id,
       type,
       status: { $in: ['pending', 'approved', 'paused'] }
-    }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType').sort({ createdAt: -1 });
+    }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl').sort({ createdAt: -1 });
 
     if (!subscription) {
       subscription = await MilkSubscription.findOne({
         userId: req.user.id,
         type
-      }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType').sort({ createdAt: -1 });
+      }).populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl').sort({ createdAt: -1 });
     }
 
     const user = await User.findById(req.user.id).select('walletBalance');
@@ -674,7 +684,24 @@ router.post('/sell/request-withdrawal', protect, async (req, res) => {
       return res.status(400).json({ error: 'No accumulated earnings available for withdrawal.' });
     }
 
-    const transactionId = `TXN_MILK_PAY_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+    // Atomically claim and lock unwithdrawn logs to prevent race conditions on concurrent taps
+    const logIds = logs.map(l => l._id);
+    const updateResult = await MilkDailyLog.updateMany(
+      {
+        _id: { $in: logIds },
+        isProcessedInWithdrawal: false
+      },
+      {
+        $set: {
+          isProcessedInWithdrawal: true,
+          withdrawalTransactionId: transactionId
+        }
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      return res.status(400).json({ error: 'Withdrawal already processed or pending.' });
+    }
 
     // Update user wallet balance directly
     const updatedUser = await User.findByIdAndUpdate(
@@ -701,17 +728,6 @@ router.post('/sell/request-withdrawal', protect, async (req, res) => {
       status: 'Completed',
       note: `Milk Supply 7-Day Cycle Payout (${logs.length} collections)`
     });
-
-    // Mark logs as processed in this withdrawal
-    await MilkDailyLog.updateMany(
-      { _id: { $in: logs.map(l => l._id) } },
-      {
-        $set: {
-          isProcessedInWithdrawal: true,
-          withdrawalTransactionId: transactionId
-        }
-      }
-    );
 
     notifyRealtime({
       action: 'withdrawal_processed',
@@ -861,12 +877,30 @@ router.get('/admin/requests', protect, async (req, res) => {
       ];
     }
 
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limitParam = parseInt(req.query.limit);
+    // If limit is explicitly provided, enforce pagination; default to safe upper bound of 1000 for legacy unpaginated calls
+    const limit = (limitParam && limitParam > 0) ? Math.min(limitParam, 500) : 1000;
+    const skip = (page - 1) * limit;
+
+    const total = await MilkSubscription.countDocuments(query);
     const requests = await MilkSubscription.find(query)
       .populate('userId', 'name phone walletBalance')
-      .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType')
-      .sort({ createdAt: -1 });
+      .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    res.json({ success: true, requests });
+    res.json({
+      success: true,
+      requests,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('Admin Requests Error:', error);
     res.status(500).json({ error: 'Failed to fetch milk requests.' });
@@ -900,7 +934,7 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
       await sub.save();
       const populatedSub = await MilkSubscription.findById(sub._id)
         .populate('userId', 'name phone walletBalance')
-        .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType');
+        .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl');
 
       notifyRealtime({
         action: 'request_updated',
@@ -914,6 +948,25 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
           subscription: populatedSub,
           message: `Subscriber ${sub.name} (${sub.type === 'sell' ? 'दूध खरीद' : 'दूध बिक्री'}) assigned to your route`
         }, sub.assignedPartnerId);
+
+        // Send persistent In-App & FCM Push Notification to the Partner
+        const isSell = sub.type === 'sell';
+        const partnerTitle = isSell ? 'नया दूध आपूर्तिकर्ता असाइन हुआ' : 'नया दूध ग्राहक असाइन हुआ';
+        const partnerMsgHi = `${sub.name || 'किसान'} (${sub.shift === 'both' ? 'सुबह व शाम' : sub.shift === 'morning' ? 'सुबह' : 'शाम'}) आपके रूट पर असाइन किया गया है। दैनिक मात्रा: ${sub.quantityLiters} लीटर।`;
+        const partnerMsgEn = `New subscriber ${sub.name || 'Farmer'} (${sub.quantityLiters}L/day, ${sub.shift}) has been assigned to your route.`;
+
+        sendNotification(sub.assignedPartnerId, {
+          title: partnerTitle,
+          messageHi: partnerMsgHi,
+          messageEn: partnerMsgEn,
+          type: 'farmer_assigned',
+          refId: String(sub._id),
+          data: {
+            subscriptionId: String(sub._id),
+            type: 'milk_assignment',
+            route: sub.assignedRoute || ''
+          }
+        }).catch(err => console.error('[Milk Notification Error - Assign Partner]:', err));
       }
 
       return res.json({
@@ -946,7 +999,7 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
 
     const populatedSub = await MilkSubscription.findById(sub._id)
       .populate('userId', 'name phone walletBalance')
-      .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType');
+      .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl');
 
     notifyRealtime({
       action: 'request_reviewed',
@@ -955,12 +1008,43 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
       message: `Farmer milk request has been ${action}!`
     }, sub.userId);
 
+    // Also notify farmer about approval/rejection
+    if (action === 'approved') {
+      sendNotification(sub.userId, {
+        title: 'दूध सेवा स्वीकृत (Milk Service Approved)',
+        messageHi: `आपकी दूध ${sub.type === 'sell' ? 'बिक्री' : 'खरीद'} सेवा स्वीकृत हो गई है। दर: ₹${sub.ratePerLiter}/लीटर।`,
+        messageEn: `Your milk ${sub.type === 'sell' ? 'selling' : 'purchase'} subscription has been approved at ₹${sub.ratePerLiter}/L.`,
+        type: 'status',
+        refId: String(sub._id),
+        data: { subscriptionId: String(sub._id) }
+      }).catch(err => console.error('[Milk Notification Error - Farmer Approved]:', err));
+    }
+
     if (sub.assignedPartnerId) {
       notifyRealtime({
         action: 'farmer_assigned',
         subscription: populatedSub,
         message: `Subscriber ${sub.name} assigned to your daily route`
       }, sub.assignedPartnerId);
+
+      // Send persistent In-App & FCM Push Notification to the Partner
+      const isSell = sub.type === 'sell';
+      const partnerTitle = isSell ? 'नया दूध आपूर्तिकर्ता असाइन हुआ' : 'नया दूध ग्राहक असाइन हुआ';
+      const partnerMsgHi = `${sub.name || 'किसान'} (${sub.shift === 'both' ? 'सुबह व शाम' : sub.shift === 'morning' ? 'सुबह' : 'शाम'}) आपके रूट पर असाइन किया गया है। दैनिक मात्रा: ${sub.quantityLiters} लीटर।`;
+      const partnerMsgEn = `New subscriber ${sub.name || 'Farmer'} (${sub.quantityLiters}L/day, ${sub.shift}) has been assigned to your route.`;
+
+      sendNotification(sub.assignedPartnerId, {
+        title: partnerTitle,
+        messageHi: partnerMsgHi,
+        messageEn: partnerMsgEn,
+        type: 'farmer_assigned',
+        refId: String(sub._id),
+        data: {
+          subscriptionId: String(sub._id),
+          type: 'milk_assignment',
+          route: sub.assignedRoute || ''
+        }
+      }).catch(err => console.error('[Milk Notification Error - Partner Notification]:', err));
     }
 
     res.json({
@@ -2020,6 +2104,7 @@ router.get('/partner/dashboard', protect, async (req, res) => {
           assignedRoute: partner.assignedRoute || 'Main Route',
           vehicleType: partner.vehicleType || 'Motorcycle',
           vehicleNumber: partner.vehicleNumber || '',
+          profilePhotoUrl: partner.profilePhotoUrl || '',
           canisterCapacityLiters: partner.canisterCapacityLiters || 0,
           hasTestingKit: partner.hasTestingKit || false
         }
@@ -2199,7 +2284,10 @@ router.get('/partner/delivery-list', protect, async (req, res) => {
       };
     });
 
-    res.json({ success: true, list });
+    const config = await getOrCreateConfig();
+    const adminCommissionPercent = config.adminCommissionPercent !== undefined ? config.adminCommissionPercent : 10;
+
+    res.json({ success: true, list, adminCommissionPercent });
   } catch (error) {
     console.error('Delivery List Error:', error);
     res.status(500).json({ error: 'Failed to fetch milk delivery list.' });
@@ -2448,16 +2536,18 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
         if (deltaAmount > 0) {
           try {
             await Transaction.create({
-              userId: buyer._id,
-              type: 'DEBIT',
+              transactionId: 'MLK_DR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+              recipient: buyer._id,
+              module: 'Milk',
               amount: deltaAmount,
-              category: 'MILK_DELIVERY',
-              description: `Milk Delivery: ${qty} L (${targetShift})`,
-              referenceId: `MLK-${log._id}`,
-              status: 'COMPLETED'
+              type: 'Debit',
+              paymentMode: 'NexCard Wallet',
+              status: 'Completed',
+              performedBy: req.user.id,
+              note: `Milk Delivery: ${qty} L (${targetShift})`
             });
           } catch (te) {
-            console.warn('Transaction logging skipped:', te.message);
+            console.warn('Buyer delivery transaction logging skipped:', te.message);
           }
         }
       }
@@ -2488,7 +2578,7 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
               type: 'Credit',
               paymentMode: 'NexCard Wallet',
               status: 'Completed',
-              note: `Milk Sale Proceeds: ${qty} L @ ₹${rate}/L (Gross ₹${amount} less ${adminPercent}% admin cut ₹${adminCutAmount})`
+              note: `Milk Sale Proceeds: ${qty} L @ ₹${rate}/L`
             });
           } catch (comErr) {
             console.warn('Partner sale earnings transaction logging skipped:', comErr.message);
@@ -2498,18 +2588,21 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
 
       if (adminCutAmount > 0) {
         try {
-          await Transaction.create({
-            transactionId: 'ADM_CUT_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-            recipient: req.user.id,
-            module: 'Milk',
-            amount: adminCutAmount,
-            type: 'Credit',
-            paymentMode: 'NexCard Wallet',
-            status: 'Completed',
-            note: `Platform Commission (${adminPercent}%) on ${qty} L Milk Sale to ${sub.name}`
-          });
+          const adminUser = await User.findOne({ role: 'admin' });
+          if (adminUser) {
+            await Transaction.create({
+              transactionId: 'ADM_CUT_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+              recipient: adminUser._id,
+              module: 'Milk',
+              amount: adminCutAmount,
+              type: 'Credit',
+              paymentMode: 'NexCard Wallet',
+              status: 'Completed',
+              note: `Platform Fee (${adminPercent}%) on ${qty} L Milk Sale to ${sub.name}`
+            });
+          }
         } catch (admTxErr) {
-          console.warn('Admin commission transaction skipped:', admTxErr.message);
+          console.warn('Admin platform fee transaction skipped:', admTxErr.message);
         }
       }
     }
@@ -2529,7 +2622,7 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
       success: true,
       message: isSkipped
         ? 'Delivery marked as Skipped.'
-        : `Successfully delivered ${qty} L (₹${amount}). ₹${partnerEarning} credited to your wallet (${adminPercent}% admin fee: ₹${adminCutAmount})!`,
+        : `Successfully delivered ${qty} L (₹${amount}). ₹${partnerEarning} credited to your wallet (${adminPercent}% Platform Fee: ₹${adminCutAmount})!`,
       partnerEarning,
       adminCutAmount,
       log
@@ -2693,12 +2786,13 @@ router.get('/partner/wallet', protect, async (req, res) => {
     );
     if (!user) return res.status(404).json({ error: 'Partner not found.' });
 
-    // Fetch transactions
+    // Fetch transactions (exclude internal admin platform fee transactions)
     const transactions = await Transaction.find({
       $or: [
         { recipient: user._id },
         { sender: user._id }
-      ]
+      ],
+      transactionId: { $not: /^ADM_CUT_/ }
     }).sort({ createdAt: -1 }).limit(50);
 
     // Calculate lifetime stats from completed logs performed by this partner

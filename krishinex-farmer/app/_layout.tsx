@@ -247,7 +247,7 @@ function RootLayoutContent() {
   );
 }
 
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -257,9 +257,9 @@ export default function RootLayout() {
       <I18nProvider>
         <CartProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+            <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
               <RootLayoutContent />
-            </SafeAreaView>
+            </View>
           </ThemeProvider>
         </CartProvider>
       </I18nProvider>

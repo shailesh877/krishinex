@@ -12,6 +12,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +20,7 @@ import { useRouter } from 'expo-router';
 import { useI18n } from '@/context/I18nContext';
 import { authApi } from '../services/api';
 import { showAlert } from '@/components/CustomAlert';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const GREEN = '#98cd06ff';
 const GREEN_DARK = '#467804ff';
@@ -246,11 +248,11 @@ export default function LeadGenerationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
@@ -268,10 +270,15 @@ export default function LeadGenerationScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: 60 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={Platform.OS === 'android' ? 60 : 30}
+        keyboardOpeningTime={0}
       >
         {/* SECTION 1 */}
         <View style={styles.card}>
@@ -659,9 +666,9 @@ export default function LeadGenerationScreen() {
           )}
         </TouchableOpacity>
 
-        <View style={{ height: 18 }} />
-      </ScrollView>
-    </SafeAreaView>
+        <View style={{ height: 24 }} />
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 

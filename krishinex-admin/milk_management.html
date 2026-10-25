@@ -11,7 +11,7 @@
   <meta http-equiv="Expires" content="0" />
 
   <script src="js/auth.js?v=1.0.1"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -274,6 +274,15 @@
             </a>
           </div>
         </div>
+
+        <a href="premium_farmer_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 hover:text-amber-800 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-yellow-100 transition-all">
+            <i class="fas fa-crown text-amber-500 group-hover:text-amber-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Premium Farmers</span>
+        </a>
 
         <a href="nex_card_management.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
@@ -595,6 +604,20 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- Chunk Pagination Bar -->
+            <div id="farmerPaginationContainer" class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-slate-600">
+              <span id="farmerPaginationInfo">Showing page 1</span>
+              <div class="flex items-center gap-1.5">
+                <button id="btnPrevFarmerPage" onclick="changeFarmerPage(-1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 font-bold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                  <i class="fas fa-chevron-left mr-1"></i> Prev
+                </button>
+                <span id="farmerPageIndicator" class="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-900 font-black">1</span>
+                <button id="btnNextFarmerPage" onclick="changeFarmerPage(1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 font-bold text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                  Next <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1183,14 +1206,14 @@
 
                   <div>
                     <label class="block text-xs font-black text-slate-700 mb-1">
-                      Admin Commission on Sales (एडमिन कमीशन %) <span class="text-rose-500">*</span>
+                      Platform Fee on Sales Delivery (दूध बिक्री वितरण पर प्लेटफ़ॉर्म शुल्क %) <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
                       <input type="number" id="cfgAdminCommissionPercent" step="0.5" min="0" max="100" required
                         class="w-full pl-4 pr-10 py-2.5 bg-white rounded-xl text-xs border border-sky-200 font-bold focus:outline-none focus:ring-2 focus:ring-sky-500">
                       <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-sky-700">%</span>
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-1">दूध बिक्री पर कुल राशि में से यह % एडमिन को कटेगा और बाकी पूरा पैसा पार्टनर के वॉलेट में तुरंत क्रेडिट होगा।</p>
+                    <p class="text-[11px] text-slate-500 mt-1">यह शुल्क केवल ग्राहक को दूध बिक्री वितरण के समय पार्टनर के वॉलेट क्रेडिट से कटेगा। खरीद (Purchase) पर कोई शुल्क नहीं कटेगा और किसान को इससे कोई मतलब नहीं रहेगा।</p>
                   </div>
                 </div>
               </div>
@@ -1369,14 +1392,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-black text-slate-700 mb-1">Vehicle Type</label>
-            <select id="pmVehicleType" class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
+            <select id="pmVehicleType" onchange="togglePmVehicleNumberField()" class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500">
               <option value="Bike / Motorcycle">Bike / Motorcycle</option>
+              <option value="Cycle">Cycle</option>
               <option value="3-Wheeler Auto">3-Wheeler Auto</option>
               <option value="Pickup Truck">Pickup Truck</option>
               <option value="Delivery Van">Delivery Van</option>
             </select>
           </div>
-          <div>
+          <div id="pmVehicleNumberContainer">
             <label class="block text-xs font-black text-slate-700 mb-1">Vehicle Number</label>
             <input type="text" id="pmVehicleNumber" placeholder="e.g. UP 32 AB 1234"
               class="w-full px-3 py-2 bg-slate-50 rounded-xl text-xs border border-slate-200 font-bold focus:outline-none focus:border-purple-500 uppercase">
@@ -1565,6 +1589,8 @@
     let allMilkLogs = [];
     let searchDebounceTimer = null;
     let pauseHistoryDebounceTimer = null;
+    let currentFarmerPage = 1;
+    let totalFarmerPages = 1;
 
     // API Token helper
     function getAuthHeaders() {
@@ -1585,7 +1611,8 @@
         }
 
         const token = localStorage.getItem('employeeToken') || localStorage.getItem('token');
-        socket = io({
+        const socketUrl = (window.API_BASE || '').replace(/\/api$/, '') || window.location.origin;
+        socket = io(socketUrl, {
           transports: ['websocket', 'polling'],
           auth: { token: token || '' },
           reconnection: true,
@@ -1770,7 +1797,7 @@
     // ==============================================
     async function fetchStats() {
       try {
-        const res = await fetch('/api/milk/admin/stats', { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/stats`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
         if (data.success && data.stats) {
           const s = data.stats;
@@ -1810,17 +1837,50 @@
       filterAndRenderFarmerRequests();
     }
 
-    async function loadFarmerRequests() {
+    async function loadFarmerRequests(page = currentFarmerPage) {
+      currentFarmerPage = page;
       const tbody = document.getElementById('farmerRequestsTableBody');
+      const search = (document.getElementById('farmerSearch').value || '').trim();
+      const limit = 20;
+
+      let typeParam = 'all';
+      let statusParam = 'all';
+      if (farmerFilter === 'sell' || farmerFilter === 'buy') typeParam = farmerFilter;
+      else if (['pending', 'approved', 'rejected'].includes(farmerFilter)) statusParam = farmerFilter;
+
       try {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400 font-semibold"><i class="fas fa-spinner fa-spin mr-2"></i>Loading requests chunk (page ${currentFarmerPage})...</td></tr>`;
+        
         if (!allPartners || allPartners.length === 0) {
           loadPartners().catch(() => {});
         }
-        const res = await fetch('/api/milk/admin/requests', { credentials: 'include', headers: getAuthHeaders() });
+
+        const queryUrl = `${API_BASE}/milk/admin/requests?type=${typeParam}&status=${statusParam}&search=${encodeURIComponent(search)}&page=${currentFarmerPage}&limit=${limit}`;
+        const res = await fetch(queryUrl, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
+        
         if (data.success && Array.isArray(data.requests)) {
           allFarmerRequests = data.requests;
-          filterAndRenderFarmerRequests();
+          renderFarmerRequestsTable(allFarmerRequests);
+
+          if (data.pagination) {
+            totalFarmerPages = Math.max(1, data.pagination.pages || 1);
+            currentFarmerPage = data.pagination.page || 1;
+            const total = data.pagination.total || 0;
+            const startRec = total === 0 ? 0 : (currentFarmerPage - 1) * limit + 1;
+            const endRec = Math.min(total, currentFarmerPage * limit);
+
+            const infoEl = document.getElementById('farmerPaginationInfo');
+            if (infoEl) infoEl.textContent = `Showing ${startRec} - ${endRec} of ${total} requests (Page ${currentFarmerPage} of ${totalFarmerPages})`;
+
+            const indicator = document.getElementById('farmerPageIndicator');
+            if (indicator) indicator.textContent = `${currentFarmerPage} / ${totalFarmerPages}`;
+
+            const prevBtn = document.getElementById('btnPrevFarmerPage');
+            const nextBtn = document.getElementById('btnNextFarmerPage');
+            if (prevBtn) prevBtn.disabled = currentFarmerPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentFarmerPage >= totalFarmerPages;
+          }
         } else {
           tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-rose-500 font-semibold">${data.error || 'Failed to load requests'}</td></tr>`;
         }
@@ -1829,37 +1889,32 @@
       }
     }
 
+    function changeFarmerPage(delta) {
+      const target = currentFarmerPage + delta;
+      if (target >= 1 && target <= totalFarmerPages) {
+        loadFarmerRequests(target);
+      }
+    }
+
     function debounceFarmerSearch() {
       clearTimeout(searchDebounceTimer);
-      searchDebounceTimer = setTimeout(filterAndRenderFarmerRequests, 250);
+      searchDebounceTimer = setTimeout(() => {
+        loadFarmerRequests(1);
+      }, 300);
     }
 
     function filterAndRenderFarmerRequests() {
+      loadFarmerRequests(1);
+    }
+
+    function renderFarmerRequestsTable(items) {
       const tbody = document.getElementById('farmerRequestsTableBody');
-      const search = (document.getElementById('farmerSearch').value || '').toLowerCase().trim();
-
-      let list = allFarmerRequests.filter(req => {
-        // Status & type filters
-        if (farmerFilter === 'pending' && req.status !== 'pending') return false;
-        if (farmerFilter === 'approved' && req.status !== 'approved') return false;
-        if (farmerFilter === 'rejected' && req.status !== 'rejected') return false;
-        if (farmerFilter === 'sell' && req.type !== 'sell') return false;
-        if (farmerFilter === 'buy' && req.type !== 'buy') return false;
-
-        // Search text
-        if (search) {
-          const name = (req.name || req.userId?.name || '').toLowerCase();
-          const phone = (req.phone || req.userId?.phone || '').toLowerCase();
-          const address = (req.address || '').toLowerCase();
-          return name.includes(search) || phone.includes(search) || address.includes(search);
-        }
-        return true;
-      });
+      const list = items || [];
 
       if (!list.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="8" class="text-center py-12 text-slate-400">
+            <td colspan="9" class="text-center py-12 text-slate-400">
               <i class="fas fa-inbox text-3xl mb-2 opacity-40"></i>
               <p class="font-bold text-xs">No farmer requests found matching the filter.</p>
             </td>
@@ -2108,7 +2163,7 @@
       const partnerId = document.getElementById('mdlAssignedPartner').value;
 
       try {
-        const res = await fetch(`/api/milk/admin/requests/${reqId}/review`, {
+        const res = await fetch(`${API_BASE}/milk/admin/requests/${reqId}/review`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2139,7 +2194,7 @@
         return;
       }
       try {
-        const res = await fetch(`/api/milk/admin/requests/${reqId}/review`, {
+        const res = await fetch(`${API_BASE}/milk/admin/requests/${reqId}/review`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2176,7 +2231,7 @@
     async function loadPartners() {
       const tbody = document.getElementById('partnersTableBody');
       try {
-        const res = await fetch('/api/milk/admin/partners', { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/partners`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
         if (data.success && Array.isArray(data.partners)) {
           allPartners = data.partners;
@@ -2260,7 +2315,7 @@
             </td>
             <td class="p-3.5">
               <p class="font-black text-slate-800">${p.vehicleType || 'Bike'}</p>
-              <p class="text-[11px] text-slate-500 font-semibold uppercase">${p.vehicleNumber || 'No plate'}</p>
+              ${(p.vehicleType || '').toLowerCase().includes('cycle') && !(p.vehicleType || '').toLowerCase().includes('motor') ? '' : `<p class="text-[11px] text-slate-500 font-semibold uppercase">${p.vehicleNumber || 'No plate'}</p>`}
             </td>
             <td class="p-3.5 font-black text-slate-800">${p.canisterCapacityLiters || 40} Liters</td>
             <td class="p-3.5 text-slate-700 font-bold">${p.assignedRoute || '<span class="text-slate-400 font-normal">Unassigned</span>'}</td>
@@ -2285,6 +2340,19 @@
       }).join('');
     }
 
+    function togglePmVehicleNumberField() {
+      const vType = document.getElementById('pmVehicleType').value;
+      const container = document.getElementById('pmVehicleNumberContainer');
+      if (container) {
+        if (vType === 'Cycle') {
+          container.style.display = 'none';
+          document.getElementById('pmVehicleNumber').value = '';
+        } else {
+          container.style.display = 'block';
+        }
+      }
+    }
+
     function openAddPartnerModal() {
       document.getElementById('pmId').value = '';
       document.getElementById('partnerModalTitle').innerHTML = '<i class="fas fa-plus text-purple-600"></i> Add Milk Delivery Partner';
@@ -2293,6 +2361,7 @@
       document.getElementById('pmAddress').value = '';
       document.getElementById('pmVehicleType').value = 'Bike / Motorcycle';
       document.getElementById('pmVehicleNumber').value = '';
+      togglePmVehicleNumberField();
       document.getElementById('pmCanister').value = '40';
       document.getElementById('pmRoute').value = '';
       document.getElementById('pmTestingKit').checked = false;
@@ -2312,6 +2381,7 @@
       document.getElementById('pmAddress').value = p.address;
       document.getElementById('pmVehicleType').value = p.vehicleType || 'Bike / Motorcycle';
       document.getElementById('pmVehicleNumber').value = p.vehicleNumber || '';
+      togglePmVehicleNumberField();
       document.getElementById('pmCanister').value = p.canisterCapacityLiters || 40;
       document.getElementById('pmRoute').value = p.assignedRoute || '';
       document.getElementById('pmTestingKit').checked = Boolean(p.hasTestingKit);
@@ -2337,7 +2407,7 @@
         let res, data;
         if (id) {
           // Edit
-          res = await fetch(`/api/milk/admin/partners/${id}/review`, {
+          res = await fetch(`${API_BASE}/milk/admin/partners/${id}/review`, {
             method: 'PUT',
             credentials: 'include',
             headers: getAuthHeaders(),
@@ -2346,7 +2416,7 @@
         } else {
           // Create
           payload.status = 'approved';
-          res = await fetch('/api/milk/admin/partners', {
+          res = await fetch(`${API_BASE}/milk/admin/partners`, {
             method: 'POST',
             credentials: 'include',
             headers: getAuthHeaders(),
@@ -2371,7 +2441,7 @@
     async function openReviewPartnerModal(pId, action) {
       if (!confirm(`Are you sure you want to ${action} this partner application?`)) return;
       try {
-        const res = await fetch(`/api/milk/admin/partners/${pId}/review`, {
+        const res = await fetch(`${API_BASE}/milk/admin/partners/${pId}/review`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2430,7 +2500,7 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch(`/api/milk/admin/partners/${partnerId}/add-money`, {
+        const res = await fetch(`${API_BASE}/milk/admin/partners/${partnerId}/add-money`, {
           method: 'POST',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2457,7 +2527,7 @@
       if (!confirm(`Are you sure you want to ${action} this milk partner?`)) return;
 
       try {
-        const res = await fetch(`/api/milk/admin/partners/${partnerId}/toggle-block`, {
+        const res = await fetch(`${API_BASE}/milk/admin/partners/${partnerId}/toggle-block`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2507,7 +2577,7 @@
 
       try {
         const params = new URLSearchParams({ startDate: start, endDate: end, shift, type });
-        const res = await fetch(`/api/milk/admin/history?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/history?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
 
         if (data.success && Array.isArray(data.logs)) {
@@ -2643,7 +2713,7 @@
     async function loadPausedSubscriptions() {
       const tbody = document.getElementById('pausedTableBody');
       try {
-        const res = await fetch('/api/milk/admin/paused', { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/paused`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
         if (data.success && Array.isArray(data.subscriptions)) {
           allPausedSubs = data.subscriptions;
@@ -2782,7 +2852,7 @@
 
       try {
         const params = new URLSearchParams({ status: pauseHistoryFilter, type });
-        const res = await fetch(`/api/milk/admin/pause-history?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/pause-history?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
 
         if (data.success && Array.isArray(data.history)) {
@@ -2925,7 +2995,7 @@
       if (!confirm(confirmMsg)) return;
 
       try {
-        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/review-pause`, {
+        const res = await fetch(`${API_BASE}/milk/admin/subscriptions/${subId}/review-pause`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2948,7 +3018,7 @@
     async function resumeSubscription(subId) {
       if (!confirm('Are you sure you want to resume this milk subscription service now?')) return;
       try {
-        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/resume`, {
+        const res = await fetch(`${API_BASE}/milk/admin/subscriptions/${subId}/resume`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -2986,7 +3056,7 @@
       }
 
       try {
-        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/extend-pause`, {
+        const res = await fetch(`${API_BASE}/milk/admin/subscriptions/${subId}/extend-pause`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -3025,7 +3095,7 @@
       const tbody = document.getElementById('cancelledTableBody');
       try {
         const params = new URLSearchParams({ status: cancelFilter });
-        const res = await fetch(`/api/milk/admin/cancellations?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/cancellations?${params.toString()}`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
         if (data.success && Array.isArray(data.subscriptions)) {
           allCancelledSubs = data.subscriptions;
@@ -3163,7 +3233,7 @@
       if (!confirm(confirmPrompt)) return;
 
       try {
-        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/review-cancellation`, {
+        const res = await fetch(`${API_BASE}/milk/admin/subscriptions/${subId}/review-cancellation`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -3186,7 +3256,7 @@
     async function reactivateSubscription(subId) {
       if (!confirm('Reactivate this cancelled subscription back to active status?')) return;
       try {
-        const res = await fetch(`/api/milk/admin/subscriptions/${subId}/reactivate`, {
+        const res = await fetch(`${API_BASE}/milk/admin/subscriptions/${subId}/reactivate`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),
@@ -3220,7 +3290,7 @@
 
     async function loadMilkSettings() {
       try {
-        const res = await fetch('/api/milk/admin/config', { credentials: 'include', headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/milk/admin/config`, { credentials: 'include', headers: getAuthHeaders() });
         const data = await res.json();
         if (data.success && data.config) {
           const c = data.config;
@@ -3267,7 +3337,7 @@
       };
 
       try {
-        const res = await fetch('/api/milk/admin/config', {
+        const res = await fetch(`${API_BASE}/milk/admin/config`, {
           method: 'PUT',
           credentials: 'include',
           headers: getAuthHeaders(),

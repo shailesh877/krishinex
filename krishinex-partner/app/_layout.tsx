@@ -232,7 +232,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <UserProvider>
         <I18nProvider>
-          <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+          <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
             {isReady && (
               <Stack
                 screenOptions={{
@@ -243,7 +243,7 @@ export default function RootLayout() {
             )}
             {showSplash && AnimatedSplashView}
             <CustomAlert ref={customAlertRef} />
-          </SafeAreaView>
+          </View>
         </I18nProvider>
       </UserProvider>
     </SafeAreaProvider>

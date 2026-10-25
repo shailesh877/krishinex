@@ -231,10 +231,10 @@ export default function NotificationsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.root}>
+        <View style={styles.root}>
             <StatusBar barStyle="light-content" backgroundColor={GREEN_DARK} />
 
-            <LinearGradient colors={[GREEN, GREEN_DARK]} style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+            <LinearGradient colors={[GREEN, GREEN_DARK]} style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
                 <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                     <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
@@ -303,7 +303,7 @@ export default function NotificationsScreen() {
                     </View>
                 </TouchableOpacity>
             </Modal>
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     },
     header: {
         paddingHorizontal: 20,
-        paddingTop: 16,
+        paddingTop: 8,
         paddingBottom: 24,
         flexDirection: 'row',
         alignItems: 'flex-start',

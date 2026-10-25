@@ -51,6 +51,9 @@ export default function MilkPartnerWalletScreen() {
   const [rechargeAmount, setRechargeAmount] = useState('');
   const [isRecharging, setIsRecharging] = useState(false);
 
+  // Selected Transaction for Detail Modal
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
+
   const fetchWalletData = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -330,16 +333,16 @@ export default function MilkPartnerWalletScreen() {
               <TouchableOpacity
                 style={styles.kfcInfoBtn}
                 onPress={() => showAlert(
-                  hi ? 'KFC नकद सुविधा' : 'KFC Cash Facility',
+                  hi ? 'KSP नकद व निकासी सुविधा' : 'KSP Cash & Withdrawal Facility',
                   hi
-                    ? 'आप अपने नजदीकी KFC सेंटर या फील्ड एग्जीक्यूटिव से भी नकद देकर वॉलेट रिचार्ज करवा सकते हैं। पार्टनर की सभी निकासी (Withdrawals) भी KFC सेंटर द्वारा की जाती है।'
-                    : 'You can recharge via cash at any KFC center. All partner withdrawals and payouts are processed through KFC centers.'
+                    ? 'आप अपने नजदीकी KSP (किसान सेवा केंद्र) या फील्ड एग्जीक्यूटिव से नकद देकर वॉलेट रिचार्ज करवा सकते हैं। साथ ही पार्टनर की सभी निकासी (Withdrawals) भी KSP सेंटर द्वारा ही की जाती है।'
+                    : 'You can recharge via cash at any KSP (Kisan Seva Kendra) center. All partner withdrawals and cash payouts are processed directly through KSP centers.'
                 )}
                 activeOpacity={0.88}
               >
                 <Ionicons name="business" size={16} color="#FFFFFF" />
                 <Text style={styles.kfcInfoBtnText}>
-                  {hi ? 'KFC सुविधा' : 'KFC Info'}
+                  {hi ? 'KSP सुविधा' : 'KSP Info'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -440,8 +443,8 @@ export default function MilkPartnerWalletScreen() {
               </Text>
               <Text style={styles.emptySub}>
                 {hi
-                  ? 'दूध खरीद की कटौती, डिलीवरी कमीशन और वॉलेट रिचार्ज का सम्पूर्ण विवरण यहाँ दर्ज होगा।'
-                  : 'All wallet debits, delivery commissions and recharge records will appear here.'}
+                  ? 'दूध खरीद की कटौती, डिलीवरी कमाई और वॉलेट रिचार्ज का सम्पूर्ण विवरण यहाँ दर्ज होगा।'
+                  : 'All wallet debits, delivery earnings and recharge records will appear here.'}
               </Text>
             </View>
           ) : (
@@ -457,14 +460,43 @@ export default function MilkPartnerWalletScreen() {
               if (tx.createdAt) {
                 try {
                   const d = new Date(tx.createdAt);
-                  dateStr = `${d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} • ${d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                  dateStr = `${d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} • ${d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
                 } catch (e) {
                   dateStr = String(tx.createdAt);
                 }
               }
 
+              // Extract a clean, human-friendly summary title
+              const rawNote = tx.note || tx.description || '';
+              let cleanTitle = isCredit ? (hi ? 'वॉलेट जमा' : 'Wallet Credit') : (hi ? 'वॉलेट भुगतान' : 'Wallet Debit');
+              let cleanSubtitle = '';
+
+              const literMatch = rawNote.match(/(\d+(?:\.\d+)?)\s*L/i);
+              const liters = literMatch ? literMatch[1] : null;
+
+              if (/sale proceeds|दूध बिक्री/i.test(rawNote)) {
+                cleanTitle = hi ? 'दूध बिक्री' : 'Milk Sale';
+                cleanSubtitle = liters ? `${liters} L ${hi ? 'दूध' : 'Milk'}` : (hi ? 'बिक्री राशि' : 'Sale proceeds');
+              } else if (/purchase payment|दूध खरीद/i.test(rawNote)) {
+                cleanTitle = hi ? 'दूध खरीद भुगतान' : 'Milk Purchase';
+                cleanSubtitle = liters ? `${liters} L ${hi ? 'दूध' : 'Milk'}` : (hi ? 'किसान भुगतान' : 'Farmer payment');
+              } else if (/commission|कमीशन/i.test(rawNote)) {
+                cleanTitle = hi ? 'डिलीवरी कमीशन' : 'Delivery Commission';
+                cleanSubtitle = liters ? `${liters} L ${hi ? 'वितरण' : 'Delivery'}` : (hi ? 'अर्जित कमीशन' : 'Earned commission');
+              } else if (/recharge|रिचार्ज/i.test(rawNote)) {
+                cleanTitle = hi ? 'वॉलेट रिचार्ज' : 'Wallet Recharge';
+                cleanSubtitle = hi ? 'सफल रिचार्ज' : 'Online / Admin topup';
+              } else if (rawNote) {
+                cleanTitle = rawNote.split(':')[0] || rawNote;
+              }
+
               return (
-                <View key={tx._id || idx} style={styles.txCard}>
+                <TouchableOpacity
+                  key={tx._id || idx}
+                  style={styles.txCard}
+                  onPress={() => setSelectedTx(tx)}
+                  activeOpacity={0.7}
+                >
                   <View style={[
                     styles.txIconBox,
                     { backgroundColor: isCredit ? '#ECFDF5' : '#FEE2E2' }
@@ -478,40 +510,180 @@ export default function MilkPartnerWalletScreen() {
 
                   <View style={styles.txInfoCol}>
                     <Text style={styles.txTitle} numberOfLines={1}>
-                      {tx.note || tx.description || (isCredit ? 'Wallet Credit' : 'Payment')}
+                      {cleanTitle}
                     </Text>
-                    <Text style={styles.txDate}>{dateStr}</Text>
-                    {tx.transactionId && (
-                      <Text style={styles.txRefId}>ID: {tx.transactionId}</Text>
-                    )}
+                    <View style={styles.txMetaRow}>
+                      <Text style={styles.txDate}>{dateStr}</Text>
+                      {cleanSubtitle ? (
+                        <>
+                          <Text style={styles.txMetaDot}>•</Text>
+                          <Text style={styles.txMetaSub} numberOfLines={1}>{cleanSubtitle}</Text>
+                        </>
+                      ) : null}
+                    </View>
                   </View>
 
                   <View style={styles.txRightCol}>
                     <Text style={[styles.txAmount, { color: amtColor }]}>
                       {sign}₹{Number(tx.amount || 0).toFixed(2)}
                     </Text>
-                    <View style={[
-                      styles.txStatusBadge,
-                      {
-                        backgroundColor: isCompleted ? '#ECFDF5' : isPending ? '#FEF3C7' : '#FEE2E2',
-                      }
-                    ]}>
-                      <Text style={[
-                        styles.txStatusText,
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                      <View style={[
+                        styles.txStatusBadge,
                         {
-                          color: isCompleted ? '#059669' : isPending ? '#D97706' : '#DC2626',
+                          backgroundColor: isCompleted ? '#ECFDF5' : isPending ? '#FEF3C7' : '#FEE2E2',
                         }
                       ]}>
-                        {tx.status || 'Success'}
-                      </Text>
+                        <Text style={[
+                          styles.txStatusText,
+                          {
+                            color: isCompleted ? '#059669' : isPending ? '#D97706' : '#DC2626',
+                          }
+                        ]}>
+                          {tx.status || 'Completed'}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={14} color="#CBD5E1" style={{ marginLeft: 4 }} />
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })
           )}
         </ScrollView>
       )}
+
+      {/* TRANSACTION DETAIL MODAL */}
+      <Modal
+        visible={!!selectedTx}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSelectedTx(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailModalContainer}>
+            <View style={styles.modalDragHandle} />
+
+            <View style={styles.detailHeaderRow}>
+              <View style={[
+                styles.detailIconCircle,
+                {
+                  backgroundColor: (selectedTx?.type || '').toLowerCase().includes('credit')
+                    ? '#ECFDF5'
+                    : '#FEE2E2',
+                }
+              ]}>
+                <Ionicons
+                  name={(selectedTx?.type || '').toLowerCase().includes('credit') ? 'arrow-down' : 'arrow-up'}
+                  size={24}
+                  color={(selectedTx?.type || '').toLowerCase().includes('credit') ? '#059669' : '#DC2626'}
+                />
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.detailModalTitle}>
+                  {(selectedTx?.type || '').toLowerCase().includes('credit')
+                    ? (hi ? 'क्रेडिट (जमा)' : 'Amount Credited')
+                    : (hi ? 'डेबिट (कटौती)' : 'Amount Debited')}
+                </Text>
+                <Text style={[
+                  styles.detailModalAmount,
+                  {
+                    color: (selectedTx?.type || '').toLowerCase().includes('credit')
+                      ? '#059669'
+                      : '#DC2626',
+                  }
+                ]}>
+                  {(selectedTx?.type || '').toLowerCase().includes('credit') ? '+' : '-'}₹
+                  {Number(selectedTx?.amount || 0).toFixed(2)}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setSelectedTx(null)}
+                style={styles.modalCloseBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="close" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.detailDivider} />
+
+            <View style={styles.detailBody}>
+              {/* STATUS & DATE */}
+              <View style={styles.detailRow}>
+                <Text style={styles.detailRowLabel}>{hi ? 'स्थिति (Status)' : 'Status'}</Text>
+                <View style={[
+                  styles.detailStatusBadge,
+                  {
+                    backgroundColor: (selectedTx?.status || '').toLowerCase() === 'completed'
+                      ? '#ECFDF5'
+                      : (selectedTx?.status || '').toLowerCase() === 'pending'
+                      ? '#FEF3C7'
+                      : '#FEE2E2',
+                  }
+                ]}>
+                  <Text style={[
+                    styles.detailStatusText,
+                    {
+                      color: (selectedTx?.status || '').toLowerCase() === 'completed'
+                        ? '#059669'
+                        : (selectedTx?.status || '').toLowerCase() === 'pending'
+                        ? '#D97706'
+                        : '#DC2626',
+                    }
+                  ]}>
+                    {selectedTx?.status || 'Completed'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailRowLabel}>{hi ? 'दिनांक एवं समय' : 'Date & Time'}</Text>
+                <Text style={styles.detailRowValue}>
+                  {selectedTx?.createdAt
+                    ? (() => {
+                        try {
+                          const d = new Date(selectedTx.createdAt);
+                          return `${d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} at ${d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+                        } catch {
+                          return String(selectedTx.createdAt);
+                        }
+                      })()
+                    : 'N/A'}
+                </Text>
+              </View>
+
+              {/* TRANSACTION ID */}
+              {selectedTx?.transactionId && (
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailRowLabel}>{hi ? 'लेन-देन आईडी' : 'Transaction ID'}</Text>
+                  <Text style={styles.detailRefId} selectable>
+                    {selectedTx.transactionId}
+                  </Text>
+                </View>
+              )}
+
+              {/* FULL NOTE / BREAKDOWN */}
+              <View style={styles.detailNoteCard}>
+                <Text style={styles.detailNoteTitle}>{hi ? 'पूर्ण विवरण / ब्रेकडाउन' : 'Description / Breakdown'}</Text>
+                <Text style={styles.detailNoteText}>
+                  {selectedTx?.note || selectedTx?.description || (hi ? 'कोई अतिरिक्त विवरण उपलब्ध नहीं।' : 'No additional details.')}
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={styles.detailCloseFullBtn}
+              onPress={() => setSelectedTx(null)}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.detailCloseFullBtnText}>{hi ? 'बंद करें' : 'Close'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* RECHARGE WALLET MODAL */}
       <Modal
@@ -569,13 +741,13 @@ export default function MilkPartnerWalletScreen() {
               ))}
             </View>
 
-            {/* KFC CASH NOTICE BOX */}
+            {/* KSP CASH NOTICE BOX */}
             <View style={styles.kfcNoticeBox}>
               <Ionicons name="information-circle" size={16} color="#0284C7" />
               <Text style={styles.kfcNoticeText}>
                 {hi
-                  ? `दूध खरीद हेतु आपके वॉलेट में कम से कम ₹${minPartnerWalletBalance} बैलेंस होना अनिवार्य है। आप ऑनलाइन UPI/कार्ड से अथवा नज़दीकी KFC सेंटर पर नकद जमा कराकर भी तुरंत रिचार्ज कर सकते हैं।`
-                  : `Minimum ₹${minPartnerWalletBalance} wallet balance is required for milk purchase. Pay online or deposit cash at nearest KFC center.`}
+                  ? `दूध खरीद हेतु आपके वॉलेट में कम से कम ₹${minPartnerWalletBalance} बैलेंस होना अनिवार्य है। आप ऑनलाइन UPI/कार्ड से अथवा नज़दीकी KSP सेंटर पर नकद जमा कराकर भी तुरंत रिचार्ज कर सकते हैं।`
+                  : `Minimum ₹${minPartnerWalletBalance} wallet balance is required for milk purchase. Pay online or deposit cash at nearest KSP center.`}
               </Text>
             </View>
 
@@ -786,8 +958,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   txInfoCol: { flex: 1, marginRight: 8 },
-  txTitle: { fontSize: 12, fontWeight: '800', color: '#0F172A' },
-  txDate: { fontSize: 10, color: '#64748B', marginTop: 2, fontWeight: '500' },
+  txTitle: { fontSize: 13, fontWeight: '800', color: '#0F172A' },
+  txMetaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
+  txDate: { fontSize: 10, color: '#64748B', fontWeight: '500' },
+  txMetaDot: { fontSize: 10, color: '#94A3B8', marginHorizontal: 4 },
+  txMetaSub: { fontSize: 10, color: '#059669', fontWeight: '700' },
   txRefId: { fontSize: 9, color: '#94A3B8', marginTop: 1, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
   txRightCol: { alignItems: 'flex-end' },
   txAmount: { fontSize: 14, fontWeight: '900' },
@@ -795,9 +970,127 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    marginTop: 4,
   },
   txStatusText: { fontSize: 9, fontWeight: '800', textTransform: 'capitalize' },
+
+  // Detail Modal styles
+  detailModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+  },
+  modalDragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E2E8F0',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  detailHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  detailIconCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailModalTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+    textTransform: 'uppercase',
+  },
+  detailModalAmount: {
+    fontSize: 22,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  detailDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 16,
+  },
+  detailBody: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  detailRowLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  detailRowValue: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  detailRefId: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  detailStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  detailStatusText: {
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'capitalize',
+  },
+  detailNoteCard: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 4,
+  },
+  detailNoteTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
+    marginBottom: 4,
+  },
+  detailNoteText: {
+    fontSize: 12,
+    color: '#0F172A',
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  detailCloseFullBtn: {
+    backgroundColor: '#059669',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailCloseFullBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
 
   // Modal styles
   modalOverlay: {

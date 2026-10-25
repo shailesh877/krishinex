@@ -8,24 +8,29 @@ import {
   StatusBar,
   Linking,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useI18n } from '../../context/I18nContext';
-import { BASE_API_URL } from '../../constants/api';
+import { useUser } from '../../context/UserContext';
+import { BASE_API_URL, FILES_BASE_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import MilkPartnerHeader from '../../components/MilkPartnerHeader';
 
 export default function MilkPartnerProfileScreen() {
   const router = useRouter();
   const { lang, toggleLang } = useI18n();
+  const { updateUser } = useUser();
   const hi = lang === 'hi';
 
   const [partner, setPartner] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -56,6 +61,72 @@ export default function MilkPartnerProfileScreen() {
       if (local) setPartner(JSON.parse(local));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePickAndUploadPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        showAlert(
+          hi ? 'अनुमति आवश्यक' : 'Permission Required',
+          hi ? 'गैलरी एक्सेस की अनुमति दें ताकि आप फोटो चुन सकें।' : 'Please grant camera roll permissions to select a photo.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      const selectedAsset = result.assets[0];
+      setUploadingPhoto(true);
+
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) return;
+
+      const formData = new FormData();
+      formData.append('photo', {
+        uri: selectedAsset.uri,
+        name: `milk_partner_${Date.now()}.jpg`,
+        type: selectedAsset.mimeType || 'image/jpeg',
+      } as any);
+
+      const uploadRes = await fetch(`${BASE_API_URL}/user/upload-photo`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+      if (uploadRes.ok && uploadData.url) {
+        const freshPhotoUrl = uploadData.url;
+        setPartner((prev: any) => ({ ...prev, profilePhotoUrl: freshPhotoUrl }));
+        updateUser({
+          profilePhotoUrl: freshPhotoUrl,
+          avatarUri: freshPhotoUrl.startsWith('http')
+            ? freshPhotoUrl
+            : `${FILES_BASE_URL}/${freshPhotoUrl.replace(/\\/g, '/')}`,
+        });
+
+        showAlert(
+          hi ? 'सफलता! 🎉' : 'Success! 🎉',
+          hi ? 'आपकी प्रोफ़ाइल फ़ोटो सफलतापूर्वक अपडेट हो गई है। किसान अब आपको पहचान सकेंगे।' : 'Profile photo updated successfully.'
+        );
+      } else {
+        showAlert(hi ? 'त्रुटि' : 'Error', uploadData.error || (hi ? 'फ़ोटो अपलोड नहीं हो सकी' : 'Upload failed'));
+      }
+    } catch (err: any) {
+      showAlert(hi ? 'त्रुटि' : 'Error', err.message || (hi ? 'फ़ोटो अपलोड में समस्या आई' : 'Failed to pick photo'));
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -96,12 +167,45 @@ export default function MilkPartnerProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* AVATAR BANNER */}
         <View style={styles.profileBanner}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarTxt}>
-              {(partner?.name || 'M')[0].toUpperCase()}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.avatarWrapper}
+            onPress={handlePickAndUploadPhoto}
+            activeOpacity={0.85}
+            disabled={uploadingPhoto}
+          >
+            {partner?.profilePhotoUrl ? (
+              <Image
+                source={{
+                  uri: partner.profilePhotoUrl.startsWith('http')
+                    ? partner.profilePhotoUrl
+                    : `${FILES_BASE_URL}/${partner.profilePhotoUrl.replace(/\\/g, '/')}`,
+                }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarTxt}>
+                  {(partner?.name || 'N').trim()[0].toUpperCase()}
+                </Text>
+              </View>
+            )}
+
+            {/* Camera Edit Badge */}
+            <View style={styles.cameraBadge}>
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons name="camera" size={14} color="#FFFFFF" />
+              )}
+            </View>
+          </TouchableOpacity>
+
           <Text style={styles.nameTxt}>{partner?.name || 'Milk Partner'}</Text>
+          <TouchableOpacity onPress={handlePickAndUploadPhoto} activeOpacity={0.7} style={{ marginTop: 2 }}>
+            <Text style={{ fontSize: 11, color: '#059669', fontWeight: '700' }}>
+              {hi ? '📸 फ़ोटो बदलें / जोड़ें' : '📸 Change Profile Photo'}
+            </Text>
+          </TouchableOpacity>
           <Text style={styles.phoneTxt}>+91 {partner?.phone || '-'}</Text>
 
           <View style={styles.badgeRow}>
@@ -130,15 +234,17 @@ export default function MilkPartnerProfileScreen() {
             </View>
           </View>
 
-          <View style={styles.infoRow}>
-            <View style={styles.iconBox}>
-              <Ionicons name="document-text-outline" size={18} color="#059669" />
+          {partner?.vehicleType !== 'Cycle' && (
+            <View style={styles.infoRow}>
+              <View style={styles.iconBox}>
+                <Ionicons name="document-text-outline" size={18} color="#059669" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.infoLabel}>{hi ? 'वाहन नंबर' : 'Vehicle Number'}</Text>
+                <Text style={styles.infoVal}>{partner?.vehicleNumber || (hi ? 'लागू नहीं' : 'N/A')}</Text>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.infoLabel}>{hi ? 'वाहन नंबर' : 'Vehicle Number'}</Text>
-              <Text style={styles.infoVal}>{partner?.vehicleNumber || (hi ? 'लागू नहीं' : 'N/A')}</Text>
-            </View>
-          </View>
+          )}
 
           <View style={styles.infoRow}>
             <View style={styles.iconBox}>
@@ -256,19 +362,44 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
   },
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: 10,
+  },
   avatarCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: '#059669',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
     elevation: 3,
     shadowColor: '#059669',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+  },
+  avatarImage: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#E2E8F0',
+    borderWidth: 2,
+    borderColor: '#059669',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#059669',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
   },
   avatarTxt: {
     color: '#FFFFFF',

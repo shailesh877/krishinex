@@ -31,6 +31,7 @@ export default function MilkPartnerTabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: '#059669', // Emerald 600
         tabBarInactiveTintColor: '#64748B', // Slate 500
         tabBarStyle: {

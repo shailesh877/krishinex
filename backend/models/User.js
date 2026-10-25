@@ -239,6 +239,39 @@ const userSchema = new mongoose.Schema({
   searchOtpExpiry: {
     type: Date
   },
+  // Premium Farmer Membership Fields
+  isPremiumFarmer: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  premiumFarmerStatus: {
+    type: String,
+    enum: ['none', 'pending_approval', 'approved', 'rejected', 'expired'],
+    default: 'none',
+    index: true
+  },
+  premiumFarmerLimit: {
+    type: Number,
+    default: 0
+  },
+  premiumLimitType: {
+    type: String,
+    enum: ['credit_limit', 'transaction_limit', 'agri_input_limit'],
+    default: 'credit_limit'
+  },
+  premiumActivatedAt: {
+    type: Date,
+    default: null
+  },
+  premiumExpiresAt: {
+    type: Date,
+    default: null
+  },
+  premiumAcceptedTermsVersion: {
+    type: Number,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -339,11 +339,11 @@ export default function WalletScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* HEADER */}
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
         <TouchableOpacity
           style={styles.backBtn}
           activeOpacity={0.8}
@@ -650,7 +650,7 @@ export default function WalletScreen() {
         </View>
       </Modal>
 
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 12,
     backgroundColor: '#F9FAFB',
     borderBottomWidth: 1,

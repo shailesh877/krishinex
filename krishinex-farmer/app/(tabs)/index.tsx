@@ -83,6 +83,7 @@ export default function HomeScreen() {
   const [profileImage, setProfileImage] = React.useState<string | null>(null);
   const [creditLimit, setCreditLimit] = React.useState(0);
   const [creditUsed, setCreditUsed] = React.useState(0);
+  const [isPremiumFarmer, setIsPremiumFarmer] = React.useState(false);
   const [milkSub, setMilkSub] = React.useState<any>(null);
   const [checkingMilk, setCheckingMilk] = React.useState(false);
   const milkSubRef = React.useRef<any>(undefined);
@@ -181,6 +182,13 @@ export default function HomeScreen() {
       if (res.data) {
         setCreditLimit(res.data.creditLimit || 0);
         setCreditUsed(res.data.creditUsed || 0);
+        setIsPremiumFarmer(!!res.data.isPremiumFarmer);
+
+        const storedData = await AsyncStorage.getItem('userData');
+        const user = storedData ? JSON.parse(storedData) : {};
+        user.isPremiumFarmer = !!res.data.isPremiumFarmer;
+        user.creditLimit = res.data.creditLimit;
+        user.creditUsed = res.data.creditUsed;
 
         if (res.data.profilePhotoUrl) {
           const photoUrl = res.data.profilePhotoUrl;
@@ -188,16 +196,9 @@ export default function HomeScreen() {
             ? photoUrl
             : `${IMAGE_BASE_URL}/${photoUrl.replace(/\\/g, '/')}`;
           setProfileImage(fullUrl);
-          // Also update stored data
-          const storedData = await AsyncStorage.getItem('userData');
-          if (storedData) {
-            const user = JSON.parse(storedData);
-            user.profilePhotoUrl = photoUrl;
-            user.creditLimit = res.data.creditLimit;
-            user.creditUsed = res.data.creditUsed;
-            await AsyncStorage.setItem('userData', JSON.stringify(user));
-          }
+          user.profilePhotoUrl = photoUrl;
         }
+        await AsyncStorage.setItem('userData', JSON.stringify(user));
       }
     } catch (error) {
       console.log('Error fetching profile:', error);
@@ -222,6 +223,7 @@ export default function HomeScreen() {
             const user = JSON.parse(storedData);
             setFarmerName(user.name || 'किसान साथी');
             setVillage(user.address || '');
+            setIsPremiumFarmer(!!user.isPremiumFarmer);
             if (user.creditLimit !== undefined) setCreditLimit(user.creditLimit);
             if (user.creditUsed !== undefined) setCreditUsed(user.creditUsed);
             if (user.profilePhotoUrl) {
@@ -416,14 +418,14 @@ export default function HomeScreen() {
     : 'Rent tractor, harvester, sprayer and labour.';
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       <View style={styles.mainContent}>
         {/* HEADER */}
-        <View style={[styles.header, { paddingTop: Math.max(insets.top, 10) }]}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
           <TouchableOpacity
-            style={styles.avatarWrap}
+            style={[styles.avatarWrap, isPremiumFarmer && styles.avatarWrapPremium]}
             activeOpacity={0.8}
             onPress={() => router.push('/(tabs)/profile' as any)}
           >
@@ -439,6 +441,11 @@ export default function HomeScreen() {
                 style={styles.avatarImage}
                 resizeMode="cover"
               />
+            )}
+            {isPremiumFarmer && (
+              <View style={styles.avatarVipSparkle}>
+                <Ionicons name="sparkles" size={10} color="#FFFFFF" />
+              </View>
             )}
           </TouchableOpacity>
 
@@ -468,8 +475,30 @@ export default function HomeScreen() {
           {/* GREETING */}
           <View style={styles.heroSection}>
             <View style={styles.heroText}>
-              <Text style={styles.heroHello}>{t.greeting(farmerName)}</Text>
-              <Text style={styles.heroVillage}>{t.village(village)}</Text>
+              <View style={styles.greetingTitleRow}>
+                <Text style={styles.heroHello} numberOfLines={1} ellipsizeMode="tail">
+                  {t.greeting(farmerName)}
+                </Text>
+                {isPremiumFarmer && (
+                  <TouchableOpacity 
+                    activeOpacity={0.8} 
+                    onPress={() => router.push('/premium' as any)}
+                  >
+                    <LinearGradient
+                      colors={['#F59E0B', '#B45309']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.homeVipBadge}
+                    >
+                      <Ionicons name="ribbon" size={10} color="#FFFFFF" />
+                      <Text style={styles.homeVipBadgeTxt}>VIP</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                )}
+              </View>
+              <Text style={styles.heroVillage} numberOfLines={1} ellipsizeMode="tail">
+                {t.village(village)}
+              </Text>
             </View>
 
             <TouchableOpacity
@@ -537,42 +566,7 @@ export default function HomeScreen() {
             )}
           </LinearGradient>
 
-          {/* CREDIT LIMIT CARD */}
-          {creditLimit > 0 && (
-            <View style={styles.creditCardWrapper}>
-              <LinearGradient
-                colors={['#111827', '#1F2937']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.creditCard}
-              >
-                <View style={styles.creditTopRow}>
-                  <View>
-                    <Text style={styles.creditLabel}>{hi ? 'कृषि-क्रेडिट (उपलब्ध)' : 'Agri-Credit (Available)'}</Text>
-                    <Text style={styles.creditAmount}>₹{creditLimit - creditUsed}</Text>
-                  </View>
-                  <Ionicons name="card-outline" size={32} color="#9CA3AF" />
-                </View>
 
-                <View style={styles.creditProgressContainer}>
-                  <View style={styles.creditProgressBar}>
-                    <View style={[styles.creditProgressFill, { width: `${Math.min(100, (creditUsed / creditLimit) * 100)}%` }]} />
-                  </View>
-                  <View style={styles.creditUsageRow}>
-                    <Text style={styles.creditUsedText}>{hi ? `उपयोग: ₹${creditUsed}` : `Used: ₹${creditUsed}`}</Text>
-                    <Text style={styles.creditLimitText}>{hi ? `कुल सीमा: ₹${creditLimit}` : `Total Limit: ₹${creditLimit}`}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.creditFooter}>
-                  <Text style={styles.creditSmall}>{hi ? 'केवल कृषि सामग्री के लिए मान्य' : 'Valid for agricultural inputs only'}</Text>
-                  <View style={styles.nexBadge}>
-                    <Text style={styles.nexBadgeText}>NexCard</Text>
-                  </View>
-                </View>
-              </LinearGradient>
-            </View>
-          )}
 
           {/* DYNAMIC CAROUSEL (Advisory + Shop Banners) */}
           <View style={styles.carouselContainer}>
@@ -727,7 +721,7 @@ export default function HomeScreen() {
         </ScrollView>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -778,7 +772,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 12,
     backgroundColor: '#F9FAFB',
     borderBottomColor: GREEN,
@@ -791,7 +785,26 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#E5E7EB',
   },
-  avatarImage: { width: '100%', height: '100%' },
+  avatarWrapPremium: {
+    borderWidth: 2.2,
+    borderColor: '#F59E0B',
+    overflow: 'visible',
+  },
+  avatarVipSparkle: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#D97706',
+    width: 17,
+    height: 17,
+    borderRadius: 8.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    elevation: 3,
+  },
+  avatarImage: { width: '100%', height: '100%', borderRadius: 21 },
   logo: { height: 28, width: 150 },
   iconBtn: {
     width: 36,
@@ -813,10 +826,37 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   heroText: { flex: 1 },
+  greetingTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'nowrap',
+  },
+  homeVipBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    flexShrink: 0,
+  },
+  homeVipBadgeTxt: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
   heroHello: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: '#111827',
+    flexShrink: 1,
   },
   heroVillage: {
     fontSize: 13,
@@ -1172,5 +1212,5 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '900',
     color: '#FFFFFF',
-  },
+  }
 });

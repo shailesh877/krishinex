@@ -9,8 +9,10 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useI18n } from '../context/I18nContext';
+import { useUser } from '../context/UserContext';
 import NotificationIcon from './NotificationIcon';
 import { getSocket } from '../services/socket';
+import { FILES_BASE_URL } from '../constants/api';
 
 interface MilkPartnerHeaderProps {
   partnerName?: string;
@@ -27,7 +29,11 @@ export default function MilkPartnerHeader({
 }: MilkPartnerHeaderProps) {
   const router = useRouter();
   const { lang, toggleLang } = useI18n();
+  const { profile } = useUser();
   const hi = lang === 'hi';
+
+  const effectiveName = partnerName || profile?.name || '';
+  const firstLetter = (effectiveName.trim()[0] || 'N').toUpperCase();
 
   const [isSocketLive, setIsSocketLive] = useState(false);
 
@@ -70,11 +76,22 @@ export default function MilkPartnerHeader({
             onPress={() => router.push('/(milk-partner)/profile' as any)}
             activeOpacity={0.8}
           >
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarLetter}>
-                {(partnerName || 'M')[0].toUpperCase()}
-              </Text>
-            </View>
+            {profile?.avatarUri || profile?.profilePhotoUrl ? (
+              <Image
+                source={{
+                  uri: profile.avatarUri || (profile.profilePhotoUrl.startsWith('http')
+                    ? profile.profilePhotoUrl
+                    : `${FILES_BASE_URL}/${profile.profilePhotoUrl.replace(/\\/g, '/')}`),
+                }}
+                style={styles.avatarCircle}
+              />
+            ) : (
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarLetter}>
+                  {firstLetter}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         )}
 

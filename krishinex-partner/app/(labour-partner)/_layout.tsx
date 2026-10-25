@@ -17,6 +17,7 @@ export default function LabourPartnerLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: '#16A34A',
         tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {

@@ -255,6 +255,11 @@ export const authApi = {
     getMilkCycleStatus: () => api.get('/milk/sell/cycle-status'),
     requestMilkWithdrawal: () => api.post('/milk/sell/request-withdrawal'),
     getMilkConfig: () => api.get('/milk/config'),
+
+    // Premium Farmer APIs
+    getPremiumFarmerDetails: () => api.get('/premium-farmer/terms-and-status'),
+    createPremiumFarmerOrder: (termsVersion: number) => api.post('/premium-farmer/create-order', { termsVersion }),
+    verifyPremiumFarmerPayment: (data: any) => api.post('/premium-farmer/verify-payment', data),
 };
 
 export default api;
