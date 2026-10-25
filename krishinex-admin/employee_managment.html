@@ -281,7 +281,16 @@
           </div>
         </div>
 
-        <a href="nex_card_management.html"
+                <a href="premium_farmer_management.html"
+          class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-yellow-50 hover:text-amber-800 transition-all duration-200">
+          <span
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-amber-100 group-hover:to-yellow-100 transition-all">
+            <i class="fas fa-crown text-amber-500 group-hover:text-amber-600 transition-colors"></i>
+          </span>
+          <span class="truncate font-semibold">Premium Farmers</span>
+        </a>
+
+<a href="nex_card_management.html"
           class="group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 transition-all duration-200">
           <span
             class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 group-hover:bg-gradient-to-br group-hover:from-emerald-100 group-hover:to-sky-100 transition-all">
@@ -641,6 +650,11 @@
                     <input type="checkbox" name="modules" value="shop" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
                     <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Shop Management</span>
                   </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-emerald-300 cursor-pointer transition-all has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="milk" class="w-4 h-4 text-emerald-600 rounded accent-emerald-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-emerald-700">Milk Management</span>
+                  </label>
                 </div>
               </div>
 
@@ -706,6 +720,11 @@
                   <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-purple-300 cursor-pointer transition-all has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50/60 shadow-sm group">
                     <input type="checkbox" name="modules" value="nexcard" class="w-4 h-4 text-purple-600 rounded accent-purple-600">
                     <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-purple-700">Nex Card Mgmt</span>
+                  </label>
+
+                  <label class="flex items-center p-3 rounded-2xl bg-white border-2 border-slate-200/80 hover:border-amber-300 cursor-pointer transition-all has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/60 shadow-sm group">
+                    <input type="checkbox" name="modules" value="premium_farmer" class="w-4 h-4 text-amber-600 rounded accent-amber-600">
+                    <span class="ml-2.5 text-xs font-bold text-slate-800 group-hover:text-amber-700">Premium Farmers</span>
                   </label>
                 </div>
               </div>
@@ -823,6 +842,8 @@
           ad_enquiry: 'Ads',
           contact: 'Contact',
           nex_card: 'Nex Card',
+          premium_farmer: 'Premium Farmers',
+          milk: 'Milk',
           settings: 'Settings'
         };
 
