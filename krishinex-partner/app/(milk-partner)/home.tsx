@@ -47,9 +47,6 @@ export default function MilkPartnerHomeScreen() {
       const data = await res.json();
       if (res.ok && data.success && data.dashboard) {
         setDashboard(data.dashboard);
-        if (data.dashboard.partner?.status === 'pending') {
-          router.replace('/(milk-partner)/approval-pending' as any);
-        }
       }
     } catch (e) {
       console.error('Fetch Dashboard Error:', e);
@@ -110,6 +107,39 @@ export default function MilkPartnerHomeScreen() {
           </View>
         ) : (
           <>
+            {/* PENDING APPROVAL OR BLOCKED NOTICE BANNER */}
+            {partner?.status === 'pending' && (
+              <View style={styles.pendingStatusBanner}>
+                <Ionicons name="time-outline" size={20} color="#D97706" style={{ marginTop: 2 }} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={styles.pendingStatusTitle}>
+                    {hi ? 'आवेदन समीक्षाधीन (Under Review)' : 'Application Under Review'}
+                  </Text>
+                  <Text style={styles.pendingStatusDesc}>
+                    {hi
+                      ? 'आपका खाता सक्रिय है। एडमिन द्वारा स्वीकृत होने के बाद किसान और रूट असाइन किए जाएंगे। कृपया प्रोफ़ाइल में आधार अपलोड पूर्ण रखें।'
+                      : 'Your account is active. Once approved by admin, farmers and routes will be assigned. Please keep your Aadhaar details updated in Profile.'}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {partner?.status === 'blocked' && (
+              <View style={[styles.pendingStatusBanner, { backgroundColor: '#FEF2F2', borderColor: '#FCA5A5' }]}>
+                <Ionicons name="alert-circle-outline" size={20} color="#DC2626" style={{ marginTop: 2 }} />
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={[styles.pendingStatusTitle, { color: '#DC2626' }]}>
+                    {hi ? 'अकाउंट ब्लॉक है (Account Blocked)' : 'Account Blocked'}
+                  </Text>
+                  <Text style={[styles.pendingStatusDesc, { color: '#7F1D1D' }]}>
+                    {hi
+                      ? 'आपका पार्टनर खाता एडमिन द्वारा ब्लॉक किया गया है। सहायता के लिए सपोर्ट टीम से संपर्क करें।'
+                      : 'Your partner account has been blocked by admin. Please contact support.'}
+                  </Text>
+                </View>
+              </View>
+            )}
+
             {/* MONTHLY SUMMARY BANNER */}
             <View style={styles.monthBanner}>
               <View style={styles.monthHeaderRow}>
@@ -409,6 +439,28 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
     fontWeight: '600',
+  },
+  pendingStatusBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+  },
+  pendingStatusTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#B45309',
+    marginBottom: 4,
+  },
+  pendingStatusDesc: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#92400E',
+    lineHeight: 18,
   },
   monthBanner: {
     backgroundColor: '#FFFFFF',

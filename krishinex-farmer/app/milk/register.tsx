@@ -46,14 +46,39 @@ export default function MilkRegisterScreen() {
   const loadUserProfile = async () => {
     try {
       setFetchingProfile(true);
-      const res = await authApi.getProfile();
-      if (res.data) {
-        setName(res.data.name || '');
-        setPhone(res.data.phone || '');
-        setEmail(res.data.email || '');
-        setAddress(res.data.address || '');
-        const verified = res.data.status === 'approved' || res.data.kycStatus === 'verified';
+      const [profileRes, subRes] = await Promise.all([
+        authApi.getProfile(),
+        authApi.getMyMilkSubscription()
+      ]);
+
+      if (profileRes.data) {
+        setName(profileRes.data.name || '');
+        setPhone(profileRes.data.phone || '');
+        setEmail(profileRes.data.email || '');
+        setAddress(profileRes.data.address || '');
+        const verified = profileRes.data.status === 'approved' || profileRes.data.kycStatus === 'verified';
         setIsVerified(verified);
+      }
+
+      // Check if user already has ANY pending or active subscription
+      const existingSub = subRes.data?.subscription;
+      if (existingSub && ['pending', 'approved', 'paused'].includes(existingSub.status)) {
+        const isSellSub = existingSub.type === 'sell';
+        const typeStr = isSellSub ? (hi ? 'दूध बिक्री' : 'Milk Sell') : (hi ? 'दूध खरीद' : 'Milk Buy');
+        const statusStr = existingSub.status === 'pending' ? (hi ? 'समीक्षाधीन (Pending)' : 'Pending') : (hi ? 'सक्रिय (Active)' : 'Active');
+        
+        showAlert(
+          hi ? 'पहले से सदस्यता मौजूद है' : 'Subscription Already Exists',
+          hi
+            ? `आपकी ${typeStr} की सेवा पहले से ही ${statusStr} स्थिति में है। आप एक साथ दूसरा फॉर्म नहीं भर सकते।`
+            : `You already have an existing ${statusStr} ${typeStr} subscription. You cannot submit another form.`,
+          [
+            {
+              text: hi ? 'ठीक है' : 'OK',
+              onPress: () => router.replace(isSellSub ? ('/milk/sell-history' as any) : ('/milk/buy-history' as any))
+            }
+          ]
+        );
       }
     } catch (e) {
       console.warn('Could not prefill profile:', e);

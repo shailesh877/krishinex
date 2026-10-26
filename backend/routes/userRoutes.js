@@ -336,6 +336,7 @@ router.put('/profile', protect, async (req, res) => {
                 aadhaarNumber: updatedUser.aadhaarNumber,
                 aadhaarDocUrl: updatedUser.aadhaarDocUrl,
                 aadhaarBackDocUrl: updatedUser.aadhaarBackDocUrl || '',
+                profilePhotoUrl: updatedUser.profilePhotoUrl || '',
                 status: updatedUser.status,
                 maxDistanceKm: updatedUser.maxDistanceKm,
                 ratePerDay: updatedUser.ratePerDay,

@@ -113,6 +113,14 @@ export default function MilkPurchaseScreen() {
       return;
     }
 
+    if (item.log && item.log.status === 'Completed') {
+      showAlert(
+        hi ? 'संकलन पूरा हो चुका है' : 'Collection Completed',
+        hi ? 'इस किसान का संकलन पहले ही पूरा हो चुका है।' : 'Collection has already been completed for this farmer.'
+      );
+      return;
+    }
+
     setSelectedFarmer(item);
     setQuantityLiters(String(item.log?.quantityLiters || item.dailyQuantityLiters || ''));
     setCustomRate(String(item.log?.ratePerLiter || item.ratePerLiter || 45));
@@ -419,7 +427,7 @@ export default function MilkPurchaseScreen() {
                     isPaused && { backgroundColor: '#F1F5F9' },
                   ]}
                   onPress={() => handleOpenCollectModal(item)}
-                  disabled={isPaused}
+                  disabled={isPaused || isCompleted}
                   activeOpacity={0.85}
                 >
                   <Ionicons
@@ -437,7 +445,7 @@ export default function MilkPurchaseScreen() {
                     {isPaused
                       ? (hi ? 'सेवा रोकी गई है' : 'Service Paused')
                       : isCompleted
-                      ? (hi ? 'संकलन पूरा हुआ (संपादित करें)' : 'Collected (Tap to Edit)')
+                      ? (hi ? 'संकलन पूरा हुआ' : 'Collection Completed')
                       : (hi ? 'दूध संकलन दर्ज करें' : 'Record Collection')}
                   </Text>
                 </TouchableOpacity>

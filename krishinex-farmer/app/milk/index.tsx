@@ -53,7 +53,8 @@ export default function MilkIndexScreen() {
     initSocket().then((sock: any) => {
       s = sock;
       s?.on('milk_event', () => {
-        fetchSubscriptions();
+        // Silent update on realtime socket event so no full-screen spinner or screen jump occurs
+        fetchSubscriptions(true);
       });
     });
 
@@ -62,9 +63,9 @@ export default function MilkIndexScreen() {
     };
   }, []);
 
-  const fetchSubscriptions = async () => {
+  const fetchSubscriptions = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const res = await authApi.getMyMilkSubscription();
       const sub = res.data?.subscription;
 
@@ -94,7 +95,7 @@ export default function MilkIndexScreen() {
     } catch (e) {
       console.error('Fetch subscriptions error:', e);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 

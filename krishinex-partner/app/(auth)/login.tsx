@@ -352,11 +352,7 @@ export default function LoginScreen() {
             else if (role === 'shop') router.replace('/(shop-partner)/home');
             else if (role === 'labour') router.replace('/(labour-partner)/home');
             else if (role === 'milk_partner') {
-              if (partnerData.user?.status === 'pending') {
-                router.replace('/(milk-partner)/approval-pending' as any);
-              } else {
-                router.replace('/(milk-partner)/home' as any);
-              }
+              router.replace('/(milk-partner)/home' as any);
             }
           } else {
             const fallbackMsg = lang === 'hi' ? 'अकाउंट नहीं मिला, पहले अकाउंट बनाएं' : 'Account not found. Please create an account first.';

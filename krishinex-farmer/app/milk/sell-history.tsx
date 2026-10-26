@@ -76,8 +76,9 @@ export default function MilkSellHistoryScreen() {
     initSocket().then((sock: any) => {
       s = sock;
       s?.on('milk_event', (event: any) => {
-        console.log('⚡ [Sell History Realtime Event]:', event?.action);
-        loadAllData();
+        console.log('⚡ [Sell History Realtime Event - Silent Update]:', event?.action);
+        // Silent background update so UI does NOT flicker, jump, or show loading screen
+        loadAllData(true);
       });
     });
 
@@ -102,14 +103,14 @@ export default function MilkSellHistoryScreen() {
     });
   };
 
-  const loadAllData = async () => {
+  const loadAllData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       await Promise.all([fetchHistory(), fetchCycleStatus(), fetchConfig()]);
     } catch (e) {
       console.error('Load Sell History Error:', e);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
       setRefreshing(false);
     }
   };
@@ -217,8 +218,8 @@ export default function MilkSellHistoryScreen() {
     const startDayOnly = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate());
     const resumeDayOnly = new Date(resumeDateObj.getFullYear(), resumeDateObj.getMonth(), resumeDateObj.getDate());
     
-    if (resumeDayOnly <= startDayOnly) {
-      return showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'पुनः शुरू होने की तारीख रोक शुरू होने की तारीख के बाद होनी चाहिए।' : 'Expected resume date must be after pause start date.');
+    if (resumeDayOnly < startDayOnly) {
+      return showAlert(hi ? 'त्रुटि' : 'Error', hi ? 'पुनः शुरू होने की तारीख रोक प्रारंभ तारीख से पहले नहीं हो सकती।' : 'Expected resume date cannot be before pause start date.');
     }
 
     try {
@@ -352,17 +353,17 @@ export default function MilkSellHistoryScreen() {
   todayOnly.setHours(0, 0, 0, 0);
   const minPauseStartDate = new Date(todayOnly.getTime() + minAdvanceDays * 24 * 60 * 60 * 1000);
 
-  // Live Pause Duration calculation
+  // Live Pause Duration calculation (Inclusive: 26 to 28 = 26, 27, 28 -> 3 days; 26 to 26 = 1 day)
   const startDayOnly = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate());
   const resumeDayOnly = resumeDateObj ? new Date(resumeDateObj.getFullYear(), resumeDateObj.getMonth(), resumeDateObj.getDate()) : null;
-  const pauseDurationDays = resumeDayOnly ? Math.max(1, Math.round((resumeDayOnly.getTime() - startDayOnly.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+  const pauseDurationDays = resumeDayOnly ? Math.max(1, Math.round((resumeDayOnly.getTime() - startDayOnly.getTime()) / (1000 * 60 * 60 * 24)) + 1) : 0;
   const isAutoApprove = pauseDurationDays > 0 ? pauseDurationDays <= maxAutoApproveDays : true;
 
   // Live Extend Duration calculation
   const currentPauseStart = subscription?.pauseStartDate ? new Date(subscription.pauseStartDate) : new Date();
   const currentPauseStartDay = new Date(currentPauseStart.getFullYear(), currentPauseStart.getMonth(), currentPauseStart.getDate());
   const extendEndDayOnly = extendResumeDateObj ? new Date(extendResumeDateObj.getFullYear(), extendResumeDateObj.getMonth(), extendResumeDateObj.getDate()) : null;
-  const totalExtendDays = extendEndDayOnly ? Math.max(1, Math.round((extendEndDayOnly.getTime() - currentPauseStartDay.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+  const totalExtendDays = extendEndDayOnly ? Math.max(1, Math.round((extendEndDayOnly.getTime() - currentPauseStartDay.getTime()) / (1000 * 60 * 60 * 24)) + 1) : 0;
   const isExtendAutoApprove = totalExtendDays > 0 ? totalExtendDays <= maxAutoApproveDays : true;
 
   return (
@@ -1200,8 +1201,8 @@ export default function MilkSellHistoryScreen() {
                   setShowStartPicker(false);
                   if (selectedDate) {
                     setStartDateObj(selectedDate);
-                    if (resumeDateObj && selectedDate >= resumeDateObj) {
-                      setResumeDateObj(null);
+                    if (resumeDateObj && selectedDate > resumeDateObj) {
+                      setResumeDateObj(selectedDate);
                     }
                   }
                 }}
@@ -1210,10 +1211,10 @@ export default function MilkSellHistoryScreen() {
 
             {showResumePicker && (
               <DateTimePicker
-                value={resumeDateObj || new Date(startDateObj.getTime() + 24 * 60 * 60 * 1000)}
+                value={resumeDateObj || startDateObj}
                 mode="date"
                 display="default"
-                minimumDate={new Date(startDateObj.getTime() + 24 * 60 * 60 * 1000)}
+                minimumDate={startDateObj}
                 onChange={(event, selectedDate) => {
                   setShowResumePicker(false);
                   if (selectedDate) {

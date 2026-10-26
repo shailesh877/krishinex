@@ -216,10 +216,10 @@ export default function SignupScreen() {
           showAlert(
             hi ? 'पंजीकरण सफल! 🎉' : 'Registration Submitted! 🎉',
             hi
-              ? 'आपका मिल्क पार्टनर आवेदन एडमिन समीक्षा हेतु भेज दिया गया है। स्वीकृति मिलने के बाद सेवाएं सक्रिय होंगी।'
-              : 'Your Milk Partner application has been submitted for admin approval.'
+              ? 'आपका मिल्क पार्टनर खाता बन गया है। आप ऐप का उपयोग कर सकते हैं। एडमिन द्वारा स्वीकृति के बाद आपको किसान और रूट असाइन होंगे।'
+              : 'Your Milk Partner account has been created. Once approved by admin, routes and farmers will be assigned.'
           );
-          router.replace('/(milk-partner)/approval-pending' as any);
+          router.replace('/(milk-partner)/home' as any);
           return;
         } else {
           showAlert(hi ? 'त्रुटि' : 'Error', mData.error || 'Registration failed');

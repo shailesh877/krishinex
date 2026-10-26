@@ -44,7 +44,7 @@ const milkSubscriptionSchema = new mongoose.Schema({
   },
   status: { 
     type: String, 
-    enum: ['pending', 'approved', 'rejected', 'paused', 'cancelled'], 
+    enum: ['pending', 'approved', 'rejected', 'paused', 'cancelled', 'blocked'], 
     default: 'pending',
     index: true 
   },

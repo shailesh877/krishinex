@@ -11,16 +11,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_API_URL } from '../../constants/api';
 import MilkPartnerHeader from '../../components/MilkPartnerHeader';
 import { getSocket } from '../../services/socket';
+import { refreshUnreadCount } from '../../hooks/useNotificationBadge';
 
 const API_URL = `${BASE_API_URL}/notifications`;
 
-type NotifType = 'farmer_assigned' | 'rate_updated' | 'delivery' | 'status' | 'system' | 'withdrawal';
+type NotifType = 'farmer_assigned' | 'rate_updated' | 'delivery' | 'status' | 'system' | 'withdrawal' | 'milk_subscription' | string;
 
 type NotifItem = {
   _id: string;
@@ -74,13 +75,20 @@ export default function MilkPartnerNotifications() {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
 
-      const res = await fetch(`${API_URL}?limit=30`, {
+      const res = await fetch(`${API_URL}?limit=50`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.success && Array.isArray(data.notifications)) {
-        setItems(data.notifications);
+      
+      let list: NotifItem[] = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data?.success && Array.isArray(data?.notifications)) {
+        list = data.notifications;
+      } else if (Array.isArray(data?.notifications)) {
+        list = data.notifications;
       }
+      setItems(list);
     } catch (e) {
       console.error('Fetch milk notifications error:', e);
     } finally {
@@ -95,15 +103,26 @@ export default function MilkPartnerNotifications() {
     // Listen to real-time socket events
     const s = getSocket();
     if (s) {
-      const handleMilkEvent = (eventData: any) => {
+      const handleMilkEvent = () => {
+        fetchNotifications(true);
+      };
+      const handleNotifNew = () => {
         fetchNotifications(true);
       };
       s.on('milk_event', handleMilkEvent);
+      s.on('notification_new', handleNotifNew);
       return () => {
         s.off('milk_event', handleMilkEvent);
+        s.off('notification_new', handleNotifNew);
       };
     }
   }, [fetchNotifications]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchNotifications(true);
+    }, [fetchNotifications])
+  );
 
   const markAllRead = async () => {
     try {
@@ -114,6 +133,7 @@ export default function MilkPartnerNotifications() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setItems((prev) => prev.map((n) => ({ ...n, unread: false })));
+      refreshUnreadCount();
     } catch (e) {
       console.error('Mark all read error:', e);
     }
@@ -130,6 +150,7 @@ export default function MilkPartnerNotifications() {
       setItems((prev) =>
         prev.map((n) => (n._id === id ? { ...n, unread: false } : n))
       );
+      refreshUnreadCount();
     } catch (e) {
       console.error('Mark read error:', e);
     }

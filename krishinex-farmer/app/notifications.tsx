@@ -25,7 +25,18 @@ import { showAlert } from '@/components/CustomAlert';
 // Fallback if authApi doesn't have a direct notification method or for explicit fetch
 const API_URL = `${BASE_URL}/notifications`;
 
-type NotifType = 'order' | 'assigned' | 'status' | 'system' | 'payment' | 'soil_test';
+type NotifType = 
+    | 'order' 
+    | 'assigned' 
+    | 'farmer_assigned' 
+    | 'milk_subscription' 
+    | 'wallet_alert' 
+    | 'status' 
+    | 'system' 
+    | 'payment' 
+    | 'PAYMENT_REMINDER' 
+    | 'soil_test' 
+    | string;
 
 type NotifItem = {
     _id: string;
@@ -43,11 +54,17 @@ const GREEN_DARK = '#467804ff';
 
 function typeIcon(type: NotifType) {
     switch (type) {
+        case 'milk_subscription':
+        case 'farmer_assigned':
+            return { name: 'water-outline', color: '#0284C7', bg: '#E0F2FE' };
+        case 'wallet_alert':
+        case 'payment':
+        case 'PAYMENT_REMINDER':
+            return { name: 'cash-outline', color: '#D97706', bg: '#FFFBEB' };
         case 'order': return { name: 'cart-outline', color: '#16A34A', bg: '#ECFDF5' };
         case 'assigned': return { name: 'clipboard-outline', color: '#2563EB', bg: '#EFF6FF' };
         case 'soil_test': return { name: 'flask-outline', color: '#7C3AED', bg: '#F5F3FF' };
         case 'status': return { name: 'checkmark-done-outline', color: '#7C3AED', bg: '#F5F3FF' };
-        case 'payment': return { name: 'cash-outline', color: '#D97706', bg: '#FFFBEB' };
         default: return { name: 'information-circle-outline', color: '#F97316', bg: '#FFF7ED' };
     }
 }
@@ -172,8 +189,36 @@ export default function NotificationsScreen() {
 
     const handleNotifAction = () => {
         if (!selectedNotif) return;
-        const { type, refId } = selectedNotif;
+        const { type, refId, title = '', messageHi = '', messageEn = '' } = selectedNotif;
         setSelectedNotif(null);
+
+        const textBlob = `${title} ${messageHi} ${messageEn}`.toLowerCase();
+        const isMilk = 
+            type === 'milk' || 
+            type === 'milk_subscription' || 
+            type === 'farmer_assigned' || 
+            type === 'milk_assignment' ||
+            textBlob.includes('दूध') || 
+            textBlob.includes('milk');
+
+        const isWallet =
+            type === 'payment' ||
+            type === 'wallet' ||
+            type === 'wallet_alert' ||
+            type === 'withdrawal' ||
+            type === 'PAYMENT_REMINDER' ||
+            textBlob.includes('वॉलेट') ||
+            textBlob.includes('wallet');
+
+        if (isMilk) {
+            router.push('/milk' as any);
+            return;
+        }
+
+        if (isWallet) {
+            router.push('/wallet' as any);
+            return;
+        }
         
         switch (type) {
             case 'status':
@@ -189,9 +234,6 @@ export default function NotificationsScreen() {
                 break;
             case 'soil_test':
                 router.push('/soil-reports');
-                break;
-            case 'payment':
-                router.push('/wallet');
                 break;
             default:
                 break;

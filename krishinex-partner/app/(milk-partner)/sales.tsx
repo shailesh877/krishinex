@@ -119,6 +119,14 @@ export default function MilkSalesScreen() {
       return;
     }
 
+    if (item.log && item.log.status === 'Completed') {
+      showAlert(
+        hi ? 'वितरण पूरा हो चुका है' : 'Delivery Completed',
+        hi ? 'इस ग्राहक का दूध वितरण पहले ही पूरा हो चुका है।' : 'Delivery has already been completed for this customer.'
+      );
+      return;
+    }
+
     setSelectedCustomer(item);
     setQuantityLiters(String(item.log?.quantityLiters || item.dailyQuantityLiters || ''));
     setDeliveryStatus(item.log?.status === 'Skipped' ? 'Skipped' : 'Completed');
@@ -194,7 +202,16 @@ export default function MilkSalesScreen() {
           });
         });
       } else {
-        showAlert(hi ? 'त्रुटि' : 'Error', data.error || (hi ? 'डिलीवरी दर्ज नहीं हो सकी' : 'Failed to record delivery'));
+        if (data.insufficientWallet) {
+          showAlert(
+            hi ? '⚠️ ग्राहक का वॉलेट बैलेंस अपर्याप्त' : '⚠️ Insufficient Customer Wallet',
+            data.error || (hi
+              ? `ग्राहक के वॉलेट में पर्याप्त बैलेंस नहीं है। कृपया ग्राहक से पहले वॉलेट रिचार्ज करने को कहें, उसके बाद ही दूध डिलीवरी दर्ज होगी।`
+              : `Customer has insufficient wallet balance. Please ask customer to recharge their wallet before recording delivery.`)
+          );
+        } else {
+          showAlert(hi ? 'त्रुटि' : 'Error', data.error || (hi ? 'डिलीवरी दर्ज नहीं हो सकी' : 'Failed to record delivery'));
+        }
       }
     } catch (error: any) {
       showAlert(hi ? 'त्रुटि' : 'Error', error.message || 'Network error');
@@ -380,26 +397,21 @@ export default function MilkSalesScreen() {
                   </View>
                   <View style={styles.statDivider} />
                   <View style={styles.statCol}>
-                    <Text style={styles.statLabel}>{hi ? 'समय (Shift)' : 'Shift'}</Text>
-                    <Text style={styles.statValRate}>{shift === 'Evening' ? (hi ? 'शाम' : 'Evening') : (hi ? 'सुबह' : 'Morning')}</Text>
+                    <Text style={styles.statLabel}>{hi ? 'शिफ्ट स्थिति' : 'Shift Status'}</Text>
+                    {isPaused ? (
+                      <Text style={styles.statusPaused}>{hi ? 'रोक (Paused)' : 'Paused'}</Text>
+                    ) : isCompleted ? (
+                      <Text style={styles.statusDone}>
+                        {item.log.quantityLiters}L (₹{item.log.totalAmount})
+                      </Text>
+                    ) : isSkipped ? (
+                      <Text style={styles.statusSkippedTxt}>
+                        {hi ? 'छोड़ा गया' : 'Skipped'}
+                      </Text>
+                    ) : (
+                      <Text style={styles.statusPending}>{hi ? 'बाकी (Pending)' : 'Pending'}</Text>
+                    )}
                   </View>
-                </View>
-
-                {/* Status Indicator */}
-                <View style={styles.statusRow}>
-                  {isPaused ? (
-                    <Text style={styles.statusPaused}>{hi ? 'अस्थायी रोक (Paused)' : 'Service Paused'}</Text>
-                  ) : isCompleted ? (
-                    <Text style={styles.statusDone}>
-                      ✓ {hi ? 'वितरित:' : 'Delivered:'} {item.log.quantityLiters}L (₹{item.log.totalAmount})
-                    </Text>
-                  ) : isSkipped ? (
-                    <Text style={styles.statusSkippedTxt}>
-                      ✕ {hi ? 'छोड़ा गया (Skipped)' : 'Delivery Skipped'}
-                    </Text>
-                  ) : (
-                    <Text style={styles.statusPending}>{hi ? 'डिलीवरी बाकी (Pending)' : 'Delivery Pending'}</Text>
-                  )}
                 </View>
 
                 {/* ACTION BUTTON */}
@@ -410,7 +422,7 @@ export default function MilkSalesScreen() {
                     isPaused && { backgroundColor: '#F1F5F9' },
                   ]}
                   onPress={() => handleOpenDeliverModal(item)}
-                  disabled={isPaused}
+                  disabled={isPaused || isCompleted}
                   activeOpacity={0.85}
                 >
                   <Ionicons
@@ -428,7 +440,7 @@ export default function MilkSalesScreen() {
                     {isPaused
                       ? (hi ? 'सेवा रोकी गई है' : 'Delivery Paused')
                       : isCompleted
-                      ? (hi ? 'वितरण पूरा हुआ (संपादित करें)' : 'Delivered (Tap to Edit)')
+                      ? (hi ? 'वितरण पूरा हुआ' : 'Delivery Completed')
                       : isSkipped
                       ? (hi ? 'पुनः प्रयास / संपादित करें' : 'Skipped (Tap to Retry)')
                       : (hi ? 'डिलीवरी दर्ज करें' : 'Record Delivery')}

@@ -48,9 +48,8 @@ function notifyRealtime(eventData, targetUserId = null) {
     if (!global.io) return;
     // Notify admin dashboard room
     global.io.to('admin_room').emit('milk_event', eventData);
-    // Notify global broadcast
-    global.io.emit('milk_event', eventData);
-    // Notify targeted user room if specified
+    
+    // Notify targeted user room specifically so unrelated users' screens do NOT reload
     if (targetUserId) {
       global.io.to(`user_${targetUserId}`).emit('milk_event', eventData);
     }
@@ -101,16 +100,17 @@ router.post('/register', protect, async (req, res) => {
       return res.status(400).json({ error: 'Daily quantity must be greater than zero' });
     }
 
-    // Check if an active or pending subscription already exists for this type
+    // Check if an active or pending subscription already exists for this user (Buy or Sell)
     const existing = await MilkSubscription.findOne({
       userId: req.user.id,
-      type,
       status: { $in: ['pending', 'approved', 'paused'] }
     });
 
     if (existing) {
+      const typeLabel = existing.type === 'sell' ? 'दूध बिक्री (Sell Milk)' : 'दूध खरीद (Buy Milk)';
+      const statusLabel = existing.status === 'pending' ? 'समीक्षाधीन (Pending Approval)' : 'सक्रिय (Active)';
       return res.status(400).json({
-        error: `You already have an existing ${existing.status} milk ${type} subscription.`
+        error: `आपका पहले से ही ${typeLabel} का आवेदन ${statusLabel} स्थिति में है। एक समय में केवल एक ही दूध सदस्यता की अनुमति है।`
       });
     }
 
@@ -291,8 +291,8 @@ router.post('/pause', protect, async (req, res) => {
     const resumeDay = new Date(resumeDate);
     resumeDay.setHours(0, 0, 0, 0);
 
-    if (resumeDay <= startDay) {
-      return res.status(400).json({ error: 'पुनः शुरू होने की तारीख रोक शुरू होने की तारीख के बाद होनी चाहिए।' });
+    if (resumeDay < startDay) {
+      return res.status(400).json({ error: 'पुनः शुरू होने की तारीख रोक प्रारंभ तारीख से पहले नहीं हो सकती।' });
     }
 
     // Exact advance notice calculation in calendar days
@@ -311,8 +311,9 @@ router.post('/pause', protect, async (req, res) => {
       });
     }
 
-    // Duration calculation
-    const durationDays = Math.round((resumeDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24));
+    // Duration calculation: inclusive count of days (e.g., 26th to 28th = 26, 27, 28 -> 3 days; 26th to 26th = 1 day)
+    const rawDiffDays = Math.round((resumeDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24));
+    const durationDays = rawDiffDays + 1;
     const isAutoApprove = durationDays <= maxAutoApproveDays;
 
     // 1. IMMUTABLE PERMANENT AUDIT LOG: Create MilkPauseRequest record (NEVER OVERWRITTEN)
@@ -408,7 +409,7 @@ router.post('/extend-pause', protect, async (req, res) => {
       return res.status(400).json({ error: 'नई समाप्ति तारीख रोक शुरू होने की तारीख के बाद होनी चाहिए।' });
     }
 
-    const totalDays = Math.round((endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24));
+    const totalDays = Math.round((endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
     const isAutoApprove = totalDays <= maxAutoApproveDays;
 
     // Find active MilkPauseRequest record to append extension history
@@ -921,7 +922,22 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
     if (!sub) return res.status(404).json({ error: 'Subscription not found' });
 
     if (assignedPartnerId !== undefined) {
-      sub.assignedPartnerId = (assignedPartnerId && assignedPartnerId.trim && assignedPartnerId.trim() !== '') ? assignedPartnerId : null;
+      const cleanPartnerId = (assignedPartnerId && assignedPartnerId.trim && assignedPartnerId.trim() !== '') ? assignedPartnerId.trim() : null;
+      if (cleanPartnerId) {
+        const partnerUser = await User.findOne({ _id: cleanPartnerId, role: 'milk_partner' });
+        if (!partnerUser) {
+          return res.status(400).json({ error: 'चयनित मिल्क पार्टनर मौजूद नहीं है।' });
+        }
+        if (partnerUser.status === 'blocked') {
+          return res.status(400).json({ error: 'यह मिल्क पार्टनर ब्लॉक है। ब्लॉक पार्टनर को असाइन नहीं किया जा सकता।' });
+        }
+        if (partnerUser.status !== 'approved') {
+          return res.status(400).json({ error: 'यह मिल्क पार्टनर अभी स्वीकृत (Approved) नहीं है। केवल स्वीकृत पार्टनर ही असाइन किए जा सकते हैं।' });
+        }
+        sub.assignedPartnerId = cleanPartnerId;
+      } else {
+        sub.assignedPartnerId = null;
+      }
     }
 
     if (action === 'update_rate' || action === 'update_details' || action === 'assign_partner') {
@@ -985,14 +1001,22 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
       sub.approvedAt = new Date();
       sub.approvedBy = req.user.id;
 
-      // If seller, ensure milkCycleStartDate is initialized
-      if (sub.type === 'sell') {
-        const user = await User.findById(sub.userId);
-        if (user && !user.milkCycleStartDate) {
-          user.milkCycleStartDate = new Date();
-          await user.save();
+      // Ensure this user has only ONE active subscription: cancel any other existing active/pending subscription of this user
+      await MilkSubscription.updateMany(
+        {
+          userId: sub.userId,
+          _id: { $ne: sub._id },
+          status: { $in: ['pending', 'approved', 'paused'] }
+        },
+        {
+          $set: {
+            status: 'cancelled',
+            cancellationReason: 'Admin approved a new subscription for this farmer/user.',
+            cancellationStatus: 'approved',
+            cancellationApprovedAt: new Date()
+          }
         }
-      }
+      );
     }
 
     await sub.save();
@@ -1016,8 +1040,17 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
         messageEn: `Your milk ${sub.type === 'sell' ? 'selling' : 'purchase'} subscription has been approved at ₹${sub.ratePerLiter}/L.`,
         type: 'milk_subscription',
         refId: String(sub._id),
-        data: { subscriptionId: String(sub._id), type: 'milk_subscription' }
+        data: { subscriptionId: String(sub._id), type: 'milk_subscription', screen: '/milk' }
       }).catch(err => console.error('[Milk Notification Error - Farmer Approved]:', err));
+    } else if (action === 'rejected') {
+      sendNotification(sub.userId, {
+        title: 'दूध सेवा अस्वीकृत (Milk Service Rejected)',
+        messageHi: `आपकी दूध ${sub.type === 'sell' ? 'बिक्री' : 'खरीद'} सेवा अस्वीकृत कर दी गई है। कारण: ${adminRemarks || 'कोई विवरण नहीं दिया गया'}।`,
+        messageEn: `Your milk ${sub.type === 'sell' ? 'selling' : 'purchase'} subscription was rejected. Reason: ${adminRemarks || 'No remarks provided'}.`,
+        type: 'milk_subscription',
+        refId: String(sub._id),
+        data: { subscriptionId: String(sub._id), type: 'milk_subscription', screen: '/milk' }
+      }).catch(err => console.error('[Milk Notification Error - Farmer Rejected]:', err));
     }
 
     if (sub.assignedPartnerId) {
@@ -1055,6 +1088,45 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
   } catch (error) {
     console.error('Admin Review Error:', error);
     res.status(500).json({ error: 'Failed to review subscription request.' });
+  }
+});
+
+// @route   PUT /api/milk/admin/requests/:id/toggle-block
+// @desc    Admin blocks or unblocks a farmer/user milk subscription
+// @access  Private/Admin
+router.put('/admin/requests/:id/toggle-block', protect, async (req, res) => {
+  try {
+    const sub = await MilkSubscription.findById(req.params.id);
+    if (!sub) return res.status(404).json({ error: 'Subscription not found' });
+
+    const isCurrentlyBlocked = sub.status === 'blocked';
+    sub.status = isCurrentlyBlocked ? 'approved' : 'blocked';
+    if (!isCurrentlyBlocked) {
+      sub.adminRemarks = req.body.remarks || 'Blocked by admin';
+    }
+    await sub.save();
+
+    const populatedSub = await MilkSubscription.findById(sub._id)
+      .populate('userId', 'name phone walletBalance')
+      .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl');
+
+    notifyRealtime({
+      action: 'subscription_block_toggled',
+      subscriptionId: sub._id,
+      status: sub.status,
+      message: `Farmer ${sub.name} milk service has been ${sub.status === 'blocked' ? 'blocked' : 'unblocked'}`
+    }, sub.userId);
+
+    res.json({
+      success: true,
+      status: sub.status,
+      isBlocked: sub.status === 'blocked',
+      message: `Farmer ${sub.name} milk subscription has been ${sub.status === 'blocked' ? 'blocked' : 'unblocked'}.`,
+      subscription: populatedSub
+    });
+  } catch (error) {
+    console.error('Toggle Block Farmer Subscription Error:', error);
+    res.status(500).json({ error: 'Failed to toggle farmer block status.' });
   }
 });
 
@@ -1174,6 +1246,10 @@ router.put('/admin/partners/:id/review', protect, async (req, res) => {
       partner.status = action;
     }
 
+    if (req.body.name !== undefined && req.body.name.trim() !== '') partner.name = req.body.name.trim();
+    if (req.body.phone !== undefined && req.body.phone.trim() !== '') partner.phone = req.body.phone.trim();
+    if (req.body.address !== undefined) partner.address = req.body.address.trim();
+    if (adminRemarks !== undefined) partner.adminRemarks = adminRemarks;
     if (assignedRoute !== undefined) partner.assignedRoute = assignedRoute;
     if (vehicleType !== undefined) partner.vehicleType = vehicleType;
     if (vehicleNumber !== undefined) partner.vehicleNumber = vehicleNumber;
@@ -1517,8 +1593,7 @@ router.put('/admin/subscriptions/:id/extend-pause', protect, async (req, res) =>
     if (!sub) return res.status(404).json({ error: 'Subscription not found.' });
 
     const newEnd = new Date(expectedResumeDate);
-    const startDate = sub.pauseStartDate ? new Date(sub.pauseStartDate) : new Date();
-    const totalDays = Math.max(1, Math.round((newEnd.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const totalDays = Math.max(1, Math.round((newEnd.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
 
     // Update MilkPauseRequest audit record
     const pauseRecord = await MilkPauseRequest.findOne({
@@ -1747,6 +1822,19 @@ router.put('/admin/subscriptions/:id/review-cancellation', protect, async (req, 
         ? `Milk service cancellation for ${sub.name} has been approved.`
         : `Milk service cancellation for ${sub.name} has been rejected.`
     }, sub.userId);
+
+    sendNotification(sub.userId, {
+      title: action === 'approved' ? 'दूध सेवा रद्दीकरण स्वीकृत' : 'दूध सेवा रद्दीकरण अस्वीकृत',
+      messageHi: action === 'approved'
+        ? 'आपकी दूध सेवा रद्द करने का अनुरोध स्वीकृत कर दिया गया है। अब आप नया आवेदन कर सकते हैं।'
+        : `दूध सेवा रद्दीकरण अनुरोध अस्वीकृत: ${adminRemarks || 'एडमिन द्वारा अस्वीकृत'}`,
+      messageEn: action === 'approved'
+        ? 'Your milk subscription cancellation request has been approved.'
+        : `Milk cancellation request rejected: ${adminRemarks || 'Rejected by Admin'}`,
+      type: 'milk_subscription',
+      refId: String(sub._id),
+      data: { subscriptionId: String(sub._id), type: 'milk_subscription', screen: '/milk' }
+    }).catch(err => console.error('[Milk Notification Error - Cancellation Review]:', err));
 
     res.json({
       success: true,
@@ -2500,9 +2588,36 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
     });
 
     let deltaAmount = amount;
-
     if (log) {
       deltaAmount = amount - (log.totalAmount || 0);
+    }
+
+    // Check Buyer Wallet Balance: If wallet is insufficient for delivery, block partner and notify buyer
+    const buyer = await User.findById(sub.userId);
+    if (!isSkipped && deltaAmount > 0 && buyer) {
+      const currentBuyerBalance = Number(buyer.walletBalance || 0);
+      if (currentBuyerBalance < deltaAmount) {
+        // Send In-App & FCM Push Notification to the buyer
+        sendNotification(buyer._id, {
+          title: 'वॉलेट रिचार्ज आवश्यक (Wallet Recharge Required)',
+          messageHi: `दूध डिलीवरी राशि ₹${deltaAmount} के लिए आपका वॉलेट बैलेंस (₹${currentBuyerBalance}) अपर्याप्त है। कृपया निर्बाध सेवा हेतु तुरंत अपना वॉलेट रिचार्ज करें।`,
+          messageEn: `Insufficient wallet balance (₹${currentBuyerBalance}) for milk delivery of ₹${deltaAmount}. Please recharge your wallet to continue service.`,
+          type: 'wallet_alert',
+          refId: String(sub._id),
+          data: { type: 'wallet', screen: '/wallet' }
+        }).catch(err => console.error('[Milk Notification Error - Low Wallet]:', err));
+
+        return res.status(400).json({
+          insufficientWallet: true,
+          error: `ग्राहक (${buyer.name}) के वॉलेट में अपर्याप्त बैलेंस है। आवश्यक राशि: ₹${deltaAmount}, उपलब्ध बैलेंस: ₹${currentBuyerBalance}। कृपया ग्राहक से पहले वॉलेट रिचार्ज करने को कहें।`,
+          requiredAmount: deltaAmount,
+          currentBalance: currentBuyerBalance,
+          buyerName: buyer.name
+        });
+      }
+    }
+
+    if (log) {
       log.quantityLiters = qty;
       log.ratePerLiter = rate;
       log.totalAmount = amount;

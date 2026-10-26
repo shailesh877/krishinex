@@ -141,7 +141,7 @@ export default function RootLayout() {
           else if (r === 'labour') path = '/(labour-partner)/home';
           else if (r === 'employee' || r === 'field_executive') path = '/(employee)/home';
           else if (r === 'milk_partner') {
-            path = user.status === 'pending' ? '/(milk-partner)/approval-pending' : '/(milk-partner)/home';
+            path = '/(milk-partner)/home';
           }
 
           if (path && inAuthGroup) {

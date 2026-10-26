@@ -62,23 +62,51 @@ function RootLayoutContent() {
 
       // Interaction listener (user clicks)
       responseListener = Notifications.addNotificationResponseReceivedListener((response: any) => {
-        const { data } = response.notification.request.content;
-        console.log('[NOTIFY] User tapped:', data);
+        const content = response?.notification?.request?.content || {};
+        const data = content.data || {};
+        const title = (content.title || '').toLowerCase();
+        const body = (content.body || '').toLowerCase();
+        console.log('[NOTIFY] User tapped:', { data, title, body });
 
-        if (data?.subscriptionId || data?.type === 'milk' || data?.type === 'milk_subscription') {
+        const isMilk = 
+          data?.screen === '/milk' ||
+          data?.module === 'milk' ||
+          data?.type === 'milk' ||
+          data?.type === 'milk_subscription' ||
+          data?.type === 'milk_assignment' ||
+          data?.type === 'farmer_assigned' ||
+          !!data?.subscriptionId ||
+          title.includes('दूध') ||
+          title.includes('milk') ||
+          body.includes('दूध') ||
+          body.includes('milk');
+
+        const isWallet =
+          data?.screen === '/wallet' ||
+          data?.type === 'wallet' ||
+          data?.type === 'wallet_alert' ||
+          data?.type === 'payment' ||
+          data?.type === 'withdrawal' ||
+          data?.type === 'PAYMENT_REMINDER' ||
+          title.includes('वॉलेट') ||
+          title.includes('wallet');
+
+        if (isMilk) {
           router.push('/milk' as any);
+        } else if (isWallet) {
+          router.push('/wallet' as any);
+        } else if (data?.type === 'soil_test') {
+          router.push('/soil-reports' as any);
+        } else if (data?.type === 'assigned') {
+          router.push('/my-bookings' as any);
         } else if (data?.type === 'order' || data?.type === 'status') {
           if (data?.refId) {
             router.push({ pathname: '/track-order', params: { id: data.refId } } as any);
           } else {
             router.push('/(tabs)/orders' as any);
           }
-        } else if (data?.type === 'soil_test') {
-          router.push('/soil-reports' as any);
-        } else if (data?.type === 'assigned') {
-          router.push('/my-bookings' as any);
-        } else if (data?.type === 'payment') {
-          router.push('/wallet' as any);
+        } else if (data?.screen) {
+          router.push(data.screen as any);
         }
       });
     } else {
