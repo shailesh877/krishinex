@@ -118,11 +118,11 @@ export default function HomeScreen() {
                 setLocationName(locName);
               }
               if (updateCache) {
-                 AsyncStorage.setItem('cached_weather', JSON.stringify({ weatherData: newWeatherData, locationName: locName }));
+                AsyncStorage.setItem('cached_weather', JSON.stringify({ weatherData: newWeatherData, locationName: locName }));
               }
             }).catch(() => {
               if (updateCache) {
-                 AsyncStorage.setItem('cached_weather', JSON.stringify({ weatherData: newWeatherData, locationName: null }));
+                AsyncStorage.setItem('cached_weather', JSON.stringify({ weatherData: newWeatherData, locationName: null }));
               }
             });
           }
@@ -236,10 +236,10 @@ export default function HomeScreen() {
 
           const cachedWeather = await AsyncStorage.getItem('cached_weather');
           if (cachedWeather) {
-             const { weatherData, locationName } = JSON.parse(cachedWeather);
-             setWeatherData(weatherData);
-             setLocationName(locationName);
-             setWeatherLoading(false);
+            const { weatherData, locationName } = JSON.parse(cachedWeather);
+            setWeatherData(weatherData);
+            setLocationName(locationName);
+            setWeatherLoading(false);
           }
 
           const cachedSuggestions = await AsyncStorage.getItem('cached_suggestions');
@@ -251,7 +251,7 @@ export default function HomeScreen() {
               const parsed = JSON.parse(cachedMilkSub);
               milkSubRef.current = parsed;
               setMilkSub(parsed);
-            } catch {}
+            } catch { }
           }
 
         } catch (error) {
@@ -480,8 +480,8 @@ export default function HomeScreen() {
                   {t.greeting(farmerName)}
                 </Text>
                 {isPremiumFarmer && (
-                  <TouchableOpacity 
-                    activeOpacity={0.8} 
+                  <TouchableOpacity
+                    activeOpacity={0.8}
                     onPress={() => router.push('/premium' as any)}
                   >
                     <LinearGradient
@@ -709,8 +709,8 @@ export default function HomeScreen() {
                   <Text style={styles.milkCardSubtitle}>
                     {milkSub && milkSub.status !== 'cancelled'
                       ? (milkSub.type === 'sell'
-                          ? (hi ? 'दूध बिक्री हिस्ट्री व वॉलेट भुगतान' : 'Milk Supply History & Wallet Payout')
-                          : (hi ? 'दैनिक दूध खरीद हिस्ट्री व विवरण' : 'Milk Purchase History & Details'))
+                        ? (hi ? 'दूध बिक्री हिस्ट्री व वॉलेट भुगतान' : 'Milk Supply History & Wallet Payout')
+                        : (hi ? 'दैनिक दूध खरीद हिस्ट्री व विवरण' : 'Milk Purchase History & Details'))
                       : (hi ? 'दूध बेचें या खरीदें • सीधा वॉलेट भुगतान' : 'Sell or Buy milk • Direct wallet payout')}
                   </Text>
                 </View>

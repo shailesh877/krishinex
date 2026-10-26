@@ -89,7 +89,7 @@ router.post('/credit-repay', protect, async (req, res) => {
 
         const walletBalance = Number(user.walletBalance || 0);
         if (walletBalance <= 0) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: `आपके वॉलेट में ₹0 बैलेंस है। कृपया पहले वॉलेट में पैसे जोड़ें।`,
                 insufficientWallet: true
             });

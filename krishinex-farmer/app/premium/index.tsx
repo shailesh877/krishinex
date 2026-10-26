@@ -227,11 +227,12 @@ export default function PremiumFarmerScreen() {
 
   const terms = premiumData?.terms || {};
   const fee = typeof terms.membershipFee === 'number' ? terms.membershipFee : 999;
+  const strikeFee = typeof terms.strikeThroughFee === 'number' ? terms.strikeThroughFee : 1999;
   const validity = typeof terms.validityDays === 'number' ? terms.validityDays : 365;
   const isLifetimePlan = validity === 0 || validity >= 9999;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* HEADER */}
@@ -434,19 +435,25 @@ export default function PremiumFarmerScreen() {
             >
               <View style={styles.heroBadge}>
                 <Ionicons name="diamond" size={14} color="#FEF3C7" />
-                <Text style={styles.heroBadgeTxt}>VIP FARMER MEMBERSHIP</Text>
+                <Text style={styles.heroBadgeTxt}>
+                  {terms.bannerBadgeText || 'VIP FARMER MEMBERSHIP'}
+                </Text>
               </View>
               <Text style={styles.heroTitle}>
-                {hi ? 'कृषि-नेक्स प्रीमियम किसान बनें' : 'Join as KrishiNex Premium Farmer'}
+                {hi
+                  ? (terms.bannerTitleHi || 'कृषि-नेक्स प्रीमियम किसान बनें')
+                  : (terms.bannerTitleEn || 'Join as KrishiNex Premium Farmer')}
               </Text>
               <Text style={styles.heroSub}>
                 {hi
-                  ? 'विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा'
-                  : 'Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs.'}
+                  ? (terms.bannerSubHi || 'विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा')
+                  : (terms.bannerSubEn || 'Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs.')}
               </Text>
 
               <View style={styles.heroFeeTag}>
-                <Text style={styles.heroFeeOld}>₹1,999</Text>
+                {strikeFee > fee ? (
+                  <Text style={styles.heroFeeOld}>₹{strikeFee}</Text>
+                ) : null}
                 <Text style={styles.heroFeeNew}>
                   {fee === 0 ? (hi ? 'मुफ़्त (FREE)' : 'FREE') : `₹${fee}`}
                   <Text style={{ fontSize: 13, fontWeight: '600' }}>
@@ -456,105 +463,120 @@ export default function PremiumFarmerScreen() {
               </View>
             </LinearGradient>
 
-            {/* KEY BENEFITS LIST */}
+            {/* KEY BENEFITS LIST (DYNAMIC FROM ADMIN) */}
             <View style={styles.benefitsCard}>
               <Text style={styles.sectionTitle}>
                 {hi ? 'प्रीमियम किसान क्लब के विशेष लाभ' : 'Exclusive Premium Benefits'}
               </Text>
 
-              <View style={styles.benefitRow}>
-                <View style={[styles.benefitIconWrap, { backgroundColor: '#FEF3C7' }]}>
-                  <Ionicons name="card" size={20} color="#D97706" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.benefitTitle}>{hi ? 'कस्टमाइज्ड कृषि-क्रेडिट सीमा' : 'Assigned Agri-Credit Limit'}</Text>
-                  <Text style={styles.benefitSub}>
-                    {hi ? 'प्रशासनिक अनुमोदन पर बीज, खाद एवं उपकरणों के लिए विशेष सीमा' : 'Dedicated credit allocation for seeds, fertilizer, and equipment.'}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.benefitRow}>
-                <View style={[styles.benefitIconWrap, { backgroundColor: '#ECFDF5' }]}>
-                  <Ionicons name="medkit" size={20} color="#059669" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.benefitTitle}>{hi ? 'प्राथमिकता कृषि डॉक्टर सेवा' : 'Priority Agronomist Consultation'}</Text>
-                  <Text style={styles.benefitSub}>
-                    {hi ? 'बिना प्रतीक्षा के सीधे विशेषज्ञ से वीडियो व ऑडियो परामर्श' : 'Immediate access to certified agricultural scientists.'}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.benefitRow}>
-                <View style={[styles.benefitIconWrap, { backgroundColor: '#EFF6FF' }]}>
-                  <Ionicons name="pricetags" size={20} color="#2563EB" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.benefitTitle}>{hi ? 'उपकरण एवं श्रम किराए पर विशेष छूट' : 'Discounted Machinery & Labour'}</Text>
-                  <Text style={styles.benefitSub}>
-                    {hi ? 'ट्रैक्टर, हार्वेस्टर व लेबर बुकिंग पर वीआईपी रियायती दरें' : 'Flat member-only pricing on agricultural machinery rentals.'}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* STEP 1: TERMS & CONDITIONS CHECKBOX ACCEPTANCE (CLICK OPENS MODAL) */}
-            <View style={styles.termsBox}>
-              <TouchableOpacity
-                style={styles.termsCheckboxRow}
-                onPress={() => setTermsModalVisible(true)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.checkboxContainer}>
-                  <Ionicons
-                    name={termsChecked ? 'checkbox' : 'square-outline'}
-                    size={22}
-                    color={termsChecked ? '#059669' : '#64748B'}
-                  />
-                </View>
-                <Text style={styles.termsCheckboxText}>
-                  {hi ? 'मैंने ' : 'I agree to the '}
-                  <Text style={styles.termsLinkText}>
-                    {hi ? 'नियम व शर्तें' : 'Terms & Conditions'}
-                  </Text>
-                  {hi ? ' पढ़ ली हैं और सहमत हूँ' : ' of KrishiNex'}
-                </Text>
-                <Ionicons name="chevron-forward" size={16} color="#94A3B8" />
-              </TouchableOpacity>
-            </View>
-
-            {/* STEP 2: PROCEED TO PAYMENT BUTTON */}
-            <View style={styles.submitSection}>
-              <TouchableOpacity
-                style={[styles.paymentBtn, !termsChecked && styles.paymentBtnDisabled]}
-                onPress={handleInitiatePayment}
-                disabled={!termsChecked || submitting}
-                activeOpacity={0.88}
-              >
-                {submitting ? (
-                  <ActivityIndicator color="#FFFFFF" />
-                ) : (
-                  <>
-                    <Ionicons name="shield-checkmark" size={20} color="#FFFFFF" />
-                    <Text style={styles.paymentBtnText}>
-                      {fee === 0
-                        ? (hi ? 'निःशुल्क आवेदन जमा करें' : 'Submit Free Application')
-                        : (hi ? `भुगतान करें ₹${fee} एवं आवेदन जमा करें` : `Pay ₹${fee} & Submit Application`)}
+              {(Array.isArray(terms.benefits) && terms.benefits.filter((b: any) => b.enabled !== false).length > 0
+                ? terms.benefits.filter((b: any) => b.enabled !== false)
+                : [
+                    {
+                      titleHi: 'कस्टमाइज्ड कृषि-क्रेडिट सीमा',
+                      titleEn: 'Assigned Agri-Credit Limit',
+                      subHi: 'प्रशासनिक अनुमोदन पर बीज, खाद एवं उपकरणों के लिए विशेष सीमा',
+                      subEn: 'Dedicated credit allocation for seeds, fertilizer, and equipment.',
+                      icon: 'card',
+                      bgColor: '#FEF3C7',
+                      iconColor: '#D97706',
+                    },
+                    {
+                      titleHi: 'प्राथमिकता कृषि डॉक्टर सेवा',
+                      titleEn: 'Priority Agronomist Consultation',
+                      subHi: 'बिना प्रतीक्षा के सीधे विशेषज्ञ से वीडियो व ऑडियो परामर्श',
+                      subEn: 'Immediate access to certified agricultural scientists.',
+                      icon: 'medkit',
+                      bgColor: '#ECFDF5',
+                      iconColor: '#059669',
+                    },
+                    {
+                      titleHi: 'उपकरण एवं श्रम किराए पर विशेष छूट',
+                      titleEn: 'Discounted Machinery & Labour',
+                      subHi: 'ट्रैक्टर, हार्वेस्टर व लेबर बुकिंग पर वीआईपी रियायती दरें',
+                      subEn: 'Flat member-only pricing on agricultural machinery rentals.',
+                      icon: 'pricetags',
+                      bgColor: '#EFF6FF',
+                      iconColor: '#2563EB',
+                    },
+                  ]
+              ).map((benefit: any, idx: number) => (
+                <View key={idx} style={styles.benefitRow}>
+                  <View style={[styles.benefitIconWrap, { backgroundColor: benefit.bgColor || '#FEF3C7' }]}>
+                    <Ionicons
+                      name={(benefit.icon || 'star') as any}
+                      size={20}
+                      color={benefit.iconColor || '#D97706'}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.benefitTitle}>
+                      {hi ? benefit.titleHi || benefit.titleEn : benefit.titleEn || benefit.titleHi}
                     </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-              <Text style={styles.payNote}>
-                {hi
-                  ? '🔒 सुरक्षित 256-बिट भुगतान • भुगतान उपरांत 24 कार्य घंटों में एडमिन सत्यापन'
-                  : '🔒 256-bit Secure Gateway • Admin approval and limit assignment within 24h'}
-              </Text>
+                    <Text style={styles.benefitSub}>
+                      {hi ? benefit.subHi || benefit.subEn : benefit.subEn || benefit.subHi}
+                    </Text>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
         )}
 
       </ScrollView>
+
+      {/* FIXED DYNAMIC BOTTOM ACTION BAR (FOR NEW/RENEW APPLICATION) */}
+      {!isApproved && !isPending && (
+        <View style={styles.fixedBottomBar}>
+          {/* TERMS & CONDITIONS CHECKBOX */}
+          <TouchableOpacity
+            style={styles.termsCheckboxRow}
+            onPress={() => setTermsModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.checkboxContainer}>
+              <Ionicons
+                name={termsChecked ? 'checkbox' : 'square-outline'}
+                size={22}
+                color={termsChecked ? '#059669' : '#64748B'}
+              />
+            </View>
+            <Text style={styles.termsCheckboxText}>
+              {hi ? 'मैंने ' : 'I agree to the '}
+              <Text style={styles.termsLinkText}>
+                {hi ? 'नियम व शर्तें' : 'Terms & Conditions'}
+              </Text>
+              {hi ? ' पढ़ ली हैं और सहमत हूँ' : ' of KrishiNex'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* PAYMENT ACTION BUTTON */}
+          <TouchableOpacity
+            style={[styles.paymentBtn, !termsChecked && styles.paymentBtnDisabled]}
+            onPress={handleInitiatePayment}
+            disabled={!termsChecked || submitting}
+            activeOpacity={0.88}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Ionicons name="shield-checkmark" size={20} color="#FFFFFF" />
+                <Text style={styles.paymentBtnText}>
+                  {fee === 0
+                    ? (hi ? 'निःशुल्क आवेदन जमा करें' : 'Submit Free Application')
+                    : (hi ? `भुगतान करें ₹${fee} एवं आवेदन जमा करें` : `Pay ₹${fee} & Submit Application`)}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <Text style={styles.payNote}>
+            {hi
+              ? '🔒 सुरक्षित 256-बिट भुगतान • भुगतान उपरांत 24 कार्य घंटों में एडमिन सत्यापन'
+              : '🔒 256-bit Secure Gateway • Admin approval and limit assignment within 24h'}
+          </Text>
+        </View>
+      )}
 
       {/* ============================================================== */}
       {/* MANDATORY FULL SCROLL TERMS & CONDITIONS MODAL */}
@@ -689,7 +711,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
 
   // HERO CARD
@@ -697,22 +719,26 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 22,
     marginBottom: 16,
-    shadowColor: '#D97706',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowColor: '#B45309',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 20,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   heroBadgeTxt: {
     fontSize: 10,
@@ -738,18 +764,23 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: '#FFFFFF',
     alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   heroFeeOld: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#94A3B8',
     textDecorationLine: 'line-through',
     fontWeight: '700',
   },
   heroFeeNew: {
-    fontSize: 18,
+    fontSize: 19,
     color: '#B45309',
     fontWeight: '900',
   },
@@ -757,43 +788,55 @@ const styles = StyleSheet.create({
   // BENEFITS
   benefitsCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 18,
+    borderRadius: 24,
+    padding: 20,
     marginBottom: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '900',
     color: '#0F172A',
-    marginBottom: 14,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    marginBottom: 16,
+    letterSpacing: 0.3,
   },
   benefitRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
+    alignItems: 'center',
+    gap: 14,
     marginBottom: 14,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
   },
   benefitIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   benefitTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
-    color: '#1E293B',
+    color: '#0F172A',
   },
   benefitSub: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#64748B',
     marginTop: 2,
-    lineHeight: 16,
+    lineHeight: 17,
   },
 
   // TERMS REVIEW BOX
@@ -811,46 +854,62 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
+  // FIXED BOTTOM ACTION BAR
+  fixedBottomBar: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 8,
+  },
   termsCheckboxRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+    marginBottom: 12,
+    paddingHorizontal: 2,
   },
   checkboxContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    height: 24,
+    width: 24,
   },
   termsCheckboxText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 12.5,
     color: '#334155',
     fontWeight: '600',
     lineHeight: 18,
+    textAlignVertical: 'center',
+    includeFontPadding: false,
   },
   termsLinkText: {
-    color: '#B45309',
+    color: '#D97706',
     fontWeight: '800',
     textDecorationLine: 'underline',
   },
 
   // SUBMIT PAYMENT BUTTON
-  submitSection: {
-    marginTop: 4,
-    marginBottom: 20,
-  },
   paymentBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#B45309',
-    height: 52,
-    borderRadius: 16,
-    shadowColor: '#B45309',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#D97706',
+    height: 54,
+    borderRadius: 18,
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
   },
   paymentBtnDisabled: {
     backgroundColor: '#94A3B8',

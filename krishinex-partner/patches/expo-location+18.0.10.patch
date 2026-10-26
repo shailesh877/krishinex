@@ -1,0 +1,9 @@
+diff --git a/node_modules/expo-location/android/build.gradle b/node_modules/expo-location/android/build.gradle
+--- a/node_modules/expo-location/android/build.gradle
++++ b/node_modules/expo-location/android/build.gradle
+@@ -21,4 +21,4 @@
+ dependencies {
+   api 'com.google.android.gms:play-services-location:21.0.1'
+-  implementation files('libs/io.nlopez.smartlocation-3.3.3-jetified.aar')
++  implementation 'io.nlopez.smartlocation:library:3.3.3'
+ }

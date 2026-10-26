@@ -65,7 +65,9 @@ function RootLayoutContent() {
         const { data } = response.notification.request.content;
         console.log('[NOTIFY] User tapped:', data);
 
-        if (data?.type === 'order' || data?.type === 'status') {
+        if (data?.subscriptionId || data?.type === 'milk' || data?.type === 'milk_subscription') {
+          router.push('/milk' as any);
+        } else if (data?.type === 'order' || data?.type === 'status') {
           if (data?.refId) {
             router.push({ pathname: '/track-order', params: { id: data.refId } } as any);
           } else {

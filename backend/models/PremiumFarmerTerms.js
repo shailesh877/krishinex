@@ -27,10 +27,46 @@ const premiumFarmerTermsSchema = new mongoose.Schema({
     default: 999,
     min: 0
   },
+  strikeThroughFee: {
+    type: Number,
+    default: 1999
+  },
   validityDays: {
     type: Number,
     default: 365
   },
+  bannerBadgeText: {
+    type: String,
+    default: 'VIP FARMER MEMBERSHIP'
+  },
+  bannerTitleHi: {
+    type: String,
+    default: 'कृषि-नेक्स प्रीमियम किसान बनें'
+  },
+  bannerTitleEn: {
+    type: String,
+    default: 'Join as KrishiNex Premium Farmer'
+  },
+  bannerSubHi: {
+    type: String,
+    default: 'विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा'
+  },
+  bannerSubEn: {
+    type: String,
+    default: 'Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs.'
+  },
+  benefits: [
+    {
+      titleHi: { type: String, required: true },
+      titleEn: { type: String, required: true },
+      subHi: { type: String, required: true },
+      subEn: { type: String, required: true },
+      icon: { type: String, default: 'card' }, // ionicons name
+      bgColor: { type: String, default: '#FEF3C7' },
+      iconColor: { type: String, default: '#D97706' },
+      enabled: { type: Boolean, default: true }
+    }
+  ],
   approvalTatHours: {
     type: Number,
     default: 24

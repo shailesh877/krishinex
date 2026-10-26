@@ -10,7 +10,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <script src="js/auth.js?v=1.0.1"></script>
+  <script src="js/auth.js?v=1.0.2"></script>
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -243,14 +243,14 @@
         <!-- Farmers & Crop Submenu Container -->
         <div class="group relative space-y-1">
           <button onclick="toggleUsersSubmenu(event)"
-            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 text-amber-900 border-2 border-amber-300 shadow-md font-black transition-all duration-200">
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] text-slate-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-sky-50 hover:text-emerald-700 font-semibold transition-all duration-200">
             <div class="flex items-center gap-3">
-              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-100 to-yellow-100 shadow-sm">
-                <i class="fas fa-seedling text-amber-600"></i>
+              <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-100 to-green-100 shadow-sm">
+                <i class="fas fa-seedling text-emerald-600"></i>
               </span>
               <span class="truncate">Farmers & Crop</span>
             </div>
-            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-amber-600 transition-transform duration-200 rotate-180"></i>
+            <i id="usersSubmenuChevron" class="fas fa-chevron-down text-[10px] text-emerald-600 transition-transform duration-200"></i>
           </button>
 
           <!-- Submenu options -->
@@ -623,11 +623,18 @@
             </div>
 
             <form id="newTermsForm" onsubmit="handlePublishNewTerms(event)" class="space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Annual Fee (₹)</label>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Effective Fee (₹)</label>
                   <input id="newFeeInput" type="number" required min="0" value="999"
                     class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                  <p class="text-[10px] text-slate-400 mt-0.5">वास्तविक शुल्क</p>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Original / Cut Price (₹)</label>
+                  <input id="newStrikeFeeInput" type="number" min="0" value="1999"
+                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                  <p class="text-[10px] text-slate-400 mt-0.5">स्ट्राइक-थ्रू (₹1,999)</p>
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Validity (Days)</label>
@@ -645,6 +652,61 @@
                   <label class="block text-xs font-bold text-slate-700 mb-1">TAT (Hours)</label>
                   <input id="newTatInput" type="number" required min="1" value="24"
                     class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+              </div>
+
+              <!-- BANNER CUSTOMIZATION -->
+              <div class="p-4 bg-amber-50/40 border border-amber-200/80 rounded-2xl space-y-3">
+                <h4 class="text-xs font-black uppercase text-amber-900 flex items-center gap-2">
+                  <i class="fas fa-crown text-amber-600"></i> App Hero Banner Customization (किसान ऐप बैनर)
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Badge Text (शीर्ष बैज)</label>
+                    <input id="newBadgeInput" type="text" value="VIP FARMER MEMBERSHIP"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Banner Title (Hindi)</label>
+                    <input id="newBannerTitleHi" type="text" value="कृषि-नेक्स प्रीमियम किसान बनें"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Banner Title (English)</label>
+                    <input id="newBannerTitleEn" type="text" value="Join as KrishiNex Premium Farmer"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-white">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Banner Subtitle (Hindi)</label>
+                    <input id="newBannerSubHi" type="text" value="विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-white">
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Banner Subtitle (English)</label>
+                    <input id="newBannerSubEn" type="text" value="Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs."
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-white">
+                  </div>
+                </div>
+              </div>
+
+              <!-- DYNAMIC BENEFITS / FEATURES BUILDER -->
+              <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="text-xs font-black uppercase text-slate-900 flex items-center gap-2">
+                      <i class="fas fa-gift text-amber-600"></i> Club Benefits & Features (क्लब के विशेष लाभ)
+                    </h4>
+                    <p class="text-[11px] text-slate-500">एडमिन यहाँ से नए लाभ जोड़ सकता है, हटा सकता है या एडिट कर सकता है।</p>
+                  </div>
+                  <button type="button" onclick="addBenefitRow()" class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all">
+                    <i class="fas fa-plus"></i> Add Benefit
+                  </button>
+                </div>
+
+                <div id="benefitsListContainer" class="space-y-3">
+                  <!-- Dynamic Benefit Rows inserted here via JS -->
                 </div>
               </div>
 
@@ -868,9 +930,7 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
-    const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://localhost:5500/api'
-      : '/api';
+    const API_BASE = window.API_BASE || 'https://demo.ranx24.com/api';
 
     let currentTab = 'apps';
     let allApplications = [];
@@ -1280,11 +1340,52 @@
           document.getElementById('activeTermsEn').textContent = t.contentEn;
 
           document.getElementById('newFeeInput').value = typeof t.membershipFee === 'number' ? t.membershipFee : 999;
+          document.getElementById('newStrikeFeeInput').value = typeof t.strikeThroughFee === 'number' ? t.strikeThroughFee : 1999;
           document.getElementById('newValidityInput').value = typeof t.validityDays === 'number' ? t.validityDays : 365;
           document.getElementById('newMinLimitInput').value = typeof t.minimumCreditLimit === 'number' ? t.minimumCreditLimit : 10000;
           document.getElementById('newTatInput').value = typeof t.approvalTatHours === 'number' ? t.approvalTatHours : 24;
+
+          document.getElementById('newBadgeInput').value = t.bannerBadgeText || 'VIP FARMER MEMBERSHIP';
+          document.getElementById('newBannerTitleHi').value = t.bannerTitleHi || 'कृषि-नेक्स प्रीमियम किसान बनें';
+          document.getElementById('newBannerTitleEn').value = t.bannerTitleEn || 'Join as KrishiNex Premium Farmer';
+          document.getElementById('newBannerSubHi').value = t.bannerSubHi || 'विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा';
+          document.getElementById('newBannerSubEn').value = t.bannerSubEn || 'Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs.';
+
           document.getElementById('newContentHi').value = t.contentHi;
           document.getElementById('newContentEn').value = t.contentEn;
+
+          // Render Benefits rows
+          const defaultBenefits = [
+            {
+              titleHi: 'कस्टमाइज्ड कृषि-क्रेडिट सीमा',
+              titleEn: 'Assigned Agri-Credit Limit',
+              subHi: 'प्रशासनिक अनुमोदन पर बीज, खाद एवं उपकरणों के लिए विशेष सीमा',
+              subEn: 'Dedicated credit allocation for seeds, fertilizer, and equipment.',
+              icon: 'card',
+              bgColor: '#FEF3C7',
+              iconColor: '#D97706'
+            },
+            {
+              titleHi: 'प्राथमिकता कृषि डॉक्टर सेवा',
+              titleEn: 'Priority Agronomist Consultation',
+              subHi: 'बिना प्रतीक्षा के सीधे विशेषज्ञ से वीडियो व ऑडियो परामर्श',
+              subEn: 'Immediate access to certified agricultural scientists.',
+              icon: 'medkit',
+              bgColor: '#ECFDF5',
+              iconColor: '#059669'
+            },
+            {
+              titleHi: 'उपकरण एवं श्रम किराए पर विशेष छूट',
+              titleEn: 'Discounted Machinery & Labour',
+              subHi: 'ट्रैक्टर, हार्वेस्टर व लेबर बुकिंग पर वीआईपी रियायती दरें',
+              subEn: 'Flat member-only pricing on agricultural machinery rentals.',
+              icon: 'pricetags',
+              bgColor: '#EFF6FF',
+              iconColor: '#2563EB'
+            }
+          ];
+          const bList = Array.isArray(t.benefits) && t.benefits.length > 0 ? t.benefits : defaultBenefits;
+          renderBenefitsEditor(bList);
 
           // Render version history
           const histContainer = document.getElementById('termsHistoryContainer');
@@ -1317,6 +1418,101 @@
       }
     }
 
+    function renderBenefitsEditor(benefits) {
+      const container = document.getElementById('benefitsListContainer');
+      container.innerHTML = '';
+      benefits.forEach((b, index) => {
+        container.insertAdjacentHTML('beforeend', createBenefitRowHtml(b, index));
+      });
+    }
+
+    function createBenefitRowHtml(b = {}, index = Date.now()) {
+      return `
+        <div class="benefit-item-card p-3 rounded-xl bg-white border border-slate-200 shadow-xs relative">
+          <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+            <span class="text-[11px] font-black text-amber-800 uppercase flex items-center gap-1.5">
+              <i class="fas fa-gem text-amber-500"></i> Benefit Feature
+            </span>
+            <button type="button" onclick="this.closest('.benefit-item-card').remove()" class="text-rose-500 hover:text-rose-700 text-xs font-bold flex items-center gap-1">
+              <i class="fas fa-trash-alt"></i> Remove
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Title (Hindi) *</label>
+              <input type="text" class="benefit-title-hi w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50"
+                value="${escapeHtml(b.titleHi || '')}" placeholder="उदा. कस्टमाइज्ड कृषि-क्रेडिट सीमा" required>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Title (English) *</label>
+              <input type="text" class="benefit-title-en w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50"
+                value="${escapeHtml(b.titleEn || '')}" placeholder="e.g. Assigned Agri-Credit Limit" required>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Description (Hindi) *</label>
+              <input type="text" class="benefit-sub-hi w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-slate-50"
+                value="${escapeHtml(b.subHi || '')}" placeholder="विवरण हिंदी में" required>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Description (English) *</label>
+              <input type="text" class="benefit-sub-en w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-slate-50"
+                value="${escapeHtml(b.subEn || '')}" placeholder="Description in English" required>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Icon (Ionicons)</label>
+              <select class="benefit-icon w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-700 bg-slate-50">
+                <option value="card" ${b.icon === 'card' ? 'selected' : ''}>Credit Card (card)</option>
+                <option value="medkit" ${b.icon === 'medkit' ? 'selected' : ''}>Doctor (medkit)</option>
+                <option value="pricetags" ${b.icon === 'pricetags' ? 'selected' : ''}>Discount Tag (pricetags)</option>
+                <option value="leaf" ${b.icon === 'leaf' ? 'selected' : ''}>Agriculture (leaf)</option>
+                <option value="cube" ${b.icon === 'cube' ? 'selected' : ''}>Machinery (cube)</option>
+                <option value="water" ${b.icon === 'water' ? 'selected' : ''}>Water/Milk (water)</option>
+                <option value="star" ${b.icon === 'star' ? 'selected' : ''}>VIP Star (star)</option>
+                <option value="shield-checkmark" ${b.icon === 'shield-checkmark' ? 'selected' : ''}>Security (shield-checkmark)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Background Color</label>
+              <input type="text" class="benefit-bg-color w-full px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-mono text-slate-700 bg-slate-50"
+                value="${escapeHtml(b.bgColor || '#FEF3C7')}">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Icon Color</label>
+              <input type="text" class="benefit-icon-color w-full px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-mono text-slate-700 bg-slate-50"
+                value="${escapeHtml(b.iconColor || '#D97706')}">
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function addBenefitRow() {
+      const container = document.getElementById('benefitsListContainer');
+      container.insertAdjacentHTML('beforeend', createBenefitRowHtml({
+        titleHi: 'नया विशेष लाभ',
+        titleEn: 'New Exclusive Benefit',
+        subHi: 'इस लाभ का विवरण यहाँ दर्ज करें',
+        subEn: 'Enter benefit details here',
+        icon: 'star',
+        bgColor: '#FEF3C7',
+        iconColor: '#D97706'
+      }));
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
     async function handlePublishNewTerms(e) {
       e.preventDefault();
       if (!confirm('Are you sure you want to publish a new Terms version? Existing premium farmers will retain their old agreed versions permanently.')) {
@@ -1324,17 +1520,56 @@
       }
 
       const membershipFee = document.getElementById('newFeeInput').value;
+      const strikeThroughFee = document.getElementById('newStrikeFeeInput').value;
       const validityDays = document.getElementById('newValidityInput').value;
       const minimumCreditLimit = document.getElementById('newMinLimitInput').value;
       const approvalTatHours = document.getElementById('newTatInput').value;
+
+      const bannerBadgeText = document.getElementById('newBadgeInput').value;
+      const bannerTitleHi = document.getElementById('newBannerTitleHi').value;
+      const bannerTitleEn = document.getElementById('newBannerTitleEn').value;
+      const bannerSubHi = document.getElementById('newBannerSubHi').value;
+      const bannerSubEn = document.getElementById('newBannerSubEn').value;
+
       const contentHi = document.getElementById('newContentHi').value;
       const contentEn = document.getElementById('newContentEn').value;
+
+      // Collect benefits
+      const benefitCards = document.querySelectorAll('.benefit-item-card');
+      const benefits = [];
+      benefitCards.forEach(card => {
+        const titleHi = card.querySelector('.benefit-title-hi')?.value?.trim();
+        const titleEn = card.querySelector('.benefit-title-en')?.value?.trim();
+        const subHi = card.querySelector('.benefit-sub-hi')?.value?.trim();
+        const subEn = card.querySelector('.benefit-sub-en')?.value?.trim();
+        const icon = card.querySelector('.benefit-icon')?.value || 'star';
+        const bgColor = card.querySelector('.benefit-bg-color')?.value?.trim() || '#FEF3C7';
+        const iconColor = card.querySelector('.benefit-icon-color')?.value?.trim() || '#D97706';
+
+        if (titleHi || titleEn) {
+          benefits.push({ titleHi, titleEn, subHi, subEn, icon, bgColor, iconColor, enabled: true });
+        }
+      });
 
       try {
         const res = await fetch(`${API_BASE}/premium-farmer/admin/terms`, {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify({ membershipFee, validityDays, minimumCreditLimit, approvalTatHours, contentHi, contentEn })
+          body: JSON.stringify({
+            membershipFee,
+            strikeThroughFee,
+            validityDays,
+            minimumCreditLimit,
+            approvalTatHours,
+            bannerBadgeText,
+            bannerTitleHi,
+            bannerTitleEn,
+            bannerSubHi,
+            bannerSubEn,
+            benefits,
+            contentHi,
+            contentEn
+          })
         });
         const data = await res.json();
         if (data.success) {

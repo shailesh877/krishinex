@@ -1014,9 +1014,9 @@ router.put('/admin/requests/:id/review', protect, async (req, res) => {
         title: 'दूध सेवा स्वीकृत (Milk Service Approved)',
         messageHi: `आपकी दूध ${sub.type === 'sell' ? 'बिक्री' : 'खरीद'} सेवा स्वीकृत हो गई है। दर: ₹${sub.ratePerLiter}/लीटर।`,
         messageEn: `Your milk ${sub.type === 'sell' ? 'selling' : 'purchase'} subscription has been approved at ₹${sub.ratePerLiter}/L.`,
-        type: 'status',
+        type: 'milk_subscription',
         refId: String(sub._id),
-        data: { subscriptionId: String(sub._id) }
+        data: { subscriptionId: String(sub._id), type: 'milk_subscription' }
       }).catch(err => console.error('[Milk Notification Error - Farmer Approved]:', err));
     }
 

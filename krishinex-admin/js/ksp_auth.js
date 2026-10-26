@@ -2,11 +2,16 @@
  * ksp_auth.js - Global Session, RBAC Permission Engine & Interceptor for KrishiNex Admin Portal
  */
 
-var isLocal = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('10.');
-var host = window.location.hostname || 'localhost';
+// krishinex-admin default API is ONLINE (https://demo.ranx24.com/api)
+var forceLocal = (typeof window !== 'undefined' && (
+    localStorage.getItem('useLocalApi') === 'true' ||
+    new URLSearchParams(window.location.search).get('local') === 'true'
+));
 
-window.API_BASE = isLocal ? `http://${host}:5500/api` : 'https://demo.ranx24.com/api';
-window.IMAGE_BASE = isLocal ? `http://${host}:5500` : 'https://demo.ranx24.com';
+var host = (typeof window !== 'undefined' && window.location.hostname) || 'localhost';
+
+window.API_BASE = forceLocal ? `http://${host}:5500/api` : 'https://demo.ranx24.com/api';
+window.IMAGE_BASE = forceLocal ? `http://${host}:5500` : 'https://demo.ranx24.com';
 
 // =============================================
 // GLOBAL RBAC PERMISSION ENGINE

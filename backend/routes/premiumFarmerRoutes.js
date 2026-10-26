@@ -116,7 +116,45 @@ router.get('/terms-and-status', protect, async (req, res) => {
         contentEn: terms.contentEn,
         contentHi: terms.contentHi,
         membershipFee: terms.membershipFee,
+        strikeThroughFee: terms.strikeThroughFee !== undefined ? terms.strikeThroughFee : 1999,
         validityDays: terms.validityDays,
+        bannerBadgeText: terms.bannerBadgeText || 'VIP FARMER MEMBERSHIP',
+        bannerTitleHi: terms.bannerTitleHi || 'कृषि-नेक्स प्रीमियम किसान बनें',
+        bannerTitleEn: terms.bannerTitleEn || 'Join as KrishiNex Premium Farmer',
+        bannerSubHi: terms.bannerSubHi || 'विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा',
+        bannerSubEn: terms.bannerSubEn || 'Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs.',
+        benefits: Array.isArray(terms.benefits) && terms.benefits.length > 0 ? terms.benefits : [
+          {
+            titleHi: 'कस्टमाइज्ड कृषि-क्रेडिट सीमा',
+            titleEn: 'Assigned Agri-Credit Limit',
+            subHi: 'प्रशासनिक अनुमोदन पर बीज, खाद एवं उपकरणों के लिए विशेष सीमा',
+            subEn: 'Dedicated credit allocation for seeds, fertilizer, and equipment.',
+            icon: 'card',
+            bgColor: '#FEF3C7',
+            iconColor: '#D97706',
+            enabled: true
+          },
+          {
+            titleHi: 'प्राथमिकता कृषि डॉक्टर सेवा',
+            titleEn: 'Priority Agronomist Consultation',
+            subHi: 'बिना प्रतीक्षा के सीधे विशेषज्ञ से वीडियो व ऑडियो परामर्श',
+            subEn: 'Immediate access to certified agricultural scientists.',
+            icon: 'medkit',
+            bgColor: '#ECFDF5',
+            iconColor: '#059669',
+            enabled: true
+          },
+          {
+            titleHi: 'उपकरण एवं श्रम किराए पर विशेष छूट',
+            titleEn: 'Discounted Machinery & Labour',
+            subHi: 'ट्रैक्टर, हार्वेस्टर व लेबर बुकिंग पर वीआईपी रियायती दरें',
+            subEn: 'Flat member-only pricing on agricultural machinery rentals.',
+            icon: 'pricetags',
+            bgColor: '#EFF6FF',
+            iconColor: '#2563EB',
+            enabled: true
+          }
+        ],
         approvalTatHours: terms.approvalTatHours,
         minimumCreditLimit: terms.minimumCreditLimit !== undefined ? terms.minimumCreditLimit : 10000
       },
@@ -643,7 +681,23 @@ router.get('/admin/terms', protect, async (req, res) => {
 // @access  Private/Admin
 router.post('/admin/terms', protect, async (req, res) => {
   try {
-    const { titleEn, titleHi, contentEn, contentHi, membershipFee, validityDays, approvalTatHours, minimumCreditLimit } = req.body;
+    const {
+      titleEn,
+      titleHi,
+      contentEn,
+      contentHi,
+      membershipFee,
+      strikeThroughFee,
+      validityDays,
+      bannerBadgeText,
+      bannerTitleHi,
+      bannerTitleEn,
+      bannerSubHi,
+      bannerSubEn,
+      benefits,
+      approvalTatHours,
+      minimumCreditLimit
+    } = req.body;
 
     if (!contentEn || !contentHi) {
       return res.status(400).json({ error: 'Both English and Hindi terms content are required.' });
@@ -658,8 +712,21 @@ router.post('/admin/terms', protect, async (req, res) => {
 
     // Create new immutable terms version
     const feeParsed = membershipFee !== undefined && membershipFee !== '' ? Number(membershipFee) : 999;
+    const strikeParsed = strikeThroughFee !== undefined && strikeThroughFee !== '' ? Number(strikeThroughFee) : 1999;
     const validityParsed = validityDays !== undefined && validityDays !== '' ? Number(validityDays) : 365;
     const minLimitParsed = minimumCreditLimit !== undefined && minimumCreditLimit !== '' ? Number(minimumCreditLimit) : 10000;
+
+    let parsedBenefits = [];
+    if (Array.isArray(benefits)) {
+      parsedBenefits = benefits.filter(b => b && (b.titleHi || b.titleEn));
+    } else if (typeof benefits === 'string' && benefits.trim()) {
+      try {
+        const jsonB = JSON.parse(benefits);
+        if (Array.isArray(jsonB)) parsedBenefits = jsonB;
+      } catch (e) {
+        console.warn('Could not parse benefits string:', e.message);
+      }
+    }
 
     const newTerms = await PremiumFarmerTerms.create({
       version: nextVersion,
@@ -668,7 +735,14 @@ router.post('/admin/terms', protect, async (req, res) => {
       contentEn: contentEn.trim(),
       contentHi: contentHi.trim(),
       membershipFee: isNaN(feeParsed) ? 999 : feeParsed,
+      strikeThroughFee: isNaN(strikeParsed) ? 1999 : strikeParsed,
       validityDays: isNaN(validityParsed) ? 365 : validityParsed,
+      bannerBadgeText: bannerBadgeText || 'VIP FARMER MEMBERSHIP',
+      bannerTitleHi: bannerTitleHi || 'कृषि-नेक्स प्रीमियम किसान बनें',
+      bannerTitleEn: bannerTitleEn || 'Join as KrishiNex Premium Farmer',
+      bannerSubHi: bannerSubHi || 'विशेष क्रेडिट सीमा, शून्य-कमीशन बाज़ार पहुंच, और 24×7 विशेषज्ञ कृषि डॉक्टर सेवा',
+      bannerSubEn: bannerSubEn || 'Unlock customized agricultural credit limit, priority doctor access, and dedicated inputs.',
+      benefits: parsedBenefits.length > 0 ? parsedBenefits : undefined,
       approvalTatHours: Number(approvalTatHours) || 24,
       minimumCreditLimit: isNaN(minLimitParsed) ? 10000 : minLimitParsed,
       isActive: true,

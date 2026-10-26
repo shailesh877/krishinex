@@ -214,39 +214,41 @@ export default function MilkRegisterScreen() {
                 </View>
               </View>
 
-              {/* DELIVERY SCHEDULE (FOR SELL MILK) */}
-              {isSell && (
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>{hi ? 'दूध देने का समय (Schedule) *' : 'Delivery Schedule *'}</Text>
-                  <View style={styles.scheduleRow}>
-                    {(['Morning Only', 'Evening Only', 'Morning and Evening'] as const).map(item => {
-                      const isSelected = schedule === item;
-                      let label: string = item;
-                      if (hi) {
-                        if (item === 'Morning Only') label = 'केवल सुबह';
-                        else if (item === 'Evening Only') label = 'केवल शाम';
-                        else label = 'सुबह व शाम दोनों';
-                      }
-                      return (
-                        <TouchableOpacity
-                          key={item}
-                          style={[styles.scheduleBtn, isSelected && styles.scheduleBtnActive]}
-                          onPress={() => setSchedule(item)}
-                        >
-                          <Ionicons
-                            name={isSelected ? 'radio-button-on' : 'radio-button-off'}
-                            size={16}
-                            color={isSelected ? '#059669' : '#94A3B8'}
-                          />
-                          <Text style={[styles.scheduleText, isSelected && styles.scheduleTextActive]}>
-                            {label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+              {/* DELIVERY SCHEDULE (FOR BOTH BUY & SELL MILK) */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>
+                  {isSell
+                    ? (hi ? 'दूध देने का समय (Schedule) *' : 'Supply Schedule *')
+                    : (hi ? 'दूध प्राप्ति / डिलीवरी समय (Schedule) *' : 'Delivery Schedule *')}
+                </Text>
+                <View style={styles.scheduleRow}>
+                  {(['Morning Only', 'Evening Only', 'Morning and Evening'] as const).map(item => {
+                    const isSelected = schedule === item;
+                    let label: string = item;
+                    if (hi) {
+                      if (item === 'Morning Only') label = 'केवल सुबह';
+                      else if (item === 'Evening Only') label = 'केवल शाम';
+                      else label = 'सुबह व शाम दोनों';
+                    }
+                    return (
+                      <TouchableOpacity
+                        key={item}
+                        style={[styles.scheduleBtn, isSelected && styles.scheduleBtnActive]}
+                        onPress={() => setSchedule(item)}
+                      >
+                        <Ionicons
+                          name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                          size={16}
+                          color={isSelected ? '#059669' : '#94A3B8'}
+                        />
+                        <Text style={[styles.scheduleText, isSelected && styles.scheduleTextActive]}>
+                          {label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
-              )}
+              </View>
 
               {/* ADDRESS */}
               <View style={styles.inputGroup}>
