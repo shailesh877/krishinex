@@ -134,9 +134,43 @@ router.get('/items/my', protect, async (req, res) => {
 // @access  Public
 router.get('/items', async (req, res) => {
     try {
-        const { category, lat, lng } = req.query;
+        const { category, lat, lng, search } = req.query;
         let query = {};
-        if (category) query.category = category;
+        if (category && category !== 'all') {
+            if (category === 'fertilizer' || category === 'fert') {
+                query.category = { $in: ['fertilizer', 'fert'] };
+            } else if (category === 'pesticide' || category === 'pest') {
+                query.category = { $in: ['pesticide', 'pest'] };
+            } else if (category === 'equipment' || category === 'tool') {
+                query.category = { $in: ['equipment', 'tool'] };
+            } else {
+                query.category = category;
+            }
+        }
+
+        if (search && search.trim()) {
+            const tokens = search.trim().split(/\s+/).filter(Boolean);
+            if (tokens.length === 1) {
+                const escaped = tokens[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                query.$or = [
+                    { name: { $regex: escaped, $options: 'i' } },
+                    { description: { $regex: escaped, $options: 'i' } },
+                    { category: { $regex: escaped, $options: 'i' } }
+                ];
+            } else if (tokens.length > 1) {
+                // Multi-word search: every token must match name, description or category
+                query.$and = tokens.map(token => {
+                    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    return {
+                        $or: [
+                            { name: { $regex: escaped, $options: 'i' } },
+                            { description: { $regex: escaped, $options: 'i' } },
+                            { category: { $regex: escaped, $options: 'i' } }
+                        ]
+                    };
+                });
+            }
+        }
 
         // 10km Geo-filtering logic
         if (lat && lng) {

@@ -146,9 +146,37 @@ export default function LoginScreen() {
         identifier: `91${finalPhone}`
       };
       console.log('Sending Headless OTP:', body);
-      const widgetRes = await withTimeout(OTPWidget.sendOTP(body), 60000);
+      
+      let widgetRes: any = null;
+      let sentSuccessfully = false;
 
-      if (widgetRes?.type === 'success' || widgetRes?.message?.includes('success') || widgetRes?.message === 'OTP sent successfully') {
+      // 1. Try Widget sendOTP (fast client-side attempt)
+      try {
+        widgetRes = await withTimeout(OTPWidget.sendOTP(body), 15000);
+        if (widgetRes?.type === 'success' || widgetRes?.message?.includes('success') || widgetRes?.message === 'OTP sent successfully') {
+          sentSuccessfully = true;
+        }
+      } catch (clientErr: any) {
+        console.warn('Client Widget sendOTP failed, attempting backend send-otp fallback:', clientErr?.message || clientErr);
+      }
+
+      // 2. If client widget failed or had network failure, fallback to Backend /api/auth/send-otp
+      if (!sentSuccessfully) {
+        try {
+          const backendRes = await authApi.sendOtp(finalPhone);
+          if (backendRes.data?.result?.type === 'success' || backendRes.data?.message?.includes('success') || backendRes.data?.reqId) {
+            sentSuccessfully = true;
+            widgetRes = backendRes.data?.result || backendRes.data;
+            if (backendRes.data?.reqId) {
+              widgetRes = { ...widgetRes, reqId: backendRes.data.reqId };
+            }
+          }
+        } catch (backendErr: any) {
+          console.error('Backend send-otp fallback error:', backendErr?.response?.data || backendErr?.message);
+        }
+      }
+
+      if (sentSuccessfully && widgetRes) {
         // Handle MSG91's strange response structures
         let parsedReqId = '';
         if (widgetRes.reqId) parsedReqId = widgetRes.reqId;
@@ -159,7 +187,7 @@ export default function LoginScreen() {
         setStep('OTP');
         setResendTimer(30);
       } else {
-        let msg = widgetRes?.message || 'Failed to send OTP via Widget';
+        let msg = widgetRes?.message || 'Failed to send OTP';
         if (msg.toLowerCase().includes('ipbloack') || msg.toLowerCase().includes('ipblock') || msg.toLowerCase().includes('blocked')) {
           msg = hi
             ? 'सुरक्षा कारणों से कुछ समय के लिए अनुरोध रोक दिया गया है। कृपया थोड़ी देर बाद प्रयास करें।'

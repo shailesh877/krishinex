@@ -175,9 +175,18 @@ export default function ShopScreen() {
   const [activeTab, setActiveTab] =
     useState<'all' | 'seed' | 'fertilizer' | 'pesticide' | 'equipment'>('all');
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [posterIndex, setPosterIndex] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   
+  // Debounce search input so database isn't hit on every single keystroke
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchText.trim());
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchText]);
+
   const [banners, setBanners] = useState<any[]>(() => {
     return RAM_CACHE_SHOP['shop_data']?.banners || [];
   });
@@ -236,7 +245,9 @@ export default function ShopScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const fetchShopData = async (isRefresh = false, signal?: AbortSignal) => {
-    if (!isRefresh && RAM_CACHE_SHOP['shop_data']) {
+    const isFiltered = activeTab !== 'all' || !!debouncedSearch;
+
+    if (!isRefresh && !isFiltered && RAM_CACHE_SHOP['shop_data']) {
       const age = Date.now() - RAM_CACHE_SHOP['shop_data'].timestamp;
       if (age < 5 * 60 * 1000) {
         console.log('[DEBUG] Skipping API call, shop RAM cache is fresh');
@@ -246,7 +257,6 @@ export default function ShopScreen() {
 
     if (!isRefresh) {
       setLoading(true);
-      setBannerLoading(true);
     }
 
     let fetchedBanners: any[] = [];
@@ -254,18 +264,21 @@ export default function ShopScreen() {
     let fetchedAvatar = 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200';
     let fetchedAddress = displayAddressPlaceholder;
 
-    // ⚡ TIER 1 — Banners FIRST (lightest API, loads instantly)
-    try {
-      const bannerRes = await authApi.getBanners(signal);
-      fetchedBanners = bannerRes.data || [];
-      setBanners(fetchedBanners);
-    } catch (e: any) {
-      if (e?.name !== 'CanceledError') console.log('Banner fetch error:', e);
-    } finally {
-      setBannerLoading(false);
+    // ⚡ TIER 1 — Banners (only on initial/unfiltered load)
+    if (!isFiltered) {
+      try {
+        setBannerLoading(true);
+        const bannerRes = await authApi.getBanners(signal);
+        fetchedBanners = bannerRes.data || [];
+        setBanners(fetchedBanners);
+      } catch (e: any) {
+        if (e?.name !== 'CanceledError') console.log('Banner fetch error:', e);
+      } finally {
+        setBannerLoading(false);
+      }
     }
 
-    // 🌍 TIER 2 — Location + Products + Profile (Combined)
+    // 🌍 TIER 2 — Database Search & Products fetch
     try {
       let lat: number | undefined;
       let lng: number | undefined;
@@ -280,9 +293,12 @@ export default function ShopScreen() {
         console.log('Stored location read failed:', e);
       }
 
+      const reqCategory = activeTab === 'all' ? undefined : activeTab;
+      const reqSearch = debouncedSearch || undefined;
+
       const [itemsRes, profileRes] = await Promise.all([
-        authApi.getItems(undefined, lat, lng, 1, 20, signal),
-        authApi.getProfile(signal),
+        authApi.getItems(reqCategory, lat, lng, 1, 20, signal, reqSearch),
+        !isFiltered ? authApi.getProfile(signal) : Promise.resolve({ data: null }),
       ]);
 
       if (itemsRes.data && Array.isArray(itemsRes.data) && itemsRes.data.length > 0) {
@@ -292,7 +308,7 @@ export default function ShopScreen() {
       } else if (lat || lng) {
         // Fallback: If GPS fetch returned empty, fetch all without GPS
         try {
-          const fallbackRes = await authApi.getItems(undefined, undefined, undefined, 1, 20, signal);
+          const fallbackRes = await authApi.getItems(reqCategory, undefined, undefined, 1, 20, signal, reqSearch);
           fetchedProducts = fallbackRes.data || [];
           setProductsList(fetchedProducts);
           setHasMore(fetchedProducts.length === 20);
@@ -307,26 +323,28 @@ export default function ShopScreen() {
       }
       setPage(1);
 
-      if (profileRes.data?.profilePhotoUrl) {
+      if (profileRes?.data?.profilePhotoUrl) {
         const photoUrl = profileRes.data.profilePhotoUrl;
         fetchedAvatar = photoUrl.startsWith('http')
           ? photoUrl
           : `${IMAGE_BASE_URL}/${photoUrl}`;
         setProfileAvatar(fetchedAvatar);
       }
-      if (profileRes.data?.address) {
+      if (profileRes?.data?.address) {
         fetchedAddress = profileRes.data.address;
         setDisplayAddress(fetchedAddress);
       }
 
-      // Update RAM Cache
-      RAM_CACHE_SHOP['shop_data'] = {
-        timestamp: Date.now(),
-        banners: fetchedBanners,
-        products: fetchedProducts,
-        profileAvatar: fetchedAvatar,
-        displayAddress: fetchedAddress,
-      };
+      // Update RAM Cache only for default unfiltered shop screen
+      if (!isFiltered) {
+        RAM_CACHE_SHOP['shop_data'] = {
+          timestamp: Date.now(),
+          banners: fetchedBanners,
+          products: fetchedProducts,
+          profileAvatar: fetchedAvatar,
+          displayAddress: fetchedAddress,
+        };
+      }
 
     } catch (error: any) {
       if (error?.name !== 'CanceledError' && !error?.message?.includes('canceled')) {
@@ -358,12 +376,15 @@ export default function ShopScreen() {
         }
       } catch (e) {}
 
+      const reqCategory = activeTab === 'all' ? undefined : activeTab;
+      const reqSearch = debouncedSearch || undefined;
+
       let newProducts: any[] = [];
-      const itemsRes = await authApi.getItems(undefined, lat, lng, nextPage, 20);
+      const itemsRes = await authApi.getItems(reqCategory, lat, lng, nextPage, 20, undefined, reqSearch);
       if (itemsRes.data && Array.isArray(itemsRes.data) && itemsRes.data.length > 0) {
         newProducts = itemsRes.data;
       } else if (lat || lng) {
-        const fallbackRes = await authApi.getItems(undefined, undefined, undefined, nextPage, 20);
+        const fallbackRes = await authApi.getItems(reqCategory, undefined, undefined, nextPage, 20, undefined, reqSearch);
         newProducts = fallbackRes.data || [];
       }
       
@@ -381,37 +402,43 @@ export default function ShopScreen() {
     }
   };
 
+  // Re-fetch from DB whenever category tab or debounced search changes
   useEffect(() => {
     const controller = new AbortController();
-    fetchShopData(false, controller.signal);
+    fetchShopData(true, controller.signal);
     return () => controller.abort();
-  }, []);
+  }, [activeTab, debouncedSearch]);
 
+  // Compute displayed products: guarantees 100% accuracy even if remote backend returns unfiltered list
+  const displayedProducts = useMemo(() => {
+    const rawSearch = debouncedSearch.toLowerCase().trim();
+    const searchTokens = rawSearch ? rawSearch.split(/\s+/).filter(Boolean) : [];
 
+    const categoryMatches = (prodCat?: string) => {
+      if (activeTab === 'all') return true;
+      if (!prodCat) return false;
+      const c = prodCat.toLowerCase();
+      if (activeTab === 'fertilizer') return c === 'fertilizer' || c === 'fert';
+      if (activeTab === 'pesticide') return c === 'pesticide' || c === 'pest';
+      if (activeTab === 'equipment') return c === 'equipment' || c === 'tool';
+      if (activeTab === 'seed') return c === 'seed';
+      return c === activeTab.toLowerCase();
+    };
 
-  // Auto scroll for banners
-  useEffect(() => {
-    if (banners.length > 0) {
-      const interval = setInterval(() => {
-        setPosterIndex(prev => {
-          const next = prev === banners.length - 1 ? 0 : prev + 1;
-          bannerScrollRef.current?.scrollTo({ x: next * scrollWidth, animated: true });
-          return next;
-        });
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [banners, scrollWidth]);
-
-  const filteredProducts = useMemo(() => {
-    const lower = searchText.toLowerCase();
     return productsList.filter(p => {
-      const byCat = activeTab === 'all' || (p.category && p.category.toLowerCase() === activeTab.toLowerCase());
-      const label = (hi ? (p.nameHi || p.name) : p.name) || p.name || p.title || '';
-      const bySearch = !lower || (label || '').toLowerCase().includes(lower);
-      return byCat && bySearch;
+      if (!categoryMatches(p.category)) return false;
+      if (searchTokens.length === 0) return true;
+
+      const name = (p.name || '').toLowerCase();
+      const nameHi = (p.nameHi || '').toLowerCase();
+      const title = (p.title || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const combined = `${name} ${nameHi} ${title} ${desc} ${cat}`;
+
+      return searchTokens.every(token => combined.includes(token));
     });
-  }, [activeTab, searchText, hi, productsList]);
+  }, [productsList, debouncedSearch, activeTab]);
 
   const handlePosterScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>,
@@ -567,10 +594,18 @@ export default function ShopScreen() {
             placeholderTextColor="#9CA3AF"
             value={searchText}
             onChangeText={setSearchText}
+            returnKeyType="search"
+            autoCorrect={false}
           />
-          <TouchableOpacity activeOpacity={0.8}>
-            <Ionicons name="camera-outline" size={20} color="#9CA3AF" />
-          </TouchableOpacity>
+          {searchText.length > 0 ? (
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setSearchText('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity activeOpacity={0.8}>
+              <Ionicons name="camera-outline" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* category tabs */}
@@ -680,11 +715,13 @@ export default function ShopScreen() {
         <>
         {/* products grid */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t.prodTitle}</Text>
+          <Text style={styles.sectionTitle}>
+            {debouncedSearch ? (hi ? `"${debouncedSearch}" के परिणाम` : `Results for "${debouncedSearch}"`) : t.prodTitle}
+          </Text>
         </View>
 
         <View style={styles.productGrid}>
-          {filteredProducts.map(p => {
+          {displayedProducts.map(p => {
             const title = (hi ? (p.nameHi || p.name) : p.name) || p.name || p.title || 'Product';
             return (
               <TouchableOpacity
@@ -817,7 +854,7 @@ export default function ShopScreen() {
           })}
         </View>
 
-        {filteredProducts.length === 0 && (
+        {displayedProducts.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
               {hi

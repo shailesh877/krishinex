@@ -70,7 +70,7 @@ export const authApi = {
         }
         return { status: response.status, data: await response.json() };
     },
-    getItems: (category?: string, lat?: number, lng?: number, page: number = 1, limit: number = 20, signal?: AbortSignal) => api.get('/shop/items', { params: { category, lat, lng, page, limit }, signal }),
+    getItems: (category?: string, lat?: number, lng?: number, page: number = 1, limit: number = 20, signal?: AbortSignal, search?: string) => api.get('/shop/items', { params: { category, lat, lng, page, limit, search }, signal }),
     getProfile: (signal?: AbortSignal) => api.get('/user/profile', { signal }),
 
     // Agri Doctor Chat APIs

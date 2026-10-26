@@ -16,4 +16,5 @@ debug*
 test*
 
 *.zip
-*.docxtemp/
+*.docx
+temp/

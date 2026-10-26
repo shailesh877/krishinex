@@ -16,6 +16,26 @@ async function sendOtp(phone, customOtp = null) {
     // Ensure phone has country code for MSG91 (default to 91 if 10 digits)
     if (phone.length === 10) phone = '91' + phone;
 
+    // If no template ID is provided, try widget API if auth key is available
+    if (!MSG91_TEMPLATE_ID && MSG91_AUTH_KEY) {
+        try {
+            console.log(`[MSG91] Sending OTP via Widget API for ${phone}`);
+            const widgetPayload = {
+                widgetId: MSG91_WIDGET_ID,
+                tokenAuth: MSG91_AUTH_KEY,
+                identifier: phone
+            };
+            const response = await axios.post(
+                'https://control.msg91.com/api/v5/widget/sendOtpMobile',
+                widgetPayload,
+                { headers: { 'Content-Type': 'application/json' }, timeout: 15000 }
+            );
+            return response.data;
+        } catch (widgetError) {
+            console.warn('[MSG91] Widget sendOtpMobile error:', widgetError.response?.data || widgetError.message);
+        }
+    }
+
     // If no auth key or no template ID is provided, we can fallback to a mock for local dev
     if (!MSG91_AUTH_KEY || !MSG91_TEMPLATE_ID) {
         if (!MSG91_TEMPLATE_ID && MSG91_AUTH_KEY) {

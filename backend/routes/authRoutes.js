@@ -123,7 +123,8 @@ router.post('/send-otp', async (req, res) => {
 
         console.log(`[AUTH] Sending OTP to ${phone}`);
         const result = await sendOtp(phone);
-        res.status(200).json({ message: 'OTP sent successfully', result });
+        const reqId = result?.reqId || (result?.message && result.message.length > 20 && !result.message.includes(' ') ? result.message : '');
+        res.status(200).json({ message: 'OTP sent successfully', reqId, result });
     } catch (error) {
         console.error('Send OTP error:', error);
         res.status(500).json({ error: 'Failed to send OTP' });
