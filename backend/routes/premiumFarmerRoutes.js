@@ -520,6 +520,110 @@ router.get('/admin/applications', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/premium-farmer/admin/payments
+// @desc    List all premium membership payment transactions with filters, search, metrics & pagination
+// @access  Private/Admin
+router.get('/admin/payments', protect, async (req, res) => {
+  try {
+    const { status, search, dateRange, page, limit } = req.query;
+    let query = {};
+
+    // Filter by paymentStatus (completed, created, failed)
+    if (status && status !== 'all') {
+      query.paymentStatus = status;
+    }
+
+    // Filter by search query
+    if (search && search.trim()) {
+      const q = search.trim();
+      const regex = new RegExp(q, 'i');
+      query.$or = [
+        { farmerName: regex },
+        { farmerPhone: regex },
+        { razorpayPaymentId: regex },
+        { razorpayOrderId: regex }
+      ];
+    }
+
+    // Filter by date range
+    if (dateRange && dateRange !== 'all') {
+      const now = new Date();
+      let startDate = new Date();
+      if (dateRange === 'today') {
+        startDate.setHours(0, 0, 0, 0);
+        query.createdAt = { $gte: startDate };
+      } else if (dateRange === 'week') {
+        startDate.setDate(now.getDate() - 7);
+        query.createdAt = { $gte: startDate };
+      } else if (dateRange === 'month') {
+        startDate.setMonth(now.getMonth() - 1);
+        query.createdAt = { $gte: startDate };
+      }
+    }
+
+    const p = Math.max(1, parseInt(page) || 1);
+    const l = Math.min(200, Math.max(1, parseInt(limit) || 25));
+    const skip = (p - 1) * l;
+
+    const total = await PremiumFarmerApplication.countDocuments(query);
+    const payments = await PremiumFarmerApplication.find(query)
+      .populate('userId', 'name phone address walletBalance creditLimit creditUsed')
+      .populate('termsId', 'title version validityDays membershipFee')
+      .populate('reviewedBy', 'name role')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(l);
+
+    // Aggregate payment metrics across all premium transactions
+    const statsAgg = await PremiumFarmerApplication.aggregate([
+      {
+        $group: {
+          _id: '$paymentStatus',
+          count: { $sum: 1 },
+          totalAmount: { $sum: '$paymentAmount' }
+        }
+      }
+    ]);
+
+    let totalRevenue = 0;
+    let completedCount = 0;
+    let failedCount = 0;
+    let pendingCount = 0;
+
+    statsAgg.forEach(s => {
+      if (s._id === 'completed') {
+        totalRevenue = s.totalAmount || 0;
+        completedCount = s.count || 0;
+      } else if (s._id === 'failed') {
+        failedCount = s.count || 0;
+      } else {
+        pendingCount += (s.count || 0);
+      }
+    });
+
+    res.json({
+      success: true,
+      payments,
+      summary: {
+        totalRevenue,
+        completedCount,
+        failedCount,
+        pendingCount,
+        totalTransactions: total
+      },
+      pagination: {
+        total,
+        page: p,
+        limit: l,
+        pages: Math.ceil(total / l)
+      }
+    });
+  } catch (error) {
+    console.error('Admin Payments Error:', error);
+    res.status(500).json({ error: 'Failed to fetch premium payments.' });
+  }
+});
+
 // @route   PUT /api/premium-farmer/admin/applications/:id/review
 // @desc    Approve or reject application, assign farmer limit, activate premium status
 // @access  Private/Admin

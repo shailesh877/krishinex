@@ -1,5 +1,5 @@
-// app/context/I18nContext.tsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Language = 'hi' | 'en';
 
@@ -63,7 +63,22 @@ type I18nContextType = {
 const I18nContext = createContext<I18nContextType | null>(null);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('hi'); // default Hindi
+  const [language, setLanguageState] = useState<Language>('hi'); // default Hindi
+
+  useEffect(() => {
+    AsyncStorage.getItem('appLanguage')
+      .then((saved) => {
+        if (saved === 'hi' || saved === 'en') {
+          setLanguageState(saved);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    AsyncStorage.setItem('appLanguage', lang).catch(() => {});
+  };
 
   const value: I18nContextType = {
     language,

@@ -188,8 +188,13 @@ export default function MilkPurchaseScreen() {
         );
         setModalVisible(false);
 
-        // Animate smooth layout transition and push completed farmer to bottom
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        // Animate smooth layout position transition without opacity cross-fade ghosting
+        LayoutAnimation.configureNext({
+          duration: 300,
+          update: {
+            type: LayoutAnimation.Types.easeInEaseOut,
+          },
+        });
         setFarmers(prev => {
           const updated = prev.map(f => {
             if (String(f.subscriptionId) === String(selectedFarmer.subscriptionId)) {
@@ -384,6 +389,18 @@ export default function MilkPurchaseScreen() {
             const isCompleted = item.log && item.log.status === 'Completed';
             const isPaused = item.isPausedToday;
 
+            // Single unified status text & style to prevent layout cross-fade ghosting
+            let statusText = hi ? 'बाकी (Pending)' : 'Pending';
+            let statusStyle: any = styles.statusPending;
+
+            if (isPaused) {
+              statusText = hi ? 'रोक (Paused)' : 'Paused';
+              statusStyle = styles.statusPaused;
+            } else if (isCompleted) {
+              statusText = `${item.log.quantityLiters}L (₹${item.log.totalAmount})`;
+              statusStyle = styles.statusDone;
+            }
+
             return (
               <View style={[styles.card, isCompleted && styles.cardCompleted, isPaused && styles.cardPaused]}>
                 <View style={styles.cardHeader}>
@@ -418,15 +435,11 @@ export default function MilkPurchaseScreen() {
                   <View style={styles.statDivider} />
                   <View style={styles.statCol}>
                     <Text style={styles.statLabel}>{hi ? 'शिफ्ट स्थिति' : 'Shift Status'}</Text>
-                    {isPaused ? (
-                      <Text style={styles.statusPaused}>{hi ? 'रोक (Paused)' : 'Paused'}</Text>
-                    ) : isCompleted ? (
-                      <Text style={styles.statusDone}>
-                        {item.log.quantityLiters}L (₹{item.log.totalAmount})
+                    <View style={styles.statusBox}>
+                      <Text style={statusStyle} numberOfLines={1}>
+                        {statusText}
                       </Text>
-                    ) : (
-                      <Text style={styles.statusPending}>{hi ? 'बाकी (Pending)' : 'Pending'}</Text>
-                    )}
+                    </View>
                   </View>
                 </View>
 
@@ -853,11 +866,16 @@ const styles = StyleSheet.create({
     color: '#059669',
     marginTop: 2,
   },
+  statusBox: {
+    minHeight: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
   statusPending: {
     fontSize: 11,
     fontWeight: '800',
     color: '#D97706',
-    marginTop: 2,
   },
   statusDone: {
     fontSize: 11,

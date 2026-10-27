@@ -612,16 +612,27 @@ router.post('/request-shift-change', protect, async (req, res) => {
     }
 
     const sub = await MilkSubscription.findOne({ _id: subscriptionId, userId: req.user.id });
+    const isEn = req.headers['accept-language']?.toLowerCase().includes('en');
+
     if (!sub) {
-      return res.status(404).json({ error: 'सदस्यता नहीं मिली।' });
+      return res.status(404).json({
+        error: isEn ? 'Subscription not found.' : 'सदस्यता नहीं मिली।',
+        errorEn: 'Subscription not found.'
+      });
     }
 
     if (sub.deliverySchedule === requestedSchedule) {
-      return res.status(400).json({ error: 'आपकी वर्तमान शिफ्ट पहले से ही यही है।' });
+      return res.status(400).json({
+        error: isEn ? 'Your current shift is already this schedule.' : 'आपकी वर्तमान शिफ्ट पहले से ही यही है।',
+        errorEn: 'Your current shift is already this schedule.'
+      });
     }
 
     if (sub.shiftChangeStatus === 'pending_approval') {
-      return res.status(400).json({ error: 'आपका एक शिफ्ट बदलाव अनुरोध पहले से समीक्षाधीन है।' });
+      return res.status(400).json({
+        error: isEn ? 'A shift change request is already pending review.' : 'आपका एक शिफ्ट बदलाव अनुरोध पहले से समीक्षाधीन है।',
+        errorEn: 'A shift change request is already pending review.'
+      });
     }
 
     sub.requestedSchedule = requestedSchedule;
@@ -638,7 +649,10 @@ router.post('/request-shift-change', protect, async (req, res) => {
 
     res.json({
       success: true,
-      message: 'शिफ्ट बदलाव अनुरोध सफलतापूर्वक दर्ज कर दिया गया है। एडमिन समीक्षा के बाद यह लागू हो जाएगा।',
+      message: isEn
+        ? 'Shift change request submitted successfully. It will be active after admin review.'
+        : 'शिफ्ट बदलाव अनुरोध सफलतापूर्वक दर्ज कर दिया गया है। एडमिन समीक्षा के बाद यह लागू हो जाएगा।',
+      messageEn: 'Shift change request submitted successfully. It will be active after admin review.',
       subscription: sub
     });
   } catch (error) {

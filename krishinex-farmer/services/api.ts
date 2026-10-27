@@ -21,10 +21,13 @@ export const setOnUnauthorized = (cb: () => void) => {
 // Interceptor to add auth token and ensure live server URL
 api.interceptors.request.use(
     async (config) => {
-
         const token = await AsyncStorage.getItem('userToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        }
+        const lang = await AsyncStorage.getItem('appLanguage');
+        if (lang) {
+            config.headers['Accept-Language'] = lang;
         }
         return config;
     },

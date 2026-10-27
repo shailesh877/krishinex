@@ -187,8 +187,13 @@ export default function MilkSalesScreen() {
         );
         setModalVisible(false);
 
-        // Animate smooth layout transition and push completed/skipped customer to bottom
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        // Animate smooth layout position transition without opacity cross-fade ghosting
+        LayoutAnimation.configureNext({
+          duration: 300,
+          update: {
+            type: LayoutAnimation.Types.easeInEaseOut,
+          },
+        });
         setCustomers(prev => {
           const updated = prev.map(c => {
             if (String(c.subscriptionId) === String(selectedCustomer.subscriptionId)) {
@@ -371,6 +376,21 @@ export default function MilkSalesScreen() {
             const isSkipped = item.log && item.log.status === 'Skipped';
             const isPaused = item.isPausedToday;
 
+            // Single unified status text & style to prevent layout cross-fade ghosting
+            let statusText = hi ? 'बाकी (Pending)' : 'Pending';
+            let statusStyle: any = styles.statusPending;
+
+            if (isPaused) {
+              statusText = hi ? 'रोक (Paused)' : 'Paused';
+              statusStyle = styles.statusPaused;
+            } else if (isCompleted) {
+              statusText = `${item.log.quantityLiters}L (₹${item.log.totalAmount})`;
+              statusStyle = styles.statusDone;
+            } else if (isSkipped) {
+              statusText = hi ? 'छोड़ा गया' : 'Skipped';
+              statusStyle = styles.statusSkippedTxt;
+            }
+
             return (
               <View style={[
                 styles.card,
@@ -410,19 +430,11 @@ export default function MilkSalesScreen() {
                   <View style={styles.statDivider} />
                   <View style={styles.statCol}>
                     <Text style={styles.statLabel}>{hi ? 'शिफ्ट स्थिति' : 'Shift Status'}</Text>
-                    {isPaused ? (
-                      <Text style={styles.statusPaused}>{hi ? 'रोक (Paused)' : 'Paused'}</Text>
-                    ) : isCompleted ? (
-                      <Text style={styles.statusDone}>
-                        {item.log.quantityLiters}L (₹{item.log.totalAmount})
+                    <View style={styles.statusBox}>
+                      <Text style={statusStyle} numberOfLines={1}>
+                        {statusText}
                       </Text>
-                    ) : isSkipped ? (
-                      <Text style={styles.statusSkippedTxt}>
-                        {hi ? 'छोड़ा गया' : 'Skipped'}
-                      </Text>
-                    ) : (
-                      <Text style={styles.statusPending}>{hi ? 'बाकी (Pending)' : 'Pending'}</Text>
-                    )}
+                    </View>
                   </View>
                 </View>
 
@@ -854,6 +866,12 @@ const styles = StyleSheet.create({
   },
   statusRow: {
     marginBottom: 10,
+  },
+  statusBox: {
+    minHeight: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
   },
   statusPending: {
     fontSize: 11,

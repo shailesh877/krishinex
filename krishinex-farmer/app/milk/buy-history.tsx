@@ -28,6 +28,48 @@ export default function MilkBuyHistoryScreen() {
   const { language } = useI18n();
   const hi = language === 'hi';
 
+  const getLocalizedApiMessage = (rawMsg: string | undefined, defaultEn: string, defaultHi?: string): string => {
+    if (!rawMsg) return hi ? (defaultHi || defaultEn) : defaultEn;
+
+    if (hi) {
+      return rawMsg;
+    }
+
+    // Comprehensive translation map from Hindi backend responses to English
+    const translations: [RegExp, string][] = [
+      [/समीक्षाधीन/i, 'A shift change request is already pending review.'],
+      [/शिफ्ट बदलाव.*अनुरोध/i, 'A shift change request is already pending review.'],
+      [/वर्तमान.*शिफ्ट.*पहले से/i, 'Selected shift is already your active schedule.'],
+      [/समान शिफ्ट/i, 'Selected shift is already your active schedule.'],
+      [/सदस्यता नहीं मिली/i, 'Subscription not found.'],
+      [/सफलतापूर्वक दर्ज/i, 'Request submitted successfully.'],
+      [/सक्रिय नहीं/i, 'Subscription is not active.'],
+      [/पहले से ही रोकी/i, 'Service is already paused.'],
+      [/रोकी नहीं गई/i, 'Service is not currently paused.'],
+      [/रद्दीकरण.*समीक्षाधीन/i, 'A cancellation request is already pending review.'],
+      [/रद्दीकरण अर्जी/i, 'Cancellation request submitted.'],
+      [/रोक दी गई/i, 'Service paused successfully.'],
+      [/अवधि.*बढ़ा/i, 'Pause period extended successfully.'],
+      [/पुनः सक्रिय/i, 'Service resumed successfully.'],
+      [/पर्याप्त बैलेंस नहीं/i, 'Insufficient wallet balance.'],
+      [/न्यूनतम.*दिन/i, 'Advance notice required for pause.'],
+      [/स्वीकृति मिलने तक/i, 'Under review. Services locked until admin approval.'],
+    ];
+
+    for (const [pattern, enText] of translations) {
+      if (pattern.test(rawMsg)) {
+        return enText;
+      }
+    }
+
+    // If message contains Devanagari (Hindi) characters in English mode, avoid showing Hindi to English users
+    if (/[\u0900-\u097F]/.test(rawMsg)) {
+      return defaultEn;
+    }
+
+    return rawMsg;
+  };
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -199,13 +241,16 @@ export default function MilkBuyHistoryScreen() {
       if (res.data?.success) {
         showAlert(
           hi ? 'रोक अनुरोध दर्ज' : 'Pause Updated',
-          res.data.message || (hi ? 'दूध खरीद सेवा अस्थायी रूप से रोक दी गई है।' : 'Milk delivery paused.')
+          getLocalizedApiMessage(res.data.message, 'Milk delivery has been paused successfully.', 'दूध खरीद सेवा अस्थायी रूप से रोक दी गई है।')
         );
         setPauseModalVisible(false);
         loadData();
       }
     } catch (err: any) {
-      showAlert(hi ? 'त्रुटि' : 'Error', err.response?.data?.error || 'Failed to pause service');
+      showAlert(
+        hi ? 'त्रुटि' : 'Error',
+        getLocalizedApiMessage(err.response?.data?.error, 'Failed to pause service.', 'सेवा रोकने में त्रुटि हुई।')
+      );
     } finally {
       setSavingPause(false);
     }
@@ -237,13 +282,16 @@ export default function MilkBuyHistoryScreen() {
       if (res.data?.success) {
         showAlert(
           hi ? 'रोक अवधि बढ़ाई गई' : 'Pause Extended',
-          res.data.message || (hi ? 'रोक अवधि सफलतापूर्वक बढ़ा दी गई है।' : 'Pause duration extended successfully.')
+          getLocalizedApiMessage(res.data.message, 'Pause duration extended successfully.', 'रोक अवधि सफलतापूर्वक बढ़ा दी गई है।')
         );
         setExtendModalVisible(false);
         loadData();
       }
     } catch (err: any) {
-      showAlert(hi ? 'त्रुटि' : 'Error', err.response?.data?.error || 'Failed to extend pause');
+      showAlert(
+        hi ? 'त्रुटि' : 'Error',
+        getLocalizedApiMessage(err.response?.data?.error, 'Failed to extend pause period.', 'रोक अवधि बढ़ाने में त्रुटि हुई।')
+      );
     } finally {
       setSavingExtend(false);
     }
@@ -261,11 +309,17 @@ export default function MilkBuyHistoryScreen() {
             try {
               const res = await authApi.resumeMilkService(subscription._id);
               if (res.data?.success) {
-                showAlert(hi ? 'सेवा पुनः सक्रिय 🎉' : 'Service Resumed 🎉', hi ? 'दूध डिलीवरी सेवा पुनः सक्रिय कर दी गई है।' : 'Delivery resumed.');
+                showAlert(
+                  hi ? 'सेवा पुनः सक्रिय 🎉' : 'Service Resumed 🎉',
+                  getLocalizedApiMessage(res.data?.message, 'Delivery resumed successfully.', 'दूध डिलीवरी सेवा पुनः सक्रिय कर दी गई है।')
+                );
                 loadData();
               }
             } catch (err: any) {
-              showAlert(hi ? 'त्रुटि' : 'Error', err.response?.data?.error || 'Failed to resume service');
+              showAlert(
+                hi ? 'त्रुटि' : 'Error',
+                getLocalizedApiMessage(err.response?.data?.error, 'Failed to resume service.', 'सेवा पुनः सक्रिय करने में त्रुटि हुई।')
+              );
             }
           }
         }
@@ -299,7 +353,10 @@ export default function MilkBuyHistoryScreen() {
         loadData();
       }
     } catch (err: any) {
-      showAlert(hi ? 'त्रुटि' : 'Error', err.response?.data?.error || 'Failed to cancel service');
+      showAlert(
+        hi ? 'त्रुटि' : 'Error',
+        getLocalizedApiMessage(err.response?.data?.error, 'Failed to cancel service.', 'सेवा रद्द करने में त्रुटि हुई।')
+      );
     } finally {
       setSavingCancel(false);
     }
@@ -322,13 +379,24 @@ export default function MilkBuyHistoryScreen() {
       if (res.data?.success) {
         showAlert(
           hi ? 'अनुरोध दर्ज 🎉' : 'Request Submitted 🎉',
-          res.data.message || (hi ? 'शिफ्ट बदलाव अनुरोध सफलतापूर्वक दर्ज कर दिया गया है।' : 'Shift change request submitted.')
+          getLocalizedApiMessage(
+            res.data.message,
+            'Shift change request submitted successfully. It will be active after admin review.',
+            'शिफ्ट बदलाव अनुरोध सफलतापूर्वक दर्ज कर दिया गया है।'
+          )
         );
         setShiftModalVisible(false);
         loadData();
       }
     } catch (err: any) {
-      showAlert(hi ? 'त्रुटि' : 'Error', err.response?.data?.error || 'Failed to submit shift change request');
+      showAlert(
+        hi ? 'त्रुटि' : 'Error',
+        getLocalizedApiMessage(
+          err.response?.data?.error,
+          'A shift change request is already pending review.',
+          'आपका एक शिफ्ट बदलाव अनुरोध पहले से समीक्षाधीन है।'
+        )
+      );
     } finally {
       setSavingShiftChange(false);
     }
