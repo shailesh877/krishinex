@@ -845,6 +845,7 @@ router.post('/sell/request-withdrawal', protect, async (req, res) => {
     }
 
     // Atomically claim and lock unwithdrawn logs to prevent race conditions on concurrent taps
+    const transactionId = 'MILK-WTH-' + Date.now() + '_' + Math.floor(Math.random() * 1000);
     const logIds = logs.map(l => l._id);
     const updateResult = await MilkDailyLog.updateMany(
       {
@@ -954,7 +955,7 @@ router.post('/daily-log', protect, async (req, res) => {
         $inc: { walletBalance: -Number(totalAmount) }
       });
 
-      debitTxnId = `TXN_MILK_BUY_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
+      debitTxnId = `MILK-BUY-${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}`;
 
       // Create Transaction record in shared ledger
       await Transaction.create({
@@ -1561,7 +1562,7 @@ router.post('/admin/partners/:id/add-money', protect, async (req, res) => {
 
     // Create completed transaction
     const tx = await Transaction.create({
-      transactionId: 'ADM_CR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      transactionId: 'MILK-ADM-CR-' + Date.now() + '_' + Math.floor(Math.random() * 1000),
       recipient: partner._id,
       module: 'Milk',
       amount: addAmt,
@@ -2727,7 +2728,7 @@ router.post('/partner/record-collection', protect, async (req, res) => {
 
       try {
         await Transaction.create({
-          transactionId: 'PUR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          transactionId: 'MILK-PUR-' + Date.now() + '_' + Math.floor(Math.random() * 1000),
           recipient: partner._id,
           referenceId: log._id,
           module: 'Milk',
@@ -2883,7 +2884,7 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
         if (deltaAmount > 0) {
           try {
             await Transaction.create({
-              transactionId: 'MLK_DR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+              transactionId: 'MILK-DR-' + Date.now() + '_' + Math.floor(Math.random() * 1000),
               recipient: buyer._id,
               module: 'Milk',
               amount: deltaAmount,
@@ -2945,7 +2946,7 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
               await existingTx.save();
             } else {
               await Transaction.create({
-                transactionId: 'SL_CR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                transactionId: 'MILK-CR-' + Date.now() + '_' + Math.floor(Math.random() * 1000),
                 recipient: partner._id,
                 referenceId: log._id,
                 module: 'Milk',
@@ -2967,7 +2968,7 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
           const adminUser = await User.findOne({ role: 'admin' });
           if (adminUser) {
             await Transaction.create({
-              transactionId: 'ADM_CUT_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+              transactionId: 'MILK-ADM-CUT-' + Date.now() + '_' + Math.floor(Math.random() * 1000),
               recipient: adminUser._id,
               module: 'Milk',
               amount: adminCutAmount,
@@ -3198,7 +3199,7 @@ router.get('/partner/wallet', protect, async (req, res) => {
         { recipient: user._id },
         { sender: user._id }
       ],
-      transactionId: { $not: /^ADM_CUT_/ }
+      transactionId: { $not: /^MILK-ADM-CUT-|^ADM_CUT_/ }
     }).sort({ createdAt: -1 }).limit(50);
 
     // Calculate lifetime stats from completed logs performed by this partner
@@ -3263,7 +3264,7 @@ router.post('/partner/wallet/withdraw', protect, async (req, res) => {
 
     // Create a pending payout transaction
     const tx = await Transaction.create({
-      transactionId: 'WTH_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      transactionId: 'MILK-WTH-' + Date.now() + '_' + Math.floor(Math.random() * 1000),
       recipient: user._id,
       module: 'Milk',
       amount: withdrawAmount,

@@ -389,15 +389,19 @@ router.post('/verify-payment', protect, async (req, res) => {
 
     // Create completed Transaction entry for accounting
     try {
+      const txnId = razorpay_payment_id 
+        ? `VIP-${razorpay_payment_id}` 
+        : `VIP-${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
       await Transaction.create({
-        transactionId: 'PF_PAY_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        transactionId: txnId,
         recipient: req.user.id,
         module: 'Platform',
         amount: application.paymentAmount,
         type: 'Collection',
         paymentMode: 'Razorpay',
         status: 'Completed',
-        note: `Premium Farmer Annual Membership Fee (Order: ${razorpay_order_id})`
+        note: `Premium Farmer Annual Membership Fee (Order: ${razorpay_order_id || 'N/A'})`
       });
     } catch (txErr) {
       console.warn('Membership transaction logging skipped:', txErr.message);
