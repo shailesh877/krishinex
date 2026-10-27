@@ -196,23 +196,40 @@ router.get('/my-subscription', protect, async (req, res) => {
 // @access  Private
 router.get('/history', protect, async (req, res) => {
   try {
-    const { type, month, year } = req.query;
+    const { type, month, year, shift, status, startDate, endDate } = req.query;
     if (!type || !['sell', 'buy'].includes(type)) {
       return res.status(400).json({ error: 'Valid subscription type (sell or buy) is required' });
     }
 
-    let dateQuery = {};
-    if (month && year) {
-      const start = new Date(Number(year), Number(month) - 1, 1);
-      const end = new Date(Number(year), Number(month), 0, 23, 59, 59, 999);
-      dateQuery = { date: { $gte: start, $lte: end } };
+    let query = {
+      userId: req.user.id,
+      type
+    };
+
+    if (shift && ['Morning', 'Evening'].includes(shift)) {
+      query.shift = shift;
     }
 
-    const logs = await MilkDailyLog.find({
-      userId: req.user.id,
-      type,
-      ...dateQuery
-    }).sort({ date: -1, shift: -1 }).limit(100);
+    if (status && ['Completed', 'Skipped', 'Paused'].includes(status)) {
+      query.status = status;
+    }
+
+    if (startDate && endDate) {
+      const s = new Date(startDate);
+      s.setHours(0, 0, 0, 0);
+      const e = new Date(endDate);
+      e.setHours(23, 59, 59, 999);
+      query.date = { $gte: s, $lte: e };
+    } else if (month && year) {
+      const start = new Date(Number(year), Number(month) - 1, 1);
+      const end = new Date(Number(year), Number(month), 0, 23, 59, 59, 999);
+      query.date = { $gte: start, $lte: end };
+    }
+
+    const logs = await MilkDailyLog.find(query)
+      .populate('performedBy', 'name phone profilePhotoUrl vehicleNumber vehicleType assignedRoute')
+      .sort({ date: -1, shift: -1 })
+      .limit(300);
 
     // Find active, pending, or latest subscription
     let subscription = await MilkSubscription.findOne({
@@ -582,6 +599,124 @@ router.post('/cancel', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/milk/request-shift-change
+// @desc    Submit request to switch delivery / collection schedule (Morning, Evening, Both)
+// @access  Private
+router.post('/request-shift-change', protect, async (req, res) => {
+  try {
+    const { subscriptionId, requestedSchedule, reason } = req.body;
+    const validSchedules = ['Morning and Evening', 'Morning Only', 'Evening Only'];
+
+    if (!subscriptionId || !requestedSchedule || !validSchedules.includes(requestedSchedule)) {
+      return res.status(400).json({ error: 'मान्य सदस्यता आईडी और नई शिफ्ट चुनना अनिवार्य है।' });
+    }
+
+    const sub = await MilkSubscription.findOne({ _id: subscriptionId, userId: req.user.id });
+    if (!sub) {
+      return res.status(404).json({ error: 'सदस्यता नहीं मिली।' });
+    }
+
+    if (sub.deliverySchedule === requestedSchedule) {
+      return res.status(400).json({ error: 'आपकी वर्तमान शिफ्ट पहले से ही यही है।' });
+    }
+
+    if (sub.shiftChangeStatus === 'pending_approval') {
+      return res.status(400).json({ error: 'आपका एक शिफ्ट बदलाव अनुरोध पहले से समीक्षाधीन है।' });
+    }
+
+    sub.requestedSchedule = requestedSchedule;
+    sub.shiftChangeReason = reason || '';
+    sub.shiftChangeStatus = 'pending_approval';
+    sub.shiftChangeRequestedAt = new Date();
+    await sub.save();
+
+    notifyRealtime({
+      action: 'shift_change_requested',
+      subscription: sub,
+      message: `${sub.name} ने शिफ्ट बदलाव का अनुरोध किया है (${sub.deliverySchedule} -> ${requestedSchedule})`
+    }, req.user.id);
+
+    res.json({
+      success: true,
+      message: 'शिफ्ट बदलाव अनुरोध सफलतापूर्वक दर्ज कर दिया गया है। एडमिन समीक्षा के बाद यह लागू हो जाएगा।',
+      subscription: sub
+    });
+  } catch (error) {
+    console.error('Request Shift Change Error:', error);
+    res.status(500).json({ error: 'Failed to request shift change.' });
+  }
+});
+
+// @route   POST /api/milk/admin/approve-shift-change/:id
+// @desc    Admin approve shift change request
+// @access  Private
+router.post('/admin/approve-shift-change/:id', protect, async (req, res) => {
+  try {
+    const sub = await MilkSubscription.findById(req.params.id);
+    if (!sub) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
+    if (!sub.requestedSchedule) {
+      return res.status(400).json({ error: 'No pending shift change request found.' });
+    }
+
+    const oldSchedule = sub.deliverySchedule;
+    sub.deliverySchedule = sub.requestedSchedule;
+    sub.requestedSchedule = '';
+    sub.shiftChangeStatus = 'approved';
+    sub.shiftChangeAdminRemarks = req.body.remarks || 'Approved by admin';
+    await sub.save();
+
+    notifyRealtime({
+      action: 'shift_change_approved',
+      subscription: sub,
+      message: `आपकी शिफ्ट सफलता से ${sub.deliverySchedule} में बदल दी गई है।`
+    }, sub.userId);
+
+    res.json({
+      success: true,
+      message: `शिफ्ट सफलता से ${oldSchedule} से ${sub.deliverySchedule} में बदल दी गई है।`,
+      subscription: sub
+    });
+  } catch (error) {
+    console.error('Approve Shift Change Error:', error);
+    res.status(500).json({ error: 'Failed to approve shift change.' });
+  }
+});
+
+// @route   POST /api/milk/admin/reject-shift-change/:id
+// @desc    Admin reject shift change request
+// @access  Private
+router.post('/admin/reject-shift-change/:id', protect, async (req, res) => {
+  try {
+    const sub = await MilkSubscription.findById(req.params.id);
+    if (!sub) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
+    sub.requestedSchedule = '';
+    sub.shiftChangeStatus = 'rejected';
+    sub.shiftChangeAdminRemarks = req.body.remarks || 'Rejected by admin';
+    await sub.save();
+
+    notifyRealtime({
+      action: 'shift_change_rejected',
+      subscription: sub,
+      message: 'आपका शिफ्ट बदलाव अनुरोध अस्वीकृत कर दिया गया है।'
+    }, sub.userId);
+
+    res.json({
+      success: true,
+      message: 'शिफ्ट बदलाव अनुरोध अस्वीकृत कर दिया गया है।',
+      subscription: sub
+    });
+  } catch (error) {
+    console.error('Reject Shift Change Error:', error);
+    res.status(500).json({ error: 'Failed to reject shift change.' });
+  }
+});
+
 // @route   GET /api/milk/sell/cycle-status
 // @desc    Get 7-day rollout status, countdown and accumulated unwithdrawn balance for milk seller
 // @access  Private
@@ -593,48 +728,49 @@ router.get('/sell/cycle-status', protect, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Determine cycle start date
-    let cycleStartDate = user.milkCycleStartDate;
-    if (!cycleStartDate) {
-      // Find the first completed unwithdrawn log
-      const firstLog = await MilkDailyLog.findOne({
-        userId: user._id,
-        type: 'sell',
-        status: 'Completed',
-        isProcessedInWithdrawal: false
-      }).sort({ date: 1 });
-
-      if (firstLog) {
-        cycleStartDate = firstLog.date;
-        user.milkCycleStartDate = cycleStartDate;
-        await user.save();
-      } else {
-        cycleStartDate = new Date();
-      }
-    }
-
-    // Calculate elapsed calendar days
-    const now = new Date();
-    const diffMs = Math.max(0, now.getTime() - new Date(cycleStartDate).getTime());
-    const elapsedDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const daysRemaining = Math.max(0, cycleDurationDays - elapsedDays);
-
-    // Sum unwithdrawn earnings from completed logs
+    // Fetch unwithdrawn completed sell logs for this farmer
     const unwithdrawnLogs = await MilkDailyLog.find({
       userId: user._id,
       type: 'sell',
       status: 'Completed',
       isProcessedInWithdrawal: false
-    });
+    }).sort({ date: 1 });
 
     const accumulatedAmount = unwithdrawnLogs.reduce((acc, log) => acc + (log.totalAmount || 0), 0);
 
-    const isEligible = elapsedDays >= cycleDurationDays && accumulatedAmount > 0;
-    const nextEligibleDate = new Date(new Date(cycleStartDate).getTime() + cycleDurationDays * 24 * 60 * 60 * 1000);
+    // Determine true cycle start date from earliest unwithdrawn log
+    let cycleStartDate = null;
+    if (unwithdrawnLogs.length > 0) {
+      cycleStartDate = unwithdrawnLogs[0].date;
+      if (!user.milkCycleStartDate || new Date(user.milkCycleStartDate).getTime() > new Date(cycleStartDate).getTime()) {
+        user.milkCycleStartDate = cycleStartDate;
+        await user.save();
+      }
+    } else {
+      cycleStartDate = user.milkCycleStartDate || new Date();
+    }
+
+    // Normalize to calendar day midnights (00:00:00) so date transitions occur cleanly at midnight
+    const startDate = new Date(cycleStartDate);
+    const startMidnight = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const now = new Date();
+    const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // Difference in calendar days (0 on same day, 1 on next day, etc.)
+    const diffDays = Math.max(0, Math.round((nowMidnight.getTime() - startMidnight.getTime()) / (1000 * 60 * 60 * 24)));
+
+    // Current cycle day: Day 1 on start day, Day 2 on next day, up to cycleDurationDays
+    const currentCycleDay = accumulatedAmount > 0 ? Math.min(cycleDurationDays, diffDays + 1) : 0;
+    const elapsedDays = Math.min(cycleDurationDays, diffDays);
+    const daysRemaining = Math.max(0, cycleDurationDays - diffDays);
+
+    const isEligible = diffDays >= cycleDurationDays && accumulatedAmount > 0;
+    const nextEligibleDate = new Date(startMidnight.getTime() + cycleDurationDays * 24 * 60 * 60 * 1000);
 
     res.json({
       success: true,
       cycleDurationDays,
+      currentCycleDay,
       elapsedDays,
       daysRemaining,
       accumulatedAmount,
@@ -660,24 +796,33 @@ router.post('/sell/request-withdrawal', protect, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Validate cycle timeline
-    const cycleStartDate = user.milkCycleStartDate || user.createdAt;
-    const elapsedDays = Math.floor((Date.now() - new Date(cycleStartDate).getTime()) / (1000 * 60 * 60 * 24));
-
-    if (elapsedDays < cycleDurationDays) {
-      const remaining = cycleDurationDays - elapsedDays;
-      return res.status(400).json({
-        error: `Withdrawal not available yet. Please complete the ${cycleDurationDays}-day cycle. ${remaining} day(s) remaining.`
-      });
-    }
-
-    // Fetch unwithdrawn logs
+    // Fetch unwithdrawn completed logs
     const logs = await MilkDailyLog.find({
       userId: user._id,
       type: 'sell',
       status: 'Completed',
       isProcessedInWithdrawal: false
-    });
+    }).sort({ date: 1 });
+
+    if (!logs || logs.length === 0) {
+      return res.status(400).json({ error: 'No accumulated earnings available for withdrawal.' });
+    }
+
+    // Validate cycle timeline using calendar days from earliest unwithdrawn log
+    const cycleStartDate = logs[0].date || user.milkCycleStartDate || user.createdAt;
+    const startDate = new Date(cycleStartDate);
+    const startMidnight = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const nowMidnight = new Date();
+    nowMidnight.setHours(0, 0, 0, 0);
+
+    const diffDays = Math.max(0, Math.round((nowMidnight.getTime() - startMidnight.getTime()) / (1000 * 60 * 60 * 24)));
+
+    if (diffDays < cycleDurationDays) {
+      const remaining = Math.max(1, cycleDurationDays - diffDays);
+      return res.status(400).json({
+        error: `Withdrawal not available yet. Please complete the ${cycleDurationDays}-day cycle. ${remaining} day(s) remaining.`
+      });
+    }
 
     const withdrawalAmount = logs.reduce((acc, log) => acc + (log.totalAmount || 0), 0);
 
@@ -867,7 +1012,11 @@ router.get('/admin/requests', protect, async (req, res) => {
     let query = {};
 
     if (type && type !== 'all') query.type = type;
-    if (status && status !== 'all') query.status = status;
+    if (status === 'shift_change') {
+      query.shiftChangeStatus = 'pending_approval';
+    } else if (status && status !== 'all') {
+      query.status = status;
+    }
 
     if (search && search.trim()) {
       const regex = new RegExp(search.trim(), 'i');
@@ -885,6 +1034,7 @@ router.get('/admin/requests', protect, async (req, res) => {
     const skip = (page - 1) * limit;
 
     const total = await MilkSubscription.countDocuments(query);
+    const shiftChangePendingCount = await MilkSubscription.countDocuments({ shiftChangeStatus: 'pending_approval' });
     const requests = await MilkSubscription.find(query)
       .populate('userId', 'name phone walletBalance')
       .populate('assignedPartnerId', 'name phone assignedRoute vehicleNumber vehicleType profilePhotoUrl')
@@ -895,6 +1045,7 @@ router.get('/admin/requests', protect, async (req, res) => {
     res.json({
       success: true,
       requests,
+      shiftChangePendingCount,
       pagination: {
         total,
         page,
@@ -905,6 +1056,70 @@ router.get('/admin/requests', protect, async (req, res) => {
   } catch (error) {
     console.error('Admin Requests Error:', error);
     res.status(500).json({ error: 'Failed to fetch milk requests.' });
+  }
+});
+
+// @route   PUT /api/milk/admin/requests/:id/shift-change
+// @desc    Approve or reject a shift change request
+// @access  Private/Admin
+router.put('/admin/requests/:id/shift-change', protect, async (req, res) => {
+  try {
+    const { action, adminRemarks } = req.body;
+    if (!['approved', 'rejected'].includes(action)) {
+      return res.status(400).json({ error: 'Action must be approved or rejected.' });
+    }
+
+    const subscription = await MilkSubscription.findById(req.params.id);
+    if (!subscription) {
+      return res.status(404).json({ error: 'Subscription not found.' });
+    }
+
+    if (subscription.shiftChangeStatus !== 'pending_approval') {
+      return res.status(400).json({ error: 'No pending shift change request on this subscription.' });
+    }
+
+    if (action === 'approved') {
+      const oldSchedule = subscription.deliverySchedule;
+      subscription.deliverySchedule = subscription.requestedSchedule;
+      subscription.shiftChangeStatus = 'approved';
+      subscription.shiftChangeAdminRemarks = adminRemarks || '';
+      await subscription.save();
+
+      notifyRealtime({
+        action: 'shift_change_approved',
+        subscriptionId: subscription._id,
+        userId: subscription.userId,
+        oldSchedule,
+        newSchedule: subscription.deliverySchedule,
+        message: `Your shift change request to ${subscription.deliverySchedule} has been approved!`
+      }, subscription.userId);
+
+      return res.json({
+        success: true,
+        message: `Shift changed to ${subscription.deliverySchedule} successfully!`,
+        subscription
+      });
+    } else {
+      subscription.shiftChangeStatus = 'rejected';
+      subscription.shiftChangeAdminRemarks = adminRemarks || '';
+      await subscription.save();
+
+      notifyRealtime({
+        action: 'shift_change_rejected',
+        subscriptionId: subscription._id,
+        userId: subscription.userId,
+        message: `Your shift change request was rejected.${adminRemarks ? ' Reason: ' + adminRemarks : ''}`
+      }, subscription.userId);
+
+      return res.json({
+        success: true,
+        message: 'Shift change request rejected.',
+        subscription
+      });
+    }
+  } catch (error) {
+    console.error('Shift Change Review Error:', error);
+    res.status(500).json({ error: 'Failed to process shift change request.' });
   }
 });
 
@@ -1968,6 +2183,7 @@ router.get('/admin/stats', protect, async (req, res) => {
     const pausedCount = await MilkSubscription.countDocuments({ status: 'paused' });
     const cancelledCount = await MilkSubscription.countDocuments({ status: 'cancelled' });
     const pendingCancellations = await MilkSubscription.countDocuments({ cancellationStatus: 'pending_approval' });
+    const pendingShiftChanges = await MilkSubscription.countDocuments({ shiftChangeStatus: 'pending_approval' });
     const activePartners = await User.countDocuments({ role: 'milk_partner', status: 'approved' });
     const pendingPartners = await User.countDocuments({ role: 'milk_partner', status: 'pending' });
 
@@ -1997,6 +2213,7 @@ router.get('/admin/stats', protect, async (req, res) => {
         pausedCount,
         cancelledCount,
         pendingCancellations,
+        pendingShiftChanges,
         activePartners,
         pendingPartners,
         todayCollectedLiters: Math.round(todayCollectedLiters * 10) / 10,
@@ -2498,6 +2715,7 @@ router.post('/partner/record-collection', protect, async (req, res) => {
         await Transaction.create({
           transactionId: 'PUR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
           recipient: partner._id,
+          referenceId: log._id,
           module: 'Milk',
           amount: Math.abs(deltaAmount),
           type: deltaAmount > 0 ? 'Debit' : 'Credit',
@@ -2511,8 +2729,8 @@ router.post('/partner/record-collection', protect, async (req, res) => {
 
       const farmer = await User.findById(sub.userId);
       if (farmer) {
-        if (!farmer.milkCycleStartDate) {
-          farmer.milkCycleStartDate = new Date();
+        if (!farmer.milkCycleStartDate || new Date(farmer.milkCycleStartDate).getTime() > dayStart.getTime()) {
+          farmer.milkCycleStartDate = dayStart;
         }
         farmer.milkCycleAccumulatedAmount = Math.max(0, (farmer.milkCycleAccumulatedAmount || 0) + deltaAmount);
         await farmer.save();
@@ -2678,23 +2896,52 @@ router.post('/partner/record-delivery', protect, async (req, res) => {
       adminCutAmount = Math.round((amount * (adminPercent / 100)) * 100) / 100;
       partnerEarning = Math.round((amount - adminCutAmount) * 100) / 100;
 
+      log.adminCommissionPercent = adminPercent;
+      log.adminCutAmount = adminCutAmount;
+      log.partnerEarning = partnerEarning;
+      await log.save();
+
       if (partnerEarning > 0) {
         const partner = await User.findById(req.user.id);
         if (partner) {
-          partner.walletBalance = Math.round(((partner.walletBalance || 0) + partnerEarning) * 100) / 100;
-          await partner.save();
+          // Check if transaction already exists for this daily log
+          let existingTx = await Transaction.findOne({
+            recipient: partner._id,
+            module: 'Milk',
+            referenceId: log._id
+          });
+
+          let deltaPartnerEarning = partnerEarning;
+          if (existingTx) {
+            deltaPartnerEarning = Math.round((partnerEarning - (existingTx.amount || 0)) * 100) / 100;
+          }
+
+          if (deltaPartnerEarning !== 0) {
+            partner.walletBalance = Math.round(((partner.walletBalance || 0) + deltaPartnerEarning) * 100) / 100;
+            await partner.save();
+          }
+
+          const customerName = sub.name || 'Customer';
+          const txNote = `Milk Sale Proceeds: ${qty} L @ ₹${rate}/L (Customer: ${customerName}, Gross ₹${amount} less ${adminPercent}% Platform Fee ₹${adminCutAmount})`;
 
           try {
-            await Transaction.create({
-              transactionId: 'SL_CR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-              recipient: partner._id,
-              module: 'Milk',
-              amount: partnerEarning,
-              type: 'Credit',
-              paymentMode: 'NexCard Wallet',
-              status: 'Completed',
-              note: `Milk Sale Proceeds: ${qty} L @ ₹${rate}/L`
-            });
+            if (existingTx) {
+              existingTx.amount = partnerEarning;
+              existingTx.note = txNote;
+              await existingTx.save();
+            } else {
+              await Transaction.create({
+                transactionId: 'SL_CR_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                recipient: partner._id,
+                referenceId: log._id,
+                module: 'Milk',
+                amount: partnerEarning,
+                type: 'Credit',
+                paymentMode: 'NexCard Wallet',
+                status: 'Completed',
+                note: txNote
+              });
+            }
           } catch (comErr) {
             console.warn('Partner sale earnings transaction logging skipped:', comErr.message);
           }
@@ -2858,31 +3105,61 @@ router.get('/partner/history', protect, async (req, res) => {
       });
     }
 
+    const config = await getOrCreateConfig();
+    const adminPercent = config.adminCommissionPercent !== undefined ? config.adminCommissionPercent : 10;
+
     // Calculate summary statistics
     let totalCollectedLiters = 0;
     let totalDeliveredLiters = 0;
     let totalCollectionPayout = 0;
     let totalDeliveryValue = 0;
+    let totalPlatformFee = 0;
+    let totalPartnerSalesEarnings = 0;
 
-    logs.forEach(l => {
+    const enrichedLogs = logs.map(l => {
+      const obj = l.toObject ? l.toObject() : { ...l };
+      if (obj.type === 'buy' && obj.status === 'Completed') {
+        const feeRate = (obj.adminCommissionPercent !== undefined && obj.adminCommissionPercent !== null)
+          ? obj.adminCommissionPercent
+          : adminPercent;
+        const fee = (obj.adminCutAmount !== undefined && obj.adminCutAmount !== null && obj.adminCutAmount > 0)
+          ? obj.adminCutAmount
+          : Math.round(((obj.totalAmount || 0) * (feeRate / 100)) * 100) / 100;
+        const earning = (obj.partnerEarning !== undefined && obj.partnerEarning !== null && obj.partnerEarning > 0)
+          ? obj.partnerEarning
+          : Math.round(((obj.totalAmount || 0) - fee) * 100) / 100;
+
+        obj.adminCommissionPercent = feeRate;
+        obj.adminCutAmount = fee;
+        obj.partnerEarning = earning;
+      }
+      return obj;
+    });
+
+    enrichedLogs.forEach(l => {
       if (l.type === 'sell' && l.status === 'Completed') {
         totalCollectedLiters += (l.quantityLiters || 0);
         totalCollectionPayout += (l.totalAmount || 0);
       } else if (l.type === 'buy' && l.status === 'Completed') {
         totalDeliveredLiters += (l.quantityLiters || 0);
         totalDeliveryValue += (l.totalAmount || 0);
+        totalPlatformFee += (l.adminCutAmount || 0);
+        totalPartnerSalesEarnings += (l.partnerEarning || 0);
       }
     });
 
     res.json({
       success: true,
-      logs,
+      logs: enrichedLogs,
+      adminCommissionPercent: adminPercent,
       summary: {
         totalLogs: logs.length,
         totalCollectedLiters: Math.round(totalCollectedLiters * 10) / 10,
         totalDeliveredLiters: Math.round(totalDeliveredLiters * 10) / 10,
         totalCollectionPayout: Math.round(totalCollectionPayout * 100) / 100,
         totalDeliveryValue: Math.round(totalDeliveryValue * 100) / 100,
+        totalPlatformFee: Math.round(totalPlatformFee * 100) / 100,
+        totalPartnerSalesEarnings: Math.round(totalPartnerSalesEarnings * 100) / 100,
       }
     });
   } catch (error) {

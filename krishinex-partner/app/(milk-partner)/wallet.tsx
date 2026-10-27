@@ -474,15 +474,18 @@ export default function MilkPartnerWalletScreen() {
               const literMatch = rawNote.match(/(\d+(?:\.\d+)?)\s*L/i);
               const liters = literMatch ? literMatch[1] : null;
 
+              const personMatch = rawNote.match(/\((?:Customer|Farmer|ग्राहक|किसान):\s*([^,)]+)/i);
+              const personName = personMatch ? personMatch[1].trim() : null;
+
               if (/sale proceeds|दूध बिक्री/i.test(rawNote)) {
-                cleanTitle = hi ? 'दूध बिक्री' : 'Milk Sale';
-                cleanSubtitle = liters ? `${liters} L ${hi ? 'दूध' : 'Milk'}` : (hi ? 'बिक्री राशि' : 'Sale proceeds');
+                cleanTitle = personName ? `${hi ? 'दूध बिक्री' : 'Milk Sale'} • ${personName}` : (hi ? 'दूध बिक्री' : 'Milk Sale');
+                cleanSubtitle = liters ? `${liters} L • ${hi ? 'वॉलेट में जमा' : 'Credited'}` : (hi ? 'बिक्री राशि जमा' : 'Sale proceeds');
               } else if (/purchase payment|दूध खरीद/i.test(rawNote)) {
-                cleanTitle = hi ? 'दूध खरीद भुगतान' : 'Milk Purchase';
-                cleanSubtitle = liters ? `${liters} L ${hi ? 'दूध' : 'Milk'}` : (hi ? 'किसान भुगतान' : 'Farmer payment');
+                cleanTitle = personName ? `${hi ? 'दूध खरीद' : 'Milk Purchase'} • ${personName}` : (hi ? 'दूध खरीद' : 'Milk Purchase');
+                cleanSubtitle = liters ? `${liters} L • ${hi ? 'किसान भुगतान' : 'Farmer payment'}` : (hi ? 'किसान भुगतान' : 'Farmer payment');
               } else if (/commission|कमीशन/i.test(rawNote)) {
-                cleanTitle = hi ? 'डिलीवरी कमीशन' : 'Delivery Commission';
-                cleanSubtitle = liters ? `${liters} L ${hi ? 'वितरण' : 'Delivery'}` : (hi ? 'अर्जित कमीशन' : 'Earned commission');
+                cleanTitle = personName ? `${hi ? 'डिलीवरी कमीशन' : 'Delivery Commission'} • ${personName}` : (hi ? 'डिलीवरी कमीशन' : 'Delivery Commission');
+                cleanSubtitle = liters ? `${liters} L • ${hi ? 'वितरण कमीशन' : 'Delivery'}` : (hi ? 'अर्जित कमीशन' : 'Earned commission');
               } else if (/recharge|रिचार्ज/i.test(rawNote)) {
                 cleanTitle = hi ? 'वॉलेट रिचार्ज' : 'Wallet Recharge';
                 cleanSubtitle = hi ? 'सफल रिचार्ज' : 'Online / Admin topup';
@@ -664,6 +667,40 @@ export default function MilkPartnerWalletScreen() {
                   </Text>
                 </View>
               )}
+
+              {/* FARMER / CUSTOMER & LITERS IN MODAL */}
+              {(() => {
+                const modalNote = selectedTx?.note || selectedTx?.description || '';
+                const mPersonMatch = modalNote.match(/\((?:Customer|Farmer|ग्राहक|किसान):\s*([^,)]+)/i);
+                const mPersonName = mPersonMatch ? mPersonMatch[1].trim() : null;
+                const mLiterMatch = modalNote.match(/(\d+(?:\.\d+)?)\s*L/i);
+                const mLiters = mLiterMatch ? mLiterMatch[1] : null;
+
+                return (
+                  <>
+                    {mPersonName && (
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailRowLabel}>
+                          {(selectedTx?.type || '').toLowerCase().includes('credit')
+                            ? (hi ? 'ग्राहक (Customer)' : 'Customer')
+                            : (hi ? 'डेयरी किसान (Farmer)' : 'Dairy Farmer')}
+                        </Text>
+                        <Text style={[styles.detailRowValue, { fontWeight: '900', color: '#0F172A' }]}>
+                          👤 {mPersonName}
+                        </Text>
+                      </View>
+                    )}
+                    {mLiters && (
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailRowLabel}>{hi ? 'दूध की मात्रा' : 'Milk Quantity'}</Text>
+                        <Text style={[styles.detailRowValue, { fontWeight: '800', color: '#0F172A' }]}>
+                          🥛 {mLiters} L
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* FULL NOTE / BREAKDOWN */}
               <View style={styles.detailNoteCard}>

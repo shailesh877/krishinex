@@ -68,6 +68,22 @@ export default function MilkSellHistoryScreen() {
   const [agreementChecked, setAgreementChecked] = useState(false);
   const [savingCancel, setSavingCancel] = useState(false);
 
+  // Shift Change Modal State
+  const [shiftModalVisible, setShiftModalVisible] = useState(false);
+  const [newSchedule, setNewSchedule] = useState<'Morning Only' | 'Evening Only' | 'Morning and Evening'>('Morning and Evening');
+  const [shiftReason, setShiftReason] = useState('');
+  const [savingShiftChange, setSavingShiftChange] = useState(false);
+  const [morningShiftWindow, setMorningShiftWindow] = useState('06:00 AM - 08:30 AM');
+  const [eveningShiftWindow, setEveningShiftWindow] = useState('05:00 PM - 07:30 PM');
+
+  // History Filter State
+  const [shiftFilter, setShiftFilter] = useState<'All' | 'Morning' | 'Evening'>('All');
+  const [datePreset, setDatePreset] = useState<'all' | 'today' | 'week' | 'month'>('all');
+
+  // Detail Breakdown Modal State
+  const [selectedLog, setSelectedLog] = useState<any | null>(null);
+  const [menuModalVisible, setMenuModalVisible] = useState(false);
+
   useEffect(() => {
     loadAllData();
 
@@ -124,6 +140,12 @@ export default function MilkSellHistoryScreen() {
         }
         if (res.data.config.maxAutoApprovePauseDays !== undefined) {
           setMaxAutoApproveDays(res.data.config.maxAutoApprovePauseDays);
+        }
+        if (res.data.config.morningShiftWindow) {
+          setMorningShiftWindow(res.data.config.morningShiftWindow);
+        }
+        if (res.data.config.eveningShiftWindow) {
+          setEveningShiftWindow(res.data.config.eveningShiftWindow);
         }
       }
     } catch (e) {
@@ -340,12 +362,64 @@ export default function MilkSellHistoryScreen() {
     }
   };
 
+  const handleRequestShiftChange = async () => {
+    if (newSchedule === subscription?.deliverySchedule) {
+      return showAlert(
+        hi ? 'समान शिफ्ट' : 'Same Shift',
+        hi ? 'आपकी वर्तमान संकलन शिफ्ट पहले से ही यही है।' : 'Selected shift is already your active supply shift.'
+      );
+    }
+    try {
+      setSavingShiftChange(true);
+      const res = await authApi.requestShiftChange({
+        subscriptionId: subscription._id,
+        requestedSchedule: newSchedule,
+        reason: shiftReason,
+      });
+      if (res.data?.success) {
+        showAlert(
+          hi ? 'अनुरोध दर्ज 🎉' : 'Request Submitted 🎉',
+          res.data.message || (hi ? 'शिफ्ट बदलाव अनुरोध सफलतापूर्वक दर्ज कर दिया गया है।' : 'Shift change request submitted.')
+        );
+        setShiftModalVisible(false);
+        loadAllData();
+      }
+    } catch (err: any) {
+      showAlert(hi ? 'त्रुटि' : 'Error', err.response?.data?.error || 'Failed to submit shift change request');
+    } finally {
+      setSavingShiftChange(false);
+    }
+  };
+
   const isPaused = subscription?.status === 'paused';
+  const isShiftChangePending = subscription?.shiftChangeStatus === 'pending_approval';
+
+  const filteredLogs = logs.filter(log => {
+    if (shiftFilter !== 'All' && log.shift !== shiftFilter) {
+      return false;
+    }
+    if (datePreset !== 'all') {
+      const logDate = new Date(log.date);
+      const now = new Date();
+      if (datePreset === 'today') {
+        if (logDate.toDateString() !== now.toDateString()) return false;
+      } else if (datePreset === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(now.getDate() - 7);
+        if (logDate < weekAgo) return false;
+      } else if (datePreset === 'month') {
+        if (logDate.getMonth() !== now.getMonth() || logDate.getFullYear() !== now.getFullYear()) return false;
+      }
+    }
+    return true;
+  });
   const isPausePending = subscription?.pauseApprovalStatus === 'pending_approval';
   const isCancellationPending = subscription?.cancellationStatus === 'pending_approval';
   const isCancelledApproved = subscription?.status === 'cancelled' && subscription?.cancellationStatus !== 'pending_approval';
   const cycleDaysTotal = cycleData?.cycleDurationDays || 7;
-  const cycleDaysDone = cycleData?.elapsedDays || 0;
+  const cycleDaysDone = cycleData?.currentCycleDay !== undefined
+    ? cycleData.currentCycleDay
+    : (cycleData?.elapsedDays !== undefined ? cycleData.elapsedDays : 0);
   const progressRatio = Math.min(1, cycleDaysDone / cycleDaysTotal);
 
   // Advance notice min date calculation
@@ -387,10 +461,22 @@ export default function MilkSellHistoryScreen() {
               : (hi ? 'दैनिक संकलन' : 'Daily Supply')}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => router.push('/wallet')} style={styles.mainWalletPill}>
-          <Ionicons name="wallet" size={14} color="#059669" />
-          <Text style={styles.mainWalletText}>₹{mainWalletBalance}</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity onPress={() => router.push('/wallet')} style={styles.mainWalletPill}>
+            <Ionicons name="wallet" size={14} color="#059669" />
+            <Text style={styles.mainWalletText}>₹{mainWalletBalance}</Text>
+          </TouchableOpacity>
+          {subscription && subscription.status !== 'pending' && !isCancelledApproved && (
+            <TouchableOpacity
+              style={styles.headerMenuBtn}
+              onPress={() => setMenuModalVisible(true)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="ellipsis-vertical" size={20} color="#0F172A" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {loading ? (
@@ -793,8 +879,8 @@ export default function MilkSellHistoryScreen() {
                 {cycleData?.isEligible
                   ? (hi ? '✓ चक्र पूर्ण! निकासी हेतु तैयार' : '✓ Cycle Completed! Ready to withdraw')
                   : (hi
-                    ? `निकासी अनलॉक में ${cycleData?.daysRemaining || 7} दिन शेष हैं`
-                    : `${cycleData?.daysRemaining || 7} day(s) remaining for withdrawal`)}
+                    ? `निकासी अनलॉक में ${cycleData?.daysRemaining !== undefined ? cycleData.daysRemaining : 6} दिन शेष हैं`
+                    : `${cycleData?.daysRemaining !== undefined ? cycleData.daysRemaining : 6} day(s) remaining for withdrawal`)}
               </Text>
             </View>
 
@@ -941,61 +1027,223 @@ export default function MilkSellHistoryScreen() {
               </Text>
             </View>
           ) : !isCancelledApproved ? (
-            <View style={styles.actionRow}>
-              {!isPaused && !isPausePending && (
-                <TouchableOpacity
-                  style={styles.actionBtnSecondary}
-                  onPress={() => {
-                    const s = new Date();
-                    s.setHours(0, 0, 0, 0);
-                    s.setDate(s.getDate() + minAdvanceDays);
-                    setStartDateObj(s);
-                    setResumeDateObj(null);
-                    setPauseReason('');
-                    setPauseModalVisible(true);
-                  }}
-                >
-                  <Ionicons name="pause" size={15} color="#7C3AED" />
-                  <Text style={[styles.actionBtnText, { color: '#7C3AED' }]}>
-                    {hi ? 'सेवा रोकें (Pause)' : 'Pause Service'}
-                  </Text>
-                </TouchableOpacity>
+            <>
+              {/* PENDING SHIFT CHANGE BANNER */}
+              {isShiftChangePending && (
+                <View style={styles.shiftPendingCard}>
+                  <View style={styles.shiftPendingHeader}>
+                    <View style={styles.shiftPendingIconCircle}>
+                      <Ionicons name="time" size={20} color="#D97706" />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <Text style={styles.shiftPendingTitle}>
+                        {hi ? 'शिफ्ट बदलाव अनुरोध समीक्षाधीन है' : 'Shift Change Pending Review'}
+                      </Text>
+                      <Text style={styles.shiftPendingSub}>
+                        {hi
+                          ? `अनुरोधित नई शिफ्ट: ${
+                              subscription.requestedSchedule === 'Morning and Evening'
+                                ? 'सुबह और शाम दोनों'
+                                : subscription.requestedSchedule === 'Evening Only'
+                                ? 'केवल शाम'
+                                : 'केवल सुबह'
+                            }`
+                          : `Requested: ${subscription.requestedSchedule}`}
+                      </Text>
+                      {subscription?.shiftChangeReason ? (
+                        <Text style={styles.shiftPendingReasonText}>
+                          {hi ? `कारण: ${subscription.shiftChangeReason}` : `Reason: ${subscription.shiftChangeReason}`}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                </View>
               )}
+            </>
+          ) : null}
+
+          {/* CALENDAR-WISE DELIVERY LOGS HEADER */}
+          <View style={styles.sectionHeadingRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="receipt-outline" size={18} color="#059669" />
+              <Text style={styles.sectionHeading}>{hi ? 'दैनिक दूध आपूर्ति रिकॉर्ड' : 'Daily Supply Records'}</Text>
+            </View>
+            <View style={styles.filterCountBadgeContainer}>
+              <Text style={[styles.filterCountBadge, { color: '#059669', backgroundColor: '#DCFCE7' }]}>
+                {filteredLogs.length} {hi ? 'प्रविष्टियां' : 'entries'}
+              </Text>
+            </View>
+          </View>
+
+          {/* PREMIUM INTERACTIVE FILTER CARD */}
+          <View style={styles.filterCard}>
+            {/* 1. SHIFT SELECTOR */}
+            <View style={styles.filterSectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <Ionicons name="time-outline" size={13} color="#64748B" />
+                <Text style={styles.filterSectionTitle}>{hi ? 'आपूर्ति शिफ्ट' : 'SUPPLY SHIFT'}</Text>
+              </View>
+              {shiftFilter !== 'All' && (
+                <View style={[styles.filterActiveBadge, { backgroundColor: '#DCFCE7' }]}>
+                  <Text style={[styles.filterActiveBadgeText, { color: '#059669' }]}>
+                    {shiftFilter === 'Morning' ? (hi ? 'सुबह सक्रिय' : 'Morning Active') : (hi ? 'शाम सक्रिय' : 'Evening Active')}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.filterSegmentedRow}>
+              <TouchableOpacity
+                style={[styles.filterSegmentBtn, shiftFilter === 'All' && [styles.filterSegmentBtnActive, { backgroundColor: '#059669', borderColor: '#059669' }]]}
+                onPress={() => setShiftFilter('All')}
+                activeOpacity={0.75}
+              >
+                <Ionicons
+                  name="grid-outline"
+                  size={13}
+                  color={shiftFilter === 'All' ? '#FFFFFF' : '#64748B'}
+                />
+                <Text style={[styles.filterSegmentBtnText, shiftFilter === 'All' && styles.filterSegmentBtnTextActive]}>
+                  {hi ? 'सभी शिफ्ट' : 'All Shifts'}
+                </Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionBtnSecondary}
-                onPress={() => setCancelModalVisible(true)}
+                style={[styles.filterSegmentBtn, shiftFilter === 'Morning' && [styles.filterSegmentBtnActive, { backgroundColor: '#059669', borderColor: '#059669' }]]}
+                onPress={() => setShiftFilter('Morning')}
+                activeOpacity={0.75}
               >
-                <Ionicons name="close-circle-outline" size={16} color="#DC2626" />
-                <Text style={[styles.actionBtnText, { color: '#DC2626' }]}>
-                  {hi ? 'सेवा रद्द करें (Cancel)' : 'Cancel Service'}
+                <Ionicons
+                  name="sunny"
+                  size={14}
+                  color={shiftFilter === 'Morning' ? '#FFFFFF' : '#D97706'}
+                />
+                <Text style={[styles.filterSegmentBtnText, shiftFilter === 'Morning' && styles.filterSegmentBtnTextActive]}>
+                  {hi ? 'सुबह' : 'Morning'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterSegmentBtn, shiftFilter === 'Evening' && [styles.filterSegmentBtnActive, { backgroundColor: '#059669', borderColor: '#059669' }]]}
+                onPress={() => setShiftFilter('Evening')}
+                activeOpacity={0.75}
+              >
+                <Ionicons
+                  name="moon"
+                  size={13}
+                  color={shiftFilter === 'Evening' ? '#FFFFFF' : '#6366F1'}
+                />
+                <Text style={[styles.filterSegmentBtnText, shiftFilter === 'Evening' && styles.filterSegmentBtnTextActive]}>
+                  {hi ? 'शाम' : 'Evening'}
                 </Text>
               </TouchableOpacity>
             </View>
-          ) : null}
 
-          {/* DELIVERY LOGS SECTION */}
-          <Text style={styles.sectionHeading}>{hi ? 'दैनिक दूध आपूर्ति रिकॉर्ड' : 'Daily Supply Records'}</Text>
+            {/* DIVIDER */}
+            <View style={styles.filterCardDivider} />
 
-          {logs.length === 0 ? (
+            {/* 2. TIME PERIOD SELECTOR */}
+            <View style={styles.filterSectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <Ionicons name="calendar-outline" size={13} color="#64748B" />
+                <Text style={styles.filterSectionTitle}>{hi ? 'समय अवधि' : 'TIME PERIOD'}</Text>
+              </View>
+              {(shiftFilter !== 'All' || datePreset !== 'all') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setShiftFilter('All');
+                    setDatePreset('all');
+                  }}
+                  style={[styles.filterResetLink, { backgroundColor: '#ECFDF5' }]}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="refresh" size={11} color="#059669" />
+                  <Text style={[styles.filterResetLinkText, { color: '#059669' }]}>{hi ? 'रीसेट करें' : 'Reset'}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={styles.datePresetsRow}>
+              <TouchableOpacity
+                style={[styles.datePresetPill, datePreset === 'all' && [styles.datePresetPillActive, { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' }]]}
+                onPress={() => setDatePreset('all')}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.datePresetPillText, datePreset === 'all' && [styles.datePresetPillTextActive, { color: '#15803D' }]]}>
+                  {hi ? 'पूरा इतिहास' : 'All Time'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.datePresetPill, datePreset === 'today' && [styles.datePresetPillActive, { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' }]]}
+                onPress={() => setDatePreset('today')}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.datePresetPillText, datePreset === 'today' && [styles.datePresetPillTextActive, { color: '#15803D' }]]}>
+                  {hi ? 'आज' : 'Today'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.datePresetPill, datePreset === 'week' && [styles.datePresetPillActive, { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' }]]}
+                onPress={() => setDatePreset('week')}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.datePresetPillText, datePreset === 'week' && [styles.datePresetPillTextActive, { color: '#15803D' }]]}>
+                  {hi ? 'इस हफ्ते' : 'This Week'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.datePresetPill, datePreset === 'month' && [styles.datePresetPillActive, { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' }]]}
+                onPress={() => setDatePreset('month')}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.datePresetPillText, datePreset === 'month' && [styles.datePresetPillTextActive, { color: '#15803D' }]]}>
+                  {hi ? 'इस महीने' : 'This Month'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {filteredLogs.length === 0 ? (
             <View style={styles.emptyCard}>
               <Ionicons name="file-tray-outline" size={40} color="#CBD5E1" />
               <Text style={styles.emptyText}>
-                {hi ? 'अभी तक कोई आपूर्ति रिकॉर्ड नहीं है।' : 'No delivery logs recorded yet.'}
+                {logs.length === 0
+                  ? (hi ? 'अभी तक कोई आपूर्ति रिकॉर्ड नहीं है।' : 'No delivery logs recorded yet.')
+                  : (hi ? 'चयनित फ़िल्टर अनुसार कोई रिकॉर्ड नहीं मिला।' : 'No records match selected filter.')}
               </Text>
-              <Text style={styles.emptySubtext}>
-                {hi ? 'दूध पार्टनर द्वारा संकलन दर्ज करते ही यहाँ विवरण दिखेगा।' : 'Daily entries will appear here once partner collects milk.'}
-              </Text>
+              {logs.length > 0 && (shiftFilter !== 'All' || datePreset !== 'all') ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setShiftFilter('All');
+                    setDatePreset('all');
+                  }}
+                  style={styles.resetFilterBtn}
+                >
+                  <Text style={styles.resetFilterBtnText}>{hi ? 'फ़िल्टर हटाएं (Reset)' : 'Reset Filters'}</Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.emptySubtext}>
+                  {hi ? 'दूध पार्टनर द्वारा संकलन दर्ज करते ही यहाँ विवरण दिखेगा।' : 'Daily entries will appear here once partner collects milk.'}
+                </Text>
+              )}
             </View>
           ) : (
-            logs.map(log => {
+            filteredLogs.map(log => {
               const logDate = new Date(log.date).toLocaleDateString('en-IN', {
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric',
               });
               return (
-                <View key={log._id} style={styles.logCard}>
+                <TouchableOpacity
+                  key={log._id}
+                  style={styles.logCard}
+                  onPress={() => setSelectedLog(log)}
+                  activeOpacity={0.75}
+                >
                   <View style={styles.logLeft}>
                     <View style={styles.shiftBadge}>
                       <Ionicons
@@ -1016,18 +1264,181 @@ export default function MilkSellHistoryScreen() {
                     <Text style={styles.logQty}>{log.quantityLiters} L</Text>
                     <Text style={styles.logRate}>₹{log.ratePerLiter}/L</Text>
                     <Text style={styles.logTotal}>+₹{log.totalAmount}</Text>
-                    {log.isProcessedInWithdrawal && (
-                      <Text style={styles.withdrawnBadge}>
-                        {hi ? 'वॉलेट में अंतरित' : 'Withdrawn'}
-                      </Text>
-                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      {log.isProcessedInWithdrawal ? (
+                        <Text style={styles.withdrawnBadge}>
+                          {hi ? 'वॉलेट में अंतरित' : 'Withdrawn'}
+                        </Text>
+                      ) : (
+                        <Text style={[styles.withdrawnBadge, { backgroundColor: '#FEF3C7', color: '#B45309', borderColor: '#FDE68A' }]}>
+                          {hi ? 'संचित' : 'Accumulated'}
+                        </Text>
+                      )}
+                      <Ionicons name="chevron-forward" size={13} color="#94A3B8" />
+                    </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })
           )}
         </ScrollView>
       )}
+
+      {/* 3-DOTS QUICK ACTION MENU MODAL */}
+      <Modal visible={menuModalVisible} transparent animationType="fade">
+        <TouchableOpacity
+          style={styles.actionSheetBackdrop}
+          activeOpacity={1}
+          onPress={() => setMenuModalVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.actionSheetContent}
+            activeOpacity={1}
+            onPress={e => e.stopPropagation()}
+          >
+            {/* DRAG HANDLE */}
+            <View style={styles.actionSheetHandle} />
+
+            {/* HEADER */}
+            <View style={styles.actionSheetHeader}>
+              <View>
+                <Text style={styles.actionSheetTitle}>
+                  {hi ? 'सेवा प्रबंधन विकल्प' : 'Supply Options'}
+                </Text>
+                <Text style={styles.actionSheetSub}>
+                  {subscription?.status === 'paused'
+                    ? (hi ? 'वर्तमान स्थिति: आपूर्ति अस्थायी रुकी हुई' : 'Status: Currently Paused')
+                    : (hi ? 'वर्तमान स्थिति: सक्रिय दूध बिक्री सेवा' : 'Status: Active Supply Subscription')}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setMenuModalVisible(false)}
+                style={styles.actionSheetCloseBtn}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close" size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {/* IF CANCELLATION PENDING */}
+            {isCancellationPending ? (
+              <View style={styles.actionSheetLockedBox}>
+                <Ionicons name="lock-closed" size={20} color="#DC2626" />
+                <Text style={styles.actionSheetLockedText}>
+                  {hi
+                    ? 'आपकी स्थायी रद्दीकरण अर्जी समीक्षा में है। सभी कार्यवाहियां लॉक हैं।'
+                    : 'Cancellation request is pending admin review. All actions are locked.'}
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.actionSheetOptionsList}>
+                {/* 1. PAUSE OR RESUME */}
+                {isPaused ? (
+                  <TouchableOpacity
+                    style={styles.actionSheetOptionItem}
+                    onPress={() => {
+                      setMenuModalVisible(false);
+                      handleResumeService();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.actionSheetOptionIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                      <Ionicons name="play" size={20} color="#15803D" />
+                    </View>
+                    <View style={styles.actionSheetOptionContent}>
+                      <Text style={[styles.actionSheetOptionTitle, { color: '#15803D' }]}>
+                        {hi ? 'आपूर्ति पुनः शुरू करें (Resume)' : 'Resume Milk Supply'}
+                      </Text>
+                      <Text style={styles.actionSheetOptionSub}>
+                        {hi ? 'अस्थायी रोक समाप्त कर दैनिक दूध संकलन पुनः शुरू करें' : 'End temporary pause and restart daily milk collection'}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.actionSheetOptionItem}
+                    onPress={() => {
+                      setMenuModalVisible(false);
+                      const s = new Date();
+                      s.setHours(0, 0, 0, 0);
+                      s.setDate(s.getDate() + minAdvanceDays);
+                      setStartDateObj(s);
+                      setResumeDateObj(null);
+                      setPauseReason('');
+                      setPauseModalVisible(true);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.actionSheetOptionIconCircle, { backgroundColor: '#F3E8FF' }]}>
+                      <Ionicons name="pause" size={20} color="#7C3AED" />
+                    </View>
+                    <View style={styles.actionSheetOptionContent}>
+                      <Text style={[styles.actionSheetOptionTitle, { color: '#0F172A' }]}>
+                        {hi ? 'आपूर्ति अस्थायी रोकें (Pause)' : 'Pause Milk Supply'}
+                      </Text>
+                      <Text style={styles.actionSheetOptionSub}>
+                        {hi ? 'अनुपलब्धता या छुट्टी के दिनों के लिए आपूर्ति रोकें' : 'Temporarily pause supply for upcoming dates'}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+                  </TouchableOpacity>
+                )}
+
+                {/* 2. CHANGE SHIFT */}
+                <TouchableOpacity
+                  style={styles.actionSheetOptionItem}
+                  onPress={() => {
+                    setMenuModalVisible(false);
+                    setNewSchedule(subscription?.deliverySchedule || 'Morning Only');
+                    setShiftReason('');
+                    setShiftModalVisible(true);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.actionSheetOptionIconCircle, { backgroundColor: '#E0F2FE' }]}>
+                    <Ionicons name="swap-horizontal" size={20} color="#0284C7" />
+                  </View>
+                  <View style={styles.actionSheetOptionContent}>
+                    <Text style={[styles.actionSheetOptionTitle, { color: '#0F172A' }]}>
+                      {hi ? 'आपूर्ति शिफ्ट बदलें' : 'Change Supply Shift'}
+                    </Text>
+                    <Text style={styles.actionSheetOptionSub}>
+                      {hi ? 'सुबह, शाम या दोनों समय की शिफ्ट में बदलाव का अनुरोध' : 'Request switch between Morning, Evening or Both'}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+
+                <View style={styles.actionSheetDivider} />
+
+                {/* 3. CANCEL SERVICE */}
+                <TouchableOpacity
+                  style={[styles.actionSheetOptionItem, { borderBottomWidth: 0 }]}
+                  onPress={() => {
+                    setMenuModalVisible(false);
+                    setCancelModalVisible(true);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.actionSheetOptionIconCircle, { backgroundColor: '#FEE2E2' }]}>
+                    <Ionicons name="close-circle-outline" size={20} color="#DC2626" />
+                  </View>
+                  <View style={styles.actionSheetOptionContent}>
+                    <Text style={[styles.actionSheetOptionTitle, { color: '#DC2626' }]}>
+                      {hi ? 'सेवा स्थायी रूप से रद्द करें' : 'Cancel Supply Service'}
+                    </Text>
+                    <Text style={styles.actionSheetOptionSub}>
+                      {hi ? 'दूध बिक्री सेवा स्थायी रूप से समाप्त करने की अर्जी दें' : 'Submit request to permanently stop milk supply service'}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#DC2626" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
 
       {/* PAUSE MODAL WITH CALENDAR DATEPICKER */}
       <Modal visible={pauseModalVisible} transparent animationType="fade">
@@ -1415,6 +1826,315 @@ export default function MilkSellHistoryScreen() {
                 <Text style={styles.modalActionText}>{hi ? 'सेवा स्थायी रूप से रद्द करें' : 'Confirm Cancellation'}</Text>
               )}
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* SHIFT CHANGE REQUEST MODAL */}
+      <Modal visible={shiftModalVisible} transparent animationType="fade" onRequestClose={() => setShiftModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#D1FAE5', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="swap-horizontal" size={18} color="#059669" />
+                </View>
+                <Text style={styles.modalTitle}>{hi ? 'दूध संकलन शिफ्ट बदलें' : 'Change Collection Shift'}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShiftModalVisible(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalDesc}>
+              {hi
+                ? `अपनी वर्तमान संकलन शिफ्ट (${subscription?.deliverySchedule === 'Morning and Evening' ? 'सुबह और शाम दोनों' : subscription?.deliverySchedule === 'Evening Only' ? 'केवल शाम' : 'केवल सुबह'}) से नई शिफ्ट चुनने के लिए आवेदन करें।`
+                : `Request to change your active milk collection schedule from ${subscription?.deliverySchedule || 'current'}.`}
+            </Text>
+
+            <Text style={styles.fieldLabel}>{hi ? 'नई वांछित शिफ्ट चुनें:' : 'Select Desired Shift:'}</Text>
+            <View style={styles.scheduleOptionsCol}>
+              {/* Option 1: Morning Only */}
+              <TouchableOpacity
+                style={[styles.scheduleOptionCard, newSchedule === 'Morning Only' && styles.scheduleOptionCardActive]}
+                onPress={() => setNewSchedule('Morning Only')}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.scheduleIconCircle, { backgroundColor: '#FEF3C7' }]}>
+                  <Ionicons name="sunny" size={18} color="#D97706" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={[styles.scheduleTitle, newSchedule === 'Morning Only' && { color: '#059669' }]}>
+                    {hi ? 'केवल सुबह (Morning Only)' : 'Morning Only'}
+                  </Text>
+                  <Text style={styles.scheduleSub}>{hi ? `सुबह ${morningShiftWindow}` : morningShiftWindow}</Text>
+                </View>
+                <Ionicons
+                  name={newSchedule === 'Morning Only' ? 'radio-button-on' : 'radio-button-off'}
+                  size={20}
+                  color={newSchedule === 'Morning Only' ? '#059669' : '#94A3B8'}
+                />
+              </TouchableOpacity>
+
+              {/* Option 2: Evening Only */}
+              <TouchableOpacity
+                style={[styles.scheduleOptionCard, newSchedule === 'Evening Only' && styles.scheduleOptionCardActive]}
+                onPress={() => setNewSchedule('Evening Only')}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.scheduleIconCircle, { backgroundColor: '#EDE9FE' }]}>
+                  <Ionicons name="moon" size={18} color="#6D28D9" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={[styles.scheduleTitle, newSchedule === 'Evening Only' && { color: '#059669' }]}>
+                    {hi ? 'केवल शाम (Evening Only)' : 'Evening Only'}
+                  </Text>
+                  <Text style={styles.scheduleSub}>{hi ? `शाम ${eveningShiftWindow}` : eveningShiftWindow}</Text>
+                </View>
+                <Ionicons
+                  name={newSchedule === 'Evening Only' ? 'radio-button-on' : 'radio-button-off'}
+                  size={20}
+                  color={newSchedule === 'Evening Only' ? '#059669' : '#94A3B8'}
+                />
+              </TouchableOpacity>
+
+              {/* Option 3: Both Shifts */}
+              <TouchableOpacity
+                style={[styles.scheduleOptionCard, newSchedule === 'Morning and Evening' && styles.scheduleOptionCardActive]}
+                onPress={() => setNewSchedule('Morning and Evening')}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.scheduleIconCircle, { backgroundColor: '#ECFDF5' }]}>
+                  <Ionicons name="time" size={18} color="#059669" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={[styles.scheduleTitle, newSchedule === 'Morning and Evening' && { color: '#059669' }]}>
+                    {hi ? 'सुबह और शाम दोनों (Both Shifts)' : 'Both Shifts'}
+                  </Text>
+                  <Text style={styles.scheduleSub}>
+                    {hi ? `सुबह (${morningShiftWindow}) • शाम (${eveningShiftWindow})` : `Morning: ${morningShiftWindow} • Evening: ${eveningShiftWindow}`}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={newSchedule === 'Morning and Evening' ? 'radio-button-on' : 'radio-button-off'}
+                  size={20}
+                  color={newSchedule === 'Morning and Evening' ? '#059669' : '#94A3B8'}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.fieldLabel, { marginTop: 12 }]}>{hi ? 'बदलाव का कारण (वैकल्पिक):' : 'Reason for Change (Optional):'}</Text>
+            <TextInput
+              style={[styles.modalInput, { height: 60 }]}
+              value={shiftReason}
+              onChangeText={setShiftReason}
+              placeholder={hi ? 'समय में बदलाव, दुधारू पशु चक्र, आदि...' : 'Reason for changing collection schedule...'}
+              multiline
+            />
+
+            <TouchableOpacity
+              style={[styles.modalActionBtn, { backgroundColor: '#059669', marginTop: 16 }, savingShiftChange && { opacity: 0.6 }]}
+              onPress={handleRequestShiftChange}
+              disabled={savingShiftChange}
+            >
+              {savingShiftChange ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.modalActionText}>{hi ? 'शिफ्ट बदलाव अनुरोध भेजें' : 'Submit Shift Request'}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* DETAILED LOG RECORD MODAL */}
+      <Modal visible={!!selectedLog} transparent animationType="fade" onRequestClose={() => setSelectedLog(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.detailModalContent}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#D1FAE5', alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="document-text" size={18} color="#059669" />
+                </View>
+                <Text style={styles.modalTitle}>{hi ? 'दूध संकलन सम्पूर्ण विवरण' : 'Supply & Quality Details'}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setSelectedLog(null)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {selectedLog && (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
+                {/* Hero Summary Card */}
+                <View style={[styles.detailHeroCard, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                  <View style={[styles.detailHeroIconCircle, { shadowColor: '#059669' }]}>
+                    <Ionicons name="water" size={32} color="#059669" />
+                  </View>
+                  <Text style={styles.detailHeroQty}>{selectedLog.quantityLiters} L</Text>
+                  <Text style={[styles.detailHeroAmount, { color: '#059669' }]}>+₹{selectedLog.totalAmount}</Text>
+                  <View style={styles.detailHeroBadgeRow}>
+                    <View style={styles.detailShiftPill}>
+                      <Ionicons
+                        name={selectedLog.shift === 'Morning' ? 'sunny-outline' : 'moon-outline'}
+                        size={12}
+                        color={selectedLog.shift === 'Morning' ? '#D97706' : '#4F46E5'}
+                      />
+                      <Text style={styles.detailShiftPillText}>
+                        {selectedLog.shift === 'Morning' ? (hi ? 'सुबह की पाली' : 'Morning Shift') : (hi ? 'शाम की पाली' : 'Evening Shift')}
+                      </Text>
+                    </View>
+                    <View style={[styles.detailStatusPill, { backgroundColor: selectedLog.status === 'Completed' ? '#D1FAE5' : '#FEF2F2' }]}>
+                      <Ionicons
+                        name={selectedLog.status === 'Completed' ? 'checkmark-circle' : 'alert-circle'}
+                        size={12}
+                        color={selectedLog.status === 'Completed' ? '#059669' : '#DC2626'}
+                      />
+                      <Text style={[styles.detailStatusPillText, { color: selectedLog.status === 'Completed' ? '#065F46' : '#991B1B' }]}>
+                        {selectedLog.status === 'Completed' ? (hi ? 'संकलन संपन्न' : 'Collected') : selectedLog.status}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Quality Metrics Box (FAT & SNF) */}
+                <View style={styles.qualityCard}>
+                  <Text style={styles.qualityCardTitle}>{hi ? 'दूध गुणवत्ता व पैमाना (Quality Metrics)' : 'Milk Quality Metrics'}</Text>
+                  <View style={styles.qualityGrid}>
+                    <View style={styles.qualityBox}>
+                      <Text style={styles.qualityLabel}>{hi ? 'फैट (FAT)' : 'FAT'}</Text>
+                      <Text style={styles.qualityValue}>
+                        {selectedLog.fatPercentage !== undefined && selectedLog.fatPercentage !== null
+                          ? `${selectedLog.fatPercentage}%`
+                          : (hi ? 'दर्ज नहीं' : 'N/A')}
+                      </Text>
+                    </View>
+                    <View style={styles.qualityBox}>
+                      <Text style={styles.qualityLabel}>{hi ? 'एस.एन.एफ (SNF)' : 'SNF'}</Text>
+                      <Text style={styles.qualityValue}>
+                        {selectedLog.snfPercentage !== undefined && selectedLog.snfPercentage !== null
+                          ? `${selectedLog.snfPercentage}%`
+                          : (hi ? 'दर्ज नहीं' : 'N/A')}
+                      </Text>
+                    </View>
+                    <View style={styles.qualityBox}>
+                      <Text style={styles.qualityLabel}>{hi ? 'दर प्रति लीटर' : 'Rate / L'}</Text>
+                      <Text style={[styles.qualityValue, { color: '#059669' }]}>₹{selectedLog.ratePerLiter}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Information Rows */}
+                <View style={styles.detailGridBox}>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>{hi ? 'दिनांक' : 'Date'}</Text>
+                    <Text style={styles.detailRowVal}>
+                      {new Date(selectedLog.date).toLocaleDateString('hi-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>{hi ? 'समय' : 'Time'}</Text>
+                    <Text style={styles.detailRowVal}>
+                      {new Date(selectedLog.date).toLocaleTimeString('hi-IN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>{hi ? 'आपूर्ति मात्रा' : 'Quantity Supplied'}</Text>
+                    <Text style={[styles.detailRowVal, { fontWeight: '800', color: '#0F172A' }]}>
+                      {selectedLog.quantityLiters} Liters
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>{hi ? 'निर्धारित दर' : 'Applicable Rate'}</Text>
+                    <Text style={styles.detailRowVal}>₹{selectedLog.ratePerLiter} / L</Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>{hi ? 'कुल संकलित राशि' : 'Total Earnings'}</Text>
+                    <Text style={[styles.detailRowVal, { color: '#059669', fontWeight: '800' }]}>
+                      +₹{selectedLog.totalAmount}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailRowLabel}>{hi ? 'निकासी स्थिति' : 'Withdrawal Status'}</Text>
+                    <Text style={[styles.detailRowVal, { color: selectedLog.isProcessedInWithdrawal ? '#059669' : '#D97706', fontWeight: '700' }]}>
+                      {selectedLog.isProcessedInWithdrawal
+                        ? (hi ? '✓ मुख्य वॉलेट में अंतरित' : '✓ Transferred to Wallet')
+                        : (hi ? '⏳ 7-दिवसीय चक्र में संचित' : '⏳ Accumulating in Cycle')}
+                    </Text>
+                  </View>
+
+                  {selectedLog.performedBy ? (
+                    <View style={[styles.detailRow, { alignItems: 'flex-start' }]}>
+                      <Text style={styles.detailRowLabel}>{hi ? 'संकलन पार्टनर' : 'Collected By'}</Text>
+                      <View style={{ alignItems: 'flex-end', flex: 1 }}>
+                        <Text style={[styles.detailRowVal, { fontWeight: '700' }]}>
+                          {selectedLog.performedBy.name || 'Milk Partner'}
+                        </Text>
+                        {selectedLog.performedBy.phone && (
+                          <TouchableOpacity
+                            style={[styles.detailCallBtn, { backgroundColor: '#059669' }]}
+                            onPress={() => Linking.openURL(`tel:${selectedLog.performedBy.phone}`)}
+                            activeOpacity={0.8}
+                          >
+                            <Ionicons name="call" size={12} color="#FFFFFF" />
+                            <Text style={styles.detailCallBtnText}>{selectedLog.performedBy.phone}</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  ) : subscription?.assignedPartnerId ? (
+                    <View style={[styles.detailRow, { alignItems: 'flex-start' }]}>
+                      <Text style={styles.detailRowLabel}>{hi ? 'असाइन पार्टनर' : 'Assigned Partner'}</Text>
+                      <View style={{ alignItems: 'flex-end', flex: 1 }}>
+                        <Text style={[styles.detailRowVal, { fontWeight: '700' }]}>
+                          {subscription.assignedPartnerId.name}
+                        </Text>
+                        {subscription.assignedPartnerId.phone && (
+                          <TouchableOpacity
+                            style={[styles.detailCallBtn, { backgroundColor: '#059669' }]}
+                            onPress={() => Linking.openURL(`tel:${subscription.assignedPartnerId.phone}`)}
+                            activeOpacity={0.8}
+                          >
+                            <Ionicons name="call" size={12} color="#FFFFFF" />
+                            <Text style={styles.detailCallBtnText}>{subscription.assignedPartnerId.phone}</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    </View>
+                  ) : null}
+
+                  {selectedLog.notes ? (
+                    <View style={[styles.detailRow, { borderBottomWidth: 0, alignItems: 'flex-start' }]}>
+                      <Text style={styles.detailRowLabel}>{hi ? 'टिप्पणी / रिमार्क' : 'Remarks'}</Text>
+                      <Text style={[styles.detailRowVal, { fontStyle: 'italic', color: '#64748B', flex: 1, textAlign: 'right' }]}>
+                        {selectedLog.notes}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                {/* Close Button */}
+                <TouchableOpacity
+                  style={[styles.modalActionBtn, { backgroundColor: '#059669', marginTop: 14 }]}
+                  onPress={() => setSelectedLog(null)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.modalActionText}>{hi ? 'विवरण बंद करें' : 'Close Details'}</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
           </View>
         </View>
       </Modal>
@@ -2478,6 +3198,511 @@ const styles = StyleSheet.create({
   },
   partnerCallBtnText: {
     fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  // Shift Pending Banner
+  shiftPendingCard: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+  },
+  shiftPendingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  shiftPendingIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FDE68A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shiftPendingTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#92400E',
+  },
+  shiftPendingSub: {
+    fontSize: 11,
+    color: '#B45309',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  shiftPendingReasonText: {
+    fontSize: 10.5,
+    color: '#78350F',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+
+  // Section Heading Row with Count
+  sectionHeadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  filterCountBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065F46',
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+
+  filterCountBadgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // Premium Filter Card
+  filterCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  filterSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  filterSectionTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.5,
+  },
+  filterActiveBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  filterActiveBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  filterSegmentedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  filterSegmentBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  filterSegmentBtnActive: {
+    backgroundColor: '#059669',
+    borderColor: '#059669',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  filterSegmentBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  filterSegmentBtnTextActive: {
+    color: '#FFFFFF',
+  },
+  filterCardDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 10,
+  },
+  filterResetLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+  },
+  filterResetLinkText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  datePresetsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  datePresetPill: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 7.5,
+    paddingHorizontal: 2,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  datePresetPillActive: {
+    backgroundColor: '#DCFCE7',
+    borderColor: '#86EFAC',
+    borderWidth: 1.2,
+  },
+  datePresetPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  datePresetPillTextActive: {
+    color: '#15803D',
+    fontWeight: '800',
+  },
+  resetFilterBtn: {
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#DCFCE7',
+    alignSelf: 'center',
+  },
+  resetFilterBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  headerMenuBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionSheetBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    justifyContent: 'flex-end',
+  },
+  actionSheetContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 20,
+  },
+  actionSheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#CBD5E1',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  actionSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    marginBottom: 6,
+  },
+  actionSheetTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  actionSheetSub: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  actionSheetCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionSheetLockedBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 14,
+    padding: 14,
+    marginVertical: 14,
+  },
+  actionSheetLockedText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: '#991B1B',
+    fontWeight: '600',
+    lineHeight: 18,
+  },
+  actionSheetOptionsList: {
+    paddingTop: 4,
+  },
+  actionSheetOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 13,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
+  },
+  actionSheetOptionIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionSheetOptionContent: {
+    flex: 1,
+    marginLeft: 14,
+    marginRight: 6,
+  },
+  actionSheetOptionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  actionSheetOptionSub: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  actionSheetDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 4,
+  },
+
+  // Schedule Options in Modal
+  scheduleOptionsCol: {
+    gap: 8,
+    marginTop: 8,
+  },
+  scheduleOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+  },
+  scheduleOptionCardActive: {
+    borderColor: '#059669',
+    backgroundColor: '#ECFDF5',
+  },
+  scheduleIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scheduleTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  scheduleSub: {
+    fontSize: 10.5,
+    color: '#64748B',
+    marginTop: 1,
+  },
+
+  // Quality Metrics Box
+  qualityCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  qualityCardTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  qualityGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  qualityBox: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  qualityLabel: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  qualityValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+
+  // Detail Modal
+  detailModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    width: '94%',
+    maxHeight: '85%',
+  },
+  detailHeroCard: {
+    alignItems: 'center',
+    borderRadius: 18,
+    padding: 16,
+    marginVertical: 10,
+    borderWidth: 1,
+  },
+  detailHeroIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    marginBottom: 8,
+  },
+  detailHeroQty: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  detailHeroAmount: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  detailHeroBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+  },
+  detailShiftPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  detailShiftPillText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  detailStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  detailStatusPillText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
+  detailGridBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  detailRowLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  detailRowVal: {
+    fontSize: 12,
+    color: '#0F172A',
+    fontWeight: '700',
+  },
+  detailCallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  detailCallBtnText: {
+    fontSize: 10,
     fontWeight: '800',
     color: '#FFFFFF',
   },

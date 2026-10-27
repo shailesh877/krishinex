@@ -11,7 +11,13 @@ import {
   StatusBar,
   Linking,
   Platform,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -29,18 +35,32 @@ export default function MilkPartnerHistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [logs, setLogs] = useState<any[]>([]);
+  const [adminCommissionPercent, setAdminCommissionPercent] = useState<number>(10);
   const [summary, setSummary] = useState<any>({
     totalLogs: 0,
     totalCollectedLiters: 0,
     totalDeliveredLiters: 0,
     totalCollectionPayout: 0,
     totalDeliveryValue: 0,
+    totalPlatformFee: 0,
+    totalPartnerSalesEarnings: 0,
   });
 
   // Filters
   const [typeFilter, setTypeFilter] = useState<'all' | 'sell' | 'buy'>('all');
   const [shiftFilter, setShiftFilter] = useState<'all' | 'Morning' | 'Evening'>('all');
   const [search, setSearch] = useState('');
+
+  // Expandable cards state (tap to reveal breakdown)
+  const [expandedIds, setExpandedIds] = useState<{ [id: string]: boolean }>({});
+
+  const toggleExpand = (id: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedIds(prev => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -63,6 +83,9 @@ export default function MilkPartnerHistoryScreen() {
       if (res.ok && data.success) {
         setLogs(data.logs || []);
         if (data.summary) setSummary(data.summary);
+        if (data.adminCommissionPercent !== undefined) {
+          setAdminCommissionPercent(data.adminCommissionPercent);
+        }
       } else {
         showAlert(
           hi ? 'त्रुटि' : 'Error',
@@ -92,190 +115,198 @@ export default function MilkPartnerHistoryScreen() {
     Linking.openURL(`tel:${cleanPhone}`);
   };
 
-  const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      {/* TOP NAVIGATION BAR */}
-      <View style={styles.navBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
+  const renderHeader = () => {
+    const totalPartnerEarned = (summary.totalPartnerSalesEarnings !== undefined && summary.totalPartnerSalesEarnings !== null && summary.totalPartnerSalesEarnings > 0)
+      ? Number(summary.totalPartnerSalesEarnings)
+      : logs
+        .filter(l => l.type === 'buy' && l.status === 'Completed')
+        .reduce((sum, l) => sum + (Number(l.partnerEarning) || Math.round((Number(l.totalAmount || 0) * 0.9) * 100) / 100), 0);
+
+    return (
+      <View style={styles.headerContainer}>
+        {/* TOP NAVIGATION BAR */}
+        <View style={styles.navBar}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={22} color="#0F172A" />
+          </TouchableOpacity>
+          <View style={styles.navTitleBox}>
+            <Text style={styles.navTitle}>
+              {hi ? 'खरीद व बिक्री इतिहास' : 'Purchase & Sales History'}
+            </Text>
+            <Text style={styles.navSub}>
+              {hi ? 'सभी संकलन और वितरण का सम्पूर्ण रिकॉर्ड' : 'Comprehensive records of collections & deliveries'}
+            </Text>
+          </View>
+        </View>
+
+        {/* SUMMARY BANNER */}
+        <LinearGradient
+          colors={['#0F172A', '#1E293B']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.summaryCard}
         >
-          <Ionicons name="arrow-back" size={22} color="#0F172A" />
-        </TouchableOpacity>
-        <View style={styles.navTitleBox}>
-          <Text style={styles.navTitle}>
-            {hi ? 'खरीद व बिक्री इतिहास' : 'Purchase & Sales History'}
-          </Text>
-          <Text style={styles.navSub}>
-            {hi ? 'सभी संकलन और वितरण का सम्पूर्ण रिकॉर्ड' : 'Comprehensive records of collections & deliveries'}
-          </Text>
-        </View>
-      </View>
-
-      {/* SUMMARY BANNER */}
-      <LinearGradient
-        colors={['#0F172A', '#1E293B']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.summaryCard}
-      >
-        <View style={styles.summaryTopRow}>
-          <View style={styles.summaryBadge}>
-            <Ionicons name="bar-chart" size={12} color="#38BDF8" />
-            <Text style={styles.summaryBadgeText}>
-              {hi ? `कुल रिकॉर्ड्स: ${summary.totalLogs || logs.length}` : `Total Logs: ${summary.totalLogs || logs.length}`}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.summaryGrid}>
-          {/* COLLECTION / PURCHASE METRIC */}
-          <View style={styles.summaryItem}>
-            <View style={styles.summaryItemHead}>
-              <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
-              <Text style={styles.summaryItemLabel}>{hi ? 'दूध खरीद' : 'Purchased'}</Text>
+          <View style={styles.summaryTopRow}>
+            <View style={styles.summaryBadge}>
+              <Ionicons name="bar-chart" size={12} color="#38BDF8" />
+              <Text style={styles.summaryBadgeText}>
+                {hi ? `कुल रिकॉर्ड्स: ${summary.totalLogs || logs.length}` : `Total Logs: ${summary.totalLogs || logs.length}`}
+              </Text>
             </View>
-            <Text style={styles.summaryItemLiters}>
-              {summary.totalCollectedLiters || 0}
-              <Text style={styles.summaryItemUnit}> L</Text>
-            </Text>
-            <Text style={styles.summaryItemValue}>
-              ₹{Number(summary.totalCollectionPayout || 0).toLocaleString('en-IN')}
-            </Text>
           </View>
 
-          <View style={styles.summaryDivider} />
-
-          {/* DELIVERY / SALES METRIC */}
-          <View style={styles.summaryItem}>
-            <View style={styles.summaryItemHead}>
-              <View style={[styles.dot, { backgroundColor: '#3B82F6' }]} />
-              <Text style={styles.summaryItemLabel}>{hi ? 'दूध बिक्री' : 'Delivered'}</Text>
+          <View style={styles.summaryGrid}>
+            {/* COLLECTION / PURCHASE METRIC */}
+            <View style={styles.summaryItem}>
+              <View style={styles.summaryItemHead}>
+                <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
+                <Text style={styles.summaryItemLabel}>{hi ? 'दूध खरीद' : 'Purchased'}</Text>
+              </View>
+              <Text style={styles.summaryItemLiters}>
+                {summary.totalCollectedLiters || 0}
+                <Text style={styles.summaryItemUnit}> L</Text>
+              </Text>
+              <Text style={styles.summaryItemValue}>
+                ₹{Number(summary.totalCollectionPayout || 0).toLocaleString('en-IN')}
+              </Text>
             </View>
-            <Text style={styles.summaryItemLiters}>
-              {summary.totalDeliveredLiters || 0}
-              <Text style={styles.summaryItemUnit}> L</Text>
-            </Text>
-            <Text style={styles.summaryItemValue}>
-              ₹{Number(summary.totalDeliveryValue || 0).toLocaleString('en-IN')}
-            </Text>
+
+            <View style={styles.summaryDivider} />
+
+            {/* DELIVERY / SALES METRIC */}
+            <View style={styles.summaryItem}>
+              <View style={styles.summaryItemHead}>
+                <View style={[styles.dot, { backgroundColor: '#3B82F6' }]} />
+                <Text style={styles.summaryItemLabel}>{hi ? 'दूध बिक्री' : 'Delivered'}</Text>
+              </View>
+              <Text style={styles.summaryItemLiters}>
+                {summary.totalDeliveredLiters || 0}
+                <Text style={styles.summaryItemUnit}> L</Text>
+              </Text>
+              <Text style={styles.summaryItemValue}>
+                ₹{totalPartnerEarned.toLocaleString('en-IN')}
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
+
+        {/* SEARCH BAR */}
+        <View style={styles.searchRow}>
+          <Ionicons name="search" size={18} color="#64748B" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder={hi ? 'नाम, मोबाइल, पता खोजें...' : 'Search by name, phone, address...'}
+            placeholderTextColor="#94A3B8"
+            value={search}
+            onChangeText={setSearch}
+            returnKeyType="search"
+            onSubmitEditing={fetchHistory}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')}>
+              <Ionicons name="close-circle" size={18} color="#94A3B8" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* FILTER 1: TYPE (ALL / PURCHASE / SALES) */}
+        <View style={styles.filterSection}>
+          <Text style={styles.filterLabel}>{hi ? 'प्रकार चुनें:' : 'Record Type:'}</Text>
+          <View style={styles.pillsRow}>
+            <TouchableOpacity
+              style={[styles.pill, typeFilter === 'all' && styles.pillActive]}
+              onPress={() => setTypeFilter('all')}
+            >
+              <Text style={[styles.pillText, typeFilter === 'all' && styles.pillTextActive]}>
+                {hi ? 'सभी (All)' : 'All'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.pill, typeFilter === 'sell' && styles.pillActiveGreen]}
+              onPress={() => setTypeFilter('sell')}
+            >
+              <Ionicons
+                name="water"
+                size={13}
+                color={typeFilter === 'sell' ? '#FFFFFF' : '#059669'}
+              />
+              <Text style={[styles.pillText, typeFilter === 'sell' && styles.pillTextActive]}>
+                {hi ? 'दूध खरीद (Purchase)' : 'Purchase'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.pill, typeFilter === 'buy' && styles.pillActiveBlue]}
+              onPress={() => setTypeFilter('buy')}
+            >
+              <Ionicons
+                name="bicycle"
+                size={13}
+                color={typeFilter === 'buy' ? '#FFFFFF' : '#2563EB'}
+              />
+              <Text style={[styles.pillText, typeFilter === 'buy' && styles.pillTextActive]}>
+                {hi ? 'दूध बिक्री (Sales)' : 'Sales'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </LinearGradient>
 
-      {/* SEARCH BAR */}
-      <View style={styles.searchRow}>
-        <Ionicons name="search" size={18} color="#64748B" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder={hi ? 'नाम, मोबाइल, पता खोजें...' : 'Search by name, phone, address...'}
-          placeholderTextColor="#94A3B8"
-          value={search}
-          onChangeText={setSearch}
-          returnKeyType="search"
-          onSubmitEditing={fetchHistory}
-        />
-        {search.length > 0 && (
-          <TouchableOpacity onPress={() => setSearch('')}>
-            <Ionicons name="close-circle" size={18} color="#94A3B8" />
-          </TouchableOpacity>
-        )}
-      </View>
+        {/* FILTER 2: SHIFT (ALL / MORNING / EVENING) */}
+        <View style={styles.filterSection}>
+          <Text style={styles.filterLabel}>{hi ? 'शिफ्ट चुनें:' : 'Shift:'}</Text>
+          <View style={styles.pillsRow}>
+            <TouchableOpacity
+              style={[styles.pill, shiftFilter === 'all' && styles.pillActive]}
+              onPress={() => setShiftFilter('all')}
+            >
+              <Text style={[styles.pillText, shiftFilter === 'all' && styles.pillTextActive]}>
+                {hi ? 'दोनों शिफ्ट' : 'All Shifts'}
+              </Text>
+            </TouchableOpacity>
 
-      {/* FILTER 1: TYPE (ALL / PURCHASE / SALES) */}
-      <View style={styles.filterSection}>
-        <Text style={styles.filterLabel}>{hi ? 'प्रकार चुनें:' : 'Record Type:'}</Text>
-        <View style={styles.pillsRow}>
-          <TouchableOpacity
-            style={[styles.pill, typeFilter === 'all' && styles.pillActive]}
-            onPress={() => setTypeFilter('all')}
-          >
-            <Text style={[styles.pillText, typeFilter === 'all' && styles.pillTextActive]}>
-              {hi ? 'सभी (All)' : 'All'}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.pill, shiftFilter === 'Morning' && styles.pillActive]}
+              onPress={() => setShiftFilter('Morning')}
+            >
+              <Ionicons
+                name="sunny-outline"
+                size={13}
+                color={shiftFilter === 'Morning' ? '#FFFFFF' : '#D97706'}
+              />
+              <Text style={[styles.pillText, shiftFilter === 'Morning' && styles.pillTextActive]}>
+                {hi ? 'सुबह (Morning)' : 'Morning'}
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.pill, typeFilter === 'sell' && styles.pillActiveGreen]}
-            onPress={() => setTypeFilter('sell')}
-          >
-            <Ionicons
-              name="water"
-              size={13}
-              color={typeFilter === 'sell' ? '#FFFFFF' : '#059669'}
-            />
-            <Text style={[styles.pillText, typeFilter === 'sell' && styles.pillTextActive]}>
-              {hi ? 'दूध खरीद (Purchase)' : 'Purchase'}
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.pill, shiftFilter === 'Evening' && styles.pillActive]}
+              onPress={() => setShiftFilter('Evening')}
+            >
+              <Ionicons
+                name="moon-outline"
+                size={13}
+                color={shiftFilter === 'Evening' ? '#FFFFFF' : '#4F46E5'}
+              />
+              <Text style={[styles.pillText, shiftFilter === 'Evening' && styles.pillTextActive]}>
+                {hi ? 'शाम (Evening)' : 'Evening'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-          <TouchableOpacity
-            style={[styles.pill, typeFilter === 'buy' && styles.pillActiveBlue]}
-            onPress={() => setTypeFilter('buy')}
-          >
-            <Ionicons
-              name="bicycle"
-              size={13}
-              color={typeFilter === 'buy' ? '#FFFFFF' : '#2563EB'}
-            />
-            <Text style={[styles.pillText, typeFilter === 'buy' && styles.pillTextActive]}>
-              {hi ? 'दूध बिक्री (Sales)' : 'Sales'}
-            </Text>
-          </TouchableOpacity>
+        <View style={styles.listSectionHeader}>
+          <Text style={styles.listSectionTitle}>
+            {hi ? `इतिहास सूची (${logs.length})` : `History Records (${logs.length})`}
+          </Text>
         </View>
       </View>
-
-      {/* FILTER 2: SHIFT (ALL / MORNING / EVENING) */}
-      <View style={styles.filterSection}>
-        <Text style={styles.filterLabel}>{hi ? 'शिफ्ट चुनें:' : 'Shift:'}</Text>
-        <View style={styles.pillsRow}>
-          <TouchableOpacity
-            style={[styles.pill, shiftFilter === 'all' && styles.pillActive]}
-            onPress={() => setShiftFilter('all')}
-          >
-            <Text style={[styles.pillText, shiftFilter === 'all' && styles.pillTextActive]}>
-              {hi ? 'दोनों शिफ्ट' : 'All Shifts'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.pill, shiftFilter === 'Morning' && styles.pillActive]}
-            onPress={() => setShiftFilter('Morning')}
-          >
-            <Ionicons
-              name="sunny-outline"
-              size={13}
-              color={shiftFilter === 'Morning' ? '#FFFFFF' : '#D97706'}
-            />
-            <Text style={[styles.pillText, shiftFilter === 'Morning' && styles.pillTextActive]}>
-              {hi ? 'सुबह (Morning)' : 'Morning'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.pill, shiftFilter === 'Evening' && styles.pillActive]}
-            onPress={() => setShiftFilter('Evening')}
-          >
-            <Ionicons
-              name="moon-outline"
-              size={13}
-              color={shiftFilter === 'Evening' ? '#FFFFFF' : '#4F46E5'}
-            />
-            <Text style={[styles.pillText, shiftFilter === 'Evening' && styles.pillTextActive]}>
-              {hi ? 'शाम (Evening)' : 'Evening'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.listSectionHeader}>
-        <Text style={styles.listSectionTitle}>
-          {hi ? `इतिहास सूची (${logs.length})` : `History Records (${logs.length})`}
-        </Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   const renderItem = ({ item }: { item: any }) => {
     const isPurchase = item.type === 'sell'; // 'sell' type in DB = partner buying from farmer
@@ -303,8 +334,26 @@ export default function MilkPartnerHistoryScreen() {
       }
     }
 
+    const logId = item._id || `${item.subscriptionId?._id || ''}_${item.date}_${item.shift}`;
+    const isExpanded = !!expandedIds[logId];
+
+    const grossAmount = Number(item.totalAmount || 0);
+    const feePercent = (item.adminCommissionPercent !== undefined && item.adminCommissionPercent !== null)
+      ? item.adminCommissionPercent
+      : (adminCommissionPercent || 10);
+    const platformFee = (item.adminCutAmount !== undefined && item.adminCutAmount !== null && item.adminCutAmount > 0)
+      ? Number(item.adminCutAmount)
+      : Math.round((grossAmount * (feePercent / 100)) * 100) / 100;
+    const netEarning = (item.partnerEarning !== undefined && item.partnerEarning !== null && item.partnerEarning > 0)
+      ? Number(item.partnerEarning)
+      : Math.round((grossAmount - platformFee) * 100) / 100;
+
     return (
-      <View style={styles.itemCard}>
+      <TouchableOpacity
+        style={[styles.itemCard, isExpanded && styles.itemCardExpanded]}
+        onPress={() => toggleExpand(logId)}
+        activeOpacity={0.88}
+      >
         {/* CARD TOP ROW */}
         <View style={styles.itemCardTop}>
           <View style={styles.badgeRow}>
@@ -341,17 +390,29 @@ export default function MilkPartnerHistoryScreen() {
             </View>
           </View>
 
-          {/* STATUS BADGE */}
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: isCompleted ? '#F0FDF4' : '#FEF2F2' }
-          ]}>
-            <Text style={[
-              styles.statusText,
-              { color: isCompleted ? '#16A34A' : '#DC2626' }
+          {/* STATUS BADGE & EXPAND INDICATOR */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={[
+              styles.statusBadge,
+              { backgroundColor: isCompleted ? '#F0FDF4' : '#FEF2F2' }
             ]}>
-              {isCompleted ? (hi ? 'पूर्ण ✓' : 'Completed') : (hi ? 'छोड़ा गया' : 'Skipped')}
-            </Text>
+              <Text style={[
+                styles.statusText,
+                { color: isCompleted ? '#16A34A' : '#DC2626' }
+              ]}>
+                {isCompleted ? (hi ? 'पूर्ण ✓' : 'Completed') : (hi ? 'छोड़ा गया' : 'Skipped')}
+              </Text>
+            </View>
+
+            {!isPurchase && isCompleted && (
+              <View style={[styles.chevronBadge, isExpanded && styles.chevronBadgeExpanded]}>
+                <Ionicons
+                  name={isExpanded ? "chevron-up" : "chevron-down"}
+                  size={12}
+                  color={isExpanded ? "#0284C7" : "#64748B"}
+                />
+              </View>
+            )}
           </View>
         </View>
 
@@ -382,14 +443,76 @@ export default function MilkPartnerHistoryScreen() {
               {item.quantityLiters || 0}
               <Text style={styles.litersUnit}> L</Text>
             </Text>
-            <Text style={styles.amountText}>
-              ₹{Number(item.totalAmount || 0).toFixed(2)}
-            </Text>
-            <Text style={styles.rateSubText}>
-              @ ₹{item.ratePerLiter || 0}/L
-            </Text>
+            {isPurchase ? (
+              <>
+                <Text style={styles.amountTextPurchase}>
+                  -₹{grossAmount.toFixed(2)}
+                </Text>
+                <Text style={styles.rateSubText}>
+                  @ ₹{item.ratePerLiter || 0}/L
+                </Text>
+                <Text style={styles.purchaseSubLbl}>
+                  {hi ? 'किसान भुगतान' : 'Farmer Payout'}
+                </Text>
+              </>
+            ) : isCompleted ? (
+              <>
+                <Text style={styles.amountTextNet}>
+                  +₹{netEarning.toFixed(2)}
+                </Text>
+                <View style={styles.receivedBadge}>
+                  <Ionicons name="wallet" size={10} color="#059669" />
+                  <Text style={styles.receivedBadgeText}>
+                    {hi ? 'वॉलेट में मिला' : 'Net Received'}
+                  </Text>
+                </View>
+              </>
+            ) : (
+              <Text style={styles.amountTextSkipped}>₹0.00</Text>
+            )}
           </View>
         </View>
+
+        {/* TRANSPARENT PRICING & PLATFORM FEE BREAKDOWN (FOR SALES) - SHOWN ON TAP */}
+        {!isPurchase && isCompleted && isExpanded && (
+          <View style={styles.salesBreakdownCard}>
+            <View style={styles.breakdownHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="receipt-outline" size={12} color="#0369A1" />
+                <Text style={styles.breakdownTitle}>
+                  {hi ? 'मूल्य व शुल्क विवरण (Price Breakdown)' : 'Earnings Breakdown'}
+                </Text>
+              </View>
+              <Text style={styles.breakdownFeePercentBadge}>
+                {hi ? `${feePercent}% प्लेटफ़ॉर्म शुल्क` : `${feePercent}% Platform Fee`}
+              </Text>
+            </View>
+
+            <View style={styles.breakdownGrid}>
+              <View style={styles.breakdownCol}>
+                <Text style={styles.breakdownLbl}>{hi ? 'दूध मूल्य (Gross)' : 'Milk Price'}</Text>
+                <Text style={styles.breakdownVal}>₹{grossAmount.toFixed(2)}</Text>
+                <Text style={styles.breakdownRateSub}>@{item.ratePerLiter || 0}/L</Text>
+              </View>
+
+              <Text style={styles.breakdownOperator}>-</Text>
+
+              <View style={styles.breakdownCol}>
+                <Text style={styles.breakdownLblFee}>{hi ? 'शुल्क (Fee)' : 'Platform Fee'}</Text>
+                <Text style={styles.breakdownValFee}>-₹{platformFee.toFixed(2)}</Text>
+                <Text style={styles.breakdownRateSubFee}>({feePercent}%)</Text>
+              </View>
+
+              <Text style={styles.breakdownOperator}>=</Text>
+
+              <View style={[styles.breakdownCol, styles.breakdownColNet]}>
+                <Text style={styles.breakdownLblNet}>{hi ? 'आपको मिला (Net)' : 'You Received'}</Text>
+                <Text style={styles.breakdownValNet}>₹{netEarning.toFixed(2)}</Text>
+                <Text style={styles.breakdownRateSubNet}>{hi ? 'वॉलेट में जमा ✓' : 'In Wallet ✓'}</Text>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* QUALITY METRICS (FAT / SNF) FOR PURCHASE */}
         {(item.fatPercentage || item.snfPercentage) ? (
@@ -411,19 +534,42 @@ export default function MilkPartnerHistoryScreen() {
           </View>
         ) : null}
 
-        {/* FOOTER: DATE & NOTES */}
+        {/* FOOTER: DATE, NOTES & EXPAND PROMPT */}
         <View style={styles.cardFooter}>
           <View style={styles.dateCol}>
             <Ionicons name="calendar-outline" size={12} color="#94A3B8" />
             <Text style={styles.dateText}>{dateFormatted}</Text>
           </View>
-          {item.notes ? (
+
+          {!isPurchase && isCompleted ? (
+            <View style={[styles.tapPromptRow, isExpanded && styles.tapPromptRowActive]}>
+              <Text style={[styles.tapPromptText, isExpanded && styles.tapPromptTextActive]}>
+                {isExpanded
+                  ? (hi ? 'विवरण छुपाएं' : 'Hide details')
+                  : (hi ? 'शुल्क व कमाई विवरण देखें' : 'View fee breakdown')}
+              </Text>
+              <Ionicons
+                name={isExpanded ? "chevron-up" : "chevron-down"}
+                size={11}
+                color={isExpanded ? "#DC2626" : "#0284C7"}
+              />
+            </View>
+          ) : item.notes ? (
             <Text style={styles.notesText} numberOfLines={1}>
               📝 {item.notes}
             </Text>
           ) : null}
         </View>
-      </View>
+
+        {/* EXPANDED NOTES IF ANY */}
+        {isExpanded && item.notes && !isPurchase && (
+          <View style={styles.expandedNotesRow}>
+            <Text style={styles.expandedNotesText}>
+              📝 {hi ? 'टिप्पणी:' : 'Note:'} {item.notes}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
     );
   };
 
@@ -531,6 +677,8 @@ const styles = StyleSheet.create({
   summaryItemLiters: { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
   summaryItemUnit: { fontSize: 12, fontWeight: '700', color: '#94A3B8' },
   summaryItemValue: { color: '#E2E8F0', fontSize: 12, fontWeight: '700', marginTop: 2 },
+  summaryItemValueNet: { color: '#38BDF8', fontSize: 13, fontWeight: '900', marginTop: 2 },
+  summaryFeeSub: { color: '#94A3B8', fontSize: 9, fontWeight: '600', marginTop: 2 },
   summaryDivider: { width: 1, height: 42, backgroundColor: 'rgba(255, 255, 255, 0.15)', marginHorizontal: 16 },
 
   // Search
@@ -592,6 +740,55 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  itemCardExpanded: {
+    borderColor: '#38BDF8',
+    backgroundColor: '#FFFFFF',
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  chevronBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chevronBadgeExpanded: {
+    backgroundColor: '#E0F2FE',
+  },
+  tapPromptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+  },
+  tapPromptRowActive: {
+    backgroundColor: '#FEF2F2',
+  },
+  tapPromptText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  tapPromptTextActive: {
+    color: '#DC2626',
+  },
+  expandedNotesRow: {
+    marginTop: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  expandedNotesText: {
+    fontSize: 10,
+    color: '#475569',
+    fontWeight: '500',
+  },
   itemCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -644,7 +841,83 @@ const styles = StyleSheet.create({
   litersText: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
   litersUnit: { fontSize: 11, fontWeight: '700', color: '#64748B' },
   amountText: { fontSize: 13, fontWeight: '800', color: '#059669', marginTop: 1 },
+  amountTextNet: { fontSize: 14, fontWeight: '900', color: '#059669', marginTop: 1 },
+  amountTextPurchase: { fontSize: 13, fontWeight: '800', color: '#DC2626', marginTop: 1 },
+  amountTextSkipped: { fontSize: 13, fontWeight: '700', color: '#94A3B8', marginTop: 1 },
+  purchaseSubLbl: { fontSize: 9, color: '#DC2626', fontWeight: '700', marginTop: 1 },
+  receivedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginTop: 2,
+  },
+  receivedBadgeText: { fontSize: 9, fontWeight: '800', color: '#059669' },
   rateSubText: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
+
+  // Sales Breakdown Card
+  salesBreakdownCard: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 12,
+    padding: 10,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  breakdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0F2FE',
+  },
+  breakdownTitle: { fontSize: 10, fontWeight: '800', color: '#0369A1' },
+  breakdownFeePercentBadge: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#0284C7',
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  breakdownGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  breakdownCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  breakdownColNet: {
+    backgroundColor: '#ECFDF5',
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  breakdownOperator: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#64748B',
+    paddingHorizontal: 2,
+  },
+  breakdownLbl: { fontSize: 9, color: '#64748B', fontWeight: '600', marginBottom: 1 },
+  breakdownVal: { fontSize: 12, fontWeight: '800', color: '#0F172A' },
+  breakdownRateSub: { fontSize: 9, color: '#64748B', fontWeight: '500' },
+  breakdownLblFee: { fontSize: 9, color: '#DC2626', fontWeight: '700', marginBottom: 1 },
+  breakdownValFee: { fontSize: 12, fontWeight: '800', color: '#DC2626' },
+  breakdownRateSubFee: { fontSize: 9, color: '#EF4444', fontWeight: '600' },
+  breakdownLblNet: { fontSize: 9, color: '#059669', fontWeight: '800', marginBottom: 1 },
+  breakdownValNet: { fontSize: 13, fontWeight: '900', color: '#059669' },
+  breakdownRateSubNet: { fontSize: 9, color: '#059669', fontWeight: '700' },
 
   qualityStrip: {
     flexDirection: 'row',

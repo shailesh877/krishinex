@@ -106,9 +106,29 @@ const milkSubscriptionSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  cancelledAt: { 
+  // Shift Change Request
+  requestedSchedule: { 
+    type: String, 
+    enum: ['', 'Morning and Evening', 'Morning Only', 'Evening Only'], 
+    default: '' 
+  },
+  shiftChangeReason: { 
+    type: String, 
+    default: '' 
+  },
+  shiftChangeStatus: { 
+    type: String, 
+    enum: ['none', 'pending_approval', 'approved', 'rejected'], 
+    default: 'none',
+    index: true 
+  },
+  shiftChangeRequestedAt: { 
     type: Date, 
     default: null 
+  },
+  shiftChangeAdminRemarks: { 
+    type: String, 
+    default: '' 
   },
   // Approvals & Assignment
   approvedAt: { 

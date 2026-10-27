@@ -244,7 +244,10 @@ export const authApi = {
     // Milk Services APIs
     registerMilk: (data: any) => api.post('/milk/register', data),
     getMyMilkSubscription: (type?: 'sell' | 'buy' | 'any') => api.get('/milk/my-subscription', { params: type ? { type } : {} }),
-    getMilkHistory: (type: 'sell' | 'buy', month?: number, year?: number) => api.get('/milk/history', { params: { type, month, year } }),
+    getMilkHistory: (type: 'sell' | 'buy', month?: number, year?: number, shift?: string, status?: string, startDate?: string, endDate?: string) =>
+        api.get('/milk/history', { params: { type, month, year, shift, status, startDate, endDate } }),
+    requestShiftChange: (data: { subscriptionId: string; requestedSchedule: string; reason?: string }) =>
+        api.post('/milk/request-shift-change', data),
     pauseMilkService: (data: { subscriptionId: string; pauseStartDate: string; expectedResumeDate: string; pauseReason?: string; pauseShift?: string }) =>
         api.post('/milk/pause', data),
     extendMilkPause: (data: { subscriptionId: string; newResumeDate: string; reason?: string }) =>

@@ -58,6 +58,18 @@ const milkDailyLogSchema = new mongoose.Schema({
     ref: 'User', 
     default: null 
   },
+  adminCommissionPercent: {
+    type: Number,
+    default: 10
+  },
+  adminCutAmount: {
+    type: Number,
+    default: 0
+  },
+  partnerEarning: {
+    type: Number,
+    default: 0
+  },
   // For buyers: link to instant wallet debit transaction
   debitTransactionId: { 
     type: String, 

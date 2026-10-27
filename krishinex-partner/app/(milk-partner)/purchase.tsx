@@ -24,19 +24,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useI18n } from '../../context/I18nContext';
 import { BASE_API_URL } from '../../constants/api';
 import { showAlert } from '../../components/CustomAlert';
 import MilkPartnerHeader from '../../components/MilkPartnerHeader';
 import { getSocket } from '../../services/socket';
 
+const getCurrentShift = (): 'Morning' | 'Evening' => {
+  return new Date().getHours() < 12 ? 'Morning' : 'Evening';
+};
+
 export default function MilkPurchaseScreen() {
   const router = useRouter();
   const { lang } = useI18n();
   const hi = lang === 'hi';
 
-  const [shift, setShift] = useState<'Morning' | 'Evening'>('Morning');
+  const [shift, setShift] = useState<'Morning' | 'Evening'>(() => getCurrentShift());
+
+  // Automatically open Morning if AM (<12 PM) or Evening if PM (>=12 PM) on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      setShift(getCurrentShift());
+    }, [])
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [farmers, setFarmers] = useState<any[]>([]);
@@ -263,7 +274,7 @@ export default function MilkPurchaseScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       {/* KRISHINEX BRANDED HEADER */}
-      <MilkPartnerHeader onRefresh={onRefresh} />
+      <MilkPartnerHeader onRefresh={onRefresh} showBack={true} />
 
       {/* HEADER */}
       <View style={styles.header}>
