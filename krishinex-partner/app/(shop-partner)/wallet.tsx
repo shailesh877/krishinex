@@ -30,6 +30,8 @@ type Transaction = {
   _id: string;
   transactionId: string;
   amount: number;
+  totalAmount?: number;
+  commissionAmount?: number;
   type: 'Payout' | 'Collection' | 'Credit' | 'Debit';
   paymentMode: string;
   status: 'Pending' | 'Completed' | 'Failed';
